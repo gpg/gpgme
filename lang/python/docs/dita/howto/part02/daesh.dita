@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_ob2_yzx_5db">
+        <title>The gnupg package created and maintained by Isis Lovecruft</title>
+        <body>
+            <p>In 2015 Isis Lovecruft from the Tor Project forked and then re-implemented the
+        python-gnupg package as just gnupg. This new package also relied on
+          <codeph>subprocess</codeph> to call the <cmdname>gpg</cmdname> or <cmdname>gpg2</cmdname>
+        binaries, but did so somewhat more securely.</p>
+      <p>The naming and version numbering selected for this package, however, resulted in conflicts
+        with the original python-gnupg and since its functions were called in a different manner to
+        python-gnupg, the release of this package also resulted in a great deal of consternation
+        when people installed what they thought was an upgrade that subsequently broke the code
+        relying on it.</p>
+      <p>The gnupg package is available under the GNU General Public License version 3.0 (or any
+        later version).</p>
+        </body>
+    </topic>
+</dita>

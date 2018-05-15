@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_j3h_5my_5db">
+        <title>Get Key</title>
+        <body>
+            <p>An alternative method of getting a single key via its fingerprint is available
+        directly within a Context with Context().get_key. This is the preferred method of selecting
+        a key in order to modify it, sign or certify it and for obtaining relevant data about a
+        single key as a part of other functions; when verifying a signature made by that key, for
+        instance.</p>
+      <p>By default this method will select public keys, but it can select secret keys as well.</p>
+      <p>This first example demonstrates selecting the current key of Werner Koch, which is due to
+        expire at the end of 2018:</p>
+      <p>
+        <codeblock id="getkey-1" outputclass="language-python">import gpg
+
+fingerprint = "80615870F5BAD690333686D0F2AD85AC1E42B367"
+key = gpg.Context().get_key(fingerprint)
+        </codeblock>
+      </p>
+      <p>Whereas this example demonstrates selecting the author's current key with the secret key
+        word argument set to True:</p>
+      <p>
+        <codeblock id="getkey-2" outputclass="language-python">import gpg
+
+fingerprint = "DB4724E6FA4286C92B4E55C4321E4E2373590E5D"
+key = gpg.Context().get_key(fingerprint, secret=True)
+        </codeblock>
+      </p>
+      <p>It is, of course, quite possible to select expired, disabled and revoked keys with this
+        function, but only to effectively display information about those keys.</p>
+      <p>It is also possible to use both unicode or string literals and byte literals with the
+        fingerprint when getting a key in this way.</p>
+        </body>
+    </topic>
+</dita>

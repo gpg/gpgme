@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_llw_kzx_5db">
+        <title>The python-gnupg package maintained by Vinay Sajip</title>
+        <body>
+            <p>This is arguably the most popular means of integrating GPG with Python. The package
+        utilises the <codeph>subprocess</codeph> module to implement wrappers for the
+          <cmdname>gpg</cmdname> and <cmdname>gpg2</cmdname> executables normally invoked on the command
+        line (<cmdname>gpg.exe</cmdname> and <cmdname>gpg2.exe</cmdname> on Windows).</p>
+      <p>The popularity of this package stemmed from its ease of use and capability in providing the
+        most commonly required features.</p>
+      <p>Unfortunately it has been beset by a number of security issues in the past; most of which
+        stemmed from using unsafe methods of accessing the command line via the
+          <codeph>subprocess</codeph> calls. While some effort has been made over the last two to
+        three years (as of 2018) to mitigate this, particularly by no longer providing shell access
+        through those subprocess calls, the wrapper is still somewhat limited in the scope of its
+        GnuPG features coverage.</p>
+      <p>The python-gnupg package is available under the MIT license.</p>
+        </body>
+    </topic>
+</dita>

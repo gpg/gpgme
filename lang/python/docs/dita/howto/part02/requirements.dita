@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_zqn_nfy_5db">
+        <title>Requirements</title>
+        <body>
+            <p>The GPGME Python bindings only have three requirements:</p>
+      <p>
+        <ol id="ol_rbw_qfy_5db">
+          <li>A suitable version of Python 2 or Python 3. With Python 2 that means Python 2.7 and
+            with Python 3 that means Python 3.4 or higher.</li>
+          <li>SWIG.</li>
+          <li>GPGME itself. Which also means that all of GPGME's dependencies must be installed
+            too.</li>
+        </ol>
+      </p>
+      <p/>
+        </body>
+    </topic>
+</dita>

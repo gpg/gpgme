@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_xsp_ygy_5db">
+        <title>Fundamentals</title>
+        <body>
+            <p>Before we can get to the fun stuff, there are a few matters regarding GPGME's design
+        which hold true whether you're dealing with the C code directly or these Python
+        bindings.</p>
+        </body>
+    </topic>
+</dita>

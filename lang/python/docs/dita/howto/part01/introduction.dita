@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_ucm_3mx_5db">
+        <title>Introduction</title>
+        <body>
+      <p>This document provides basic instruction in how to use the GPGME Python bindings to
+        programmatically leverage the GPGME library.</p>
+        </body>
+    </topic>
+</dita>

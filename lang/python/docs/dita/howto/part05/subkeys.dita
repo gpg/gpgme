@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_cb4_fyz_5db">
+        <title>Subkey Creation</title>
+        <body>
+            <p>Adding subkeys to a primary key is fairly similar to creating the primary key with
+        the <codeph>create_subkey</codeph> method. Most of the arguments are the same, but not quite
+        all. Instead of the <codeph>userid</codeph> argument there is now a <codeph>key</codeph>
+        argument for selecting which primary key to add the subkey to.</p>
+      <p>In the following example an encryption subkey will be added to the primary key. Since
+        Danger Mouse is a security conscious secret agent, this subkey will only be valid for about
+        six months, half the length of the primary key.</p>
+      <p>
+        <codeblock id="subkey-1" outputclass="language-python">import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+key = c.get_key(dmkey.fpr, secret=True)
+dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
+			    encrypt=True)
+</codeblock>
+      </p>
+      <p>As with the primary key, the results here can be checked with:</p>
+      <p>
+        <codeblock id="subkey-2" outputclass="language-python">print("""
+Fingerprint:  {0}
+Primary Key:  {1}
+ Public Key:  {2}
+ Secret Key:  {3}
+    Sub Key:  {4}
+   User IDs:  {5}
+""".format(dmsub.fpr, dmsub.primary, dmsub.pubkey, dmsub.seckey, dmsub.sub,
+	    dmsub.uid))
+</codeblock>
+      </p>
+      <p>As well as on the command line with:</p>
+      <p>
+        <codeblock id="subkey-3" outputclass="language-bourne">bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse &lt;dm@secret.example.net>
+ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+bash-4.4$
+</codeblock>
+      </p>
+        </body>
+    </topic>
+</dita>

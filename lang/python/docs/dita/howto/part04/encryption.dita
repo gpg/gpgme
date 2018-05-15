@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_on2_nqy_5db">
+        <title>Encryption</title>
+        <body>
+            <p>Encrypting is very straight forward. In the first example below the message,
+          <codeph>text</codeph>, is encrypted to a single recipient's key. In the second example the
+        message will be encrypted to multiple recipients.</p>
+        </body>
+    </topic>
+</dita>

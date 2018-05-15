@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_nfy_byz_5db">
+    <title>Primary Key Creation</title>
+    <body>
+      <p>Generating a primary key uses the <codeph>create_key</codeph> method in a Context. It
+        contains multiple arguments and keyword arguments, including: <codeph>userid</codeph>,
+          <codeph>algorithm</codeph>, <codeph>expires_in</codeph>, <codeph>expires</codeph>,
+          <codeph>sign</codeph>, <codeph>encrypt</codeph>, <codeph>certify</codeph>,
+          <codeph>authenticate</codeph>, <codeph>passphrase</codeph> and <codeph>force</codeph>. The
+        defaults for all of those except <codeph>userid</codeph>, <codeph>algorithm</codeph>,
+          <codeph>expires_in</codeph>, <codeph>expires</codeph> and <codeph>passphrase</codeph> is
+          <codeph>False</codeph>. The defaults for <codeph>algorithm</codeph> and
+          <codeph>passphrase</codeph> is <codeph>None</codeph>. The default for
+          <codeph>expires_in</codeph> is <codeph>0</codeph>. The default for
+          <codeph>expires</codeph> is <codeph>True</codeph>. There is no default for
+          <codeph>userid</codeph>.</p>
+      <p>If <codeph>passphrase</codeph> is left as <codeph>None</codeph> then the key will not be
+        generated with a passphrase, if <codeph>passphrase</codeph> is set to a string then that
+        will be the passphrase and if <codeph>passphrase</codeph> is set to <codeph>True</codeph>
+        then gpg-agent will launch pinentry to prompt for a passphrase. For the sake of convenience,
+        these examples will keep passphrase set to <codeph>None</codeph>.</p>
+      <p>
+        <codeblock id="keygen-1" outputclass="language-python">import gpg
+
+c = gpg.Context()
+
+c.home_dir = "~/.gnupg-dm"
+userid = "Danger Mouse &lt;dm@secret.example.net>"
+
+dmkey = c.create_key(userid, algorithm="rsa3072", expires_in=31536000,
+		       sign=True, certify=True)
+</codeblock>
+      </p>
+      <p>One thing to note here is the use of setting the <codeph>c.home_dir</codeph> parameter.
+        This enables generating the key or keys in a different location. In this case to keep the
+        new key data created for this example in a separate location rather than adding it to
+        existing and active key store data. As with the default directory,
+          <filepath>~/.gnupg</filepath>, any temporary or separate directory needs the permissions
+        set to only permit access by the directory owner. On posix systems this means setting the
+        directory permissions to <codeph>700</codeph>.</p>
+      <p>The <cmdname>temp-homedir-config.py</cmdname> script in the HOWTO examples directory will
+        create an alternative homedir with these configuration options already set and the correct
+        directory and file permissions.</p>
+      <p>The successful generation of the key can be confirmed via the returned
+          <codeph>GenkeyResult</codeph> object, which includes the following data:</p>
+      <p>
+        <codeblock id="keygen-2" outputclass="language-python">print("""
+Fingerprint:  {0}
+Primary Key:  {1}
+ Public Key:  {2}
+ Secret Key:  {3}
+    Sub Key:  {4}
+   User IDs:  {5}
+""".format(dmkey.fpr, dmkey.primary, dmkey.pubkey, dmkey.seckey, dmkey.sub,
+	    dmkey.uid))
+</codeblock>
+      </p>
+      <p>Alternatively the information can be confirmed using the command line program:</p>
+      <p>
+        <codeblock id="keygen-3" outputclass="language-bourne">bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse &lt;dm@secret.example.net>
+
+bash-4.4$
+</codeblock>
+      </p>
+      <p>As with generating keys manually, to preconfigure expanded preferences for the cipher,
+        digest and compression algorithms, the <filepath>gpg.conf</filepath> file must contain those
+        details in the home directory in which the new key is being generated. I used a cut down
+        version of my own <filepath>gpg.conf</filepath> file in order to be able to generate
+        this:</p>
+      <p>
+        <codeblock id="keygen-4" outputclass="language-bourne">bash-4.4$ gpg --homedir ~/.gnupg-dm --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
+Secret key is available.
+
+sec  rsa3072/026D2F19E99E63AA
+     created: 2018-03-15  expires: 2019-03-15  usage: SC
+     trust: ultimate      validity: ultimate
+[ultimate] (1). Danger Mouse &lt;dm@secret.example.net>
+
+[ultimate] (1). Danger Mouse &lt;dm@secret.example.net>
+     Cipher: TWOFISH, CAMELLIA256, AES256, CAMELLIA192, AES192, CAMELLIA128, AES, BLOWFISH, IDEA, CAST5, 3DES
+     Digest: SHA512, SHA384, SHA256, SHA224, RIPEMD160, SHA1
+     Compression: ZLIB, BZIP2, ZIP, Uncompressed
+     Features: MDC, Keyserver no-modify
+
+bash-4.4$
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

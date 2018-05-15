@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_p15_1yz_5db">
+    <title>Key Certification</title>
+    <body>
+      <p>Since key certification is more frequently referred to as key signing, the method used to
+        perform this function is <codeph>key_sign</codeph>.</p>
+      <p>The <codeph>key_sign</codeph> method takes four arguments: <codeph>key</codeph>,
+          <codeph>uids</codeph>, <codeph>expires_in</codeph> and <codeph>local</codeph>. The default
+        value of <codeph>uids</codeph> is <codeph>None</codeph> and which results in all user IDs
+        being selected. The default value of both <codeph>expires_in</codeph> and
+          <codeph>local</codeph> is <codeph>False</codeph>; which results in the signature never
+        expiring and being able to be exported.</p>
+      <p>The <codeph>key</codeph> is the key being signed rather than the key doing the signing. To
+        change the key doing the signing refer to the signing key selection above for signing
+        messages and files.</p>
+      <p>If the <codeph>uids</codeph> value is not <codeph>None</codeph> then it must either be a
+        string to match a single user ID or a list of strings to match multiple user IDs. In this
+        case the matching of those strings must be precise and it is case sensitive.</p>
+      <p>To sign Danger Mouse's key for just the initial user ID with a signature which will last a
+        little over a month, do this:</p>
+      <p>
+        <codeblock id="cert-1" outputclass="language-python">import gpg
+
+c = gpg.Context()
+uid = "Danger Mouse &lt;dm@secret.example.net>"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+c.key_sign(key, uidsuid, expires_in=2764800)
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

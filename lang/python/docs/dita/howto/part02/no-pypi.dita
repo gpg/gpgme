@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_mss_p2y_5db">
+        <title>No PyPI</title>
+        <body>
+            <p>Most third-party Python packages and modules are available and distributed through
+        the Python Package Installer, known as PyPI.</p>
+      <p>Due to the nature of what these bindings are and how they work, it is infeasible to install
+        the GPGME Python bindings in the same way.</p>
+      <p>This is because the bindings use SWIG to dynamically generate C bindings against
+          <codeph>gpgme.h</codeph> and <codeph>gpgme.h</codeph> is generated from
+          <codeph>gpgme.h.in</codeph> at compile time when GPGME is built from source. Thus to
+        include a package in PyPI which actually built correctly would require either statically
+        built libraries for every architecture bundled with it or a full implementation of C for
+        each architecture.</p>
+        </body>
+    </topic>
+</dita>

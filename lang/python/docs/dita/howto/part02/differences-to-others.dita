@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_ecj_yyx_5db">
+        <title>Difference between the Python bindings and other GnuPG Python packages</title>
+        <body>
+            <p>There have been numerous attempts to add GnuPG support to Python over the years. Some
+        of the most well known are listed here, along with what differentiates them.</p>
+        </body>
+    </topic>
+</dita>

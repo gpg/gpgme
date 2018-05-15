@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_bpb_why_5db">
+        <title>Context</title>
+        <body>
+            <p>One of the reasons which prevents this API from being RESTful is that most operations
+        require more than one instruction to the API to perform the task. Sure, there are certain
+        functions which can be performed simultaneously, particularly if the result known or
+        strongly anticipated (e.g. selecting and encrypting to a key known to be in the public
+        keybox).</p>
+      <p>There are many more, however, which cannot be manipulated so readily: they must be
+        performed in a specific sequence and the result of one operation has a direct bearing on the
+        outcome of subsequent operations. Not merely by generating an error either.</p>
+      <p>When dealing with this type of persistent state on the web, full of both the RESTful and
+        REST-like, it's most commonly referred to as a session. In GPGME, however, it is called a
+        context and every operation type has one.</p>
+      <p/>
+        </body>
+    </topic>
+</dita>

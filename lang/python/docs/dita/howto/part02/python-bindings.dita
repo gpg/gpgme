@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_g4z_wxx_5db">
+        <title>Python Bindings</title>
+        <body>
+            <p>The Python bindings for GPGME provide a higher level means of accessing the complete
+        feature set of GPGME itself. It also provides a more pythonic means of calling these API
+        functions.</p>
+      <p>The bindings are generated dynamically with SWIG and the copy of <codeph>gpgme.h</codeph>
+        generated when GPGME is compiled.</p>
+      <p>This means that a version of the Python bindings is fundamentally tied to the exact same
+        version of GPGME used to generate that copy of <codeph>gpgme.h</codeph>.</p>
+        </body>
+    </topic>
+</dita>

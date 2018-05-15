@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_gbm_bxz_5db">
+        <title>Group Lines</title>
+        <body>
+            <p>There is not yet an easy way to access groups configured in the
+          <filepath>gpg.conf</filepath> file from within GPGME. As a consequence these central
+        groupings of keys cannot be shared amongst multiple programs, such as MUAs readily.</p>
+      <p>The following code, however, provides a work-around for obtaining this information in
+        Python.</p>
+      <p>
+        <codeblock id="groups-1" outputclass="language-python">import subprocess
+
+lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+
+for i in range(len(lines)):
+    if lines[i].startswith("group") is True:
+        line = lines[i]
+    else:
+        pass
+
+groups = line.split(":")[-1].replace('"', '').split(',')
+
+group_lines = groups
+for i in range(len(group_lines)):
+    group_lines[i] = group_lines[i].split("=")
+
+group_lists = group_lines
+for i in range(len(group_lists)):
+    group_lists[i][1] = group_lists[i][1].split()
+</codeblock>
+      </p>
+      <p>The result of that code is that <codeph>group_lines</codeph> is a list of lists where
+          <codeph>group_lines[i][0]</codeph> is the name of the group and
+          <codeph>group_lines[i][1]</codeph> is the key IDs of the group as a string.</p>
+      <p>The <codeph>group_lists</codeph> result is very similar in that it is a list of lists. The
+        first part, <codeph>group_lists[i][0]</codeph> matches <codeph>group_lines[i][0]</codeph> as
+        the name of the group, but <codeph>group_lists[i][1]</codeph> is the key IDs of the group as
+        a string.</p>
+      <p>To use this code as a module use:</p>
+      <p>
+        <codeblock id="groups-2" outputclass="language-python">from groups import group_lists</codeblock>
+      </p>
+        </body>
+    </topic>
+</dita>

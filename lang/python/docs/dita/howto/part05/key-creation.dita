@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_c4z_syd_vdb">
+    <title>Creating Keys and Subkeys</title>
+    <body>
+      <p>The one thing, aside from GnuPG itself, that GPGME depends on, of course, is the keys
+        themselves. So it is necessary to be able to generate them and modify them by adding
+        subkeys, revoking or disabling them, sometimes deleting them and doing the same for user
+        IDs.</p>
+      <p>In the following examples a key will be created for the world's greatest secret agent,
+        Danger Mouse. Since Danger Mouse is a secret agent he needs to be able to protect
+        information to <tt>SECRET</tt> level clearance, so his keys will be 3072-bit keys.</p>
+      <p>The pre-configured <filepath>gpg.conf</filepath> file which sets cipher, digest and other
+        preferences contains the following configuration parameters:</p>
+      <p>
+        <codeblock id="gpg-config">expert
+allow-freeform-uid
+allow-secret-key-import
+trust-model tofu+pgp
+tofu-default-policy unknown
+enable-large-rsa
+enable-dsa2
+cert-digest-algo SHA512
+default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
+personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
+personal-digest-preferences SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1
+personal-compress-preferences ZLIB BZIP2 ZIP Uncompressed
+</codeblock>
+      </p>
+      <p/>
+    </body>
+  </topic>
+</dita>

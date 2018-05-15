@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_rfg_5qz_5db">
+    <title>Detached Signatures</title>
+    <body>
+      <p>Detached signatures will often be needed in programmatic uses of GPGME, either for signing
+        files (e.g. tarballs of code releases) or as a component of message signing (e.g. PGP/MIME
+        encoded email).</p>
+      <p>
+        <codeblock id="detsig-1" outputclass="language-python">import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context(armor=True)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+</codeblock>
+      </p>
+      <p>As with normal signatures, detached signatures are best handled as byte literals, even when
+        the output is ASCII armoured.</p>
+      <p>
+        <codeblock id="detsig-2" outputclass="language-python">import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context(signers=sig_src)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+
+with open("/path/to/statement.txt.sig", "wb") as afile:
+    afile.write(signed_data)
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_wmg_2hy_5db">
+        <title>No REST</title>
+        <body>
+            <p>The first part of which is or will be fairly blatantly obvious upon viewing the first
+        example, but it's worth reiterating anyway. That being that this API is <b><i>not</i></b> a
+        REST API. Nor indeed could it ever be one.</p>
+      <p>Most, if not all, Python programmers (and not just Python programmers) know how easy it is
+        to work with a RESTful API. In fact they've become so popular that many other APIs attempt
+        to emulate REST-like behaviour as much as they are able. Right down to the use of JSON
+        formatted output to facilitate the use of their API without having to retrain
+        developers.</p>
+      <p>This API does not do that. It would not be able to do that and also provide access to the
+        entire C API on which it's built. It does, however, provide a very pythonic interface on top
+        of the direct bindings and it's this pythonic layer with which this HOWTO deals with.</p>
+        </body>
+    </topic>
+</dita>

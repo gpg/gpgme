@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_e4q_jyz_5db">
+    <title>Adding a User ID</title>
+    <body>
+      <p>By comparison to creating primary keys and subkeys, adding a new user ID to an existing key
+        is much simpler. The method used to do this is <codeph>key_add_uid</codeph> and the only
+        arguments it takes are for the <codeph>key</codeph> and the new <codeph>uid</codeph>.</p>
+      <p>
+        <codeblock id="adduid-1" outputclass="language-python">import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+uid = "Danger Mouse &lt;danger.mouse@secret.example.net>"
+
+c.key_add_uid(key, uid)
+</codeblock>
+      </p>
+      <p>Unsurprisingly the result of this is:</p>
+      <p>
+        <codeblock id="adduid-2" outputclass="language-bourne">bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse &lt;danger.mouse@secret.example.net>
+uid           [ultimate] Danger Mouse &lt;dm@secret.example.net>
+ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+bash-4.4$
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

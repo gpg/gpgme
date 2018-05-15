@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_nqk_vqy_5db">
+        <title>Signing Text and Files</title>
+        <body>
+            <p>The following sections demonstrate how to specify keys to sign with and the types of
+        signatures which can be made.</p>
+        </body>
+    </topic>
+</dita>

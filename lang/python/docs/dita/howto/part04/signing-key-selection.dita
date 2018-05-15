@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_dpb_fqz_5db">
+    <title>Signing Key Selection</title>
+    <body>
+      <p>By default GPGME and the Python bindings will use the default key configured for the user
+        invoking the GPGME API. If there is no default key specified and there is more than one
+        secret key available it may be necessary to specify the key or keys with which to sign
+        messages and files.</p>
+      <p>
+        <codeblock id="sigkey-1" outputclass="language-python">import gpg
+
+logrus = input("Enter the email address or string to match signing keys to: ")
+hancock = gpg.Context().keylist(pattern=logrus, secret=True)
+sig_src = list(hancock)
+</codeblock>
+      </p>
+      <p>The signing examples in the following sections include the explicitly designated
+          <codeph>signers</codeph> parameter in two of the five examples; once where the resulting
+        signature would be ASCII armoured and once where it would not be armoured.</p>
+      <p>While it would be possible to enter a key ID or fingerprint here to match a specific key,
+        it is not possible to enter two fingerprints and match two keys since the patten expects a
+        string, bytes or None and not a list. A string with two fingerprints won't match any single
+        key.</p>
+    </body>
+  </topic>
+</dita>

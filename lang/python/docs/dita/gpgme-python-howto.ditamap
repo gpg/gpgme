@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+<bookmap>
+  <booktitle>
+    <mainbooktitle>GPGME Python Bindings HOWTO</mainbooktitle>
+  </booktitle>
+  <part id="part-1" href="howto/part-1.dita">
+    <topicref id="intro" href="howto/part01/introduction.dita">
+      <topicref id="py2v3" href="howto/part01/python2-vs-python3.dita"/>
+      <topicref id="examples" href="howto/part01/examples.dita"/>
+    </topicref>
+    <topicref id="docsrc" href="howto/part01/docs-source.dita"/>
+  </part>
+  <part id="part-2" href="howto/part-2.dita">
+    <topicref id="gpgme-concepts" href="howto/part02/gpgme-concepts.dita">
+      <topicref id="c-api" href="howto/part02/c-api.dita"/>
+      <topicref id="python-bindings" href="howto/part02/python-bindings.dita"/>
+      <topicref id="py-diffs" href="howto/part02/differences-to-others.dita">
+        <topicref id="vinay-sajip" href="howto/part02/python-gnupg.dita"/>
+        <topicref id="isis-lovecruft" href="howto/part02/daesh.dita"/>
+        <topicref id="martin-albrecht" href="howto/part02/pyme.dita"/>
+      </topicref>
+    </topicref>
+    <topicref id="install" href="howto/part02/installation.dita">
+      <topicref id="no-pypi" href="howto/part02/no-pypi.dita"/>
+      <topicref id="requirements" href="howto/part02/requirements.dita"/>
+      <topicref id="installing" href="howto/part02/installing.dita"/>
+    </topicref>
+    <topicref id="fundamentals" href="howto/part02/fundamentals.dita">
+      <topicref id="for-the-wicked" href="howto/part02/no-rest.dita"/>
+      <topicref id="excession" href="howto/part02/context.dita"/>
+    </topicref>
+  </part>
+  <part id="part-3" href="howto/part-3.dita">
+    <topicref id="key-select" href="howto/part03/key-selection.dita">
+      <topicref id="key-count" href="howto/part03/key-counting.dita"/>
+    </topicref>
+    <topicref id="get-key" href="howto/part03/get-key.dita"/>
+  </part>
+  <part id="part-4" href="howto/part-4.dita">
+    <topicref id="basics" href="howto/part04/basic-functions.dita"/>
+    <topicref id="encryption" href="howto/part04/encryption.dita">
+      <topicref id="encrypt-to-one" href="howto/part04/encrypt-to-one.dita"/>
+      <topicref id="encrypt-to-many" href="howto/part04/encrypt-to-many.dita"/>
+    </topicref>
+    <topicref id="decryption" href="howto/part04/decryption.dita"/>
+    <topicref id="signing" href="howto/part04/signing.dita">
+      <topicref id="sign-key-select" href="howto/part04/signing-key-selection.dita"/>
+      <topicref id="signing-default" href="howto/part04/default-signing.dita"/>
+      <topicref id="signing-detach" href="howto/part04/detached-signing.dita"/>
+      <topicref id="signing-clear" href="howto/part04/clear-signing.dita"/>
+    </topicref>
+    <topicref id="verification" href="howto/part04/verification.dita"/>
+  </part>
+  <part id="part-5" href="howto/part-5.dita">
+    <topicref id="key-creation" href="howto/part05/key-creation.dita"/>
+    <topicref id="primary" href="howto/part05/primary-key.dita"/>
+    <topicref id="subkeys" href="howto/part05/subkeys.dita"/>
+    <topicref id="user-ids" href="howto/part05/user-ids.dita">
+      <topicref id="add-uid" href="howto/part05/add-uid.dita"/>
+      <topicref id="rev-uid" href="howto/part05/rev-uid.dita"/>
+    </topicref>
+    <topicref id="certify" href="howto/part05/certification.dita"/>
+  </part>
+  <part id="part-6" href="howto/part-6.dita">
+    <topicref id="groups" href="howto/part06/group-lines.dita"/>
+  </part>
+</bookmap>

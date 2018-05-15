@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_fbb_lyz_5db">
+    <title>Revoking a User ID</title>
+    <body>
+      <p>Revoking a user ID is a fairly similar process, except that it uses the
+          <codeph>key_revoke_uid</codeph> method.</p>
+      <p>
+        <codeblock id="revuid" outputclass="language-python">import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+uid = "Danger Mouse &lt;danger.mouse@secret.example.net>"
+
+c.key_revoke_uid(key, uid)
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

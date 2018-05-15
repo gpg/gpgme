@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_wmg_tjz_5db">
+        <title>Encrypting to Multiple Keys</title>
+        <body>
+            <p>Encrypting to multiple keys essentially just expands upon the key selection process
+        and the recipients from the previous examples.</p>
+      <p>The following example encrypts a message (<codeph>text</codeph>) to everyone with an email
+        address on the <codeph>gnupg.org </codeph>domain,<fn>You probably don't really want to do
+          this. Searching the keyservers for "gnupg.org" produces over 400 results, the majority of
+          which aren't actually at the gnupg.org domain, but just included a comment regarding the
+          project in their key somewhere.</fn> but does <i>not</i> encrypt to a default key or other
+        key which is configured to normally encrypt to.</p>
+      <p>
+        <codeblock id="enc2-1" outputclass="language-python">import gpg
+
+text = b"""Oh look, another test message.
+
+The same rules apply as with the previous example and more likely
+than not, the message will actually be drawn from reading the
+contents of a file or, maybe, from entering data at an input()
+prompt.
+
+Since the text in this case must be bytes, it is most likely that
+the input form will be a separate file which is opened with "rb"
+as this is the simplest method of obtaining the correct data
+format.
+"""
+
+c = gpg.Context(armor=True)
+rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
+logrus = []
+
+for i in range(len(rpattern)):
+    if rpattern[i].can_encrypt == 1:
+        logrus.append(rpattern[i])
+
+ciphertext, result, sign_result = c.encrypt(text, recipients=logrus, sign=False,
+                                            always_trust=True)
+
+with open("secret_plans.txt.asc", "wb") as f:
+    f.write(ciphertext)
+</codeblock>
+      </p>
+      <p>All it would take to change the above example to sign the message and also encrypt the
+        message to any configured default keys would be to change the <codeph>c.encrypt</codeph>
+        line to this:</p>
+      <p>
+        <codeblock id="enc2-2" outputclass="language-python">ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                            always_trust=True,
+                                            add_encrypt_to=True)
+</codeblock>
+      </p>
+      <p>The only keyword arguments requiring modification are those for which the default values
+        are changing. The default value of <codeph>sign</codeph> is <codeph>True</codeph>, the
+        default of <codeph>always_trust</codeph> is <codeph>False</codeph>, the default of
+          <codeph>add_encrypt_to</codeph> is <codeph>False</codeph>.</p>
+      <p>If <codeph>always_trust</codeph> is not set to <codeph>True</codeph> and any of the
+        recipient keys are not trusted (e.g. not signed or locally signed) then the encryption will
+        raise an error. It is possible to mitigate this somewhat with something more like this:</p>
+      <p>
+        <codeblock id="enc2-3" outputclass="language-python">import gpg
+
+with open("secret_plans.txt.asc", "rb") as f:
+    text = f.read()
+
+c = gpg.Context(armor=True)
+rpattern = list(c.keylist(pattern="@gnupg.org", secret=False))
+logrus = []
+
+for i in range(len(rpattern)):
+    if rpattern[i].can_encrypt == 1:
+        logrus.append(rpattern[i])
+
+try:
+    ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+						        add_encrypt_to=True)
+except gpg.errors.InvalidRecipients as e:
+    for i in range(len(e.recipients)):
+        for n in range(len(logrus)):
+            if logrus[n].fpr == e.recipients[i].fpr:
+                logrus.remove(logrus[n])
+            else:
+                pass
+    try:
+        ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                                    add_encrypt_to=True)
+    except:
+        pass
+
+with open("secret_plans.txt.asc", "wb") as f:
+    f.write(ciphertext)
+</codeblock>
+      </p>
+      <p>This will attempt to encrypt to all the keys searched for, then remove invalid recipients
+        if it fails and try again.</p>
+        </body>
+    </topic>
+</dita>

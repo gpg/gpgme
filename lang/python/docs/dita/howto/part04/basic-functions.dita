@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_w5f_zpy_5db">
+        <title>Basic Functions</title>
+        <body>
+            <p>The most frequently called features of any cryptographic library will be the most
+        fundamental tasks for encryption software. In this section we will look at how to
+        programmatically encrypt data, decrypt it, sign it and verify signatures.</p>
+        </body>
+    </topic>
+</dita>

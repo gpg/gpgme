@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_ydy_5qz_5db">
+    <title>Clear Signatures</title>
+    <body>
+      <p>Though PGP/in-line messages are no longer encouraged in favour of PGP/MIME, there is still
+        sometimes value in utilising in-line signatures. This is where clear-signed messages or text
+        is of value.</p>
+      <p>
+        <codeblock id="clrsig-1" outputclass="language-python">import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+</codeblock>
+      </p>
+      <p>In spite of the appearance of a clear-signed message, the data handled by GPGME in signing
+        it must still be byte literals.</p>
+      <p>
+        <codeblock id="clrsig-2" outputclass="language-python">import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+
+with open("/path/to/statement.txt.asc", "wb") as afile:
+    afile.write(signed_data)
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

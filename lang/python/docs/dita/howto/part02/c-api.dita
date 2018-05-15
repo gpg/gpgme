@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_jrb_pxx_5db">
+        <title>A C API</title>
+        <body>
+            <p>Unlike many modern APIs with which programmers will be more familiar with these days,
+        the GPGME API is a C API. The API is intended for use by C coders who would be able to
+        access its features by including the =gpgme.h= header file with their own C source code and
+        then access its functions just as they would any other C headers.</p>
+      <p>This is a very effective method of gaining complete access to the API and in the most
+        efficient manner possible. It does, however, have the drawback that it cannot be directly
+        used by other languages without some means of providing an interface to those languages.
+        This is where the need for bindings in various languages stems.</p>
+        </body>
+    </topic>
+</dita>

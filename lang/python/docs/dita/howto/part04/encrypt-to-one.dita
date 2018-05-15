@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_dkk_sjz_5db">
+    <title>Encrypting to One Key</title>
+    <body>
+      <p>Once the the Context is set the main issues with encrypting data is essentially reduced to
+        key selection and the keyword arguments specified in the
+          <codeph>gpg.Context().encrypt()</codeph> method.</p>
+      <p>Those keyword arguments are:</p>
+      <p>
+        <ul id="ul_cmt_3kz_5db">
+          <li><codeph>recipients</codeph>, a list of keys encrypted to (covered in greater detail in
+            the following section);</li>
+          <li><codeph>sign</codeph>, whether or not to sign the plaintext data, see subsequent
+            sections on signing and verifying signatures below (defaults to
+            <codeph>True</codeph>);</li>
+          <li><codeph>sink</codeph>, to write results or partial results to a secure sink instead of
+            returning it (defaults to <codeph>None</codeph>);</li>
+          <li><codeph>passphrase</codeph>, only used when utilising symmetric encryption (defaults
+            to <codeph>None</codeph>);</li>
+          <li><codeph>always_trust</codeph>, used to override the trust model settings for recipient
+            keys (defaults to <codeph>False</codeph>);</li>
+          <li><codeph>add_encrypt_to</codeph>, utilises any preconfigured encrypt-to or default-key
+            settings in the user's <filepath>gpg.conf</filepath> file (defaults to
+              <codeph>False</codeph>);</li>
+          <li><codeph>prepare</codeph>, prepare for encryption (defaults to
+            <codeph>False</codeph>);</li>
+          <li><codeph>expect_sign</codeph>, prepare for signing (defaults to
+            <codeph>False</codeph>);</li>
+          <li><codeph>compress</codeph>, compresses the plaintext prior to encryption (defaults to
+              <codeph>True</codeph>).</li>
+        </ul>
+      </p>
+      <p>
+        <codeblock id="enc1-1" outputclass="language-python">import gpg
+
+a_key = "0x12345678DEADBEEF"
+text = b"""Some text to test with.
+
+Since the text in this case must be bytes, it is most likely that
+the input form will be a separate file which is opened with "rb"
+as this is the simplest method of obtaining the correct data
+format.
+"""
+
+c = gpg.Context(armor=True)
+rkey = list(c.keylist(pattern=a_key, secret=False))
+ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=False)
+
+with open("secret_plans.txt.asc", "wb") as f:
+    f.write(ciphertext)
+</codeblock>
+      </p>
+      <p>Though this is even more likely to be used like this; with the plaintext input read from a
+        file, the recipient keys used for encryption regardless of key trust status and the
+        encrypted output also encrypted to any preconfigured keys set in the
+          <filepath>gpg.conf</filepath> file:</p>
+      <p>
+        <codeblock id="enc1-2" outputclass="language-python">import gpg
+
+a_key = "0x12345678DEADBEEF"
+
+with open("secret_plans.txt", "rb") as f:
+    text = f.read()
+
+c = gpg.Context(armor=True)
+rkey = list(c.keylist(pattern=a_key, secret=False))
+ciphertext, result, sign_result = c.encrypt(text, recipients=rkey,
+                                            sign=True, always_trust=True,
+                                            add_encrypt_to=True)
+
+with open("secret_plans.txt.asc", "wb") as f:
+    f.write(ciphertext)
+</codeblock>
+      </p>
+      <p>If the <codeph>recipients</codeph> paramater is empty then the plaintext is encrypted
+        symmetrically. If no <codeph>passphrase</codeph> is supplied as a parameter or via a
+        callback registered with the <codeph>Context()</codeph> then an out-of-band prompt for the
+        passphrase via pinentry will be invoked.</p>
+    </body>
+  </topic>
+</dita>

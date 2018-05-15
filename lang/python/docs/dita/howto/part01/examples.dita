@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_bv2_qqx_5db">
+        <title>Examples</title>
+        <body>
+            <p>All of the examples found in this document can be found as Python 3 scripts in the
+          <filepath>lang/python/examples/howto</filepath> directory.</p>
+        </body>
+    </topic>
+</dita>

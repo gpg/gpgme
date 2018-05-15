@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_p3g_yqy_5db">
+        <title>Signature Verification</title>
+        <body>
+            <p>Essentially there are two principal methods of verification of a signature. The first
+        of these is for use with the normal or default signing method and for clear-signed messages.
+        The second is for use with files and data with detached signatures.</p>
+      <p>The following example is intended for use with the default signing method where the file
+        was not ASCII armoured:</p>
+      <p>
+        <codeblock id="verify-1" outputclass="language-python">import gpg
+import time
+
+filename = "statement.txt"
+gpg_file = "statement.txt.gpg"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(gpg_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+{0}
+with key {1}
+made at {2}
+""".format(c.get_key(sign.fpr).uids[0].uid,
+           sign.fpr, time.ctime(sign.timestamp)))
+else:
+    pass
+</codeblock>
+      </p>
+      <p>Whereas this next example, which is almost identical would work with normal ASCII armoured
+        files and with clear-signed files:</p>
+      <p>
+        <codeblock id="verify-2" outputclass="language-python">import gpg
+import time
+
+filename = "statement.txt"
+asc_file = "statement.txt.asc"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(asc_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+{0}
+with key {1}
+made at {2}
+""".format(c.get_key(sign.fpr).uids[0].uid,
+           sign.fpr, time.ctime(sign.timestamp)))
+else:
+    pass
+</codeblock>
+      </p>
+      <p>In both of the previous examples it is also possible to compare the original data that was
+        signed against the signed data in <codeph>data</codeph> to see if it matches with something
+        like this:</p>
+      <p>
+        <codeblock id="verify-3" outputclass="language-python">with open(filename, "rb") as afile:
+    text = afile.read()
+
+if text == data:
+    print("Good signature.")
+else:
+    pass
+</codeblock>
+      </p>
+      <p>The following two examples, however, deal with detached signatures. With his method of
+        verification the data that was signed does not get returned since it is already being
+        explicitly referenced in the first argument of <codeph>c.verify</codeph>. So
+          <codeph>data</codeph> is <codeph>None</codeph> and only the information in
+          <codeph>result</codeph> is available.</p>
+      <p>
+        <codeblock id="verify-4" outputclass="language-python">import gpg
+import time
+
+filename = "statement.txt"
+sig_file = "statement.txt.sig"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(filename), open(sig_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+{0}
+with key {1}
+made at {2}
+""".format(c.get_key(sign.fpr).uids[0].uid,
+           sign.fpr, time.ctime(sign.timestamp)))
+else:
+    pass
+</codeblock>
+      </p>
+      <p>
+        <codeblock id="verify-5" outputclass="language-python">import gpg
+import time
+
+filename = "statement.txt"
+asc_file = "statement.txt.asc"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(filename), open(asc_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is not None:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+{0}
+with key {1}
+made at {2}
+""".format(c.get_key(sign.fpr).uids[0].uid,
+           sign.fpr, time.ctime(sign.timestamp)))
+else:
+    pass
+</codeblock>
+      </p>
+        </body>
+    </topic>
+</dita>

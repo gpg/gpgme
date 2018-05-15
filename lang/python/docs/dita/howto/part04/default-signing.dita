@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_ntx_sqz_5db">
+        <title>Default Signatures</title>
+        <body>
+            <p>The normal or default signing process is essentially the same as is most often
+        invoked when also encrypting a message or file. So when the encryption component is not
+        utilised, the result is to produce an encoded and signed output which may or may not be
+        ASCII armoured and which may or may not also be compressed.</p>
+      <p>By default compression will be used unless GnuPG detects that the plaintext is already
+        compressed. ASCII armouring will be determined according to the value of
+          <codeph>gpg.Context().armor</codeph>.</p>
+      <p>The compression algorithm is selected in much the same way as the symmetric encryption
+        algorithm or the hash digest algorithm is when multiple keys are involved; from the
+        preferences saved into the key itself or by comparison with the preferences with all other
+        keys involved.</p>
+      <p>
+        <codeblock id="defsig-1" outputclass="language-python">import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context(armor=True, signers=sig_src)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+</codeblock>
+      </p>
+      <p>Though everything in this example is accurate, it is more likely that reading the input
+        data from another file and writing the result to a new file will be performed more like the
+        way it is done in the next example. Even if the output format is ASCII armoured.</p>
+      <p>
+        <codeblock id="defsig-2" outputclass="language-python">import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+
+with open("/path/to/statement.txt.sig", "wb") as afile:
+    afile.write(signed_data)
+</codeblock>
+      </p>
+        </body>
+    </topic>
+</dita>

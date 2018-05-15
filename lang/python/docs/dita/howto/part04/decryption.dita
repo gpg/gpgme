@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_vqx_tqy_5db">
+    <title>Decryption</title>
+    <body>
+      <p>Decrypting something encrypted to a key in one's secret keyring is fairly straight
+        forward.</p>
+      <p>In this example code, however, preconfiguring either <codeph>gpg.Context()</codeph> or
+          <codeph>gpg.core.Context()</codeph> as <codeph>c</codeph> is unnecessary because there is
+        no need to modify the Context prior to conducting the decryption and since the Context is
+        only used once, setting it to c simply adds lines for no gain.</p>
+      <p>
+        <codeblock id="decry-1" outputclass="language-python">import gpg
+
+ciphertext = input("Enter path and filename of encrypted file: ")
+newfile = input("Enter path and filename of file to save decrypted data to: ")
+
+with open(ciphertext, "rb") as cfile:
+    plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+
+with open(newfile, "wb") as nfile:
+    nfile.write(plaintext)
+</codeblock>
+      </p>
+      <p>The data available in <codeph>plaintext</codeph> in this example is the decrypted content
+        as a byte object, the recipient key IDs and algorithms in <codeph>result</codeph> and the
+        results of verifying any signatures of the data in <codeph>verify_result</codeph>.</p>
+    </body>
+  </topic>
+</dita>

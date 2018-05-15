@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_jgw_wly_5db">
+    <title>Counting Keys</title>
+    <body>
+      <p>Counting the number of keys in your public keybox (<filepath>pubring.kbx</filepath>), the
+        format which has superseded the old keyring format (<filepath>pubring.gpg</filepath> and
+          <filepath>secring.gpg</filepath>), or the number of secret keys is a very simple task.</p>
+      <p>
+        <codeblock id="kc" outputclass="language-python">import gpg
+
+c = gpg.Context()
+seckeys = c.keylist(pattern=None, secret=True)
+pubkeys = c.keylist(pattern=None, secret=False)
+
+seclist = list(seckeys)
+secnum = len(seclist)
+
+publist = list(pubkeys)
+pubnum = len(publist)
+
+print("""
+Number of secret keys:  {0}
+Number of public keys:  {1}
+""".format(secnum, pubnum))
+</codeblock>
+      </p>
+    </body>
+  </topic>
+</dita>

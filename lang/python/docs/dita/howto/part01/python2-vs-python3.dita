@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+    <topic id="topic_j1r_qmx_5db">
+        <title>Python 2 vs. Python 3</title>
+        <body>
+            <p>Though the GPGME Python bindings themselves provide support for both Python 2 and 3,
+        the focus is unequivocally on Python 3 and specifically from Python 3.4 and above. As a
+        consequence all the examples and instructions in this guide use Python 3 code.</p>
+      <p>Much of it will work with Python 2, but much of it also deals with Python 3 byte literals,
+        particularly when reading and writing data. Developers concentrating on Python 2.7, and
+        possibly even 2.6, will need to make the appropriate modifications to support the older
+        string and unicode types as opposed to bytes.</p>
+      <p>There are multiple reasons for concentrating on Python 3; some of which relate to the
+        immediate integration of these bindings, some of which relate to longer term plans for both
+        GPGME and the python bindings and some of which relate to the impending EOL period for
+        Python 2.7. Essentially, though, there is little value in tying the bindings to a version of
+        the language which is a dead end and the advantages offered by Python 3 over Python 2 make
+        handling the data types with which GPGME deals considerably easier.</p>
+        </body>
+    </topic>
+</dita>

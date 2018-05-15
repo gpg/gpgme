@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_ivh_zfy_5db">
+    <title>Installing</title>
+    <body>
+      <p>Installing the Python bindings is effectively achieved by compiling and installing GPGME
+        itself.</p>
+      <p>Once SWIG is installed with Python and all the dependencies for GPGME are installed you
+        only need to confirm that the version(s) of Python you want the bindings installed for are
+        in your <codeph>$PATH</codeph>.</p>
+      <p>By default GPGME will attempt to install the bindings for the most recent or highest
+        version number of Python 2 and Python 3 it detects in <codeph>$PATH</codeph>. It
+        specifically checks for the <cmdname>python</cmdname> and <cmdname>python3</cmdname>
+        executables first and then checks for specific version numbers.</p>
+      <p>For Python 2 it checks for these executables in this order: <cmdname>python</cmdname>,
+          <cmdname>python2</cmdname> and <cmdname>python2.7</cmdname>.</p>
+      <p>For Python 3 it checks for these executables in this order: <cmdname>python3</cmdname>,
+          <cmdname>python3.6</cmdname>, <cmdname>python3.5</cmdname> and
+          <cmdname>python3.4</cmdname>.</p>
+    </body>
+  </topic>
+</dita>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita>
+  <topic id="topic_oy4_zcy_5db">
+    <title>The PyME package maintained by Martin Albrecht</title>
+    <body>
+      <p>This package is the origin of these bindings, though they are somewhat different now. For
+        details of when and how the PyME package was folded back into GPGME itself see the
+          <cite>Short History</cite> document<fn><codeph>Short_History.org</codeph> and/or
+            <codeph>Short_History.html</codeph>.</fn> in the Python bindings <codeph>docs/</codeph>
+          directory.<fn>The <filepath>lang/python/docs/</filepath> directory in the GPGME
+          source.</fn></p>
+      <p>The PyME package was first released in 2002 and was also the first attempt to implement a
+        low level binding to GPGME. In doing so it provided access to considerably more
+        functionality than either the <codeph>python-gnupg</codeph> or <codeph>gnupg</codeph>
+        packages.</p>
+      <p>The PyME package is only available for Python 2.6 and 2.7.</p>
+      <p>Porting the PyME package to Python 3.4 in 2015 is what resulted in it being folded into the
+        GPGME project and the current bindings are the end result of that effort.</p>
+      <p>The PyME package is available under the same dual licensing as GPGME itself: the GNU
+        General Public License version 2.0 (or any later version) and the GNU Lesser General Public
+        License version 2.1 (or any later version).</p>
+    </body>
+  </topic>
+</dita>
