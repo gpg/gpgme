@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
-<bookmap>
+<bookmap xml:lang="en-GB">
   <booktitle>
     <mainbooktitle>GPGME Python Bindings HOWTO</mainbooktitle>
   </booktitle>
+  <bookmeta>
+    <author>Ben McGinnes</author>
+    <authorinformation>
+      <personinfo>
+        <namedetails>
+          <personname id="author" name="Ben McGinnes"/>
+        </namedetails>
+        <emailaddresses id="author-email" name="ben@gnupg.org"/>
+      </personinfo>
+      <organizationinfo>
+        <emailaddresses>
+          <emailaddress id="gnupg-devel" name="gnupg-devel@gnupg.org"/>
+        </emailaddresses>
+        <urls>
+          <url id="web" name="https://gnupg.org"/>
+        </urls>
+      </organizationinfo>
+    </authorinformation>
+  </bookmeta>
+  <frontmatter>
+    <draftintro id="draft" href="howto/version-info.dita"/>
+  </frontmatter>
   <part id="part-1" href="howto/part-1.dita">
     <topicref id="intro" href="howto/part01/introduction.dita">
       <topicref id="py2v3" href="howto/part01/python2-vs-python3.dita"/>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita xml:lang="en-GB">
+  <topic id="topic_vnz_nn2_vdb">
+    <title>Documentation Version</title>
+    <body>
+      <p><b>Version:</b> 0.1.1</p>
+      <p><b>Author:</b> Ben McGinnes &lt;<xref href="mailto:ben@gnupg.org" format="html"
+          scope="external">ben@gnupg.org</xref>></p>
+      <p><b>Author GPG Key ID:</b> DB4724E6FA4286C92B4E55C4321E4E2373590E5D</p>
+      <p><b>Language:</b> Australian English, British English</p>
+    </body>
+  </topic>
+</dita>

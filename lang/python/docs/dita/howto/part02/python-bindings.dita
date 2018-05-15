@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
-<dita>
+<dita xml:lang="en-GB">
     <topic id="topic_g4z_wxx_5db">
         <title>Python Bindings</title>
         <body>
