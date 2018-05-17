@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.11.2 (unreleased)
 -------------------------------------------------
 
+ * Even for old versions of gpg a missing MDC will now lead to a
+   decryption failure.
+
 
 Noteworthy changes in version 1.11.1 (2018-04-20)
 -------------------------------------------------

@@ -56,6 +56,11 @@ typedef struct
    * message that the general DECRYPTION_FAILED. */
   int any_no_seckey;
 
+  /* If the engine emits a DECRYPTION_INFO status and that does not
+   * indicate that an integrity proetction mode is active, this flag
+   * is set.  */
+  int not_integrity_protected;
+
   /* A pointer to the next pointer of the last recipient in the list.
      This makes appending new invalid signers painless while
      preserving the order.  */
@@ -280,7 +285,7 @@ parse_decryption_info (char *args, op_data_t opd, gpgme_protocol_t protocol)
   char *field[3];
   int nfields;
   char *args2;
-  int mdc, mode;
+  int mdc, aead_algo;
   const char *algostr, *modestr;
 
   if (!args)
@@ -296,18 +301,21 @@ parse_decryption_info (char *args, op_data_t opd, gpgme_protocol_t protocol)
 
   mdc     = atoi (field[0]);
   algostr = _gpgme_cipher_algo_name (atoi (field[1]), protocol);
-  mode    = nfields < 3? 0 : atoi (field[2]);
-  modestr = _gpgme_cipher_mode_name (mode, protocol);
+  aead_algo    = nfields < 3? 0 : atoi (field[2]);
+  modestr = _gpgme_cipher_mode_name (aead_algo, protocol);
 
   free (args2);
 
   free (opd->result.symkey_algo);
-  if (!mode && mdc != 2)
+  if (!aead_algo && mdc != 2)
     opd->result.symkey_algo = _gpgme_strconcat (algostr, ".PGPCFB", NULL);
   else
     opd->result.symkey_algo = _gpgme_strconcat (algostr, ".", modestr, NULL);
   if (!opd->result.symkey_algo)
     return gpg_error_from_syserror ();
+
+  if (!mdc && !aead_algo)
+    opd->not_integrity_protected = 1;
 
   return 0;
 }
@@ -338,13 +346,18 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_EOF:
-      /* FIXME: These error values should probably be attributed to
-	 the underlying crypto engine (as error source).  */
+      /* We force an encryption failure if we know that integrity
+       * protection is missing.  For modern version of gpg using
+       * modern cipher algorithms this is not required because gpg
+       * will issue a failure anyway.  However older gpg versions emit
+       * only a warning.
+       * Fixme: These error values should probably be attributed to
+       * the underlying crypto engine (as error source).  */
       if (opd->failed && opd->pkdecrypt_failed)
         return opd->pkdecrypt_failed;
       else if (opd->failed && opd->any_no_seckey)
 	return gpg_error (GPG_ERR_NO_SECKEY);
-      else if (opd->failed)
+      else if (opd->failed || opd->not_integrity_protected)
 	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
 	return gpg_error (GPG_ERR_NO_DATA);
