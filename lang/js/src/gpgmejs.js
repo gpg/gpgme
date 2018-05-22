@@ -64,11 +64,11 @@ export class GpgME {
     }
 
     /**
-     * @param {String|Uint8Array} data text/data to be encrypted as String/Uint8Array
+     * @param {String} data text/data to be encrypted as String
      * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} publicKeys Keys used to encrypt the message
      * @param {Boolean} wildcard (optional) If true, recipient information will not be added to the message
      */
-    encrypt(data, publicKeys, wildcard=false){
+    encrypt(data, publicKeys, base64=false, wildcard=false){
 
         let msg = createMessage('encrypt');
         if (msg instanceof Error){
@@ -77,11 +77,14 @@ export class GpgME {
         // TODO temporary
         msg.setParameter('armor', true);
         msg.setParameter('always-trust', true);
-
+        if (base64 === true) {
+            msg.setParameter('base64', true);
+        }
         let pubkeys = toKeyIdArray(publicKeys);
         msg.setParameter('keys', pubkeys);
         putData(msg, data);
-        if (wildcard === true){msg.setParameter('throw-keyids', true);
+        if (wildcard === true){
+            msg.setParameter('throw-keyids', true);
         };
         if (msg.isComplete === true){
             return this.connection.post(msg);
@@ -91,7 +94,8 @@ export class GpgME {
     }
 
     /**
-    * @param  {String} data TODO Format: base64? String? Message with the encrypted data
+    * @param  {String} data TODO base64? Message with the encrypted data
+    * @param {Boolean} base64 (optional) Response should stay base64
     * @returns {Promise<Object>} decrypted message:
         data:   The decrypted data.  This may be base64 encoded.
         base64: Boolean indicating whether data is base64 encoded.
@@ -100,11 +104,14 @@ export class GpgME {
     * @async
     */
 
-    decrypt(data){
+    decrypt(data, base64=false){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
         let msg = createMessage('decrypt');
+        if (base64 === true){
+            msg.expected = 'base64';
+        }
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
@@ -156,11 +163,9 @@ export class GpgME {
 }
 
 /**
- * Sets the data of the message, converting Uint8Array to base64 and setting
- * the base64 flag
+ * Sets the data of the message
  * @param {GPGME_Message} message The message where this data will be set
  * @param {*} data The data to enter
- * @param {String} propertyname // TODO unchecked still
  */
 function putData(message, data){
     if (!message || !message instanceof GPGME_Message ) {
@@ -168,30 +173,15 @@ function putData(message, data){
     }
     if (!data){
         return gpgme_error('PARAM_WRONG');
-    } else if (data instanceof Uint8Array){
-        message.setParameter('base64', true);
-        // TODO: btoa turns the array into a string
-        // of comma separated  of numbers
-        // atob(data).split(',') would result in a "normal" array of numbers
-        // atob(btoa(data)).split(',') would result in a "normal" array of numbers
-        // would result in a "normal" array of numbers
-        message.setParameter ('data', btoa(data));
-
     } else if (typeof(data) === 'string') {
-        message.setParameter('base64', false);
         message.setParameter('data', data);
     } else if (
         typeof(data) === 'object' &&
         typeof(data.getText) === 'function'
     ){
         let txt = data.getText();
-        if (txt instanceof Uint8Array){
-            message.setParameter('base64', true);
-            message.setParameter ('data', btoa(txt));
-        }
-        else if (typeof(txt) === 'string'){
-            message.setParameter('base64', false);
-            message.setParameter ('data', txt);
+        if (typeof(txt) === 'string'){
+            message.setParameter('data', txt);
         } else {
             return gpgme_error('PARAM_WRONG');
         }

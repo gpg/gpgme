@@ -1,3 +1,4 @@
+
 /* gpgme.js - Javascript integration for gpgme
  * Copyright (C) 2018 Bundesamt für Sicherheit in der Informationstechnik
  *
@@ -39,6 +40,22 @@ describe('Encryption and Decryption', function () {
                 });
         });
     });
+
+    it('Decrypt simple non-ascii', function (done) {
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            let data = encryptedData;
+            context.decrypt(data).then(
+                function (result) {
+                    expect(result).to.not.be.empty;
+                    expect(result.data).to.be.a('string');
+                    expect(result.data).to.equal(
+                        '¡Äußerste µ€ før ñoquis@hóme! Добрый день\n');
+                    done();
+            });
+        });
+    }).timeout(3000);
+
     it('Roundtrip does not destroy trailing whitespace',
         function (done) {
             let prm = Gpgmejs.init();
@@ -64,7 +81,7 @@ describe('Encryption and Decryption', function () {
                             });
                     });
             });
-        }).timeout(5000);
+    }).timeout(5000);
 
     for (let j = 0; j < inputvalues.encrypt.good.data_nonascii_32.length; j++){
         it('Roundtrip with >1MB non-ascii input meeting default chunksize (' + (j + 1) + '/' + inputvalues.encrypt.good.data_nonascii_32.length + ')',
@@ -96,21 +113,113 @@ describe('Encryption and Decryption', function () {
                                 });
                         });
                 });
-        }).timeout(5000);
+        }).timeout(3000);
     };
 
-    it('Decrypt simple non-ascii', function (done) {
+    it('Random data, as string', function (done) {
+        let data = bigString(1000);
         let prm = Gpgmejs.init();
         prm.then(function (context) {
-            data = encryptedData;
-            context.decrypt(data).then(
-                function (result) {
-                    expect(result).to.not.be.empty;
-                    expect(result.data).to.be.a('string');
-                    expect(result.data).to.equal(
-                        '¡Äußerste µ€ før ñoquis@hóme! Добрый день\n');
-                    done();
-            });
+            context.encrypt(data,
+                inputvalues.encrypt.good.fingerprint).then(
+                function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt(answer.data).then(
+                        function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(data);
+                            context.connection.disconnect();
+                            done();
+                        });
+                });
         });
     }).timeout(3000);
+
+    it('Data, input as base64', function (done) {
+        let data = inputvalues.encrypt.good.data;
+        let b64data = btoa(data);
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.encrypt(b64data,
+                inputvalues.encrypt.good.fingerprint,).then(
+                function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt(answer.data).then(
+                        function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(data).to.equal(data);
+                            context.connection.disconnect();
+                            done();
+                        });
+                });
+        });
+    }).timeout(3000);
+
+    it('Random data, input as base64', function (done) {
+        //TODO fails. The result is
+        let data = bigBoringString(0.001);
+        let b64data = btoa(data);
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.encrypt(b64data,
+                inputvalues.encrypt.good.fingerprint, true).then(
+                function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt(answer.data).then(
+                        function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(data);
+                            context.connection.disconnect();
+                            done();
+                        });
+                });
+        });
+    }).timeout(3000);
+
+    it('Random data, input and output as base64', function (done) {
+        let data = bigBoringString(0.0001);
+        let b64data = btoa(data);
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.encrypt(b64data,
+                inputvalues.encrypt.good.fingerprint).then(
+                function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a("string");
+
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt(answer.data, true).then(
+                        function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(b64data);
+                            context.connection.disconnect();
+                            done();
+                        });
+                });
+        });
+    }).timeout(3000);
+
+
 });

@@ -51,7 +51,7 @@ export const permittedOperations = {
                 array_allowed: true
             },
             'data': {
-                allowed: ['string', 'Uint8Array']
+                allowed: ['string']
             }
         },
         optional: {
@@ -103,7 +103,7 @@ export const permittedOperations = {
         pinentry: true,
         required: {
             'data': {
-                allowed: ['string', 'Uint8Array']
+                allowed: ['string']
             }
         },
         optional: {

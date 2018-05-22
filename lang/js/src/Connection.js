@@ -93,7 +93,7 @@ export class Connection{
         }
         let me = this;
         return new Promise(function(resolve, reject){
-            let answer = new Answer(message.operation);
+            let answer = new Answer(message);
             let listener = function(msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener)
@@ -147,8 +147,9 @@ export class Connection{
  */
 class Answer{
 
-    constructor(operation){
-        this.operation = operation;
+    constructor(message){
+        this.operation = message.operation;
+        this.expected = message.expected;
     }
 
     /**
@@ -210,26 +211,31 @@ class Answer{
     }
 
     /**
-     * @returns {Object} the assembled message.
-     * TODO: does not care yet if completed.
+     * @returns {Object} the assembled message, original data assumed to be
+     * (javascript-) strings
      */
     get message(){
         let keys = Object.keys(this._response);
+        let msg = {};
         let poa = permittedOperations[this.operation].answer;
         for (let i=0; i < keys.length; i++) {
-            if (poa.data.indexOf(keys[i]) >= 0){
-                if (this._response.base64 == true){
-                    let respatob =  atob(this._response[keys[i]]);
-
-                    let result = decodeURIComponent(
-                        respatob.split('').map(function(c) {
+            if (poa.data.indexOf(keys[i]) >= 0
+                && this._response.base64 === true
+            ) {
+                msg[keys[i]] = atob(this._response[keys[i]]);
+                if (this.expected === 'base64'){
+                    msg[keys[i]] = this._response[keys[i]];
+                } else {
+                    msg[keys[i]] = decodeURIComponent(
+                        atob(this._response[keys[i]]).split('').map(function(c) {
                             return '%' +
-                            ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                                ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                         }).join(''));
-                    this._response[keys[i]] = result;
                 }
+            } else {
+                msg[keys[i]] = this._response[keys[i]];
             }
         }
-        return this._response;
+        return msg;
     }
 }

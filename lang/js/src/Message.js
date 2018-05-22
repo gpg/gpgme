@@ -41,6 +41,7 @@ export class GPGME_Message {
 
     constructor(operation){
         this.operation = operation;
+        this._expected = 'string';
     }
 
     set operation (op){
@@ -56,6 +57,19 @@ export class GPGME_Message {
 
     get operation(){
         return this._msg.op;
+    }
+
+    set expected(string){
+        if (string === 'base64'){
+            this._expected = 'base64';
+        }
+    }
+
+    get expected() {
+       if (this._expected === "base64"){
+           return this._expected;
+       }
+       return "string";
     }
 
     /**

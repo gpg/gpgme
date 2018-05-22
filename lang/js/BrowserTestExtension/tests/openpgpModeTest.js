@@ -41,33 +41,6 @@ describe('Encrypting-Decrypting in openpgp mode, using a Message object', functi
                 });
         });
     });
-    it('Encrypt-Decrypt, sending Uint8Array as data', function (done) {
-        //TODO! fails. Reason is that atob<->btoa destroys the uint8Array,
-        // resulting in a string of constituyent numbers
-        // (error already occurs in encryption)
-
-        let prm = Gpgmejs.init({api_style: 'gpgme_openpgpjs'});
-        prm.then(function (context) {
-            let input = bigUint8(0.3);
-            expect(input).to.be.an.instanceof(Uint8Array);
-            context.encrypt({
-                data: input,
-                publicKeys: inputvalues.encrypt.good.fingerprint}
-            ).then(function (answer) {
-                expect(answer).to.not.be.empty;
-                expect(answer.data).to.be.a("string");
-                expect(answer.data).to.include('BEGIN PGP MESSAGE');
-                expect(answer.data).to.include('END PGP MESSAGE');
-                context.decrypt({message:answer.data}).then(function (result) {
-                    expect(result).to.not.be.empty;
-                    expect(result.data).to.be.an.instanceof(Uint8Array);
-                    expect(result.data).to.equal(input);
-                    context._GpgME.connection.disconnect();
-                    done();
-                });
-            });
-        });
-    });
     it('Keys as Fingerprints', function(done){
         let prm = Gpgmejs.init({api_style: 'gpgme_openpgpjs'});
             let input = inputvalues.encrypt.good.data_nonascii;
