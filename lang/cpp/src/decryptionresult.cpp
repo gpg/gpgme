@@ -155,6 +155,16 @@ std::vector<GpgME::DecryptionResult::Recipient> GpgME::DecryptionResult::recipie
     return result;
 }
 
+const char *GpgME::DecryptionResult::sessionKey() const
+{
+  return d ? d->res.session_key : nullptr;
+}
+
+const char *GpgME::DecryptionResult::symkeyAlgo() const
+{
+  return d ? d->res.symkey_algo : nullptr;
+}
+
 class GpgME::DecryptionResult::Recipient::Private : public _gpgme_recipient
 {
 public:
@@ -231,6 +241,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, const DecryptionResult &result
            << "\n unsupportedAlgorithm: " << protect(result.unsupportedAlgorithm())
            << "\n isWrongKeyUsage:      " << result.isWrongKeyUsage()
            << "\n isDeVs                " << result.isDeVs()
+           << "\n symkeyAlgo:           " << protect(result.symkeyAlgo())
            << "\n recipients:\n";
         const std::vector<DecryptionResult::Recipient> recipients = result.recipients();
         std::copy(recipients.begin(), recipients.end(),

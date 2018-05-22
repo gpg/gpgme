@@ -77,6 +77,10 @@ public:
 
     const char *fileName() const;
 
+    const char *sessionKey() const;
+
+    const char *symkeyAlgo() const;
+
     class Recipient;
 
     unsigned int numRecipients() const;
