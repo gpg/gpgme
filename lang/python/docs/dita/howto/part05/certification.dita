@@ -28,7 +28,7 @@ uid = "Danger Mouse &lt;dm@secret.example.net>"
 
 dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
 key = c.get_key(dmfpr, secret=True)
-c.key_sign(key, uidsuid, expires_in=2764800)
+c.key_sign(key, uids=uid, expires_in=2764800)
 </codeblock>
       </p>
     </body>
