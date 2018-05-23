@@ -17,10 +17,17 @@ ciphertext = input("Enter path and filename of encrypted file: ")
 newfile = input("Enter path and filename of file to save decrypted data to: ")
 
 with open(ciphertext, "rb") as cfile:
-    plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+    try:
+	plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+    except gpg.errors.GPGMEError as e:
+	plaintext = None
+	print(e)
 
-with open(newfile, "wb") as nfile:
-    nfile.write(plaintext)
+if plaintext is not None:
+    with open(newfile, "wb") as nfile:
+	nfile.write(plaintext)
+else:
+    pass
 </codeblock>
       </p>
       <p>The data available in <codeph>plaintext</codeph> in this example is the decrypted content
