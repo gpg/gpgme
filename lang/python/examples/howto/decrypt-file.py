@@ -38,7 +38,14 @@ else:
     newfile = input("Enter path and filename of file to save decrypted data to: ")
 
 with open(ciphertext, "rb") as cfile:
-    plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+    try:
+        plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+    except gpg.errors.GPGMEError as e:
+        plaintext = None
+        print(e)
 
-with open(newfile, "wb") as nfile:
-    nfile.write(plaintext)
+if plaintext is not None:
+    with open(newfile, "wb") as nfile:
+        nfile.write(plaintext)
+else:
+    pass
