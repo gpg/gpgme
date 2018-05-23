@@ -19,13 +19,13 @@
  */
 
 export const availableConf = {
-    api_style: ['gpgme', 'gpgme_openpgpjs'],
     null_expire_is_never: [true, false],
-    unconsidered_params: ['warn','reject', 'ignore'],
+    // cachedKeys: Some Key info will not be queried on each invocation,
+    // manual refresh by Key.refresh()
+    cachedKeys: [true, false]
 };
 
 export const defaultConf = {
-    api_style: 'gpgme',
     null_expire_is_never: false,
-    unconsidered_params: 'reject',
+    cachedKeys: false
 };

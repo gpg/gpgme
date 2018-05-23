@@ -36,22 +36,6 @@
         });
     });
 });
-describe('openpgp mode', function(){
-    it('startup of openpgp mode returns the correct parameters', function(done){
-        let prm = Gpgmejs.init({api_style:"gpgme_openpgpjs"});
-        prm.then(function(context){
-            expect(context).to.be.an('object');
-            expect(context.connection).to.be.undefined;
-            expect(context.Keyring).to.be.an('object');
-            expect(context.encrypt).to.be.a('function');
-            expect(context.decrypt).to.be.a('function');
-            done();
-        }, function(error){
-            expect(error).to.be.undefined;
-            done();
-        });
-    });
-});
 
 describe('GPGME does not start with invalid parameters', function(){
     for (let i=0; i < inputvalues.init.invalid_startups.length; i++){

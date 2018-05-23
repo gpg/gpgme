@@ -4,18 +4,15 @@ NativeConnection:
 receiving an answer
     [X] nativeConnection successfull on Chromium, chrome and firefox
     [*] nativeConnection successfull on Windows, macOS, Linux
-    [*] nativeConnection with delayed, multipart (> 1MB) answer
-
-replicating Openpgpjs API:
+    [X] nativeConnection with delayed, multipart (> 1MB) answer
 
     [*] Message handling (encrypt, decrypt verify, sign)
         [x] encrypt, decrypt
         [ ] verify
         [ ] sign
     [*] Key handling (import/export, modifying, status queries)
-    [ ] Configuration handling
+    [*] Configuration handling
     [ ] check for completeness
-    [*] handling of differences to openpgpjs
 
 Communication with other implementations
 

@@ -20,7 +20,6 @@
 
 import { GpgME } from "./gpgmejs";
 import { gpgme_error } from "./Errors";
-import { GpgME_openpgpmode } from "./gpgmejs_openpgpjs";
 import { Connection } from "./Connection";
 import { defaultConf, availableConf } from "./Config";
 
@@ -43,11 +42,7 @@ function init(config){
                 reject(gpgme_error('CONN_NO_CONNECT'));
             }
             if (connection.isConnected === true){
-                if (_conf.api_style && _conf.api_style === 'gpgme_openpgpjs'){
-                    resolve(new GpgME_openpgpmode(connection, _conf));
-                } else {
-                    resolve(new GpgME(connection));
-                }
+                resolve(new GpgME(connection, _conf));
             } else {
                 reject(gpgme_error('CONN_NO_CONNECT'));
             }

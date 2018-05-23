@@ -80,14 +80,6 @@ const err_list = {
         msg: 'An parameter was set that has no effect in gpgmejs',
         type: 'warning'
     },
-    'NOT_IMPLEMENTED': {
-        msg: 'A openpgpjs parameter was submitted that is not implemented',
-        type: 'error'
-    },
-    'NOT_YET_IMPLEMENTED': {
-        msg: 'Support of this is probable, but it is not implemented yet',
-        type: 'error'
-    },
     'GENERIC_ERROR': {
         msg: 'Unspecified error',
         type: 'error'

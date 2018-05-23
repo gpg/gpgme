@@ -54,8 +54,8 @@ export class GpgME {
     }
 
     set Keyring(keyring){
-        if (ring && ring instanceof GPGME_Keyring){
-            this._Keyring = ring;
+        if (keyring && keyring instanceof GPGME_Keyring){
+            this._Keyring = keyring;
         }
     }
 

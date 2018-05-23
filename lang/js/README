@@ -12,11 +12,6 @@ To create a current version of the package, the command is
 If you want a more debuggable (i.e. not minified) build, just change the mode
 in webpack.conf.js.
 
-TODO: gpgme_openpgpjs aims to offer an API similar to openpgpjs, throwing errors
-if some part of the API is not implemented, 'translating' objects if possible.
-This will be incorporated into the build process later, for now it is a line to
-uncomment in src/index.js
-
 Demo WebExtension:
 As soon as a bundled webpack is in dist/
 the gpgmejs folder can just be included in the extensions tab of the browser in
