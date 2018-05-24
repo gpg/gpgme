@@ -490,7 +490,7 @@ _create_new_context (gpgme_protocol_t proto)
 
 
 /* Return a context object for protocol PROTO.  This is currently a
- * statuically allocated context initialized for PROTO.  Termnates
+ * statically allocated context initialized for PROTO.  Terminates
  * process on failure.  */
 static gpgme_ctx_t
 get_context (gpgme_protocol_t proto)
@@ -597,11 +597,11 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 
 
 /* Create a "data" object and the "type", "base64" and "more" flags
- * from DATA and append them to RESULT.  Ownership if DATA is
+ * from DATA and append them to RESULT.  Ownership of DATA is
  * transferred to this function.  TYPE must be a fixed string.
  * CHUNKSIZE is the chunksize requested from the caller.  If BASE64 is
  * -1 the need for base64 encoding is determined by the content of
- * DATA, all other values are take as rtue or false.  Note that
+ * DATA, all other values are taken as true or false.  Note that
  * op_getmore has similar code but works on PENDING_DATA which is set
  * here.  */
 static gpg_error_t
