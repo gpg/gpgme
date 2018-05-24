@@ -41,10 +41,12 @@ for i in range(len(lines)):
 
 groups = line.split(":")[-1].replace('"', '').split(',')
 
-group_lines = groups
-for i in range(len(group_lines)):
-    group_lines[i] = group_lines[i].split("=")
+group_lines = []
+group_lists = []
 
-group_lists = group_lines
+for i in range(len(groups)):
+    group_lines.append(groups[i].split("="))
+    group_lists.append(groups[i].split("="))
+
 for i in range(len(group_lists)):
     group_lists[i][1] = group_lists[i][1].split()
