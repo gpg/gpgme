@@ -147,6 +147,16 @@ xjson_CreateObject (void)
   return json;
 }
 
+/* Call cJSON_CreateArray but terminate in case of an error.  */
+static cjson_t
+xjson_CreateArray (void)
+{
+  cjson_t json = cJSON_CreateArray ();
+  if (!json)
+    xoutofcore ("cJSON_CreateArray");
+  return json;
+}
+
 
 /* Wrapper around cJSON_AddStringToObject which returns an gpg-error
  * code instead of the NULL or the new object.  */
@@ -590,6 +600,187 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 }
 
 
+/* Helper for summary formatting */
+static void
+add_summary_to_object (cjson_t result, gpgme_sigsum_t summary)
+{
+  cjson_t response = xjson_CreateArray ();
+  if ( (summary & GPGME_SIGSUM_VALID      ))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("valid"));
+  if ( (summary & GPGME_SIGSUM_GREEN      ))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("green"));
+  if ( (summary & GPGME_SIGSUM_RED        ))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("red"));
+  if ( (summary & GPGME_SIGSUM_KEY_REVOKED))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("revoked"));
+  if ( (summary & GPGME_SIGSUM_KEY_EXPIRED))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("key-expired"));
+  if ( (summary & GPGME_SIGSUM_SIG_EXPIRED))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("sig-expired"));
+  if ( (summary & GPGME_SIGSUM_KEY_MISSING))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("key-missing"));
+  if ( (summary & GPGME_SIGSUM_CRL_MISSING))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("crl-missing"));
+  if ( (summary & GPGME_SIGSUM_CRL_TOO_OLD))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("crl-too-old"));
+  if ( (summary & GPGME_SIGSUM_BAD_POLICY ))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("bad-policy"));
+  if ( (summary & GPGME_SIGSUM_SYS_ERROR  ))
+    cJSON_AddItemToArray (response,
+        cJSON_CreateString ("sys-error"));
+
+  cJSON_AddItemToObject (result, "summary", response);
+}
+
+
+/* Helper for summary formatting */
+static const char *
+validity_to_string (gpgme_validity_t val)
+{
+  switch (val)
+    {
+    case GPGME_VALIDITY_UNDEFINED:return "undefined";
+    case GPGME_VALIDITY_NEVER:    return "never";
+    case GPGME_VALIDITY_MARGINAL: return "marginal";
+    case GPGME_VALIDITY_FULL:     return "full";
+    case GPGME_VALIDITY_ULTIMATE: return "ultimate";
+    case GPGME_VALIDITY_UNKNOWN:
+    default:                      return "unknown";
+    }
+}
+
+
+/* Add a single signature to a result */
+static gpg_error_t
+add_signature_to_object (cjson_t result, gpgme_signature_t sig)
+{
+  gpg_error_t err = 0;
+
+  if (!cJSON_AddStringToObject (result, "status", gpgme_strerror (sig->status)))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (!cJSON_AddNumberToObject (result, "code", sig->status))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  add_summary_to_object (result, sig->summary);
+
+  if (!cJSON_AddStringToObject (result, "fingerprint", sig->fpr))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (!cJSON_AddNumberToObject (result, "created", sig->timestamp))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (!cJSON_AddNumberToObject (result, "expired", sig->exp_timestamp))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (!cJSON_AddStringToObject (result, "validity",
+                                validity_to_string (sig->validity)))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+leave:
+  return err;
+}
+
+
+/* Add multiple signatures as an array to a result */
+static gpg_error_t
+add_signatures_to_object (cjson_t result, gpgme_signature_t signatures)
+{
+  cjson_t response = xJSON_CreateArray ();
+  gpg_error_t err = 0;
+  gpgme_signature_t sig;
+
+  for (sig = signatures; sig; sig = sig->next)
+    {
+      cjson_t sig_obj = xjson_CreateObject ();
+      err = add_signature_to_object (sig_obj, sig);
+      if (err)
+        {
+          cJSON_Delete (sig_obj);
+          sig_obj = NULL;
+          goto leave;
+        }
+
+      cJSON_AddItemToArray (response, sig_obj);
+    }
+
+  if (!cJSON_AddItemToObject (result, "signatures", response))
+    {
+      err = gpg_error_from_syserror ();
+      cJSON_Delete (response);
+      response = NULL;
+      return err;
+    }
+  response = NULL;
+
+leave:
+  if (err && response)
+    {
+      cJSON_Delete (response);
+      response = NULL;
+    }
+  return err;
+}
+
+
+/* Add an array of signature informations under the name "name". */
+static gpg_error_t
+add_signatures_object (cjson_t result, const char *name,
+                           gpgme_verify_result_t verify_result)
+{
+  cjson_t response = xjson_CreateObject ();
+  gpg_error_t err = 0;
+
+  err = add_signatures_to_object (response, verify_result->signatures);
+
+  if (err)
+    {
+      goto leave;
+    }
+
+  if (!cJSON_AddItemToObject (result, name, response))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+ leave:
+  if (err)
+    {
+      cJSON_Delete (response);
+      response = NULL;
+    }
+  return err;
+}
+
+
 
 /*
  * Implementation of the commands.
@@ -884,6 +1075,7 @@ op_decrypt (cjson_t request, cjson_t result)
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   gpgme_decrypt_result_t decrypt_result;
+  gpgme_verify_result_t verify_result;
 
   if ((err = get_protocol (request, &protocol)))
     goto leave;
@@ -954,6 +1146,24 @@ op_decrypt (cjson_t request, cjson_t result)
 
   err = make_data_object (result, output, chunksize, "plaintext", -1);
   output = NULL;
+
+  if (err)
+    {
+      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  verify_result = gpgme_op_verify_result (ctx);
+  if (verify_result && verify_result->signatures)
+    {
+      err = add_signatures_object (result, "info", verify_result);
+    }
+
+  if (err)
+    {
+      error_object (result, "Info output failed: %s", gpg_strerror (err));
+      goto leave;
+    }
 
  leave:
   release_context (ctx);
@@ -1058,6 +1268,7 @@ static const char hlp_help[] =
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
   "  encrypt     Encrypt data.\n"
+  "  decrypt     Decrypt data.\n"
   "  getmore     Retrieve remaining data.\n"
   "  help        Help overview.";
 static gpg_error_t
