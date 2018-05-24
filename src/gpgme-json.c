@@ -61,7 +61,8 @@ int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
 
 static void xoutofcore (const char *type) GPGRT_ATTR_NORETURN;
 static cjson_t error_object_v (cjson_t json, const char *message,
-                              va_list arg_ptr) GPGRT_ATTR_PRINTF(2,0);
+                               va_list arg_ptr, gpg_error_t err)
+                               GPGRT_ATTR_PRINTF(2,0);
 static cjson_t error_object (cjson_t json, const char *message,
                             ...) GPGRT_ATTR_PRINTF(2,3);
 static char *error_object_string (const char *message,
@@ -189,6 +190,16 @@ xjson_AddBoolToObject (cjson_t object, const char *name, int abool)
   return ;
 }
 
+/* Wrapper around cJSON_AddNumberToObject which terminates the process
+ * in case of an error.  */
+static void
+xjson_AddNumberToObject (cjson_t object, const char *name, double dbl)
+{
+  if (!cJSON_AddNumberToObject (object, name, dbl))
+    xoutofcore ("cJSON_AddNumberToObject");
+  return ;
+}
+
 /* This is similar to cJSON_AddStringToObject but takes (DATA,
  * DATALEN) and adds it under NAME as a base 64 encoded string to
  * OBJECT.  */
@@ -266,7 +277,8 @@ add_base64_to_object (cjson_t object, const char *name,
 /* Create a JSON error object.  If JSON is not NULL the error message
  * is appended to that object.  An existing "type" item will be replaced. */
 static cjson_t
-error_object_v (cjson_t json, const char *message, va_list arg_ptr)
+error_object_v (cjson_t json, const char *message, va_list arg_ptr,
+                gpg_error_t err)
 {
   cjson_t response, j_tmp;
   char *msg;
@@ -287,8 +299,10 @@ error_object_v (cjson_t json, const char *message, va_list arg_ptr)
       cJSON_ReplaceItemInObject (response, "type", j_tmp);
      }
   xjson_AddStringToObject (response, "msg", msg);
-
   xfree (msg);
+
+  xjson_AddNumberToObject (response, "code", err);
+
   return response;
 }
 
@@ -312,7 +326,20 @@ error_object (cjson_t json, const char *message, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, message);
-  response = error_object_v (json, message, arg_ptr);
+  response = error_object_v (json, message, arg_ptr, 0);
+  va_end (arg_ptr);
+  return response;
+}
+
+
+static cjson_t
+gpg_error_object (cjson_t json, gpg_error_t err, const char *message, ...)
+{
+  cjson_t response;
+  va_list arg_ptr;
+
+  va_start (arg_ptr, message);
+  response = error_object_v (json, message, arg_ptr, err);
   va_end (arg_ptr);
   return response;
 }
@@ -326,7 +353,7 @@ error_object_string (const char *message, ...)
   char *msg;
 
   va_start (arg_ptr, message);
-  response = error_object_v (NULL, message, arg_ptr);
+  response = error_object_v (NULL, message, arg_ptr, 0);
   va_end (arg_ptr);
 
   msg = xjson_Print (response);
@@ -666,7 +693,8 @@ add_signature_to_object (cjson_t result, gpgme_signature_t sig)
 {
   gpg_error_t err = 0;
 
-  if (!cJSON_AddStringToObject (result, "status", gpgme_strerror (sig->status)))
+  if (!cJSON_AddStringToObject (result, "status",
+                                gpgme_strerror (sig->status)))
     {
       err = gpg_error_from_syserror ();
       goto leave;
@@ -1003,7 +1031,8 @@ op_encrypt (cjson_t request, cjson_t result)
   if (err)
     {
       /* Provide a custom error response.  */
-      error_object (result, "Error getting keys: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Error getting keys: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1025,8 +1054,8 @@ op_encrypt (cjson_t request, cjson_t result)
       err = data_from_base64_string (&input, j_input);
       if (err)
         {
-          error_object (result, "Error decoding Base-64 encoded 'data': %s",
-                        gpg_strerror (err));
+          gpg_error_object (result, err, "Error decoding Base-64 encoded "
+                            "'data': %s", gpg_strerror (err));
           goto leave;
         }
     }
@@ -1036,7 +1065,8 @@ op_encrypt (cjson_t request, cjson_t result)
                                      strlen (j_input->valuestring), 0);
       if (err)
         {
-          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          gpg_error_object (result, err, "Error getting 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1048,8 +1078,8 @@ op_encrypt (cjson_t request, cjson_t result)
   err = gpgme_data_new (&output);
   if (err)
     {
-      error_object (result, "Error creating output data object: %s",
-                    gpg_strerror (err));
+      gpg_error_object (result, err, "Error creating output data object: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1059,7 +1089,8 @@ op_encrypt (cjson_t request, cjson_t result)
   /* encrypt_result = gpgme_op_encrypt_result (ctx); */
   if (err)
     {
-      error_object (result, "Encryption failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Encryption failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
   gpgme_data_release (input);
@@ -1139,8 +1170,9 @@ op_decrypt (cjson_t request, cjson_t result)
       err = data_from_base64_string (&input, j_input);
       if (err)
         {
-          error_object (result, "Error decoding Base-64 encoded 'data': %s",
-                        gpg_strerror (err));
+          gpg_error_object (result, err,
+                            "Error decoding Base-64 encoded 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1150,7 +1182,8 @@ op_decrypt (cjson_t request, cjson_t result)
                                      strlen (j_input->valuestring), 0);
       if (err)
         {
-          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          gpg_error_object (result, err, "Error getting 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1159,8 +1192,9 @@ op_decrypt (cjson_t request, cjson_t result)
   err = gpgme_data_new (&output);
   if (err)
     {
-      error_object (result, "Error creating output data object: %s",
-                    gpg_strerror (err));
+      gpg_error_object (result, err,
+                        "Error creating output data object: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1170,7 +1204,8 @@ op_decrypt (cjson_t request, cjson_t result)
   decrypt_result = gpgme_op_decrypt_result (ctx);
   if (err)
     {
-      error_object (result, "Decryption failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Decryption failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
   gpgme_data_release (input);
@@ -1187,7 +1222,8 @@ op_decrypt (cjson_t request, cjson_t result)
 
   if (err)
     {
-      error_object (result, "Info output failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Info output failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1196,7 +1232,8 @@ op_decrypt (cjson_t request, cjson_t result)
 
   if (err)
     {
-      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Plaintext output failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1290,7 +1327,8 @@ op_sign (cjson_t request, cjson_t result)
   if (err)
     {
       /* Provide a custom error response.  */
-      error_object (result, "Error getting keys: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Error getting keys: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1303,14 +1341,16 @@ op_sign (cjson_t request, cjson_t result)
   err = gpgme_op_keylist_start (ctx, keystring, 1);
   if (err)
     {
-      error_object (result, "Error listing keys: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Error listing keys: %s",
+                        gpg_strerror (err));
       goto leave;
     }
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       if ((err = gpgme_signers_add (ctx, key)))
         {
-          error_object (result, "Error adding signer: %s", gpg_strerror (err));
+          gpg_error_object (result, err, "Error adding signer: %s",
+                            gpg_strerror (err));
           goto leave;
         }
       gpgme_key_unref (key);
@@ -1334,8 +1374,9 @@ op_sign (cjson_t request, cjson_t result)
       err = data_from_base64_string (&input, j_input);
       if (err)
         {
-          error_object (result, "Error decoding Base-64 encoded 'data': %s",
-                        gpg_strerror (err));
+          gpg_error_object (result, err,
+                            "Error decoding Base-64 encoded 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1345,7 +1386,8 @@ op_sign (cjson_t request, cjson_t result)
                                      strlen (j_input->valuestring), 0);
       if (err)
         {
-          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          gpg_error_object (result, err, "Error getting 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1354,8 +1396,8 @@ op_sign (cjson_t request, cjson_t result)
   err = gpgme_data_new (&output);
   if (err)
     {
-      error_object (result, "Error creating output data object: %s",
-                    gpg_strerror (err));
+      gpg_error_object (result, err, "Error creating output data object: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1363,7 +1405,8 @@ op_sign (cjson_t request, cjson_t result)
   err = gpgme_op_sign (ctx, input, output, mode);
   if (err)
     {
-      error_object (result, "Signing failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Signing failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1383,8 +1426,6 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_data_release (output);
   return err;
 }
-
-
 
 static const char hlp_verify[] =
   "op:     \"verify\"\n"
@@ -1445,8 +1486,8 @@ op_verify (cjson_t request, cjson_t result)
       err = data_from_base64_string (&input, j_input);
       if (err)
         {
-          error_object (result, "Error decoding Base-64 encoded 'data': %s",
-                        gpg_strerror (err));
+          gpg_error_object (result, err, "Error decoding Base-64 encoded "
+                            "'data': %s", gpg_strerror (err));
           goto leave;
         }
     }
@@ -1456,7 +1497,8 @@ op_verify (cjson_t request, cjson_t result)
                                      strlen (j_input->valuestring), 0);
       if (err)
         {
-          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          gpg_error_object (result, err, "Error getting 'data': %s",
+                            gpg_strerror (err));
           goto leave;
         }
     }
@@ -1470,8 +1512,8 @@ op_verify (cjson_t request, cjson_t result)
           err = data_from_base64_string (&signature, j_signature);
           if (err)
             {
-              error_object (result, "Error decoding Base-64 encoded 'signature': %s",
-                            gpg_strerror (err));
+              gpg_error_object (result, err, "Error decoding Base-64 encoded "
+                                "'signature': %s", gpg_strerror (err));
               goto leave;
             }
         }
@@ -1482,8 +1524,8 @@ op_verify (cjson_t request, cjson_t result)
                                          0);
           if (err)
             {
-              error_object (result, "Error getting 'signature': %s",
-                            gpg_strerror (err));
+              gpg_error_object (result, err, "Error getting 'signature': %s",
+                                gpg_strerror (err));
               goto leave;
             }
         }
@@ -1493,17 +1535,26 @@ op_verify (cjson_t request, cjson_t result)
   err = gpgme_data_new (&output);
   if (err)
     {
-      error_object (result, "Error creating output data object: %s",
-                    gpg_strerror (err));
+      gpg_error_object (result, err, "Error creating output data object: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
-  /* Decrypt.  */
-  err = gpgme_op_verify (ctx, signature,
-                         input, output);
+  gpgme_data_rewind (input);
+  gpgme_data_rewind (signature);
+
+  /* Verify.  */
+  if (signature)
+    {
+      err = gpgme_op_verify (ctx, signature, input, output);
+    }
+  else
+    {
+      err = gpgme_op_verify (ctx, input, 0, output);
+    }
   if (err)
     {
-      error_object (result, "Verify failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Verify failed: %s", gpg_strerror (err));
       goto leave;
     }
   gpgme_data_release (input);
@@ -1519,7 +1570,8 @@ op_verify (cjson_t request, cjson_t result)
 
   if (err)
     {
-      error_object (result, "Info output failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Info output failed: %s",
+                    gpg_strerror (err));
       goto leave;
     }
 
@@ -1528,7 +1580,8 @@ op_verify (cjson_t request, cjson_t result)
 
   if (err)
     {
-      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Plaintext output failed: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1621,7 +1674,8 @@ op_getmore (cjson_t request, cjson_t result)
   if (!pending_data.buffer)
     {
       err = gpg_error (GPG_ERR_NO_DATA);
-      error_object (result, "Operation not possible: %s", gpg_strerror (err));
+      gpg_error_object (result, err, "Operation not possible: %s",
+                        gpg_strerror (err));
       goto leave;
     }
 
@@ -1801,8 +1855,8 @@ process_request (const char *request)
                   || strcmp (j_tmp->valuestring, "error"))
                 {
                   /* No error type response - provide a generic one.  */
-                  error_object (response, "Operation failed: %s",
-                                gpg_strerror (err));
+                  gpg_error_object (response, err, "Operation failed: %s",
+                                    gpg_strerror (err));
                 }
 
               xjson_AddStringToObject (response, "op", op);
