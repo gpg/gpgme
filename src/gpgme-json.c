@@ -1174,6 +1174,182 @@ op_decrypt (cjson_t request, cjson_t result)
 
 
 
+static const char hlp_sign[] =
+  "op:     \"sign\"\n"
+  "keys:   Array of strings with the fingerprints of the signing key.\n"
+  "        For a single key a String may be used instead of an array.\n"
+  "data:   Input data. \n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "sender:        The mail address of the sender.\n"
+  "mode:          A string with the signing mode can be:\n"
+  "               detached (default)\n"
+  "               opaque\n"
+  "               clearsign\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
+  "armor:         Request output in armored format.\n"
+  "\n"
+  "Response on success:\n"
+  "type:   \"signature\"\n"
+  "data:   Unless armor mode is used a Base64 encoded binary\n"
+  "        signature.  In armor mode a string with an armored\n"
+  "        OpenPGP or a PEM message.\n"
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
+static gpg_error_t
+op_sign (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  int opt_base64;
+  char *keystring = NULL;
+  cjson_t j_input;
+  gpgme_data_t input = NULL;
+  gpgme_data_t output = NULL;
+  int abool;
+  cjson_t j_tmp;
+  gpgme_sig_mode_t mode = GPGME_SIG_MODE_DETACH;
+  gpgme_ctx_t keylist_ctx = NULL;
+  gpgme_key_t key = NULL;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "armor", 0, &abool)))
+    goto leave;
+  gpgme_set_armor (ctx, abool);
+
+  j_tmp = cJSON_GetObjectItem (request, "mode");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      if (!strcmp (j_tmp->valuestring, "opaque"))
+        {
+          mode = GPGME_SIG_MODE_NORMAL;
+        }
+      else if (!strcmp (j_tmp->valuestring, "clearsign"))
+        {
+          mode = GPGME_SIG_MODE_CLEAR;
+        }
+    }
+
+  j_tmp = cJSON_GetObjectItem (request, "sender");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      gpgme_set_sender (ctx, j_tmp->valuestring);
+    }
+
+  /* Get the keys.  */
+  err = get_keys (request, &keystring);
+  if (err)
+    {
+      /* Provide a custom error response.  */
+      error_object (result, "Error getting keys: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Do a keylisting and add the keys */
+  if ((err = gpgme_new (&keylist_ctx)))
+    goto leave;
+  gpgme_set_protocol (keylist_ctx, protocol);
+  gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
+
+  err = gpgme_op_keylist_start (ctx, keystring, 1);
+  if (err)
+    {
+      error_object (result, "Error listing keys: %s", gpg_strerror (err));
+      goto leave;
+    }
+  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+    {
+      if ((err = gpgme_signers_add (ctx, key)))
+        {
+          error_object (result, "Error adding signer: %s", gpg_strerror (err));
+          goto leave;
+        }
+      gpgme_key_unref (key);
+    }
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_input = cJSON_GetObjectItem (request, "data");
+  if (!j_input)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+  if (!cjson_is_string (j_input))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (opt_base64)
+    {
+      err = data_from_base64_string (&input, j_input);
+      if (err)
+        {
+          error_object (result, "Error decoding Base-64 encoded 'data': %s",
+                        gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                     strlen (j_input->valuestring), 0);
+      if (err)
+        {
+          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      error_object (result, "Error creating output data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Sign. */
+  err = gpgme_op_sign (ctx, input, output, mode);
+  if (err)
+    {
+      error_object (result, "Signing failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  gpgme_data_release (input);
+  input = NULL;
+
+  /* We need to base64 if armoring has not been requested.  */
+  err = make_data_object (result, output, chunksize,
+                          "ciphertext", !gpgme_get_armor (ctx));
+  output = NULL;
+
+ leave:
+  xfree (keystring);
+  release_context (ctx);
+  release_context (keylist_ctx);
+  gpgme_data_release (input);
+  gpgme_data_release (output);
+  return err;
+}
+
+
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
   "\n"
@@ -1309,6 +1485,7 @@ process_request (const char *request)
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
     { "decrypt", op_decrypt, hlp_decrypt },
+    { "sign",    op_sign,    hlp_sign },
     { "getmore", op_getmore, hlp_getmore },
     { "help",    op_help,    hlp_help },
     { NULL }
