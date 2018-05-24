@@ -130,6 +130,49 @@ export const permittedOperations = {
                         // }]
         }
     },
+
+    sign: {
+        pinentry: true,
+        required: {
+            'data': {
+                allowed: ['string']},
+            'keys': {
+                allowed: ['string'],
+                array_allowed: true
+            }
+        },
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'chunksize': {
+                allowed: ['number'],
+            },
+            'sender': {
+                allowed: ['string'],
+            },
+            'mode': {
+                allowed: ['string'],
+                allowed_data: ['detached', 'clearsign'] // TODO 'opaque' not used
+            },
+            'base64': {
+                allowed: ['boolean']
+            },
+            'armor': {
+                allowed: ['boolean']
+            },
+        },
+        answer: {
+            type: ['signature', 'ciphertext'],
+            data: ['data'], // Unless armor mode is used a Base64 encoded binary
+                            // signature.  In armor mode a string with an armored
+                            // OpenPGP or a PEM message.
+            params: ['base64']
+        }
+    },
+
+
     /** TBD: querying the Key's information (keyinfo)
     TBD name: {
         required: {
@@ -212,6 +255,5 @@ export const permittedOperations = {
      *TBD get armored secret different treatment from keyinfo!
      * TBD key modification?
      * encryptsign: TBD
-     * verify: TBD
      */
 }

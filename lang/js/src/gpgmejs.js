@@ -120,6 +120,44 @@ export class GpgME {
 
     }
 
+    sign(data, keys, mode='clearsign', base64=false) { //sender
+        if (data === undefined){
+            return Promise.reject(gpgme_error('MSG_EMPTY'));
+        }
+        let key_arr = toKeyIdArray(keys);
+        if (key_arr.length === 0){
+            return Promise.reject(gpgme_error('MSG_NO_KEYS'));
+        }
+        let msg = createMessage('sign');
+
+        msg.setParameter('keys', key_arr);
+        if (base64 === true){
+            msg.setParameter('base64', true);
+        }
+        msg.setParameter('mode', mode);
+        putData(msg, data);
+        if (mode === 'detached') {
+            msg.expected = 'base64';
+        }
+        let me = this;
+        return new Promise(function(resolve,reject) {
+            me.connection.post(msg).then( function(message) {
+                if (mode === 'clearsign'){
+                    resolve({
+                        data: message.data}
+                    );
+                } else if (mode === 'detached') {
+                    resolve({
+                        data: data,
+                        signature: message.data
+                    });
+                }
+            }, function(error){
+                reject(error);
+            })
+        });
+    }
+
     deleteKey(key, delete_secret = false, no_confirm = false){
         return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
         let msg = createMessage('deletekey');
