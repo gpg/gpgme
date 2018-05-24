@@ -754,7 +754,7 @@ leave:
 /* Add an array of signature informations under the name "name". */
 static gpg_error_t
 add_signatures_object (cjson_t result, const char *name,
-                           gpgme_verify_result_t verify_result)
+                       gpgme_verify_result_t verify_result)
 {
   cjson_t response = xjson_CreateObject ();
   gpg_error_t err = 0;
@@ -1348,6 +1348,163 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_data_release (output);
   return err;
 }
+
+
+
+static const char hlp_verify[] =
+  "op:     \"verify\"\n"
+  "data:   The data to verify.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "signature:     A detached signature. If missing opaque is assumed.\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
+  "\n"
+  "Response on success:\n"
+  "type:   \"plaintext\"\n"
+  "data:   The verified data.  This may be base64 encoded.\n"
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "info:   An object with signature information.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
+static gpg_error_t
+op_verify (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  int opt_base64;
+  cjson_t j_input, j_signature;
+  gpgme_data_t input = NULL;
+  gpgme_data_t signature = NULL;
+  gpgme_data_t output = NULL;
+  gpgme_verify_result_t verify_result;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    goto leave;
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_input = cJSON_GetObjectItem (request, "data");
+  if (!j_input)
+    {
+      err = gpg_error (GPG_ERR_NO_DATA);
+      goto leave;
+    }
+  if (!cjson_is_string (j_input))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (opt_base64)
+    {
+      err = data_from_base64_string (&input, j_input);
+      if (err)
+        {
+          error_object (result, "Error decoding Base-64 encoded 'data': %s",
+                        gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
+                                     strlen (j_input->valuestring), 0);
+      if (err)
+        {
+          error_object (result, "Error getting 'data': %s", gpg_strerror (err));
+          goto leave;
+        }
+    }
+
+  /* Get the signature.  */
+  j_signature = cJSON_GetObjectItem (request, "signature");
+  if (j_signature && cjson_is_string (j_signature))
+    {
+      if (opt_base64)
+        {
+          err = data_from_base64_string (&signature, j_signature);
+          if (err)
+            {
+              error_object (result, "Error decoding Base-64 encoded 'signature': %s",
+                            gpg_strerror (err));
+              goto leave;
+            }
+        }
+      else
+        {
+          err = gpgme_data_new_from_mem (&signature, j_signature->valuestring,
+                                         strlen (j_signature->valuestring),
+                                         0);
+          if (err)
+            {
+              error_object (result, "Error getting 'signature': %s",
+                            gpg_strerror (err));
+              goto leave;
+            }
+        }
+    }
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      error_object (result, "Error creating output data object: %s",
+                    gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Decrypt.  */
+  err = gpgme_op_verify (ctx, signature,
+                         input, output);
+  if (err)
+    {
+      error_object (result, "Verify failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+  gpgme_data_release (input);
+  input = NULL;
+  gpgme_data_release (signature);
+  signature = NULL;
+
+  verify_result = gpgme_op_verify_result (ctx);
+  if (verify_result && verify_result->signatures)
+    {
+      err = add_signatures_object (result, "info", verify_result);
+    }
+
+  if (err)
+    {
+      error_object (result, "Info output failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = make_data_object (result, output, chunksize, "plaintext", -1);
+  output = NULL;
+
+  if (err)
+    {
+      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+ leave:
+  release_context (ctx);
+  gpgme_data_release (input);
+  gpgme_data_release (output);
+  gpgme_data_release (signature);
+  return err;
+}
+
 
 
 static const char hlp_getmore[] =
