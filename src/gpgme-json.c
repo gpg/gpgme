@@ -1445,6 +1445,7 @@ static const char hlp_help[] =
   "help mode.  Supported values for \"op\" are:\n\n"
   "  encrypt     Encrypt data.\n"
   "  decrypt     Decrypt data.\n"
+  "  sign        Sign data.\n"
   "  getmore     Retrieve remaining data.\n"
   "  help        Help overview.";
 static gpg_error_t
