@@ -5408,7 +5408,7 @@ or @code{gpgme_get_ctx_flag (ctx, "export-session-key")} returns true
 @since{1.11.0}
 
 A string with the symmetric encryption algorithm and mode using the
-format "<algo>.<mode>".  Note that old non-MDC encryption mode of
+format "<algo>.<mode>".  Note that the deprecated non-MDC encryption mode of
 OpenPGP is given as "PGPCFB".
 
 @end table

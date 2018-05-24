@@ -1,6 +1,13 @@
 Noteworthy changes in version 1.11.2 (unreleased)
 -------------------------------------------------
 
+ * Even for old versions of gpg a missing MDC will now lead to a
+   decryption failure.
+
+ * Interface changes relative to the 1.11.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: DecryptionResult::sessionKey    NEW.
+ cpp: DecryptionResult::symkeyAlgo    NEW.
 
 Noteworthy changes in version 1.11.1 (2018-04-20)
 -------------------------------------------------

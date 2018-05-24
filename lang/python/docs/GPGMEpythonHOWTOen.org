@@ -14,7 +14,7 @@
   :CUSTOM_ID: intro
   :END:
 
-  | Version:        | 0.1.0                                    |
+  | Version:        | 0.1.1                                    |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
   | Language:       | Australian English, British English      |
@@ -673,10 +673,17 @@
      newfile = input("Enter path and filename of file to save decrypted data to: ")
 
      with open(ciphertext, "rb") as cfile:
-	 plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+	 try:
+	     plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+	 except gpg.errors.GPGMEError as e:
+	     plaintext = None
+	     print(e)
 
-     with open(newfile, "wb") as nfile:
-	 nfile.write(plaintext)
+     if plaintext is not None:
+	 with open(newfile, "wb") as nfile:
+	     nfile.write(plaintext)
+     else:
+	 pass
    #+end_src
 
    The data available in =plaintext= in this example is the decrypted

@@ -72,6 +72,17 @@
 # define F_OK 0
 #endif
 
+/* The Registry key used by GNUPG.  */
+#ifdef _WIN64
+# define GNUPG_REGKEY_2  "Software\\Wow6432Node\\GNU\\GnuPG"
+#else
+# define GNUPG_REGKEY_2  "Software\\GNU\\GnuPG"
+#endif
+#ifdef _WIN64
+# define GNUPG_REGKEY_3  "Software\\Wow6432Node\\GnuPG"
+#else
+# define GNUPG_REGKEY_3  "Software\\GnuPG"
+#endif
 
 DEFINE_STATIC_LOCK (get_path_lock);
 
@@ -513,7 +524,7 @@ _gpgme_get_gpg_path (void)
       char *dir;
 
       dir = read_w32_registry_string ("HKEY_LOCAL_MACHINE",
-                                      "Software\\GNU\\GnuPG",
+                                      GNUPG_REGKEY_2,
                                       "Install Directory");
       if (dir)
         {
@@ -568,12 +579,12 @@ _gpgme_get_gpgconf_path (void)
       char *dir;
 
       dir = read_w32_registry_string (NULL,
-                                      "Software\\GNU\\GnuPG",
+                                      GNUPG_REGKEY_2,
                                       "Install Directory");
       if (!dir)
         {
           char *tmp = read_w32_registry_string (NULL,
-                                                "Software\\GnuPG",
+                                                GNUPG_REGKEY_3,
                                                 "Install Directory");
           if (tmp)
             {
@@ -594,6 +605,14 @@ _gpgme_get_gpgconf_path (void)
   if (!gpgconf)
     {
       gpgconf = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
+    }
+
+  /* 5. Try to find gpgconf.exe relative to us.  */
+  if (!gpgconf && inst_dir)
+    {
+      char *dir = _gpgme_strconcat (inst_dir, "\\..\\..\\GnuPG\\bin");
+      gpgconf = find_program_in_dir (dir, name);
+      free (dir);
     }
 
   /* 5. Print a debug message if not found.  */
