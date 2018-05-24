@@ -780,7 +780,42 @@ add_signatures_object (cjson_t result, const char *name,
   return err;
 }
 
+static const char *
+protocol_to_string (gpgme_protocol_t proto)
+{
+  switch (proto)
+    {
+    case GPGME_PROTOCOL_OpenPGP: return "OpenPGP";
+    case GPGME_PROTOCOL_CMS:     return "CMS";
+    case GPGME_PROTOCOL_GPGCONF: return "gpgconf";
+    case GPGME_PROTOCOL_ASSUAN:  return "assuan";
+    case GPGME_PROTOCOL_G13:     return "g13";
+    case GPGME_PROTOCOL_UISERVER:return "uiserver";
+    case GPGME_PROTOCOL_SPAWN:   return "spawn";
+    default:
+                                 return "unknown";
+    }
+}
 
+static gpg_error_t
+add_ei_to_object (cjson_t result, gpgme_engine_info_t info)
+{
+  if (!cJSON_AddStringToObject (result, "protocol",
+                                protocol_to_string (info->protocol)))
+    return gpg_error_from_syserror ();
+  if (!cJSON_AddStringToObject (result, "fname", info->file_name))
+    return gpg_error_from_syserror ();
+  if (!cJSON_AddStringToObject (result, "version", info->version))
+    return gpg_error_from_syserror ();
+  if (!cJSON_AddStringToObject (result, "req_version", info->req_version))
+    return gpg_error_from_syserror ();
+  if (!cJSON_AddStringToObject (result, "homedir",
+                                info->home_dir ?
+                                info->home_dir :
+                                "default"))
+    return gpg_error_from_syserror ();
+  return 0;
+}
 
 /*
  * Implementation of the commands.
@@ -1504,8 +1539,57 @@ op_verify (cjson_t request, cjson_t result)
   gpgme_data_release (signature);
   return err;
 }
+
+static const char hlp_version[] =
+  "op:     \"version\"\n"
+  "\n"
+  "Response on success:\n"
+  "gpgme:  The GPGME Version.\n"
+  "info:   dump of engine info. containing:\n"
+  "        protocol: The protocol.\n"
+  "        fname:    The file name.\n"
+  "        version:  The version.\n"
+  "        req_ver:  The required version.\n"
+  "        homedir:  The homedir of the engine or \"default\".\n";
+static gpg_error_t
+op_version (cjson_t request, cjson_t result)
+{
+  gpg_error_t err = 0;
+  gpgme_engine_info_t ei = NULL;
+  cjson_t infos = xjson_CreateArray ();
 
+  if (!cJSON_AddStringToObject (result, "gpgme", gpgme_check_version (NULL)))
+    {
+      cJSON_Delete (infos);
+      return gpg_error_from_syserror ();
+    }
 
+  if ((err = gpgme_get_engine_info (&ei)))
+    {
+      cJSON_Delete (infos);
+      return err;
+    }
+
+  for (; ei; ei = ei->next)
+    {
+      cjson_t obj = xjson_CreateObject ();
+      if ((err = add_ei_to_object (obj, ei)))
+        {
+          cJSON_Delete (infos);
+          return err;
+        }
+      cJSON_AddItemToArray (infos, obj);
+    }
+
+  if (!cJSON_AddItemToObject (result, "info", infos))
+    {
+      err = gpg_error_from_syserror ();
+      cJSON_Delete (infos);
+      return err;
+    }
+
+  return 0;
+}
 
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
@@ -1644,6 +1728,8 @@ process_request (const char *request)
     { "encrypt", op_encrypt, hlp_encrypt },
     { "decrypt", op_decrypt, hlp_decrypt },
     { "sign",    op_sign,    hlp_sign },
+    { "verify",  op_verify,  hlp_verify },
+    { "version", op_version, hlp_version },
     { "getmore", op_getmore, hlp_getmore },
     { "help",    op_help,    hlp_help },
     { NULL }
