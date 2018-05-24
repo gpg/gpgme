@@ -714,7 +714,7 @@ leave:
 static gpg_error_t
 add_signatures_to_object (cjson_t result, gpgme_signature_t signatures)
 {
-  cjson_t response = xJSON_CreateArray ();
+  cjson_t response = xjson_CreateArray ();
   gpg_error_t err = 0;
   gpgme_signature_t sig;
 
