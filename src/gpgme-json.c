@@ -1144,15 +1144,6 @@ op_decrypt (cjson_t request, cjson_t result)
   if (decrypt_result->is_mime)
     xjson_AddBoolToObject (result, "mime", 1);
 
-  err = make_data_object (result, output, chunksize, "plaintext", -1);
-  output = NULL;
-
-  if (err)
-    {
-      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
-      goto leave;
-    }
-
   verify_result = gpgme_op_verify_result (ctx);
   if (verify_result && verify_result->signatures)
     {
@@ -1162,6 +1153,15 @@ op_decrypt (cjson_t request, cjson_t result)
   if (err)
     {
       error_object (result, "Info output failed: %s", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = make_data_object (result, output, chunksize, "plaintext", -1);
+  output = NULL;
+
+  if (err)
+    {
+      error_object (result, "Plaintext output failed: %s", gpg_strerror (err));
       goto leave;
     }
 
