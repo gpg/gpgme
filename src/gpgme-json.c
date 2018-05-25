@@ -646,46 +646,47 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 }
 
 
-/* Helper for summary formatting */
-static void
-add_summary_to_object (cjson_t result, gpgme_sigsum_t summary)
+/* Create sigsum json array */
+static cjson_t
+sigsum_to_json (gpgme_sigsum_t summary)
 {
-  cjson_t response = xjson_CreateArray ();
+  cjson_t result = xjson_CreateArray ();
+
   if ( (summary & GPGME_SIGSUM_VALID      ))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("valid"));
   if ( (summary & GPGME_SIGSUM_GREEN      ))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("green"));
   if ( (summary & GPGME_SIGSUM_RED        ))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("red"));
   if ( (summary & GPGME_SIGSUM_KEY_REVOKED))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("revoked"));
   if ( (summary & GPGME_SIGSUM_KEY_EXPIRED))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("key-expired"));
   if ( (summary & GPGME_SIGSUM_SIG_EXPIRED))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("sig-expired"));
   if ( (summary & GPGME_SIGSUM_KEY_MISSING))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("key-missing"));
   if ( (summary & GPGME_SIGSUM_CRL_MISSING))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("crl-missing"));
   if ( (summary & GPGME_SIGSUM_CRL_TOO_OLD))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("crl-too-old"));
   if ( (summary & GPGME_SIGSUM_BAD_POLICY ))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("bad-policy"));
   if ( (summary & GPGME_SIGSUM_SYS_ERROR  ))
-    cJSON_AddItemToArray (response,
+    cJSON_AddItemToArray (result,
         cJSON_CreateString ("sys-error"));
 
-  cJSON_AddItemToObject (result, "summary", response);
+  return result;
 }
 
 
@@ -930,145 +931,62 @@ key_to_json (gpgme_key_t key)
   return result;
 }
 
-/* Add a single signature to a json object */
-static gpg_error_t
-add_signature_to_object (cjson_t result, gpgme_signature_t sig)
+/* Create a signature json object */
+static cjson_t
+signature_to_json (gpgme_signature_t sig)
 {
-  gpg_error_t err = 0;
+  cjson_t result = xjson_CreateObject ();
 
-  if (!cJSON_AddStringToObject (result, "status",
-                                gpgme_strerror (sig->status)))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  xjson_AddStringToObject0 (result, "status",
+                            gpgme_strerror (sig->status));
 
-  if (!cJSON_AddNumberToObject (result, "code", sig->status))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  xjson_AddStringToObject0 (result, "validity",
+                            validity_to_string (sig->validity));
+  xjson_AddStringToObject0 (result, "fingerprint", sig->fpr);
 
-  add_summary_to_object (result, sig->summary);
+  xjson_AddItemToObject (result, "summary", sigsum_to_json (sig->summary));
 
-  if (!cJSON_AddStringToObject (result, "fingerprint", sig->fpr))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  xjson_AddNumberToObject (result, "created", sig->timestamp);
+  xjson_AddNumberToObject (result, "expired", sig->exp_timestamp);
+  xjson_AddNumberToObject (result, "code", sig->status);
 
-  if (!cJSON_AddNumberToObject (result, "created", sig->timestamp))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  if (!cJSON_AddNumberToObject (result, "expired", sig->exp_timestamp))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-  if (!cJSON_AddStringToObject (result, "validity",
-                                validity_to_string (sig->validity)))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-
-leave:
-  return err;
+  return result;
 }
 
-
-/* Add multiple signatures as an array to a result */
-static gpg_error_t
-add_signatures_to_object (cjson_t result, gpgme_signature_t signatures)
-{
-  cjson_t response = xjson_CreateArray ();
-  gpg_error_t err = 0;
-  gpgme_signature_t sig;
-
-  for (sig = signatures; sig; sig = sig->next)
-    {
-      cjson_t sig_obj = xjson_CreateObject ();
-      err = add_signature_to_object (sig_obj, sig);
-      if (err)
-        {
-          cJSON_Delete (sig_obj);
-          sig_obj = NULL;
-          goto leave;
-        }
-
-      cJSON_AddItemToArray (response, sig_obj);
-    }
-
-  if (!cJSON_AddItemToObject (result, "signatures", response))
-    {
-      err = gpg_error_from_syserror ();
-      cJSON_Delete (response);
-      response = NULL;
-      return err;
-    }
-  response = NULL;
-
-leave:
-  if (err && response)
-    {
-      cJSON_Delete (response);
-      response = NULL;
-    }
-  return err;
-}
-
-
-/* Add an array of signature informations under the name "name". */
-static gpg_error_t
-add_signatures_object (cjson_t result, const char *name,
-                       gpgme_verify_result_t verify_result)
+/* Create a JSON object from a gpgme_verify result */
+static cjson_t
+verify_result_to_json (gpgme_verify_result_t verify_result)
 {
   cjson_t response = xjson_CreateObject ();
-  gpg_error_t err = 0;
 
-  err = add_signatures_to_object (response, verify_result->signatures);
-
-  if (err)
+  if (verify_result->signatures)
     {
-      goto leave;
+      cjson_t array = xjson_CreateArray ();
+      gpgme_signature_t sig;
+
+      for (sig = verify_result->signatures; sig; sig = sig->next)
+        cJSON_AddItemToArray (array, signature_to_json (sig));
+      xjson_AddItemToObject (response, "signatures", array);
     }
 
-  if (!cJSON_AddItemToObject (result, name, response))
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
- leave:
-  if (err)
-    {
-      cJSON_Delete (response);
-      response = NULL;
-    }
-  return err;
+  return response;
 }
 
-static gpg_error_t
-add_ei_to_object (cjson_t result, gpgme_engine_info_t info)
+/* Create a JSON object from an engine_info */
+static cjson_t
+engine_info_to_json (gpgme_engine_info_t info)
 {
-  if (!cJSON_AddStringToObject (result, "protocol",
-                                protocol_to_string (info->protocol)))
-    return gpg_error_from_syserror ();
-  if (!cJSON_AddStringToObject (result, "fname", info->file_name))
-    return gpg_error_from_syserror ();
-  if (!cJSON_AddStringToObject (result, "version", info->version))
-    return gpg_error_from_syserror ();
-  if (!cJSON_AddStringToObject (result, "req_version", info->req_version))
-    return gpg_error_from_syserror ();
-  if (!cJSON_AddStringToObject (result, "homedir",
-                                info->home_dir ?
-                                info->home_dir :
-                                "default"))
-    return gpg_error_from_syserror ();
-  return 0;
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "protocol",
+                            protocol_to_string (info->protocol));
+  xjson_AddStringToObject0 (result, "fname", info->file_name);
+  xjson_AddStringToObject0 (result, "version", info->version);
+  xjson_AddStringToObject0 (result, "req_version", info->req_version);
+  xjson_AddStringToObject0 (result, "homedir", info->home_dir ?
+                                                info->home_dir :
+                                                "default");
+  return result;
 }
 
 /* Create a gpgme_data from json string data named "name"
@@ -1371,6 +1289,17 @@ static const char hlp_decrypt[] =
   "base64: Boolean indicating whether data is base64 encoded.\n"
   "mime:   A Boolean indicating whether the data is a MIME object.\n"
   "info:   An optional object with extra information.\n"
+  "info:   An object with optional signature information.\n"
+  "  Array values:\n"
+  "   signatures\n"
+  "    String values:\n"
+  "     status: The status of the signature.\n"
+  "     fingerprint: The fingerprint of the signing key.\n"
+  "     validity: The validity as string.\n"
+  "    Number values:\n"
+  "     code: The status as a number.\n"
+  "    Array values:\n"
+  "     summary: A string array of the sig summary.\n"
   "more:   Optional boolean indicating that \"getmore\" is required.";
 static gpg_error_t
 op_decrypt (cjson_t request, cjson_t result)
@@ -1422,14 +1351,8 @@ op_decrypt (cjson_t request, cjson_t result)
   verify_result = gpgme_op_verify_result (ctx);
   if (verify_result && verify_result->signatures)
     {
-      err = add_signatures_object (result, "info", verify_result);
-    }
-
-  if (err)
-    {
-      gpg_error_object (result, err, "Info output failed: %s",
-                        gpg_strerror (err));
-      goto leave;
+      xjson_AddItemToObject (result, "info",
+                             verify_result_to_json (verify_result));
     }
 
   err = make_data_object (result, output, chunksize, "plaintext", -1);
@@ -1611,6 +1534,16 @@ static const char hlp_verify[] =
   "data:   The verified data.  This may be base64 encoded.\n"
   "base64: Boolean indicating whether data is base64 encoded.\n"
   "info:   An object with signature information.\n"
+  "  Array values:\n"
+  "   signatures\n"
+  "    String values:\n"
+  "     status: The status of the signature.\n"
+  "     fingerprint: The fingerprint of the signing key.\n"
+  "     validity: The validity as string.\n"
+  "    Number values:\n"
+  "     code: The status as a number.\n"
+  "    Array values:\n"
+  "     summary: A string array of the sig summary.\n"
   "more:   Optional boolean indicating that \"getmore\" is required.";
 static gpg_error_t
 op_verify (cjson_t request, cjson_t result)
@@ -1669,14 +1602,8 @@ op_verify (cjson_t request, cjson_t result)
   verify_result = gpgme_op_verify_result (ctx);
   if (verify_result && verify_result->signatures)
     {
-      err = add_signatures_object (result, "info", verify_result);
-    }
-
-  if (err)
-    {
-      gpg_error_object (result, err, "Info output failed: %s",
-                    gpg_strerror (err));
-      goto leave;
+      xjson_AddItemToObject (result, "info",
+                             verify_result_to_json (verify_result));
     }
 
   err = make_data_object (result, output, chunksize, "plaintext", -1);
@@ -1728,15 +1655,7 @@ op_version (cjson_t request, cjson_t result)
     }
 
   for (; ei; ei = ei->next)
-    {
-      cjson_t obj = xjson_CreateObject ();
-      if ((err = add_ei_to_object (obj, ei)))
-        {
-          cJSON_Delete (infos);
-          return err;
-        }
-      cJSON_AddItemToArray (infos, obj);
-    }
+    cJSON_AddItemToArray (infos, engine_info_to_json (ei));
 
   if (!cJSON_AddItemToObject (result, "info", infos))
     {
