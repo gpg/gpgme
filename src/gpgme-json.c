@@ -2072,6 +2072,114 @@ op_import (cjson_t request, cjson_t result)
   gpgme_data_release (input);
   return err;
 }
+
+
+static const char hlp_export[] =
+  "op:     \"export\"\n"
+  "\n"
+  "Optional parameters:\n"
+  "keys:          Array of strings or fingerprints to lookup\n"
+  "               For a single key a String may be used instead of an array.\n"
+  "               default exports all keys.\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "armor:         Request output in armored format.\n"
+  "extern:        Add EXPORT_MODE_EXTERN.\n"
+  "minimal:       Add EXPORT_MODE_MINIMAL.\n"
+  "secret:        Add EXPORT_MODE_SECRET. (not implemented)\n"
+  "raw:           Add EXPORT_MODE_RAW.\n"
+  "pkcs12:        Add EXPORT_MODE_PKCS12.\n"
+  "\n"
+  "Response on success:\n"
+  "type:   \"keys\"\n"
+  "data:   Unless armor mode is used a Base64 encoded binary.\n"
+  "        In armor mode a string with an armored\n"
+  "        OpenPGP or a PEM / PKCS12 key.\n"
+  "base64: Boolean indicating whether data is base64 encoded.\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.";
+static gpg_error_t
+op_export (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  char **patterns = NULL;
+  int abool;
+  gpgme_export_mode_t mode = 0;
+  gpgme_data_t output = NULL;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  if ((err = get_boolean_flag (request, "armor", 0, &abool)))
+    goto leave;
+  gpgme_set_armor (ctx, abool);
+
+  /* Handle the various export mode bools. */
+  if ((err = get_boolean_flag (request, "secret", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_EXPORT_MODE_SECRET;
+
+  if ((err = get_boolean_flag (request, "extern", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_EXPORT_MODE_EXTERN;
+
+  if ((err = get_boolean_flag (request, "minimal", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_EXPORT_MODE_MINIMAL;
+
+  if ((err = get_boolean_flag (request, "raw", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_EXPORT_MODE_RAW;
+
+  if ((err = get_boolean_flag (request, "pkcs12", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_EXPORT_MODE_PKCS12;
+
+  /* Get the export patterns.  */
+  patterns = create_keylist_patterns (request);
+
+  /* Create an output data object.  */
+  err = gpgme_data_new (&output);
+  if (err)
+    {
+      gpg_error_object (result, err, "Error creating output data object: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gpgme_op_export_ext (ctx, (const char **) patterns,
+                             mode, output);
+  if (err)
+    {
+      gpg_error_object (result, err, "Error exporting keys: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  /* We need to base64 if armoring has not been requested.  */
+  err = make_data_object (result, output, chunksize,
+                          "keys", !gpgme_get_armor (ctx));
+  output = NULL;
+
+leave:
+  xfree_array (patterns);
+  release_context (ctx);
+  gpgme_data_release (output);
+
+  return err;
+}
 
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
@@ -2167,8 +2275,9 @@ static const char hlp_help[] =
   "operation is not performned but a string with the documentation\n"
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
-  "  encrypt     Encrypt data.\n"
   "  decrypt     Decrypt data.\n"
+  "  encrypt     Encrypt data.\n"
+  "  export      Export keys.\n"
   "  import      Import data.\n"
   "  keylist     List keys.\n"
   "  sign        Sign data.\n"
@@ -2213,6 +2322,7 @@ process_request (const char *request)
     const char * const helpstr;
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
+    { "export",  op_export,  hlp_export },
     { "decrypt", op_decrypt, hlp_decrypt },
     { "keylist", op_keylist, hlp_keylist },
     { "import",  op_import,  hlp_import },
