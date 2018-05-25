@@ -1719,10 +1719,11 @@ op_version (cjson_t request, cjson_t result)
 
 static const char hlp_keylist[] =
   "op:     \"keylist\"\n"
-  "keys:   Array of strings or fingerprints to lookup\n"
-  "        For a single key a String may be used instead of an array.\n"
   "\n"
   "Optional parameters:\n"
+  "keys:          Array of strings or fingerprints to lookup\n"
+  "               For a single key a String may be used instead of an array.\n"
+  "               default lists all keys.\n"
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "chunksize:     Max number of bytes in the resulting \"data\".\n"
   "\n"
