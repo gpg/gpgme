@@ -844,6 +844,58 @@ add_ei_to_object (cjson_t result, gpgme_engine_info_t info)
     return gpg_error_from_syserror ();
   return 0;
 }
+
+/* Create a gpgme_data from json string data named "name"
+ * in the request. Takes the base64 option into account.
+ *
+ * Adds an error to the "result" on error. */
+static gpg_error_t
+get_string_data (cjson_t request, cjson_t result, const char *name,
+                 gpgme_data_t *r_data)
+{
+  gpgme_error_t err;
+  int opt_base64;
+  cjson_t j_data;
+
+  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+    return err;
+
+  /* Get the data.  Note that INPUT is a shallow data object with the
+   * storage hold in REQUEST.  */
+  j_data = cJSON_GetObjectItem (request, name);
+  if (!j_data)
+    {
+      return gpg_error (GPG_ERR_NO_DATA);
+    }
+  if (!cjson_is_string (j_data))
+    {
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
+  if (opt_base64)
+    {
+      err = data_from_base64_string (r_data, j_data);
+      if (err)
+        {
+          gpg_error_object (result, err,
+                            "Error decoding Base-64 encoded '%s': %s",
+                            name, gpg_strerror (err));
+          return err;
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_mem (r_data, j_data->valuestring,
+                                     strlen (j_data->valuestring), 0);
+      if (err)
+        {
+          gpg_error_object (result, err, "Error getting '%s': %s",
+                            name, gpg_strerror (err));
+          return err;
+        }
+    }
+  return 0;
+}
+
 
 /*
  * Implementation of the commands.
@@ -977,10 +1029,8 @@ op_encrypt (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  int opt_base64;
   int opt_mime;
   char *keystring = NULL;
-  cjson_t j_input;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   int abool;
@@ -992,8 +1042,6 @@ op_encrypt (cjson_t request, cjson_t result)
   if ((err = get_chunksize (request, &chunksize)))
     goto leave;
 
-  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
-    goto leave;
   if ((err = get_boolean_flag (request, "mime", 0, &opt_mime)))
     goto leave;
 
@@ -1036,40 +1084,9 @@ op_encrypt (cjson_t request, cjson_t result)
       goto leave;
     }
 
-  /* Get the data.  Note that INPUT is a shallow data object with the
-   * storage hold in REQUEST.  */
-  j_input = cJSON_GetObjectItem (request, "data");
-  if (!j_input)
-    {
-      err = gpg_error (GPG_ERR_NO_DATA);
+  if ((err = get_string_data (request, result, "data", &input)))
       goto leave;
-    }
-  if (!cjson_is_string (j_input))
-    {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
-    }
-  if (opt_base64)
-    {
-      err = data_from_base64_string (&input, j_input);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error decoding Base-64 encoded "
-                            "'data': %s", gpg_strerror (err));
-          goto leave;
-        }
-    }
-  else
-    {
-      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
-                                     strlen (j_input->valuestring), 0);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error getting 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
+
   if (opt_mime)
     gpgme_data_set_encoding (input, GPGME_DATA_ENCODING_MIME);
 
@@ -1136,8 +1153,6 @@ op_decrypt (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  int opt_base64;
-  cjson_t j_input;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   gpgme_decrypt_result_t decrypt_result;
@@ -1149,44 +1164,8 @@ op_decrypt (cjson_t request, cjson_t result)
   if ((err = get_chunksize (request, &chunksize)))
     goto leave;
 
-  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
-    goto leave;
-
-  /* Get the data.  Note that INPUT is a shallow data object with the
-   * storage hold in REQUEST.  */
-  j_input = cJSON_GetObjectItem (request, "data");
-  if (!j_input)
-    {
-      err = gpg_error (GPG_ERR_NO_DATA);
+  if ((err = get_string_data (request, result, "data", &input)))
       goto leave;
-    }
-  if (!cjson_is_string (j_input))
-    {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
-    }
-  if (opt_base64)
-    {
-      err = data_from_base64_string (&input, j_input);
-      if (err)
-        {
-          gpg_error_object (result, err,
-                            "Error decoding Base-64 encoded 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
-  else
-    {
-      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
-                                     strlen (j_input->valuestring), 0);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error getting 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -1279,9 +1258,7 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  int opt_base64;
   char *keystring = NULL;
-  cjson_t j_input;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   int abool;
@@ -1294,9 +1271,6 @@ op_sign (cjson_t request, cjson_t result)
     goto leave;
   ctx = get_context (protocol);
   if ((err = get_chunksize (request, &chunksize)))
-    goto leave;
-
-  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
     goto leave;
 
   if ((err = get_boolean_flag (request, "armor", 0, &abool)))
@@ -1356,41 +1330,8 @@ op_sign (cjson_t request, cjson_t result)
       gpgme_key_unref (key);
     }
 
-  /* Get the data.  Note that INPUT is a shallow data object with the
-   * storage hold in REQUEST.  */
-  j_input = cJSON_GetObjectItem (request, "data");
-  if (!j_input)
-    {
-      err = gpg_error (GPG_ERR_NO_DATA);
+  if ((err = get_string_data (request, result, "data", &input)))
       goto leave;
-    }
-  if (!cjson_is_string (j_input))
-    {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
-    }
-  if (opt_base64)
-    {
-      err = data_from_base64_string (&input, j_input);
-      if (err)
-        {
-          gpg_error_object (result, err,
-                            "Error decoding Base-64 encoded 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
-  else
-    {
-      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
-                                     strlen (j_input->valuestring), 0);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error getting 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -1415,7 +1356,7 @@ op_sign (cjson_t request, cjson_t result)
 
   /* We need to base64 if armoring has not been requested.  */
   err = make_data_object (result, output, chunksize,
-                          "ciphertext", !gpgme_get_armor (ctx));
+                          "signature", !gpgme_get_armor (ctx));
   output = NULL;
 
  leave:
@@ -1452,8 +1393,6 @@ op_verify (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  int opt_base64;
-  cjson_t j_input, j_signature;
   gpgme_data_t input = NULL;
   gpgme_data_t signature = NULL;
   gpgme_data_t output = NULL;
@@ -1465,71 +1404,13 @@ op_verify (cjson_t request, cjson_t result)
   if ((err = get_chunksize (request, &chunksize)))
     goto leave;
 
-  if ((err = get_boolean_flag (request, "base64", 0, &opt_base64)))
+  if ((err = get_string_data (request, result, "data", &input)))
     goto leave;
 
-  /* Get the data.  Note that INPUT is a shallow data object with the
-   * storage hold in REQUEST.  */
-  j_input = cJSON_GetObjectItem (request, "data");
-  if (!j_input)
-    {
-      err = gpg_error (GPG_ERR_NO_DATA);
-      goto leave;
-    }
-  if (!cjson_is_string (j_input))
-    {
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
-    }
-  if (opt_base64)
-    {
-      err = data_from_base64_string (&input, j_input);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error decoding Base-64 encoded "
-                            "'data': %s", gpg_strerror (err));
-          goto leave;
-        }
-    }
-  else
-    {
-      err = gpgme_data_new_from_mem (&input, j_input->valuestring,
-                                     strlen (j_input->valuestring), 0);
-      if (err)
-        {
-          gpg_error_object (result, err, "Error getting 'data': %s",
-                            gpg_strerror (err));
-          goto leave;
-        }
-    }
-
-  /* Get the signature.  */
-  j_signature = cJSON_GetObjectItem (request, "signature");
-  if (j_signature && cjson_is_string (j_signature))
-    {
-      if (opt_base64)
-        {
-          err = data_from_base64_string (&signature, j_signature);
-          if (err)
-            {
-              gpg_error_object (result, err, "Error decoding Base-64 encoded "
-                                "'signature': %s", gpg_strerror (err));
-              goto leave;
-            }
-        }
-      else
-        {
-          err = gpgme_data_new_from_mem (&signature, j_signature->valuestring,
-                                         strlen (j_signature->valuestring),
-                                         0);
-          if (err)
-            {
-              gpg_error_object (result, err, "Error getting 'signature': %s",
-                                gpg_strerror (err));
-              goto leave;
-            }
-        }
-    }
+  err = get_string_data (request, result, "signature", &signature);
+  /* Signature data is optional otherwise we expect opaque or clearsigned. */
+  if (err && err != gpg_error (GPG_ERR_NO_DATA))
+    goto leave;
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -1539,9 +1420,6 @@ op_verify (cjson_t request, cjson_t result)
                         gpg_strerror (err));
       goto leave;
     }
-
-  gpgme_data_rewind (input);
-  gpgme_data_rewind (signature);
 
   /* Verify.  */
   if (signature)
