@@ -467,12 +467,13 @@ get_chunksize (cjson_t json, size_t *r_chunksize)
 }
 
 
-/* Extract the keys from the "keys" array in the JSON object.  On
- * success a string with the keys identifiers is stored at R_KEYS.
+/* Extract the keys from the array or string with the name "name"
+ * in the JSON object.  On success a string with the keys identifiers
+ * is stored at R_KEYS.
  * The keys in that string are LF delimited.  On failure an error code
  * is returned.  */
 static gpg_error_t
-get_keys (cjson_t json, char **r_keystring)
+get_keys (cjson_t json, const char *name, char **r_keystring)
 {
   cjson_t j_keys, j_item;
   int i, nkeys;
@@ -481,7 +482,7 @@ get_keys (cjson_t json, char **r_keystring)
 
   *r_keystring = NULL;
 
-  j_keys = cJSON_GetObjectItem (json, "keys");
+  j_keys = cJSON_GetObjectItem (json, name);
   if (!j_keys)
     return gpg_error (GPG_ERR_NO_KEY);
   if (!cjson_is_array (j_keys) && !cjson_is_string (j_keys))
@@ -664,7 +665,7 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
  * string array which can be used as patterns for
  * op_keylist_ext or NULL. */
 static char **
-create_keylist_patterns (cjson_t request)
+create_keylist_patterns (cjson_t request, const char *name)
 {
   char *keystring;
   char *p;
@@ -673,7 +674,7 @@ create_keylist_patterns (cjson_t request)
   int cnt = 1;
   int i = 0;
 
-  if (get_keys (request, &keystring))
+  if (get_keys (request, name, &keystring))
     return NULL;
 
   for (p = keystring; p; p++)
@@ -1250,6 +1251,8 @@ static const char hlp_encrypt[] =
   "Optional parameters:\n"
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "signing_keys:  Similar to the keys parameter for added signing.\n"
+  "               (openpgp only)"
   "\n"
   "Optional boolean flags (default is false):\n"
   "base64:        Input data is base64 encoded.\n"
@@ -1275,6 +1278,7 @@ op_encrypt (cjson_t request, cjson_t result)
   gpg_error_t err;
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
+  char **signing_patterns = NULL;
   size_t chunksize;
   int opt_mime;
   char *keystring = NULL;
@@ -1322,13 +1326,44 @@ op_encrypt (cjson_t request, cjson_t result)
 
 
   /* Get the keys.  */
-  err = get_keys (request, &keystring);
+  err = get_keys (request, "keys", &keystring);
   if (err)
     {
       /* Provide a custom error response.  */
       gpg_error_object (result, err, "Error getting keys: %s",
                         gpg_strerror (err));
       goto leave;
+    }
+
+  /* Do we have signing keys ? */
+  signing_patterns = create_keylist_patterns (request, "signing_keys");
+  if (signing_patterns)
+    {
+      gpgme_ctx_t keylist_ctx = get_context (protocol);
+      gpgme_key_t key;
+
+      gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
+
+      err = gpgme_op_keylist_ext_start (keylist_ctx,
+                                        (const char **) signing_patterns,
+                                        1, 0);
+      if (err)
+        {
+          gpg_error_object (result, err, "Error listing keys: %s",
+                            gpg_strerror (err));
+          goto leave;
+        }
+      while (!(err = gpgme_op_keylist_next (keylist_ctx, &key)))
+        {
+          if ((err = gpgme_signers_add (ctx, key)))
+            {
+              gpg_error_object (result, err, "Error adding signer: %s",
+                                gpg_strerror (err));
+              goto leave;
+            }
+          gpgme_key_unref (key);
+        }
+      release_context (keylist_ctx);
     }
 
   if ((err = get_string_data (request, result, "data", &input)))
@@ -1348,8 +1383,17 @@ op_encrypt (cjson_t request, cjson_t result)
     }
 
   /* Encrypt.  */
-  err = gpgme_op_encrypt_ext (ctx, NULL, keystring, encrypt_flags,
-                              input, output);
+  if (!signing_patterns)
+    {
+      err = gpgme_op_encrypt_ext (ctx, NULL, keystring, encrypt_flags,
+                                  input, output);
+    }
+  else
+    {
+      err = gpgme_op_encrypt_sign_ext (ctx, NULL, keystring, encrypt_flags,
+                                       input, output);
+
+    }
   /* encrypt_result = gpgme_op_encrypt_result (ctx); */
   if (err)
     {
@@ -1366,6 +1410,7 @@ op_encrypt (cjson_t request, cjson_t result)
   output = NULL;
 
  leave:
+  xfree_array (signing_patterns);
   xfree (keystring);
   release_context (ctx);
   gpgme_data_release (input);
@@ -1547,7 +1592,7 @@ op_sign (cjson_t request, cjson_t result)
       gpgme_set_sender (ctx, j_tmp->valuestring);
     }
 
-  patterns = create_keylist_patterns (request);
+  patterns = create_keylist_patterns (request, "keys");
   if (!patterns)
     {
       gpg_error_object (result, err, "Error getting keys: %s",
@@ -1561,14 +1606,15 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_set_protocol (keylist_ctx, protocol);
   gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
 
-  err = gpgme_op_keylist_ext_start (ctx, (const char **) patterns, 1, 0);
+  err = gpgme_op_keylist_ext_start (keylist_ctx,
+                                    (const char **) patterns, 1, 0);
   if (err)
     {
       gpg_error_object (result, err, "Error listing keys: %s",
                         gpg_strerror (err));
       goto leave;
     }
-  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+  while (!(err = gpgme_op_keylist_next (keylist_ctx, &key)))
     {
       if ((err = gpgme_signers_add (ctx, key)))
         {
@@ -1963,7 +2009,7 @@ op_keylist (cjson_t request, cjson_t result)
     }
 
   /* Get the keys.  */
-  patterns = create_keylist_patterns (request);
+  patterns = create_keylist_patterns (request, "keys");
 
   /* Do a keylisting and add the keys */
   gpgme_set_keylist_mode (ctx, mode);
@@ -2148,7 +2194,7 @@ op_export (cjson_t request, cjson_t result)
     mode |= GPGME_EXPORT_MODE_PKCS12;
 
   /* Get the export patterns.  */
-  patterns = create_keylist_patterns (request);
+  patterns = create_keylist_patterns (request, "keys");
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
