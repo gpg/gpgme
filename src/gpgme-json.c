@@ -180,6 +180,15 @@ xjson_AddStringToObject (cjson_t object, const char *name, const char *string)
 }
 
 
+/* Same as xjson_AddStringToObject but ignores NULL strings */
+static void
+xjson_AddStringToObject0 (cjson_t object, const char *name, const char *string)
+{
+  if (!string)
+    return;
+  xjson_AddStringToObject (object, name, string);
+}
+
 /* Wrapper around cJSON_AddBoolToObject which terminates the process
  * in case of an error.  */
 static void
@@ -197,6 +206,16 @@ xjson_AddNumberToObject (cjson_t object, const char *name, double dbl)
 {
   if (!cJSON_AddNumberToObject (object, name, dbl))
     xoutofcore ("cJSON_AddNumberToObject");
+  return ;
+}
+
+/* Wrapper around cJSON_AddItemToObject which terminates the process
+ * in case of an error.  */
+static void
+xjson_AddItemToObject (cjson_t object, const char *name, cjson_t item)
+{
+  if (!cJSON_AddItemToObject (object, name, item))
+    xoutofcore ("cJSON_AddItemToObject");
   return ;
 }
 
@@ -686,8 +705,232 @@ validity_to_string (gpgme_validity_t val)
     }
 }
 
+static const char *
+protocol_to_string (gpgme_protocol_t proto)
+{
+  switch (proto)
+    {
+    case GPGME_PROTOCOL_OpenPGP: return "OpenPGP";
+    case GPGME_PROTOCOL_CMS:     return "CMS";
+    case GPGME_PROTOCOL_GPGCONF: return "gpgconf";
+    case GPGME_PROTOCOL_ASSUAN:  return "assuan";
+    case GPGME_PROTOCOL_G13:     return "g13";
+    case GPGME_PROTOCOL_UISERVER:return "uiserver";
+    case GPGME_PROTOCOL_SPAWN:   return "spawn";
+    default:
+                                 return "unknown";
+    }
+}
 
-/* Add a single signature to a result */
+/* Create a sig_notation json object */
+static cjson_t
+sig_notation_to_json (gpgme_sig_notation_t not)
+{
+  cjson_t result = xjson_CreateObject ();
+  xjson_AddBoolToObject (result, "human_readable", not->human_readable);
+  xjson_AddBoolToObject (result, "critical", not->critical);
+
+  xjson_AddStringToObject0 (result, "name", not->name);
+  xjson_AddStringToObject0 (result, "value", not->value);
+
+  xjson_AddNumberToObject (result, "flags", not->flags);
+
+  return result;
+}
+
+/* Create a key_sig json object */
+static cjson_t
+key_sig_to_json (gpgme_key_sig_t sig)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddBoolToObject (result, "revoked", sig->revoked);
+  xjson_AddBoolToObject (result, "expired", sig->expired);
+  xjson_AddBoolToObject (result, "invalid", sig->invalid);
+  xjson_AddBoolToObject (result, "exportable", sig->exportable);
+
+  xjson_AddStringToObject0 (result, "pubkey_algo_name",
+                            gpgme_pubkey_algo_name (sig->pubkey_algo));
+  xjson_AddStringToObject0 (result, "keyid", sig->keyid);
+  xjson_AddStringToObject0 (result, "status", gpgme_strerror (sig->status));
+  xjson_AddStringToObject0 (result, "name", sig->name);
+  xjson_AddStringToObject0 (result, "email", sig->email);
+  xjson_AddStringToObject0 (result, "comment", sig->comment);
+
+  xjson_AddNumberToObject (result, "pubkey_algo", sig->pubkey_algo);
+  xjson_AddNumberToObject (result, "timestamp", sig->timestamp);
+  xjson_AddNumberToObject (result, "expires", sig->expires);
+  xjson_AddNumberToObject (result, "status_code", sig->status);
+  xjson_AddNumberToObject (result, "sig_class", sig->sig_class);
+
+  if (sig->notations)
+    {
+      gpgme_sig_notation_t not;
+      cjson_t array = xjson_CreateArray ();
+      for (not = sig->notations; not; not = not->next)
+        cJSON_AddItemToArray (array, sig_notation_to_json (not));
+      xjson_AddItemToObject (result, "notations", array);
+    }
+
+  return result;
+}
+
+/* Create a tofu info object */
+static cjson_t
+tofu_to_json (gpgme_tofu_info_t tofu)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "description", tofu->description);
+
+  xjson_AddNumberToObject (result, "validity", tofu->validity);
+  xjson_AddNumberToObject (result, "policy", tofu->policy);
+  xjson_AddNumberToObject (result, "signcount", tofu->signcount);
+  xjson_AddNumberToObject (result, "encrcount", tofu->encrcount);
+  xjson_AddNumberToObject (result, "signfirst", tofu->signfirst);
+  xjson_AddNumberToObject (result, "signlast", tofu->signlast);
+  xjson_AddNumberToObject (result, "encrfirst", tofu->encrfirst);
+  xjson_AddNumberToObject (result, "encrlast", tofu->encrlast);
+
+  return result;
+}
+
+/* Create a userid json object */
+static cjson_t
+uid_to_json (gpgme_user_id_t uid)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddBoolToObject (result, "revoked", uid->revoked);
+  xjson_AddBoolToObject (result, "invalid", uid->invalid);
+
+  xjson_AddStringToObject0 (result, "validity",
+                            validity_to_string (uid->validity));
+  xjson_AddStringToObject0 (result, "uid", uid->uid);
+  xjson_AddStringToObject0 (result, "name", uid->name);
+  xjson_AddStringToObject0 (result, "email", uid->email);
+  xjson_AddStringToObject0 (result, "comment", uid->comment);
+  xjson_AddStringToObject0 (result, "address", uid->address);
+
+  xjson_AddNumberToObject (result, "origin", uid->origin);
+  xjson_AddNumberToObject (result, "last_update", uid->last_update);
+
+  /* Key sigs */
+  if (uid->signatures)
+    {
+      cjson_t sig_array = xjson_CreateArray ();
+      gpgme_key_sig_t sig;
+
+      for (sig = uid->signatures; sig; sig = sig->next)
+        cJSON_AddItemToArray (sig_array, key_sig_to_json (sig));
+
+      xjson_AddItemToObject (result, "signatures", sig_array);
+    }
+
+  /* TOFU info */
+  if (uid->tofu)
+    {
+      gpgme_tofu_info_t tofu;
+      cjson_t array = xjson_CreateArray ();
+      for (tofu = uid->tofu; tofu; tofu = tofu->next)
+        cJSON_AddItemToArray (array, tofu_to_json (tofu));
+      xjson_AddItemToObject (result, "tofu", array);
+    }
+
+  return result;
+}
+
+/* Create a subkey json object */
+static cjson_t
+subkey_to_json (gpgme_subkey_t sub)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddBoolToObject (result, "revoked", sub->revoked);
+  xjson_AddBoolToObject (result, "expired", sub->expired);
+  xjson_AddBoolToObject (result, "disabled", sub->disabled);
+  xjson_AddBoolToObject (result, "invalid", sub->invalid);
+  xjson_AddBoolToObject (result, "can_encrypt", sub->can_encrypt);
+  xjson_AddBoolToObject (result, "can_sign", sub->can_sign);
+  xjson_AddBoolToObject (result, "can_certify", sub->can_certify);
+  xjson_AddBoolToObject (result, "can_authenticate", sub->can_authenticate);
+  xjson_AddBoolToObject (result, "secret", sub->secret);
+  xjson_AddBoolToObject (result, "is_qualified", sub->is_qualified);
+  xjson_AddBoolToObject (result, "is_cardkey", sub->is_cardkey);
+  xjson_AddBoolToObject (result, "is_de_vs", sub->is_de_vs);
+
+  xjson_AddStringToObject0 (result, "pubkey_algo_name",
+                            gpgme_pubkey_algo_name (sub->pubkey_algo));
+  xjson_AddStringToObject0 (result, "pubkey_algo_string",
+                            gpgme_pubkey_algo_string (sub));
+  xjson_AddStringToObject0 (result, "keyid", sub->keyid);
+  xjson_AddStringToObject0 (result, "card_number", sub->card_number);
+  xjson_AddStringToObject0 (result, "curve", sub->curve);
+  xjson_AddStringToObject0 (result, "keygrip", sub->keygrip);
+
+  xjson_AddNumberToObject (result, "pubkey_algo", sub->pubkey_algo);
+  xjson_AddNumberToObject (result, "length", sub->length);
+  xjson_AddNumberToObject (result, "timestamp", sub->timestamp);
+  xjson_AddNumberToObject (result, "expires", sub->expires);
+
+  return result;
+}
+
+/* Create a key json object */
+static cjson_t
+key_to_json (gpgme_key_t key)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddBoolToObject (result, "revoked", key->revoked);
+  xjson_AddBoolToObject (result, "expired", key->expired);
+  xjson_AddBoolToObject (result, "disabled", key->disabled);
+  xjson_AddBoolToObject (result, "invalid", key->invalid);
+  xjson_AddBoolToObject (result, "can_encrypt", key->can_encrypt);
+  xjson_AddBoolToObject (result, "can_sign", key->can_sign);
+  xjson_AddBoolToObject (result, "can_certify", key->can_certify);
+  xjson_AddBoolToObject (result, "can_authenticate", key->can_authenticate);
+  xjson_AddBoolToObject (result, "secret", key->secret);
+  xjson_AddBoolToObject (result, "is_qualified", key->is_qualified);
+
+  xjson_AddStringToObject0 (result, "protocol",
+                            protocol_to_string (key->protocol));
+  xjson_AddStringToObject0 (result, "issuer_serial", key->issuer_serial);
+  xjson_AddStringToObject0 (result, "issuer_name", key->issuer_name);
+  xjson_AddStringToObject0 (result, "fingerprint", key->fpr);
+  xjson_AddStringToObject0 (result, "chain_id", key->chain_id);
+  xjson_AddStringToObject0 (result, "owner_trust",
+                            validity_to_string (key->owner_trust));
+
+  xjson_AddNumberToObject (result, "origin", key->origin);
+  xjson_AddNumberToObject (result, "last_update", key->last_update);
+
+  /* Add subkeys */
+  if (key->subkeys)
+    {
+      cjson_t subkey_array = xjson_CreateArray ();
+      gpgme_subkey_t sub;
+      for (sub = key->subkeys; sub; sub = sub->next)
+        cJSON_AddItemToArray (subkey_array, subkey_to_json (sub));
+
+      xjson_AddItemToObject (result, "subkeys", subkey_array);
+    }
+
+  /* User Ids */
+  if (key->uids)
+    {
+      cjson_t uid_array = xjson_CreateArray ();
+      gpgme_user_id_t uid;
+      for (uid = key->uids; uid; uid = uid->next)
+        cJSON_AddItemToArray (uid_array, uid_to_json (uid));
+
+      xjson_AddItemToObject (result, "userids", uid_array);
+    }
+
+  return result;
+}
+
+/* Add a single signature to a json object */
 static gpg_error_t
 add_signature_to_object (cjson_t result, gpgme_signature_t sig)
 {
@@ -806,23 +1049,6 @@ add_signatures_object (cjson_t result, const char *name,
       response = NULL;
     }
   return err;
-}
-
-static const char *
-protocol_to_string (gpgme_protocol_t proto)
-{
-  switch (proto)
-    {
-    case GPGME_PROTOCOL_OpenPGP: return "OpenPGP";
-    case GPGME_PROTOCOL_CMS:     return "CMS";
-    case GPGME_PROTOCOL_GPGCONF: return "gpgconf";
-    case GPGME_PROTOCOL_ASSUAN:  return "assuan";
-    case GPGME_PROTOCOL_G13:     return "g13";
-    case GPGME_PROTOCOL_UISERVER:return "uiserver";
-    case GPGME_PROTOCOL_SPAWN:   return "spawn";
-    default:
-                                 return "unknown";
-    }
 }
 
 static gpg_error_t
@@ -1522,6 +1748,247 @@ op_version (cjson_t request, cjson_t result)
   return 0;
 }
 
+static const char hlp_keylist[] =
+  "op:     \"keylist\"\n"
+  "keys:   Array of strings or fingerprints to lookup\n"
+  "        For a single key a String may be used instead of an array.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "chunksize:     Max number of bytes in the resulting \"data\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "secret:        List secret keys.\n"
+  "extern:        Add KEYLIST_MODE_EXTERN.\n"
+  "local:         Add KEYLIST_MODE_LOCAL. (default mode).\n"
+  "sigs:          Add KEYLIST_MODE_SIGS.\n"
+  "notations:     Add KEYLIST_MODE_SIG_NOTATIONS.\n"
+  "tofu:          Add KEYLIST_MODE_WITH_TOFU.\n"
+  "ephemeral:     Add KEYLIST_MODE_EPHEMERAL.\n"
+  "validate:      Add KEYLIST_MODE_VALIDATE.\n"
+  "\n"
+  "Response on success:\n"
+  "keys:   Array of keys.\n"
+  "  Boolean values:\n"
+  "   revoked\n"
+  "   expired\n"
+  "   disabled\n"
+  "   invalid\n"
+  "   can_encrypt\n"
+  "   can_sign\n"
+  "   can_certify\n"
+  "   can_authenticate\n"
+  "   secret\n"
+  "   is_qualified\n"
+  "  String values:\n"
+  "   protocol\n"
+  "   issuer_serial (CMS Only)\n"
+  "   issuer_name (CMS Only)\n"
+  "   chain_id (CMS Only)\n"
+  "   owner_trust (OpenPGP only)\n"
+  "   fingerprint\n"
+  "  Number values:\n"
+  "   last_update\n"
+  "   origin\n"
+  "  Array values:\n"
+  "   subkeys\n"
+  "    Boolean values:\n"
+  "     revoked\n"
+  "     expired\n"
+  "     disabled\n"
+  "     invalid\n"
+  "     can_encrypt\n"
+  "     can_sign\n"
+  "     can_certify\n"
+  "     can_authenticate\n"
+  "     secret\n"
+  "     is_qualified\n"
+  "     is_cardkey\n"
+  "     is_de_vs\n"
+  "    String values:\n"
+  "     pubkey_algo_name\n"
+  "     pubkey_algo_string\n"
+  "     keyid\n"
+  "     card_number\n"
+  "     curve\n"
+  "     keygrip\n"
+  "    Number values:\n"
+  "     pubkey_algo\n"
+  "     length\n"
+  "     timestamp\n"
+  "     expires\n"
+  "   userids\n"
+  "    Boolean values:\n"
+  "     revoked\n"
+  "     invalid\n"
+  "    String values:\n"
+  "     validity\n"
+  "     uid\n"
+  "     name\n"
+  "     email\n"
+  "     comment\n"
+  "     address\n"
+  "    Number values:\n"
+  "     origin\n"
+  "     last_update\n"
+  "    Array values:\n"
+  "     signatures\n"
+  "      Boolean values:\n"
+  "       revoked\n"
+  "       expired\n"
+  "       invalid\n"
+  "       exportable\n"
+  "      String values:\n"
+  "       pubkey_algo_name\n"
+  "       keyid\n"
+  "       status\n"
+  "       uid\n"
+  "       name\n"
+  "       email\n"
+  "       comment\n"
+  "      Number values:\n"
+  "       pubkey_algo\n"
+  "       timestamp\n"
+  "       expires\n"
+  "       status_code\n"
+  "       sig_class\n"
+  "      Array values:\n"
+  "       notations\n"
+  "        Boolean values:\n"
+  "         human_readable\n"
+  "         critical\n"
+  "        String values:\n"
+  "         name\n"
+  "         value\n"
+  "        Number values:\n"
+  "         flags\n"
+  "     tofu\n"
+  "      String values:\n"
+  "       description\n"
+  "      Number values:\n"
+  "       validity\n"
+  "       policy\n"
+  "       signcount\n"
+  "       encrcount\n"
+  "       signfirst\n"
+  "       signlast\n"
+  "       encrfirst\n"
+  "       encrlast\n"
+  "more:   Optional boolean indicating that \"getmore\" is required.\n"
+  "        (not implemented)";
+static gpg_error_t
+op_keylist (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_protocol_t protocol;
+  size_t chunksize;
+  char *keystring = NULL;
+  int abool;
+  gpgme_keylist_mode_t mode = 0;
+  gpgme_key_t key = NULL;
+  cjson_t keyarray = xjson_CreateArray ();
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  if ((err = get_chunksize (request, &chunksize)))
+    goto leave;
+
+  /* Handle the various keylist mode bools. */
+  if ((err = get_boolean_flag (request, "secret", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
+
+  if ((err = get_boolean_flag (request, "extern", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_EXTERN;
+
+  if ((err = get_boolean_flag (request, "local", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_LOCAL;
+
+  if ((err = get_boolean_flag (request, "sigs", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_SIGS;
+
+  if ((err = get_boolean_flag (request, "notations", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_SIG_NOTATIONS;
+
+  if ((err = get_boolean_flag (request, "tofu", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_WITH_TOFU;
+
+  if ((err = get_boolean_flag (request, "ephemeral", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_EPHEMERAL;
+
+  if ((err = get_boolean_flag (request, "validate", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_VALIDATE;
+
+  if (!mode)
+    {
+      /* default to local */
+      mode = GPGME_KEYLIST_MODE_LOCAL;
+    }
+
+  /* Get the keys.  */
+  err = get_keys (request, &keystring);
+  if (err)
+    {
+      /* Provide a custom error response.  */
+      gpg_error_object (result, err, "Error getting keys: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  /* Do a keylisting and add the keys */
+  if ((err = gpgme_new (&ctx)))
+    goto leave;
+  gpgme_set_protocol (ctx, protocol);
+  gpgme_set_keylist_mode (ctx, mode);
+
+  err = gpgme_op_keylist_start (ctx, keystring,
+                                (mode & GPGME_KEYLIST_MODE_WITH_SECRET));
+  if (err)
+    {
+      gpg_error_object (result, err, "Error listing keys: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+    {
+      cJSON_AddItemToArray (keyarray, key_to_json (key));
+      gpgme_key_unref (key);
+    }
+  err = 0;
+
+  if (!cJSON_AddItemToObject (result, "keys", keyarray))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+ leave:
+  xfree (keystring);
+  if (err)
+    {
+      cJSON_Delete (keyarray);
+    }
+  return err;
+}
+
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
   "\n"
@@ -1659,6 +2126,7 @@ process_request (const char *request)
   } optbl[] = {
     { "encrypt", op_encrypt, hlp_encrypt },
     { "decrypt", op_decrypt, hlp_decrypt },
+    { "keylist", op_keylist, hlp_keylist },
     { "sign",    op_sign,    hlp_sign },
     { "verify",  op_verify,  hlp_verify },
     { "version", op_version, hlp_version },
