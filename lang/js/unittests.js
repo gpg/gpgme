@@ -22,6 +22,7 @@ import "./node_modules/chai/chai";
 import { helper_params as hp } from "./unittest_inputvalues";
 import { message_params as mp } from "./unittest_inputvalues";
 import { whatever_params as wp } from "./unittest_inputvalues";
+import { key_params as kp } from "./unittest_inputvalues";
 import { Connection } from "./src/Connection";
 import { gpgme_error } from "./src/Errors";
 import { toKeyIdArray , isFingerprint } from "./src/Helpers";
@@ -46,6 +47,7 @@ function unittests (){
                 expect(answer.info).to.be.an('Array');
                 expect(conn0.disconnect).to.be.a('function');
                 expect(conn0.post).to.be.a('function');
+                conn0.disconnect();
                 done();
             });
 
@@ -65,7 +67,7 @@ function unittests (){
     });
 
     describe('Error Object handling', function(){
-
+        // TODO: new GPGME_Error codes
         it('check the Timeout error', function(){
             let test0 = gpgme_error('CONN_TIMEOUT');
 
@@ -169,12 +171,54 @@ function unittests (){
 
         it('correct Key initialization', function(){
             let conn = new Connection;
-            let key = createKey(hp.validFingerprint, conn);
-
+            let key = createKey(kp.validKeyFingerprint, conn);
             expect(key).to.be.an.instanceof(GPGME_Key);
             expect(key.connection).to.be.an.instanceof(Connection);
-            // TODO not implemented yet: Further Key functionality
+            conn.disconnect();
         });
+        it('Key has data after a first refresh', function(done) {
+            let conn = new Connection;
+            let key = createKey(kp.validKeyFingerprint, conn);
+            key.refreshKey().then(function(key2){
+                expect(key2).to.be.an.instanceof(GPGME_Key);
+                expect(key2.get).to.be.a('function');
+                for (let i=0; i < kp.validKeyProperties.length; i++) {
+                    let prop = key2.get(kp.validKeyProperties[i]);
+                    expect(prop).to.not.be.undefined;
+                    expect(prop).to.be.a('boolean');
+                }
+                expect(isFingerprint(key2.get('fingerprint'))).to.be.true;
+                expect(
+                    key2.get('fingerprint')).to.equal(kp.validKeyFingerprint);
+                expect(
+                    key2.get('fingerprint')).to.equal(key.fingerprint);
+                conn.disconnect();
+                done();
+            });
+        });
+
+        it('Non-cached key async data retrieval', function (done){
+            let conn = new Connection;
+            let key = createKey(kp.validKeyFingerprint, conn);
+            key.get('can_authenticate',false).then(function(result){
+                expect(result).to.be.a('boolean');
+                conn.disconnect();
+                done();
+            });
+        })
+
+        it('Querying non-existing Key returns an error', function(done) {
+            let conn = new Connection;
+            let key = createKey(kp.invalidKeyFingerprint, conn);
+            key.refreshKey().then(function(){},
+                function(error){
+                    expect(error).to.be.an.instanceof(Error);
+                    expect(error.code).to.equal('KEY_NOKEY');
+                    conn.disconnect();
+                    done();
+            });
+        });
+
 
         it('Key can use the connection', function(done){
             let conn = new Connection;
@@ -184,6 +228,7 @@ function unittests (){
                 key.connection.disconnect();
                 key.connection.checkConnection(false).then(function(result2){
                     expect(result2).to.be.false;
+                    conn.disconnect();
                     done();
                 });
             });
@@ -204,16 +249,22 @@ function unittests (){
                 expect(key0).to.be.an.instanceof(Error);
                 expect(key0.code).to.equal('PARAM_WRONG');
             }
+            conn.disconnect();
         });
-        it('bad GPGME_Key returns Error if used', function(){
+
+        it('malformed GPGME_Key cannot be used', function(){
             let conn = new Connection;
             for (let i=0; i < 4; i++){
                 let key = new GPGME_Key(wp.four_invalid_params[i], conn);
-
-                expect(key.connection).to.be.an.instanceof(Error);
-                expect(key.connection.code).to.equal('KEY_INVALID');
+                expect(key.fingerprint).to.be.an.instanceof(Error);
+                expect(key.fingerprint.code).to.equal('KEY_INVALID');
             }
+            conn.disconnect();
         });
+
+        // TODO: tests for subkeys
+        // TODO: tests for userids
+        // TODO: some invalid tests for key/keyring
     });
 
     describe('GPGME_Keyring', function(){

@@ -6,7 +6,7 @@ let conn = new Connection;
 export const helper_params = {
     validLongId: '0A0A0A0A0A0A0A0A',
     validKeys: ['A1E3BC45BDC8E87B74F4392D53B151A1368E50F3',
-        createKey('ADDBC303B6D31026F5EB4591A27EABDF283121BB', conn),
+        createKey('D41735B91236FDB882048C5A2301635EEFF0CB05', conn),
         'EE17AEE730F88F1DE7713C54BBE0A4FF7851650A'],
     validFingerprint: '9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A',
     validFingerprints: ['9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A',
@@ -15,11 +15,11 @@ export const helper_params = {
     invalidFingerprints: [{hello:'World'}, ['kekekeke'], new Uint32Array(40)],
     invalidKeyArray: {curiosity:'uncat'},
     invalidKeyArray_OneBad: [
-        createKey('12AE9F3E41B33BF77DF52B6BE8EE1992D7909B08', conn),
+        createKey('D41735B91236FDB882048C5A2301635EEFF0CB05', conn),
         'E1D18E6E994FA9FE9360Bx0E687B940FEFEB095A',
         '3AEA7FE4F5F416ED18CEC63DD519450D9C0FAEE5'],
     invalidErrorCode: 'Please type in all your passwords.',
-    validGPGME_Key: createKey('ADDBC303B6D31026F5EB4591A27EABDF283121BB', conn),
+    validGPGME_Key: createKey('D41735B91236FDB882048C5A2301635EEFF0CB05', conn),
     valid_openpgplike: { primaryKey: {
         getFingerprint: function(){
             return '85DE2A8BA5A5AB3A8A7BE2000B8AED24D7534BC2';}
@@ -41,5 +41,11 @@ export const message_params = {
 }
 
 export const whatever_params = {
-    four_invalid_params: ['<(((-<', '>°;==;~~', '^^', '{{{{o}}}}']
+    four_invalid_params: ['<(((-<', '>°;==;~~', '^^', '{{{{o}}}}'],
+}
+export const key_params = {
+    validKeyFingerprint: 'D41735B91236FDB882048C5A2301635EEFF0CB05',
+    invalidKeyFingerprint: 'CDC3A2B2860625CCBFC5AAAAAC6D1B604967FC4A',
+    validKeyProperties: ['expired', 'disabled','invalid','can_encrypt',
+    'can_sign','can_certify','can_authenticate','secret','is_qualified']
 }

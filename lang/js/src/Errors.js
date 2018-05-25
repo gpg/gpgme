@@ -67,6 +67,10 @@ const err_list = {
         msg:'Key object is invalid',
         type: 'error'
     },
+    'KEY_NOKEY': {
+        msg:'This key does not exist in GPG',
+        type: 'error'
+    },
     // generic
     'PARAM_WRONG':{
         msg: 'Invalid parameter was found',

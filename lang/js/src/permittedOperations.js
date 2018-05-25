@@ -172,49 +172,57 @@ export const permittedOperations = {
         }
     },
 
-
-    /** TBD: querying the Key's information (keyinfo)
-    TBD name: {
-        required: {
-            'fingerprint': {
-                allowed: ['string']
-            },
-        },
-        answer: {
-            type: ['TBD'],
-            data: [],
-            params: ['hasSecret','isRevoked','isExpired','armored',
-                'timestamp','expires','pubkey_algo'],
-            infos: ['subkeys', 'userIds']
-            // {'hasSecret': <Boolean>,
-            //  'isRevoked': <Boolean>,
-            //  'isExpired': <Boolean>,
-            //  'armored': <String>, // armored public Key block
-            //  'timestamp': <Number>, //
-            //  'expires': <Number>,
-            //  'pubkey_algo': TBD // TBD (optional?),
-            //  'userIds': Array<String>,
-            //  'subkeys': Array<String> Fingerprints of Subkeys
-            // }
-    }*/
-
-    /**
-    listkeys:{
-        required: {};
+    keylist:{
+        required: {},
         optional: {
-            'with-secret':{
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'chunksize': {
+                allowed: ['number'],
+            },
+            // note: For the meaning of the flags, refer to
+            // https://www.gnupg.org/documentation/manuals/gpgme/Key-Listing-Mode.html
+            'secret': {
                 allowed: ['boolean']
-            },{
-            'pattern': {
-                allowed: ['string']
+            },
+            'extern': {
+                allowed: ['boolean']
+            },
+            'local':{
+                allowed: ['boolean']
+            },
+            'sigs':{
+                allowed: ['boolean']
+            },
+            'notations':{
+                allowed: ['boolean']
+            },
+            'tofu': {
+                allowed: ['boolean']
+            },
+            'ephemeral': {
+                allowed: ['boolean']
+            },
+            'validate': {
+                allowed: ['boolean']
+            },
+            // 'pattern': { TODO
+            //     allowed: ['string']
+            // },
+            'keys': {
+                allowed: ['string'],
+                array_allowed: true
             }
         },
-    answer: {
-        type: ['TBD'],
-        infos: ['TBD']
-    // keys: Array<String> Fingerprints representing the results
+        answer: {
+            type: [],
+            data: [],
+            params: [],
+            infos: ['keys']
+        }
     },
-    */
 
     /**
     importkey: {
@@ -256,4 +264,15 @@ export const permittedOperations = {
      * TBD key modification?
      * encryptsign: TBD
      */
+
+    version: {
+        required: {},
+        optional: {},
+        answer: {
+            type:  [''],
+            data: ['gpgme'],
+            infos: ['info'],
+            params:[]
+        }
+    }
 }

@@ -90,10 +90,11 @@ function hextest(key, len){
 export function isFingerprint(string){
     return hextest(string, 40);
 };
+
 /**
- *  TODO no usage; check if the input is a valid Hex string with a length of 16
+ *  check if the input is a valid Hex string with a length of 16
  */
-function isLongId(string){
+export function isLongId(string){
     return hextest(string, 16);
 };
 

@@ -215,7 +215,13 @@ class Answer{
                         if (!this._response.hasOwnProperty(key)){
                             this._response[key] = [];
                         }
-                        this._response[key].push(msg[key]);
+                        if (Array.isArray(msg[key])) {
+                            for (let i=0; i< msg[key].length; i++) {
+                                this._response[key].push(msg[key][i]);
+                            }
+                        } else {
+                            this._response[key].push(msg[key][i]);
+                        }
                     }
                     else {
                         return gpgme_error('CONN_UNEXPECTED_ANSWER');
