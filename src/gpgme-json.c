@@ -1966,9 +1966,6 @@ op_keylist (cjson_t request, cjson_t result)
   patterns = create_keylist_patterns (request);
 
   /* Do a keylisting and add the keys */
-  if ((err = gpgme_new (&ctx)))
-    goto leave;
-  gpgme_set_protocol (ctx, protocol);
   gpgme_set_keylist_mode (ctx, mode);
 
   err = gpgme_op_keylist_ext_start (ctx, (const char **) patterns,
