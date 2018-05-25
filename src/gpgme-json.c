@@ -2180,6 +2180,76 @@ leave:
 
   return err;
 }
+
+
+static const char hlp_delete[] =
+  "op:     \"delete\"\n"
+  "key:    Fingerprint of the key to delete.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "secret:        Allow deletion of secret keys. (not implemented)\n"
+  "\n"
+  "Response on success:\n"
+  "success:   Boolean true.\n";
+static gpg_error_t
+op_delete (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_ctx_t keylist_ctx = NULL;
+  gpgme_protocol_t protocol;
+  gpgme_key_t key;
+  int secret = 0;
+  cjson_t j_key = NULL;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+  keylist_ctx = get_context (protocol);
+
+  if ((err = get_boolean_flag (request, "secret", 0, &secret)))
+    goto leave;
+
+  j_key = cJSON_GetObjectItem (request, "key");
+  if (!j_key)
+    {
+      err = gpg_error (GPG_ERR_NO_KEY);
+      goto leave;
+    }
+  if (!cjson_is_string (j_key))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  /* Get the key */
+  if ((err = gpgme_get_key (keylist_ctx, j_key->valuestring, &key, secret)))
+    {
+      gpg_error_object (result, err, "Error fetching key for delete: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gpgme_op_delete (ctx, key, secret);
+  if (err)
+    {
+      gpg_error_object (result, err, "Error deleting key: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  xjson_AddBoolToObject (result, "success", 1);
+
+leave:
+  gpgme_key_unref (key);
+  release_context (ctx);
+  release_context (keylist_ctx);
+
+  return err;
+}
 
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
@@ -2276,6 +2346,7 @@ static const char hlp_help[] =
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
   "  decrypt     Decrypt data.\n"
+  "  delete      Delete a key.\n"
   "  encrypt     Encrypt data.\n"
   "  export      Export keys.\n"
   "  import      Import data.\n"
@@ -2324,6 +2395,7 @@ process_request (const char *request)
     { "encrypt", op_encrypt, hlp_encrypt },
     { "export",  op_export,  hlp_export },
     { "decrypt", op_decrypt, hlp_decrypt },
+    { "delete",  op_delete,  hlp_delete },
     { "keylist", op_keylist, hlp_keylist },
     { "import",  op_import,  hlp_import },
     { "sign",    op_sign,    hlp_sign },
