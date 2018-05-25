@@ -658,6 +658,7 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 #endif
 }
 
+
 /* Create a keylist pattern array from a json keys object
  * in the request. Returns either a malloced NULL terminated
  * string array which can be used as patterns for
@@ -1040,6 +1041,56 @@ engine_info_to_json (gpgme_engine_info_t info)
                                                 "default");
   return result;
 }
+/* Create a JSON object from an import_status */
+static cjson_t
+import_status_to_json (gpgme_import_status_t sts)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "fingerprint", sts->fpr);
+  xjson_AddStringToObject0 (result, "error_string",
+                            gpgme_strerror (sts->result));
+
+  xjson_AddNumberToObject (result, "status", sts->status);
+
+  return result;
+}
+
+/* Create a JSON object from an import result */
+static cjson_t
+import_result_to_json (gpgme_import_result_t imp)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddNumberToObject (result, "considered", imp->considered);
+  xjson_AddNumberToObject (result, "no_user_id", imp->no_user_id);
+  xjson_AddNumberToObject (result, "imported", imp->imported);
+  xjson_AddNumberToObject (result, "imported_rsa", imp->imported_rsa);
+  xjson_AddNumberToObject (result, "unchanged", imp->unchanged);
+  xjson_AddNumberToObject (result, "new_user_ids", imp->new_user_ids);
+  xjson_AddNumberToObject (result, "new_sub_keys", imp->new_sub_keys);
+  xjson_AddNumberToObject (result, "new_signatures", imp->new_signatures);
+  xjson_AddNumberToObject (result, "new_revocations", imp->new_revocations);
+  xjson_AddNumberToObject (result, "secret_read", imp->secret_read);
+  xjson_AddNumberToObject (result, "secret_imported", imp->secret_imported);
+  xjson_AddNumberToObject (result, "secret_unchanged", imp->secret_unchanged);
+  xjson_AddNumberToObject (result, "skipped_new_keys", imp->skipped_new_keys);
+  xjson_AddNumberToObject (result, "not_imported", imp->not_imported);
+  xjson_AddNumberToObject (result, "skipped_v3_keys", imp->skipped_v3_keys);
+
+
+  if (imp->imports)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_import_status_t status;
+
+      for (status = imp->imports; status; status = status->next)
+        cJSON_AddItemToArray (array, import_status_to_json (status));
+      xjson_AddItemToObject (result, "imports", array);
+    }
+
+  return result;
+}
 
 /* Create a gpgme_data from json string data named "name"
  * in the request. Takes the base64 option into account.
@@ -1340,7 +1391,6 @@ static const char hlp_decrypt[] =
   "data:   The decrypted data.  This may be base64 encoded.\n"
   "base64: Boolean indicating whether data is base64 encoded.\n"
   "mime:   A Boolean indicating whether the data is a MIME object.\n"
-  "info:   An optional object with extra information.\n"
   "info:   An object with optional signature information.\n"
   "  Array values:\n"
   "   signatures\n"
@@ -1953,6 +2003,79 @@ op_keylist (cjson_t request, cjson_t result)
   return err;
 }
 
+static const char hlp_import[] =
+  "op:     \"import\"\n"
+  "data:   The data to import.\n"
+  "\n"
+  "Optional parameters:\n"
+  "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64:        Input data is base64 encoded.\n"
+  "\n"
+  "Response on success:\n"
+  "result: The import result.\n"
+  "  Number values:\n"
+  "   considered\n"
+  "   no_user_id\n"
+  "   imported\n"
+  "   imported_rsa\n"
+  "   unchanged\n"
+  "   new_user_ids\n"
+  "   new_sub_keys\n"
+  "   new_signatures\n"
+  "   new_revocations\n"
+  "   secret_read\n"
+  "   secret_imported\n"
+  "   secret_unchanged\n"
+  "   skipped_new_keys\n"
+  "   not_imported\n"
+  "   skipped_v3_keys\n"
+  "  Array values:\n"
+  "   imports: List of keys for which an import was attempted\n"
+  "    String values:\n"
+  "     fingerprint\n"
+  "     error_string\n"
+  "    Number values:\n"
+  "     error_code\n"
+  "     status\n";
+static gpg_error_t
+op_import (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_data_t input = NULL;
+  gpgme_import_result_t import_result;
+  gpgme_protocol_t protocol;
+
+  if ((err = get_protocol (request, &protocol)))
+    goto leave;
+  ctx = get_context (protocol);
+
+  if ((err = get_string_data (request, result, "data", &input)))
+      goto leave;
+
+  /* Import.  */
+  err = gpgme_op_import (ctx, input);
+  import_result = gpgme_op_import_result (ctx);
+  if (err)
+    {
+      gpg_error_object (result, err, "Import failed: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+  gpgme_data_release (input);
+  input = NULL;
+
+  xjson_AddItemToObject (result, "result",
+                         import_result_to_json (import_result));
+
+ leave:
+  release_context (ctx);
+  gpgme_data_release (input);
+  return err;
+}
+
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
   "\n"
@@ -2049,6 +2172,7 @@ static const char hlp_help[] =
   "help mode.  Supported values for \"op\" are:\n\n"
   "  encrypt     Encrypt data.\n"
   "  decrypt     Decrypt data.\n"
+  "  import      Import data.\n"
   "  keylist     List keys.\n"
   "  sign        Sign data.\n"
   "  verify      Verify data.\n"
@@ -2094,6 +2218,7 @@ process_request (const char *request)
     { "encrypt", op_encrypt, hlp_encrypt },
     { "decrypt", op_decrypt, hlp_decrypt },
     { "keylist", op_keylist, hlp_keylist },
+    { "import",  op_import,  hlp_import },
     { "sign",    op_sign,    hlp_sign },
     { "verify",  op_verify,  hlp_verify },
     { "version", op_version, hlp_version },
