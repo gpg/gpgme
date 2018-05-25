@@ -128,6 +128,19 @@ _my_stpcpy (char *a, const char *b)
 #endif /*!HAVE_STPCPY*/
 
 
+/* Free a NULL terminated array */
+static void
+xfree_array (char **array)
+{
+  if (array)
+    {
+      int idx;
+      for (idx = 0; array[idx]; idx++)
+        xfree (array[idx]);
+      xfree (array);
+    }
+}
+
 
 static void
 xoutofcore (const char *type)
@@ -643,6 +656,45 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
   gpgrt_b64dec_finish (state);
   return err;
 #endif
+}
+
+/* Create a keylist pattern array from a json keys object
+ * in the request. Returns either a malloced NULL terminated
+ * string array which can be used as patterns for
+ * op_keylist_ext or NULL. */
+static char **
+create_keylist_patterns (cjson_t request)
+{
+  char *keystring;
+  char *p;
+  char *tmp;
+  char **ret;
+  int cnt = 1;
+  int i = 0;
+
+  if (get_keys (request, &keystring))
+    return NULL;
+
+  for (p = keystring; p; p++)
+    if (*p == '\n')
+      cnt++;
+
+  ret = (char **) xmalloc (cnt * sizeof (char *));
+
+  for (p = keystring, tmp = keystring; *p; p++)
+    {
+      if (*p != '\n')
+        continue;
+      *p = '\0';
+      ret[i++] = xstrdup (tmp);
+      tmp = p + 1;
+    }
+  /* The last key is not newline delimted. */
+  ret[i++] = xstrdup (tmp);
+  ret[i] = NULL;
+
+  xfree (keystring);
+  return ret;
 }
 
 
@@ -1407,7 +1459,7 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  char *keystring = NULL;
+  char **patterns = NULL;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   int abool;
@@ -1445,13 +1497,11 @@ op_sign (cjson_t request, cjson_t result)
       gpgme_set_sender (ctx, j_tmp->valuestring);
     }
 
-  /* Get the keys.  */
-  err = get_keys (request, &keystring);
-  if (err)
+  patterns = create_keylist_patterns (request);
+  if (!patterns)
     {
-      /* Provide a custom error response.  */
       gpg_error_object (result, err, "Error getting keys: %s",
-                        gpg_strerror (err));
+                        gpg_strerror (gpg_error (GPG_ERR_NO_KEY)));
       goto leave;
     }
 
@@ -1461,7 +1511,7 @@ op_sign (cjson_t request, cjson_t result)
   gpgme_set_protocol (keylist_ctx, protocol);
   gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
 
-  err = gpgme_op_keylist_start (ctx, keystring, 1);
+  err = gpgme_op_keylist_ext_start (ctx, (const char **) patterns, 1, 0);
   if (err)
     {
       gpg_error_object (result, err, "Error listing keys: %s",
@@ -1509,7 +1559,7 @@ op_sign (cjson_t request, cjson_t result)
   output = NULL;
 
  leave:
-  xfree (keystring);
+  xfree_array (patterns);
   release_context (ctx);
   release_context (keylist_ctx);
   gpgme_data_release (input);
@@ -1802,7 +1852,7 @@ op_keylist (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_protocol_t protocol;
   size_t chunksize;
-  char *keystring = NULL;
+  char **patterns = NULL;
   int abool;
   gpgme_keylist_mode_t mode = 0;
   gpgme_key_t key = NULL;
@@ -1862,14 +1912,7 @@ op_keylist (cjson_t request, cjson_t result)
     }
 
   /* Get the keys.  */
-  err = get_keys (request, &keystring);
-  if (err)
-    {
-      /* Provide a custom error response.  */
-      gpg_error_object (result, err, "Error getting keys: %s",
-                        gpg_strerror (err));
-      goto leave;
-    }
+  patterns = create_keylist_patterns (request);
 
   /* Do a keylisting and add the keys */
   if ((err = gpgme_new (&ctx)))
@@ -1877,8 +1920,9 @@ op_keylist (cjson_t request, cjson_t result)
   gpgme_set_protocol (ctx, protocol);
   gpgme_set_keylist_mode (ctx, mode);
 
-  err = gpgme_op_keylist_start (ctx, keystring,
-                                (mode & GPGME_KEYLIST_MODE_WITH_SECRET));
+  err = gpgme_op_keylist_ext_start (ctx, (const char **) patterns,
+                                    (mode & GPGME_KEYLIST_MODE_WITH_SECRET),
+                                    0);
   if (err)
     {
       gpg_error_object (result, err, "Error listing keys: %s",
@@ -1900,7 +1944,7 @@ op_keylist (cjson_t request, cjson_t result)
     }
 
  leave:
-  xfree (keystring);
+  xfree_array (patterns);
   if (err)
     {
       cJSON_Delete (keyarray);
