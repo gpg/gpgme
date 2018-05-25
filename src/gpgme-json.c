@@ -691,7 +691,7 @@ create_keylist_patterns (cjson_t request)
       tmp = p + 1;
     }
   /* The last key is not newline delimted. */
-  ret[i++] = xstrdup (tmp);
+  ret[i++] = *tmp ? xstrdup (tmp) : NULL;
   ret[i] = NULL;
 
   xfree (keystring);
