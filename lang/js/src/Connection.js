@@ -25,7 +25,7 @@
  */
 import { permittedOperations } from './permittedOperations'
 import { gpgme_error } from "./Errors"
-import { GPGME_Message } from "./Message";
+import { GPGME_Message, createMessage } from "./Message";
 
 /**
  * A Connection handles the nativeMessaging interaction.
@@ -34,18 +34,42 @@ export class Connection{
 
     constructor(){
         this.connect();
-        let me = this;
     }
 
     /**
-     * (Simple) Connection check.
-     * @returns {Boolean} true if the onDisconnect event has not been fired.
-     * Please note that the event listener of the port takes some time
-     * (5 ms seems enough) to react after the port is created. Then this will
-     * return undefined
+     * Retrieves the information about the backend.
+     * @param {Boolean} details (optional) If set to false, the promise will
+     *  just return a connection status
+     * @returns {Promise<Object>}
+     *      {String} The property 'gpgme': Version number of gpgme
+     *      {Array<Object>} 'info' Further information about the backends.
+     *      Example:
+     *          "protocol":     "OpenPGP",
+     *          "fname":        "/usr/bin/gpg",
+     *          "version":      "2.2.6",
+     *          "req_version":  "1.4.0",
+     *          "homedir":      "default"
      */
-    get isConnected(){
-        return this._isConnected;
+    checkConnection(details = true){
+        if (details === true) {
+            return this.post(createMessage('version'));
+        } else {
+            let me = this;
+            return new Promise(function(resolve,reject) {
+                Promise.race([
+                    me.post(createMessage('version')),
+                    new Promise(function(resolve, reject){
+                        setTimeout(function(){
+                            reject(gpgme_error('CONN_TIMEOUT'));
+                        }, 500);
+                    })
+                ]).then(function(result){
+                        resolve(true);
+                }, function(reject){
+                    resolve(false);
+                });
+            });
+        }
     }
 
     /**
@@ -54,6 +78,7 @@ export class Connection{
     disconnect() {
         if (this._connection){
             this._connection.disconnect();
+            this._connection = null;
         }
     }
 
@@ -61,17 +86,8 @@ export class Connection{
      * Opens a nativeMessaging port.
      */
     connect(){
-        if (this._isConnected === true){
-            gpgme_error('CONN_ALREADY_CONNECTED');
-        } else {
-            this._isConnected = true;
+        if (!this._connection){
             this._connection = chrome.runtime.connectNative('gpgmejson');
-            let me = this;
-            this._connection.onDisconnect.addListener(
-                function(){
-                    me._isConnected = false;
-                }
-            );
         }
     }
 
@@ -82,8 +98,8 @@ export class Connection{
      * information.
      */
     post(message){
-        if (!this.isConnected){
-            return Promise.reject(gpgme_error('CONN_DISCONNECTED'));
+        if (!this._connection) {
+
         }
         if (!message || !message instanceof GPGME_Message){
             return Promise.reject(gpgme_error('PARAM_WRONG'), message);
@@ -199,7 +215,7 @@ class Answer{
                         if (!this._response.hasOwnProperty(key)){
                             this._response[key] = [];
                         }
-                        this._response.push(msg[key]);
+                        this._response[key].push(msg[key]);
                     }
                     else {
                         return gpgme_error('CONN_UNEXPECTED_ANSWER');

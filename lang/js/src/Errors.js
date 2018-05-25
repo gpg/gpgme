@@ -25,10 +25,6 @@ const err_list = {
             + ' established.',
         type: 'error'
     },
-    'CONN_DISCONNECTED': {
-        msg:'Connection with the nativeMessaging host was lost.',
-        type: 'error'
-    },
     'CONN_EMPTY_GPG_ANSWER':{
         msg: 'The nativeMessaging answer was empty.',
         type: 'error'

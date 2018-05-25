@@ -34,20 +34,16 @@ function init(config){
     }
     return new Promise(function(resolve, reject){
         let connection = new Connection;
-        // TODO: Delayed reaction is ugly. We need to listen to the port's
-        // event listener in isConnected, but in some cases this takes some
-        // time (<5ms) to disconnect if there is no successfull connection.
-        let delayedreaction = function(){
-            if (connection === undefined) {
+        connection.checkConnection(false).then(
+            function(result){
+                if (result === true) {
+                    resolve(new GpgME(connection, _conf));
+                } else {
+                    reject(gpgme_error('CONN_NO_CONNECT'));
+                }
+            }, function(error){
                 reject(gpgme_error('CONN_NO_CONNECT'));
-            }
-            if (connection.isConnected === true){
-                resolve(new GpgME(connection, _conf));
-            } else {
-                reject(gpgme_error('CONN_NO_CONNECT'));
-            }
-        };
-        setTimeout(delayedreaction, 5);
+        });
     });
 }
 

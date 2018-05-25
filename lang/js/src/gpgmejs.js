@@ -44,13 +44,7 @@ export class GpgME {
     }
 
     get connection(){
-        if (this._connection){
-            if (this._connection.isConnected === true){
-                return this._connection;
-            }
-            return undefined;
-        }
-        return undefined;
+        return this._connection;
     }
 
     set Keyring(keyring){

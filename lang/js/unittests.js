@@ -39,34 +39,29 @@ function unittests (){
 
         it('Connecting', function(done) {
             let conn0 = new Connection;
-            let delayed = function(){
-                expect(conn0.isConnected).to.be.true;
-                expect(conn0.connect).to.be.a('function');
+            conn0.checkConnection().then(function(answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.gpgme).to.not.be.undefined;
+                expect(answer.gpgme).to.be.a('string');
+                expect(answer.info).to.be.an('Array');
                 expect(conn0.disconnect).to.be.a('function');
                 expect(conn0.post).to.be.a('function');
                 done();
-            };
-            setTimeout(delayed, 5);
+            });
 
         });
 
         it('Disconnecting', function(done) {
             let conn0 = new Connection;
-            let delayed = function(){
-                conn0.disconnect(); // TODO fails!
-                expect(conn0.isConnected).to.be.false;
-                done();
-            };
-            setTimeout(delayed, 5);
+            conn0.checkConnection(false).then(function(answer) {
+                expect(answer).to.be.true;
+                conn0.disconnect();
+                conn0.checkConnection(false).then(function(result) {
+                    expect(result).to.be.false;
+                    done();
+                });
+            });
         });
-
-        // broken
-        // it('Connect info still only available after a delay', function(done){
-        //     // if false, all delayed connections can be refactored
-        //     let conn0 = new Connection;
-        //     expect(conn0.isConnected).to.be.undefined;
-        //  //
-        // })
     });
 
     describe('Error Object handling', function(){
@@ -181,14 +176,17 @@ function unittests (){
             // TODO not implemented yet: Further Key functionality
         });
 
-        it('Key can use the connection', function(){
+        it('Key can use the connection', function(done){
             let conn = new Connection;
             let key = createKey(hp.validFingerprint, conn);
-
-            expect(key.connection.isConnected).to.be.true;
-
-            key.connection.disconnect();
-            expect(key.connection.isConnected).to.be.false;
+            key.connection.checkConnection(false).then(function(result){
+                expect(result).to.be.true;
+                key.connection.disconnect();
+                key.connection.checkConnection(false).then(function(result2){
+                    expect(result2).to.be.false;
+                    done();
+                });
+            });
         });
 
         it('createKey returns error if parameters are wrong', function(){
@@ -232,12 +230,15 @@ function unittests (){
 
         it('Keyring should return errors if not connected', function(){
             let keyring = new GPGME_Keyring;
-
             expect(keyring).to.be.an.instanceof(GPGME_Keyring);
             expect(keyring.connection).to.be.an.instanceof(Error);
             expect(keyring.connection.code).to.equal('CONN_NO_CONNECT');
-            expect(keyring.getKeys).to.be.an.instanceof(Error);
-            expect(keyring.getkeys.code).to.equal('CONN_NO_CONNECT');
+            // not yet implemented:
+            // keyring.getKeys().then(
+                // function(result){},
+                //function(reject){
+                    // expect(reject).to.be.an.instanceof(Error);
+                    // done();
         });
             //TODO not yet implemented:
             //  getKeys(pattern, include_secret) //note: pattern can be null

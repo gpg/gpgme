@@ -30,9 +30,6 @@
             expect(context.encrypt).to.be.a('function');
             expect(context.decrypt).to.be.a('function');
             done();
-        }, function(errorr){
-             expect(error).to.be.undefined;
-             done();
         });
     });
 });

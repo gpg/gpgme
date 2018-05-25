@@ -36,10 +36,7 @@ export class GPGME_Keyring {
     }
     get connection(){
         if (this._connection instanceof Connection){
-            if (this._connection.isConnected){
-                return this._connection;
-            }
-            return gpgme_error('CONN_DISCONNECTED');
+            return this._connection;
         }
         return gpgme_error('CONN_NO_CONNECT');
     }
@@ -51,36 +48,35 @@ export class GPGME_Keyring {
      *
      */
     getKeys(pattern, include_secret){
-        let msg = createMessage('listkeys');
-        if (msg instanceof Error){
-            return Promise.reject(msg);
-        }
-        if (pattern && typeof(pattern) === 'string'){
-            msg.setParameter('pattern', pattern);
-        }
-        if (include_secret){
-            msg.setParameter('with-secret', true);
-        }
         let me = this;
-
-        this.connection.post(msg).then(function(result){
-            let fpr_list = [];
-            let resultset = [];
-            if (!Array.isArray(result.keys)){
-            //TODO check assumption keys = Array<String fingerprints>
-                fpr_list = [result.keys];
-            } else {
-                fpr_list = result.keys;
+        return new Promise(function(resolve, reject) {
+            let msg;
+            msg = createMessage('listkeys');
+            if (pattern && typeof(pattern) === 'string'){
+                msg.setParameter('pattern', pattern);
             }
-            for (let i=0; i < fpr_list.length; i++){
-                let newKey = new GPGME_Key(fpr_list[i], me._connection);
-                if (newKey instanceof GPGME_Key){
-                    resultset.push(newKey);
+            if (include_secret){
+                msg.setParameter('with-secret', true);
+            }
+            me.connection.post(msg).then(function(result){
+                let fpr_list = [];
+                let resultset = [];
+                if (!Array.isArray(result.keys)){
+                //TODO check assumption keys = Array<String fingerprints>
+                    fpr_list = [result.keys];
+                } else {
+                    fpr_list = result.keys;
                 }
-            }
-            return Promise.resolve(resultset);
-        }, function(error){
-            //TODO error handling
+                for (let i=0; i < fpr_list.length; i++){
+                    let newKey = new GPGME_Key(fpr_list[i], me._connection);
+                    if (newKey instanceof GPGME_Key){
+                        resultset.push(newKey);
+                    }
+                }
+                resolve(resultset);
+            }, function(error){
+                reject(error);
+            });
         });
     }
 
