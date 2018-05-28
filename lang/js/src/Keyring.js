@@ -19,7 +19,7 @@
  */
 
 import {createMessage} from './Message'
-import {GPGME_Key} from './Key'
+import {GPGME_Key, createKey} from './Key'
 import { isFingerprint } from './Helpers';
 import { gpgme_error } from './Errors';
 
@@ -28,117 +28,54 @@ export class GPGME_Keyring {
     }
 
     /**
-     * @param {String} (optional) pattern A pattern to search for, in userIds or KeyIds
-     * @param {Boolean} (optional) Include listing of secret keys
+     * @param {String} pattern (optional) pattern A pattern to search for,
+     * in userIds or KeyIds
+     * @param {Boolean} prepare_sync (optional, default true) if set to true,
+     * Key.armor and Key.hasSecret will be called, so they can be used
+     * inmediately. This allows for full synchronous use. If set to false,
+     * these will initially only be available as Promises in getArmor() and
+     * getHasSecret()
      * @returns {Promise.<Array<GPGME_Key>>}
      *
      */
-    getKeys(pattern, include_secret){
+    getKeys(pattern, prepare_sync){
         let me = this;
         return new Promise(function(resolve, reject) {
             let msg;
-            msg = createMessage('listkeys');
+            msg = createMessage('keylist');
             if (pattern && typeof(pattern) === 'string'){
-                msg.setParameter('pattern', pattern);
+                msg.setParameter('keys', pattern);
             }
-            if (include_secret){
-                msg.setParameter('with-secret', true);
-            }
+            msg.setParameter('sigs', true); //TODO do we need this?
             msg.post().then(function(result){
-                let fpr_list = [];
                 let resultset = [];
-                if (!Array.isArray(result.keys)){
-                //TODO check assumption keys = Array<String fingerprints>
-                    fpr_list = [result.keys];
-                } else {
-                    fpr_list = result.keys;
-                }
-                for (let i=0; i < fpr_list.length; i++){
-                    let newKey = new GPGME_Key(fpr_list[i]);
-                    if (newKey instanceof GPGME_Key){
-                        resultset.push(newKey);
+                let promises = [];
+                // TODO check if result.key is not empty
+                for (let i=0; i< result.keys.length; i++){
+                    let k = createKey(result.keys[i].fingerprint, me);
+                    k.setKeyData(result.keys[i]);
+                    if (prepare_sync === true){
+                        promises.push(k.getArmor());
+                        promises.push(k.getHasSecret());
                     }
+                    resultset.push(k);
                 }
-                resolve(resultset);
+                if (promises.length > 0) {
+                    Promise.all(promises).then(function (res){
+                        resolve(resultset);
+                    }, function(error){
+                        reject(error);
+                    });
+                }
             }, function(error){
                 reject(error);
             });
         });
     }
-
-    /**
-     * @param {Object} flags subset filter expecting at least one of the
-     * filters described below. True will filter on the condition, False will
-     * reverse the filter, if not present or undefined, the filter will not be
-     * considered. Please note that some combination may not make sense
-     * @param {Boolean} flags.secret Only Keys containing a secret part.
-     * @param {Boolean} flags.revoked revoked Keys only
-     * @param {Boolean} flags.expired Expired Keys only
-     * @param {String} (optional) pattern A pattern to search for, in userIds or KeyIds
-     * @returns {Promise Array<GPGME_Key>}
-     *
-     */
-    getSubset(flags, pattern){
-        if (flags === undefined) {
-            throw('ERR_WRONG_PARAM');
-        };
-        let secretflag = false;
-        if (flags.hasOwnProperty(secret) && flags.secret){
-            secretflag = true;
-        }
-        this.getKeys(pattern, secretflag).then(function(queryset){
-            let resultset = [];
-            for (let i=0; i < queryset.length; i++ ){
-                let conditions = [];
-                let anticonditions = [];
-                if (secretflag === true){
-                    conditions.push('hasSecret');
-                } else if (secretflag === false){
-                    anticonditions.push('hasSecret');
-                }
-                /**
-                if (flags.defaultKey === true){
-                    conditions.push('isDefault');
-                } else if (flags.defaultKey === false){
-                    anticonditions.push('isDefault');
-                }
-                */
-                /**
-                 * if (flags.valid === true){
-                    anticonditions.push('isInvalid');
-                } else if (flags.valid === false){
-                    conditions.push('isInvalid');
-                }
-                */
-                if (flags.revoked === true){
-                    conditions.push('isRevoked');
-                } else if (flags.revoked === false){
-                    anticonditions.push('isRevoked');
-                }
-                if (flags.expired === true){
-                    conditions.push('isExpired');
-                } else if (flags.expired === false){
-                    anticonditions.push('isExpired');
-                }
-                let decision = undefined;
-                for (let con = 0; con < conditions.length; con ++){
-                    if (queryset[i][conditions[con]] !== true){
-                        decision = false;
-                    }
-                }
-                for (let acon = 0; acon < anticonditions.length; acon ++){
-                    if (queryset[i][anticonditions[acon]] === true){
-                        decision = false;
-                    }
-                }
-                if (decision !== false){
-                    resultset.push(queryset[i]);
-                }
-            }
-            return Promise.resolve(resultset);
-        }, function(error){
-            //TODO error handling
-        });
-    }
+//  TODO:
+    // deleteKey(key, include_secret=false)
+    // getKeysArmored(pattern) //just dump all armored keys
+    // getDefaultKey() Big TODO
+    // importKeys(armoredKeys)
 
 };

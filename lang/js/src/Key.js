@@ -77,7 +77,7 @@ export class GPGME_Key {
      * @returns {GPGME_Key|GPGME_Error} The Key object itself after values have
      * been set
      */
-    setKeydata(data){
+    setKeyData(data){
         if (this._data === undefined) {
             this._data = {};
         }
@@ -161,11 +161,17 @@ export class GPGME_Key {
         if (cached === false) {
             let me = this;
             return new Promise(function(resolve, reject) {
-                me.refreshKey().then(function(key){
-                    resolve(key.get(property, true));
-                }, function(error){
-                    reject(error);
-                });
+                if (property === 'armor'){
+                    resolve(me.getArmor());
+                } else if (property === 'hasSecret'){
+                    resolve(me.getHasSecret());
+                } else {
+                    me.refreshKey().then(function(key){
+                        resolve(key.get(property, true));
+                    }, function(error){
+                        reject(error);
+                    });
+                }
             });
          } else {
             if (!this._data.hasOwnProperty(property)){
@@ -188,10 +194,9 @@ export class GPGME_Key {
             let msg = createMessage('keylist');
             msg.setParameter('sigs', true);
             msg.setParameter('keys', me._data.fingerprint);
-            console.log(msg);
             msg.post().then(function(result){
                 if (result.keys.length === 1){
-                    me.setKeydata(result.keys[0]);
+                    me.setKeyData(result.keys[0]);
                     resolve(me);
                 } else {
                     reject(gpgme_error('KEY_NOKEY'));
@@ -202,25 +207,78 @@ export class GPGME_Key {
         });
     }
 
-    //TODO:
     /**
      * Get the armored block of the non- secret parts of the Key.
      * @returns {String} the armored Key block.
      * Notice that this may be outdated cached info. Use the async getArmor if
      * you need the most current info
      */
+
     // get armor(){ TODO }
 
     /**
      * Query the armored block of the non- secret parts of the Key directly
      * from gpg.
-     * Async, returns Promise<String>
+     * @returns {Promise<String>}
      */
-    // getArmor(){ TODO }
-    //
+     getArmor(){
+        let me = this;
+        return new Promise(function(resolve, reject) {
+            if (!me._data.fingerprint){
+                reject(gpgme_error('KEY_INVALID'));
+            }
+            let msg = createMessage('export');
+            msg.setParameter('armor', true);
+            msg.setParameter('keys', me._data.fingerprint);
+            msg.post().then(function(result){
+                me._data.armor = result.data;
+                resolve(result.data);
+            }, function(error){
+                reject(error);
+            });
+        });
+    }
 
-    // get hasSecret(){TODO} // confusing difference to Key.get('secret')!
-    // getHasSecret(){TODO async version}
+    getHasSecret(){
+        let me = this;
+        return new Promise(function(resolve, reject) {
+            if (!me._data.fingerprint){
+                reject(gpgme_error('KEY_INVALID'));
+            }
+            let msg = createMessage('keylist');
+            msg.setParameter('keys', me._data.fingerprint);
+            msg.setParameter('secret', true);
+            msg.post().then(function(result){
+                me._data.hasSecret = null;
+                if (result.keys === undefined || result.keys.length < 1) {
+                    me._data.hasSecret = false;
+                    resolve(false);
+                }
+                else if (result.keys.length === 1){
+                    let key = result.keys[0];
+                    if (!key.subkeys){
+                        me._data.hasSecret = false;
+                        resolve(false);
+                    } else {
+                        for (let i=0; i < key.subkeys.length; i++) {
+                            if (key.subkeys[i].secret === true) {
+                                me._data.hasSecret = true;
+                                resolve(true);
+                                break;
+                            }
+                            if (i === (key.subkeys.length -1)) {
+                                me._data.hasSecret = false;
+                                resolve(false);
+                            }
+                        }
+                    }
+                } else {
+                    reject(gpgme_error('CONN_UNEXPECTED_ANSWER'))
+                }
+            }, function(error){
+            })
+        });
+    }
 }
 
 /**

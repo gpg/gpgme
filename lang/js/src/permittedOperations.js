@@ -45,6 +45,7 @@
 
 export const permittedOperations = {
     encrypt: {
+        pinentry: true, //TODO only with signing_keys
         required: {
             'keys': {
                 allowed: ['string'],
@@ -59,38 +60,42 @@ export const permittedOperations = {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
             },
-                'chunksize': {
-                    allowed: ['number']
-                },
-                'base64': {
-                    allowed: ['boolean']
-                },
-                'mime': {
-                    allowed: ['boolean']
-                },
-                'armor': {
-                    allowed: ['boolean']
-                },
-                'always-trust': {
-                    allowed: ['boolean']
-                },
-                'no-encrypt-to': {
-                    allowed: ['string'],
-                    array_allowed: true
-                },
-                'no-compress': {
-                    allowed: ['boolean']
-                },
-                'throw-keyids': {
-                    allowed: ['boolean']
-                },
-                'want-address': {
-                    allowed: ['boolean']
-                },
-                'wrap': {
-                    allowed: ['boolean']
-                },
+            'signing_keys': {
+                allowed: ['string'],
+                array_allowed: true
             },
+            'chunksize': {
+                    allowed: ['number']
+            },
+            'base64': {
+                allowed: ['boolean']
+            },
+            'mime': {
+                allowed: ['boolean']
+            },
+            'armor': {
+                allowed: ['boolean']
+            },
+            'always-trust': {
+                allowed: ['boolean']
+            },
+            'no-encrypt-to': {
+                allowed: ['string'],
+                array_allowed: true
+            },
+            'no-compress': {
+                allowed: ['boolean']
+            },
+            'throw-keyids': {
+                allowed: ['boolean']
+            },
+            'want-address': {
+                allowed: ['boolean']
+            },
+            'wrap': {
+                allowed: ['boolean']
+            }
+        },
         answer: {
             type: ['ciphertext'],
             data: ['data'],
@@ -122,12 +127,7 @@ export const permittedOperations = {
             type: ['plaintext'],
             data: ['data'],
             params: ['base64', 'mime'],
-            infos: [] // TODO pending. Info about signatures and validity
-                    //{
-                        //signatures: [{
-                            //Key : <String>Fingerprint,
-                            //valid: <Boolean>
-                        // }]
+            infos: ['signatures']
         }
     },
 
@@ -208,61 +208,107 @@ export const permittedOperations = {
             'validate': {
                 allowed: ['boolean']
             },
-            // 'pattern': { TODO
-            //     allowed: ['string']
-            // },
             'keys': {
                 allowed: ['string'],
                 array_allowed: true
             }
         },
         answer: {
-            type: [],
+            type: ['keys'],
             data: [],
-            params: [],
+            params: ['base64'],
             infos: ['keys']
         }
     },
 
-    /**
-    importkey: {
+    export: {
+        required: {},
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'chunksize': {
+                allowed: ['number'],
+            },
+            'keys': {
+                allowed: ['string'],
+                array_allowed: true
+            },
+            'armor': {
+                allowed: ['boolean']
+            },
+            'extern': {
+                allowed: ['boolean']
+            },
+            'minimal': {
+                allowed: ['boolean']
+            },
+            'raw': {
+                allowed: ['boolean']
+            },
+            'pkcs12':{
+                allowed: ['boolean']
+            }
+            // secret: not yet implemented
+        },
+        answer: {
+            type: ['keys'],
+            data: ['data'],
+            params: ['base64']
+        }
+    },
+
+    import: {
         required: {
-            'keyarmored': {
+            'data': {
                 allowed: ['string']
             }
         },
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'base64': {
+                allowed: ['boolean']
+            },
+        },
         answer: {
-            type: ['TBD'],
-            infos: ['TBD'],
-            // for each key if import was a success,
-            // and if it was an update of preexisting key
+            infos: ['result'],
+            type: [],
+            data: [],
+            params: []
         }
     },
-    */
 
-    /**
-    deletekey:  {
+    delete: {
         pinentry: true,
-        required: {
-            'fingerprint': {
-                allowed: ['string'],
-                // array_allowed: TBD Allow several Keys to be deleted at once?
-            },
+        required:{
+            'key': {
+                allowed: ['string']
+            }
+        },
         optional: {
-            'TBD' //Flag to delete secret Key ?
-        }
-        answer: {
-            type ['TBD'],
-            infos: ['']
-                // TBD (optional) Some kind of 'ok' if delete was successful.
-        }
-    }
-    */
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            // 'secret': { not yet implemented
+            //     allowed: ['boolean']
+            // }
 
+        },
+        answer: {
+            data: [],
+            params:['success'],
+            infos: []
+        }
+    },
     /**
      *TBD get armored secret different treatment from keyinfo!
      * TBD key modification?
-     * encryptsign: TBD
+
      */
 
     version: {

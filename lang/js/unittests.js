@@ -197,7 +197,34 @@ function unittests (){
                 expect(result).to.be.a('boolean');
                 done();
             });
-        })
+        });
+
+        it('Non-cached key async armored Key', function (done){
+            let key = createKey(kp.validKeyFingerprint);
+            key.get('armor', false).then(function(result){
+                expect(result).to.be.a('string');
+                expect(result).to.include('KEY BLOCK-----');
+                done();
+            });
+        });
+
+        it('Non-cached key async hasSecret', function (done){
+            let key = createKey(kp.validKeyFingerprint);
+            key.get('hasSecret', false).then(function(result){
+                expect(result).to.be.a('boolean');
+                done();
+            });
+        });
+
+        it('Non-cached key async hasSecret (no secret in Key)', function (done){
+            let key = createKey(kp.validFingerprintNoSecret);
+            expect(key).to.be.an.instanceof(GPGME_Key);
+            key.get('hasSecret', false).then(function(result){
+                expect(result).to.be.a('boolean');
+                expect(result).to.equal(false);
+                done();
+            });
+        });
 
         it('Querying non-existing Key returns an error', function(done) {
             let key = createKey(kp.invalidKeyFingerprint);
@@ -224,7 +251,6 @@ function unittests (){
                 expect(key.fingerprint.code).to.equal('KEY_INVALID');
             }
         });
-
         // TODO: tests for subkeys
         // TODO: tests for userids
         // TODO: some invalid tests for key/keyring
@@ -236,19 +262,19 @@ function unittests (){
             let keyring = new GPGME_Keyring;
             expect(keyring).to.be.an.instanceof(GPGME_Keyring);
             expect(keyring.getKeys).to.be.a('function');
-            expect(keyring.getSubset).to.be.a('function');
         });
 
-        it('correct initialization', function(){
+        it('Loading Keys from Keyring, to be used synchronously', function(done){
             let keyring = new GPGME_Keyring;
-            expect(keyring).to.be.an.instanceof(GPGME_Keyring);
-            expect(keyring.getKeys).to.be.a('function');
-            expect(keyring.getSubset).to.be.a('function');
+            keyring.getKeys(null, true).then(function(result){
+                expect(result).to.be.an('array');
+                expect(result[0]).to.be.an.instanceof(GPGME_Key);
+                expect(result[0].get('armor')).to.be.a('string');
+                expect(result[0].get('armor')).to.include(
+                    '-----END PGP PUBLIC KEY BLOCK-----');
+                done();
+            });
         });
-            //TODO not yet implemented:
-            //  getKeys(pattern, include_secret) //note: pattern can be null
-            //  getSubset(flags, pattern)
-                // available Boolean flags: secret revoked expired
     });
 
     describe('GPGME_Message', function(){

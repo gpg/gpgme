@@ -44,7 +44,11 @@ export const whatever_params = {
     four_invalid_params: ['<(((-<', '>°;==;~~', '^^', '{{{{o}}}}'],
 }
 export const key_params = {
+// A Key you own (= having a secret Key) in GPG. See testkey.pub/testkey.sec
     validKeyFingerprint: 'D41735B91236FDB882048C5A2301635EEFF0CB05',
+// A Key you do not own (= having no secret Key) in GPG. See testkey2.pub
+    validFingerprintNoSecret: 'E059A1E0866D31AE131170884D9A2E13304153D1',
+// A Key not in your Keyring. This is just a random hex string.
     invalidKeyFingerprint: 'CDC3A2B2860625CCBFC5AAAAAC6D1B604967FC4A',
     validKeyProperties: ['expired', 'disabled','invalid','can_encrypt',
     'can_sign','can_certify','can_authenticate','secret','is_qualified']
