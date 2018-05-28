@@ -1821,6 +1821,8 @@ op_version (cjson_t request, cjson_t result)
   gpgme_engine_info_t ei = NULL;
   cjson_t infos = xjson_CreateArray ();
 
+  (void)request;
+
   if (!cJSON_AddStringToObject (result, "gpgme", gpgme_check_version (NULL)))
     {
       cJSON_Delete (infos);
@@ -1845,6 +1847,8 @@ op_version (cjson_t request, cjson_t result)
 
   return 0;
 }
+
+
 
 static const char hlp_keylist[] =
   "op:     \"keylist\"\n"
