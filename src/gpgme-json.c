@@ -2169,7 +2169,6 @@ static const char hlp_export[] =
   "armor:         Request output in armored format.\n"
   "extern:        Add EXPORT_MODE_EXTERN.\n"
   "minimal:       Add EXPORT_MODE_MINIMAL.\n"
-  "secret:        Add EXPORT_MODE_SECRET. (not implemented)\n"
   "raw:           Add EXPORT_MODE_RAW.\n"
   "pkcs12:        Add EXPORT_MODE_PKCS12.\n"
   "\n"
@@ -2206,7 +2205,10 @@ op_export (cjson_t request, cjson_t result)
   if ((err = get_boolean_flag (request, "secret", 0, &abool)))
     goto leave;
   if (abool)
-    mode |= GPGME_EXPORT_MODE_SECRET;
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
 
   if ((err = get_boolean_flag (request, "extern", 0, &abool)))
     goto leave;
@@ -2270,9 +2272,6 @@ static const char hlp_delete[] =
   "Optional parameters:\n"
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "\n"
-  "Optional boolean flags (default is false):\n"
-  "secret:        Allow deletion of secret keys. (not implemented)\n"
-  "\n"
   "Response on success:\n"
   "success:   Boolean true.\n";
 static gpg_error_t
@@ -2293,6 +2292,11 @@ op_delete (cjson_t request, cjson_t result)
 
   if ((err = get_boolean_flag (request, "secret", 0, &secret)))
     goto leave;
+  if (secret)
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
+    }
 
   j_key = cJSON_GetObjectItem (request, "key");
   if (!j_key)
@@ -2307,14 +2311,14 @@ op_delete (cjson_t request, cjson_t result)
     }
 
   /* Get the key */
-  if ((err = gpgme_get_key (keylist_ctx, j_key->valuestring, &key, secret)))
+  if ((err = gpgme_get_key (keylist_ctx, j_key->valuestring, &key, 0)))
     {
       gpg_error_object (result, err, "Error fetching key for delete: %s",
                         gpg_strerror (err));
       goto leave;
     }
 
-  err = gpgme_op_delete (ctx, key, secret);
+  err = gpgme_op_delete (ctx, key, 0);
   if (err)
     {
       gpg_error_object (result, err, "Error deleting key: %s",
