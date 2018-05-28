@@ -22,23 +22,9 @@ import {createMessage} from './Message'
 import {GPGME_Key} from './Key'
 import { isFingerprint } from './Helpers';
 import { gpgme_error } from './Errors';
-import { Connection } from './Connection';
 
 export class GPGME_Keyring {
-    constructor(connection){
-        this.connection = connection;
-    }
-
-    set connection(connection){
-        if (!this._connection && connection instanceof Connection){
-            this._connection = connection;
-        }
-    }
-    get connection(){
-        if (this._connection instanceof Connection){
-            return this._connection;
-        }
-        return gpgme_error('CONN_NO_CONNECT');
+    constructor(){
     }
 
     /**
@@ -58,7 +44,7 @@ export class GPGME_Keyring {
             if (include_secret){
                 msg.setParameter('with-secret', true);
             }
-            me.connection.post(msg).then(function(result){
+            msg.post().then(function(result){
                 let fpr_list = [];
                 let resultset = [];
                 if (!Array.isArray(result.keys)){
@@ -68,7 +54,7 @@ export class GPGME_Keyring {
                     fpr_list = result.keys;
                 }
                 for (let i=0; i < fpr_list.length; i++){
-                    let newKey = new GPGME_Key(fpr_list[i], me._connection);
+                    let newKey = new GPGME_Key(fpr_list[i]);
                     if (newKey instanceof GPGME_Key){
                         resultset.push(newKey);
                     }

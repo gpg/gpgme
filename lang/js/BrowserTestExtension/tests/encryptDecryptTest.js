@@ -34,7 +34,6 @@ describe('Encryption and Decryption', function () {
                         expect(result).to.not.be.empty;
                         expect(result.data).to.be.a('string');
                         expect(result.data).to.equal(inputvalues.encrypt.good.data);
-                        context.connection.disconnect();
                         done();
                     });
                 });
@@ -75,7 +74,6 @@ describe('Encryption and Decryption', function () {
                                 expect(result).to.not.be.empty;
                                 expect(result.data).to.be.a('string');
                                 expect(result.data).to.equal(data);
-                                context.connection.disconnect();
                                 done();
 
                             });
@@ -108,7 +106,6 @@ describe('Encryption and Decryption', function () {
                                     expect(result).to.not.be.empty;
                                     expect(result.data).to.be.a('string');
                                     expect(result.data).to.equal(data);
-                                    context.connection.disconnect();
                                     done();
                                 });
                         });
@@ -134,7 +131,6 @@ describe('Encryption and Decryption', function () {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
                             expect(result.data).to.equal(data);
-                            context.connection.disconnect();
                             done();
                         });
                 });
@@ -160,7 +156,6 @@ describe('Encryption and Decryption', function () {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
                             expect(data).to.equal(data);
-                            context.connection.disconnect();
                             done();
                         });
                 });
@@ -187,7 +182,6 @@ describe('Encryption and Decryption', function () {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
                             expect(result.data).to.equal(data);
-                            context.connection.disconnect();
                             done();
                         });
                 });
@@ -214,7 +208,6 @@ describe('Encryption and Decryption', function () {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
                             expect(result.data).to.equal(b64data);
-                            context.connection.disconnect();
                             done();
                         });
                 });

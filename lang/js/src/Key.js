@@ -30,27 +30,16 @@ import { isFingerprint, isLongId } from './Helpers'
 import { gpgme_error } from './Errors'
 import { createMessage } from './Message';
 import { permittedOperations } from './permittedOperations';
-import { Connection } from './Connection';
 
 /**
- * Validates the fingerprint, and checks for tha availability of a connection.
- * If both are available, a Key will be returned.
+ * Validates the fingerprint.
  * @param {String} fingerprint
- * @param {Object} parent Either a Connection, or the invoking object with a
- * Connection (e.g. Keyring)
  */
-export function createKey(fingerprint, parent){
+export function createKey(fingerprint){
     if (!isFingerprint(fingerprint)){
         return gpgme_error('PARAM_WRONG');
     }
-    if ( parent instanceof Connection){
-        return new GPGME_Key(fingerprint, parent);
-    } else if ( parent.hasOwnProperty('connection') &&
-        parent.connection instanceof Connection){
-            return new GPGME_Key(fingerprint, parent.connection);
-    } else {
-        return gpgme_error('PARAM_WRONG');
-    }
+    else return new GPGME_Key(fingerprint);
 }
 
 /**
@@ -58,28 +47,8 @@ export function createKey(fingerprint, parent){
  */
 export class GPGME_Key {
 
-    constructor(fingerprint, connection){
+    constructor(fingerprint){
         this.fingerprint = fingerprint;
-        this.connection = connection;
-    }
-
-    set connection(conn){
-        if (this._connection instanceof Connection) {
-            gpgme_error('CONN_ALREADY_CONNECTED');
-        } else if (conn instanceof Connection ) {
-            this._connection = conn;
-        }
-    }
-
-    get connection(){
-        if (!this._data.fingerprint){
-            return gpgme_error('KEY_INVALID');
-        }
-        if (!this._connection instanceof Connection){
-            return gpgme_error('CONN_NO_CONNECT');
-        } else {
-            return this._connection;
-        }
     }
 
     set fingerprint(fpr){
@@ -219,7 +188,8 @@ export class GPGME_Key {
             let msg = createMessage('keylist');
             msg.setParameter('sigs', true);
             msg.setParameter('keys', me._data.fingerprint);
-            me.connection.post(msg).then(function(result){
+            console.log(msg);
+            msg.post().then(function(result){
                 if (result.keys.length === 1){
                     me.setKeydata(result.keys[0]);
                     resolve(me);

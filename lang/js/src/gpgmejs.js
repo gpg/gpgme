@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-import {Connection} from "./Connection"
 import {GPGME_Message, createMessage} from './Message'
 import {toKeyIdArray} from "./Helpers"
 import { gpgme_error } from "./Errors"
@@ -29,31 +28,20 @@ export class GpgME {
      * initializes GpgME by opening a nativeMessaging port
      * TODO: add configuration
      */
-    constructor(connection){
-        this.connection = connection;
+    constructor(config){ //TODO config not parsed
+        this._config = config;
     }
 
-    set connection(conn){
-        if (this._connection instanceof Connection){
-            gpgme_error('CONN_ALREADY_CONNECTED');
-        } else if (conn instanceof Connection){
-            this._connection = conn;
-        } else {
-            gpgme_error('PARAM_WRONG');
-        }
-    }
-
-    get connection(){
-        return this._connection;
-    }
-
-    set Keyring(keyring){
+   set Keyring(keyring){
         if (keyring && keyring instanceof GPGME_Keyring){
             this._Keyring = keyring;
         }
     }
 
     get Keyring(){
+        if (!this._Keyring){
+            this._Keyring = new GPGME_Keyring;
+        }
         return this._Keyring;
     }
 
@@ -81,7 +69,7 @@ export class GpgME {
             msg.setParameter('throw-keyids', true);
         };
         if (msg.isComplete === true){
-            return this.connection.post(msg);
+            return msg.post();
         } else {
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
@@ -110,7 +98,7 @@ export class GpgME {
             return Promise.reject(msg);
         }
         putData(msg, data);
-        return this.connection.post(msg);
+        return msg.post();
 
     }
 
@@ -135,7 +123,7 @@ export class GpgME {
         }
         let me = this;
         return new Promise(function(resolve,reject) {
-            me.connection.post(msg).then( function(message) {
+            msg.post().then( function(message) {
                 if (mode === 'clearsign'){
                     resolve({
                         data: message.data}
@@ -174,20 +162,7 @@ export class GpgME {
             // TBD
         }
         if (msg.isComplete === true){
-            this.connection.post(msg).then(function(success){
-                // TODO: it seems that there is always errors coming back:
-            }, function(error){
-                switch (error.msg){
-                case 'ERR_NO_ERROR':
-                    return Promise.resolve('okay'); //TBD
-                default:
-                    return Promise.reject(gpgme_error('TODO') ); //
-                    // INV_VALUE,
-                    // GPG_ERR_NO_PUBKEY,
-                    // GPG_ERR_AMBIGUOUS_NAME,
-                    // GPG_ERR_CONFLICT
-                }
-            });
+            return msg.post();
         } else {
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }

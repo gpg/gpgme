@@ -28,7 +28,6 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -45,7 +44,6 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -62,7 +60,6 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -79,7 +76,6 @@ describe('Encryption', function () {
                     expect(answer.data).to.be.a("string");
                     expect(answer.data).to.include('BEGIN PGP MESSAGE');
                     expect(answer.data).to.include('END PGP MESSAGE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -95,7 +91,6 @@ describe('Encryption', function () {
                 }, function(error){
                     expect(error).to.be.an('Error');
                     expect(error.code).to.equal('MSG_INCOMPLETE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -110,7 +105,6 @@ describe('Encryption', function () {
                 }, function (error) {
                     expect(error).to.be.an.instanceof(Error);
                     expect(error.code).to.equal('MSG_INCOMPLETE');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -127,7 +121,6 @@ describe('Encryption', function () {
                     expect(error).to.be.an('Error');
                     expect(error.code).to.not.be.undefined;
                     expect(error.code).to.equal('GNUPG_ERROR');
-                    context.connection.disconnect();
                     done();
                 });
         });
@@ -146,7 +139,6 @@ describe('Encryption', function () {
                     // TODO: there is a 64 MB hard limit at least in chrome at:
                     // chromium//extensions/renderer/messaging_util.cc:
                     // kMaxMessageLength
-                    context.connection.disconnect();
                     done();
                 });
         });

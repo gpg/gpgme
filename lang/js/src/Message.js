@@ -19,6 +19,7 @@
  */
 import { permittedOperations } from './permittedOperations'
 import { gpgme_error } from './Errors'
+import { Connection } from './Connection';
 
 export function createMessage(operation){
     if (typeof(operation) !== 'string'){
@@ -192,5 +193,22 @@ export class GPGME_Message {
             return null;
         }
 
+    }
+
+    post(){
+        let me = this;
+        return new Promise(function(resolve, reject) {
+            if (me.isComplete === true) {
+                let conn  = new Connection;
+                conn.post(me).then(function(response) {
+                    resolve(response);
+                }, function(reason) {
+                    reject(gpgme_error('GNUPG_ERROR', reason));
+                });
+            }
+            else {
+                reject(gpgme_error('MSG_INCOMPLETE'));
+            }
+        });
     }
 }

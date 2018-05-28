@@ -29,7 +29,6 @@ describe('Long running Encryption/Decryption', function () {
                                             }
                                         }
                                         expect(result.data).to.equal(data);
-                                        context.connection.disconnect();
                                         done();
                                 });
                         });

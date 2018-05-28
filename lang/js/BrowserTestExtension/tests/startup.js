@@ -23,10 +23,7 @@
         let prm = Gpgmejs.init();
         prm.then(
          function(context){
-            expect(context.connection).to.not.be.undefined;
             expect(context).to.be.an('object');
-            expect(context.connection).to.be.an('object');
-            expect(context.Keyring).to.be.undefined;
             expect(context.encrypt).to.be.a('function');
             expect(context.decrypt).to.be.a('function');
             done();

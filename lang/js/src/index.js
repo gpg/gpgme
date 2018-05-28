@@ -37,7 +37,7 @@ function init(config){
         connection.checkConnection(false).then(
             function(result){
                 if (result === true) {
-                    resolve(new GpgME(connection, _conf));
+                    resolve(new GpgME(_conf));
                 } else {
                     reject(gpgme_error('CONN_NO_CONNECT'));
                 }

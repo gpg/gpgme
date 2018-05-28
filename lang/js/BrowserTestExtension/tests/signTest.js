@@ -30,7 +30,6 @@ describe('Signing', function () {
                     expect(answer.data).to.include('BEGIN PGP SIGNATURE');
                     expect(answer.data).to.include('END PGP SIGNATURE');
                     expect(answer.data).to.include(data);
-                    context.connection.disconnect();
                     done();
             });
         });
@@ -49,7 +48,6 @@ describe('Signing', function () {
                     expect(answer.data).to.include(data);
                     expect(answer.signature).to.be.a('string');
                     expect(answer.signature).to.be.a('string');
-                    context.connection.disconnect();
                     done();
             });
         });

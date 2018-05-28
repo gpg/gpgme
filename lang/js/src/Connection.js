@@ -102,9 +102,11 @@ export class Connection{
 
         }
         if (!message || !message instanceof GPGME_Message){
+            this.disconnect();
             return Promise.reject(gpgme_error('PARAM_WRONG'), message);
         }
         if (message.isComplete !== true){
+            this.disconnect();
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
         let me = this;
@@ -113,25 +115,27 @@ export class Connection{
             let listener = function(msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener)
+                    me._connection.disconnect();
                     reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
                 } else if (msg.type === "error"){
                     me._connection.onMessage.removeListener(listener);
+                    me._connection.disconnect();
                     reject(gpgme_error('GNUPG_ERROR', msg.msg));
                 } else {
                     let answer_result = answer.add(msg);
                     if (answer_result !== true){
                         me._connection.onMessage.removeListener(listener);
+                        me._connection.disconnect();
                         reject(answer_result);
-                    }
-                    if (msg.more === true){
+                    } else if (msg.more === true){
                         me._connection.postMessage({'op': 'getmore'});
                     } else {
                         me._connection.onMessage.removeListener(listener)
+                        me._connection.disconnect();
                         resolve(answer.message);
                     }
                 }
             };
-
             me._connection.onMessage.addListener(listener);
             if (permittedOperations[message.operation].pinentry){
                 return me._connection.postMessage(message.message);
@@ -140,12 +144,14 @@ export class Connection{
                     me._connection.postMessage(message.message),
                     function(resolve, reject){
                         setTimeout(function(){
+                            me._connection.disconnect();
                             reject(gpgme_error('CONN_TIMEOUT'));
                         }, 5000);
                     }]).then(function(result){
-                    return result;
+                        return result;
                 }, function(reject){
                     if(!reject instanceof Error) {
+                        me._connection.disconnect();
                         return gpgme_error('GNUPG_ERROR', reject);
                     } else {
                         return reject;
