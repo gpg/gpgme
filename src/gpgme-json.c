@@ -584,7 +584,6 @@ get_context (gpgme_protocol_t proto)
 }
 
 
-
 /* Free context object retrieved by get_context.  */
 static void
 release_context (gpgme_ctx_t ctx)
@@ -593,6 +592,23 @@ release_context (gpgme_ctx_t ctx)
   (void)ctx;
 }
 
+
+/* Create an addition context for short operations. */
+static gpgme_ctx_t
+create_onetime_context (gpgme_protocol_t proto)
+{
+  return _create_new_context (proto);
+
+}
+
+
+/* Release a one-time context.  */
+static void
+release_onetime_context (gpgme_ctx_t ctx)
+{
+  return gpgme_release (ctx);
+
+}
 
 
 /* Given a Base-64 encoded string object in JSON return a gpgme data
@@ -681,7 +697,7 @@ create_keylist_patterns (cjson_t request, const char *name)
     if (*p == '\n')
       cnt++;
 
-  ret = (char **) xmalloc (cnt * sizeof (char *));
+  ret = xmalloc (cnt * sizeof *ret);
 
   for (p = keystring, tmp = keystring; *p; p++)
     {
@@ -985,6 +1001,7 @@ key_to_json (gpgme_key_t key)
   return result;
 }
 
+
 /* Create a signature json object */
 static cjson_t
 signature_to_json (gpgme_signature_t sig)
@@ -1007,6 +1024,7 @@ signature_to_json (gpgme_signature_t sig)
   return result;
 }
 
+
 /* Create a JSON object from a gpgme_verify result */
 static cjson_t
 verify_result_to_json (gpgme_verify_result_t verify_result)
@@ -1026,6 +1044,7 @@ verify_result_to_json (gpgme_verify_result_t verify_result)
   return response;
 }
 
+
 /* Create a JSON object from an engine_info */
 static cjson_t
 engine_info_to_json (gpgme_engine_info_t info)
@@ -1042,6 +1061,8 @@ engine_info_to_json (gpgme_engine_info_t info)
                                                 "default");
   return result;
 }
+
+
 /* Create a JSON object from an import_status */
 static cjson_t
 import_status_to_json (gpgme_import_status_t sts)
@@ -1093,6 +1114,7 @@ import_result_to_json (gpgme_import_result_t imp)
   return result;
 }
 
+
 /* Create a gpgme_data from json string data named "name"
  * in the request. Takes the base64 option into account.
  *
@@ -1143,6 +1165,7 @@ get_string_data (cjson_t request, cjson_t result, const char *name,
     }
   return 0;
 }
+
 
 
 /*
@@ -1286,6 +1309,8 @@ op_encrypt (cjson_t request, cjson_t result)
   gpgme_data_t output = NULL;
   int abool;
   gpgme_encrypt_flags_t encrypt_flags = 0;
+  gpgme_ctx_t keylist_ctx = NULL;
+  gpgme_key_t key = NULL;
 
   if ((err = get_protocol (request, &protocol)))
     goto leave;
@@ -1339,9 +1364,7 @@ op_encrypt (cjson_t request, cjson_t result)
   signing_patterns = create_keylist_patterns (request, "signing_keys");
   if (signing_patterns)
     {
-      gpgme_ctx_t keylist_ctx = get_context (protocol);
-      gpgme_key_t key;
-
+      keylist_ctx = create_onetime_context (protocol);
       gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
 
       err = gpgme_op_keylist_ext_start (keylist_ctx,
@@ -1362,8 +1385,10 @@ op_encrypt (cjson_t request, cjson_t result)
               goto leave;
             }
           gpgme_key_unref (key);
+          key = NULL;
         }
-      release_context (keylist_ctx);
+      release_onetime_context (keylist_ctx);
+      keylist_ctx = NULL;
     }
 
   if ((err = get_string_data (request, result, "data", &input)))
@@ -1412,6 +1437,9 @@ op_encrypt (cjson_t request, cjson_t result)
  leave:
   xfree_array (signing_patterns);
   xfree (keystring);
+  release_onetime_context (keylist_ctx);
+  gpgme_key_unref (key);
+  gpgme_signers_clear (ctx);
   release_context (ctx);
   gpgme_data_release (input);
   gpgme_data_release (output);
@@ -1601,9 +1629,7 @@ op_sign (cjson_t request, cjson_t result)
     }
 
   /* Do a keylisting and add the keys */
-  if ((err = gpgme_new (&keylist_ctx)))
-    goto leave;
-  gpgme_set_protocol (keylist_ctx, protocol);
+  keylist_ctx = create_onetime_context (protocol);
   gpgme_set_keylist_mode (keylist_ctx, GPGME_KEYLIST_MODE_LOCAL);
 
   err = gpgme_op_keylist_ext_start (keylist_ctx,
@@ -1623,10 +1649,11 @@ op_sign (cjson_t request, cjson_t result)
           goto leave;
         }
       gpgme_key_unref (key);
+      key = NULL;
     }
 
   if ((err = get_string_data (request, result, "data", &input)))
-      goto leave;
+    goto leave;
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -1656,12 +1683,16 @@ op_sign (cjson_t request, cjson_t result)
 
  leave:
   xfree_array (patterns);
+  gpgme_signers_clear (ctx);
+  gpgme_key_unref (key);
+  release_onetime_context (keylist_ctx);
   release_context (ctx);
-  release_context (keylist_ctx);
   gpgme_data_release (input);
   gpgme_data_release (output);
   return err;
 }
+
+
 
 static const char hlp_verify[] =
   "op:     \"verify\"\n"
@@ -1769,6 +1800,8 @@ op_verify (cjson_t request, cjson_t result)
   gpgme_data_release (signature);
   return err;
 }
+
+
 
 static const char hlp_version[] =
   "op:     \"version\"\n"
@@ -2045,6 +2078,8 @@ op_keylist (cjson_t request, cjson_t result)
     }
   return err;
 }
+
+
 
 static const char hlp_import[] =
   "op:     \"import\"\n"
@@ -2296,6 +2331,8 @@ leave:
 
   return err;
 }
+
+
 
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
