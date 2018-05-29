@@ -33,9 +33,13 @@ c = gpg.Context(armor=True)
 k = gpg.Data()
 
 print("""
-This script exports a secret key to a file.
+This script exports one or more secret keys to a file.
 
-Will prompt for passphrase using gpg-agent and pinentry.
+Will prompt for passphrase using gpg-agent and pinentry for each key to be
+exported.
+
+If the user or key ID(s) are not entered then it will attempt to export all
+available keys and will prompt for the passphrase of each one.
 """)
 
 if len(sys.argv) > 3:
@@ -53,7 +57,7 @@ elif len(sys.argv) == 2:
 else:
     filepth = input("Enter the filename and path of the key file: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
-    keytext = input("Enter the user or key ID for export: ")
+    keytext = input("Enter the user or key ID for export (optional): ")
 
 if homedir.startswith("~"):
     if os.path.exists(os.path.expanduser(homedir)) is True:
