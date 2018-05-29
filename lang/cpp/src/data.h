@@ -110,6 +110,9 @@ public:
     ssize_t write(const void *buffer, size_t length);
     off_t seek(off_t offset, int whence);
 
+    /* Convenience function to do a seek (0, SEEK_SET).  */
+    Error rewind();
+
     /** Try to parse the data to a key object using the
      * Protocol proto. Returns an empty list on error.*/
     std::vector<Key> toKeys(const Protocol proto = Protocol::OpenPGP) const;

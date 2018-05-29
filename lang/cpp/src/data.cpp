@@ -232,6 +232,11 @@ off_t GpgME::Data::seek(off_t offset, int whence)
     return gpgme_data_seek(d->data, offset, whence);
 }
 
+GpgME::Error GpgME::Data::rewind()
+{
+    return Error(gpgme_data_rewind(d->data));
+}
+
 std::vector<GpgME::Key> GpgME::Data::toKeys(Protocol proto) const
 {
     std::vector<GpgME::Key> ret;

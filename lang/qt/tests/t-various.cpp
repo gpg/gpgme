@@ -98,6 +98,25 @@ private Q_SLOTS:
         QVERIFY(key.primaryFingerprint() == QStringLiteral("7A0904B6950DA998020A1AD4BE41C0C3A5FF1F3C"));
     }
 
+    void testDataRewind()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.14") {
+            return;
+        }
+        QGpgME::QByteArrayDataProvider dp(aKey);
+        Data data(&dp);
+        char buf[20];
+        data.read(buf, 20);
+
+        auto keys = data.toKeys();
+        QVERIFY(keys.size() == 0);
+
+        data.rewind();
+
+        keys = data.toKeys();
+        QVERIFY(keys.size() == 1);
+    }
+
     void testQuickUid()
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.13") {
