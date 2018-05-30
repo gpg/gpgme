@@ -71,6 +71,10 @@ const err_list = {
         msg:'This key does not exist in GPG',
         type: 'error'
     },
+    'KEY_NO_INIT': {
+        msg:'This property has not been retrieved yet from GPG',
+        type: 'error'
+    }
     // generic
     'PARAM_WRONG':{
         msg: 'Invalid parameter was found',

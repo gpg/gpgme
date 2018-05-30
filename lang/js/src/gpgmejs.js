@@ -46,28 +46,48 @@ export class GpgME {
     }
 
     /**
-     * @param {String} data text/data to be encrypted as String
+     * Encrypt (and optionally sign) a Message
+     * @param {String|Object} data text/data to be encrypted as String. Also accepts Objects with a getText method
      * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} publicKeys Keys used to encrypt the message
+     * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} secretKeys (optional) Keys used to sign the message
+     * @param {Boolean} base64 (optional) The data is already considered to be in base64 encoding
+     * @param {Boolean} armor (optional) Request the output as armored block
      * @param {Boolean} wildcard (optional) If true, recipient information will not be added to the message
+     * @param {Object} additional use additional gpg options (refer to src/permittedOperations)
+     * @returns {Promise<Object>} Encrypted message:
+     *   data: The encrypted message
+     *   base64: Boolean indicating whether data is base64 encoded.
+     * @async
      */
-    encrypt(data, publicKeys, base64=false, wildcard=false){
-
+    encrypt(data, publicKeys, secretKeys, base64=false, armor=true,
+        wildcard=false, additional = {}
+    ){
         let msg = createMessage('encrypt');
         if (msg instanceof Error){
             return Promise.reject(msg)
         }
-        // TODO temporary
-        msg.setParameter('armor', true);
+        msg.setParameter('armor', armor);
         msg.setParameter('always-trust', true);
         if (base64 === true) {
             msg.setParameter('base64', true);
         }
         let pubkeys = toKeyIdArray(publicKeys);
         msg.setParameter('keys', pubkeys);
+        let sigkeys = toKeyIdArray(secretKeys);
+        if (sigkeys.length > 0) {
+            msg.setParameter('signing_keys', sigkeys);
+        }
         putData(msg, data);
         if (wildcard === true){
             msg.setParameter('throw-keyids', true);
         };
+        if (additional){
+            let additional_Keys = Object.keys(additional);
+            for (let k = 0; k < additional_Keys.length; k++) {
+                msg.setParameter(additional_Keys[k],
+                    additional[additional_Keys[k]]);
+            }
+        }
         if (msg.isComplete === true){
             return msg.post();
         } else {
@@ -76,16 +96,17 @@ export class GpgME {
     }
 
     /**
-    * @param  {String} data TODO base64? Message with the encrypted data
-    * @param {Boolean} base64 (optional) Response should stay base64
+    * Decrypt a Message
+    * @param {String|Object} data text/data to be decrypted. Accepts Strings and Objects with a getText method
+    * @param {Boolean} base64 (optional) Response is expected to be base64 encoded
     * @returns {Promise<Object>} decrypted message:
         data:   The decrypted data.  This may be base64 encoded.
         base64: Boolean indicating whether data is base64 encoded.
         mime:   A Boolean indicating whether the data is a MIME object.
-        info:   An optional object with extra information.
+        signatures: Array of signature Objects TODO not yet implemented.
+            // should be an object that can tell if all signatures are valid etc.
     * @async
     */
-
     decrypt(data, base64=false){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
@@ -99,10 +120,22 @@ export class GpgME {
         }
         putData(msg, data);
         return msg.post();
-
     }
 
-    sign(data, keys, mode='clearsign', base64=false) { //sender
+    /**
+     * Sign a Message
+     * @param {String|Object} data text/data to be decrypted. Accepts Strings and Objects with a gettext methos
+     * @param {GPGME_Key|String|Array<String>|Array<GPGME_Key>} keys The key/keys to use for signing
+     * @param {*} mode The signing mode. Currently supported:
+     *      'clearsign': (default) The Message is embedded into the signature
+     *      'detached': The signature is stored separately
+     * @param {*} base64 input is considered base64
+     * @returns {Promise<Object>}
+     *    data: The resulting data. In clearsign mode this includes the signature
+     *    signature: The detached signature (if in detached mode)
+     * @async
+     */
+    sign(data, keys, mode='clearsign', base64=false) {
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -139,38 +172,10 @@ export class GpgME {
             })
         });
     }
-
-    deleteKey(key, delete_secret = false, no_confirm = false){
-        return Promise.reject(gpgme_error('NOT_YET_IMPLEMENTED'));
-        let msg = createMessage('deletekey');
-        if (msg instanceof Error){
-            return Promise.reject(msg);
-        }
-        let key_arr = toKeyIdArray(key);
-        if (key_arr.length !== 1){
-            return Promise.reject(
-                gpgme_error('GENERIC_ERROR'));
-            // TBD should always be ONE key?
-        }
-        msg.setParameter('key', key_arr[0]);
-        if (delete_secret === true){
-            msg.setParameter('allow_secret', true);
-            // TBD
-        }
-        if (no_confirm === true){ //TODO: Do we want this hidden deep in the code?
-            msg.setParameter('delete_force', true);
-            // TBD
-        }
-        if (msg.isComplete === true){
-            return msg.post();
-        } else {
-            return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
-        }
-    }
 }
 
 /**
- * Sets the data of the message
+ * Sets the data of the message, setting flags according on the data type
  * @param {GPGME_Message} message The message where this data will be set
  * @param {*} data The data to enter
  */

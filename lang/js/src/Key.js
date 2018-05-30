@@ -93,56 +93,31 @@ export class GPGME_Key {
         } else if (this._data.fingerprint !== data.fingerprint){
             return gpgme_error('KEY_INVALID');
         }
-
-        let booleans = ['expired', 'disabled','invalid','can_encrypt',
-            'can_sign','can_certify','can_authenticate','secret',
-            'is_qualified'];
-        for (let b =0; b < booleans.length; b++) {
-            if (
-                !data.hasOwnProperty(booleans[b]) ||
-                typeof(data[booleans[b]]) !== 'boolean'
-            ){
+        let dataKeys = Object.keys(data);
+        for (let i=0; i< dataKeys.length; i++){
+            if (!validKeyProperties.hasOwnProperty(dataKeys[i])){
                 return gpgme_error('KEY_INVALID');
             }
-            this._data[booleans[b]] = data[booleans[b]];
-        }
-        if (typeof(data.protocol) !== 'string'){
-            return gpgme_error('KEY_INVALID');
-        }
-        // TODO check valid protocols?
-        this._data.protocol = data.protocol;
-
-        if (typeof(data.owner_trust) !== 'string'){
-            return gpgme_error('KEY_INVALID');
-        }
-        // TODO check valid values?
-        this._data.owner_trust = data.owner_trust;
-
-        // TODO: what about origin ?
-        if (!Number.isInteger(data.last_update)){
-            return gpgme_error('KEY_INVALID');
-        }
-        this._data.last_update = data.last_update;
-
-        this._data.subkeys = [];
-        if (data.hasOwnProperty('subkeys')){
-            if (!Array.isArray(data.subkeys)){
+            if (validKeyProperties[dataKeys[i]](data[dataKeys[i]]) !== true ){
                 return gpgme_error('KEY_INVALID');
             }
-            for (let i=0; i< data.subkeys.length; i++) {
-                this._data.subkeys.push(
-                    new GPGME_Subkey(data.subkeys[i]));
-            }
-        }
-
-        this._data.userids = [];
-        if (data.hasOwnProperty('userids')){
-            if (!Array.isArray(data.userids)){
-                return gpgme_error('KEY_INVALID');
-            }
-            for (let i=0; i< data.userids.length; i++) {
-                this._data.userids.push(
-                    new GPGME_UserId(data.userids[i]));
+            switch (dataKeys[i]){
+                case 'subkeys':
+                    this._data.subkeys = [];
+                    for (let i=0; i< data.subkeys.length; i++) {
+                        this._data.subkeys.push(
+                            new GPGME_Subkey(data.subkeys[i]));
+                    }
+                    break;
+                case 'userids':
+                    this._data.userids = [];
+                    for (let i=0; i< data.userids.length; i++) {
+                        this._data.userids.push(
+                            new GPGME_UserId(data.userids[i]));
+                    }
+                    break;
+                default:
+                    this._data[dataKeys[i]] = data[dataKeys[i]];
             }
         }
         return this;
@@ -161,7 +136,9 @@ export class GPGME_Key {
         if (cached === false) {
             let me = this;
             return new Promise(function(resolve, reject) {
-                if (property === 'armor'){
+                if (!validKeyProperties.hasOwnProperty(property)){
+                    reject('PARAM_WRONG');
+                } else if (property === 'armored'){
                     resolve(me.getArmor());
                 } else if (property === 'hasSecret'){
                     resolve(me.getHasSecret());
@@ -173,13 +150,21 @@ export class GPGME_Key {
                     });
                 }
             });
-         } else {
-            if (!this._data.hasOwnProperty(property)){
+        } else {
+            if (!validKeyProperties.hasOwnProperty(property)){
                 return gpgme_error('PARAM_WRONG');
+            }
+            if (!this._data.hasOwnProperty(property)){
+                return gpgme_error('KEY_NO_INIT');
             } else {
                 return (this._data[property]);
             }
         }
+    }
+
+    get armored () {
+        return this.get('armored');
+        //TODO exception if empty
     }
 
     /**
@@ -206,15 +191,6 @@ export class GPGME_Key {
             })
         });
     }
-
-    /**
-     * Get the armored block of the non- secret parts of the Key.
-     * @returns {String} the armored Key block.
-     * Notice that this may be outdated cached info. Use the async getArmor if
-     * you need the most current info
-     */
-
-    // get armor(){ TODO }
 
     /**
      * Query the armored block of the non- secret parts of the Key directly
@@ -276,6 +252,49 @@ export class GPGME_Key {
                     reject(gpgme_error('CONN_UNEXPECTED_ANSWER'))
                 }
             }, function(error){
+            })
+        });
+    }
+
+    /**
+     * Convenience function to be directly used as properties of the Key
+     * Notice that these rely on cached info and may be outdated. Use the async
+     * get(property, false) if you need the most current info
+     */
+
+    /**
+     * @returns {String} The armored public Key block
+     */
+    get armored(){
+        return this.get('armored', true);
+    }
+
+    /**
+     * @returns {Boolean} If the key is considered a "private Key",
+     * i.e. owns a secret subkey.
+     */
+    get hasSecret(){
+        return this.get('hasSecret', true);
+    }
+
+    /**
+     * Deletes the public Key from the GPG Keyring. Note that a deletion of a
+     * secret key is not supported by the native backend.
+     * @returns {Boolean} Success if key was deleted, rejects with a GPG error
+     * otherwise
+     */
+    delete(){
+        let me = this;
+        return new Promise(function(resolve, reject){
+            if (!me._data.fingerprint){
+                reject(gpgme_error('KEY_INVALID'));
+            }
+            let msg = createMessage('delete');
+            msg.setParameter('key', me._data.fingerprint);
+            msg.post().then(function(result){
+                resolve(result.success);
+            }, function(error){
+                reject(error);
             })
         });
     }
@@ -452,4 +471,79 @@ const validSubKeyProperties = {
     'expires': function(value){
         return (Number.isInteger(value) && value > 0);
     }
+}
+const validKeyProperties = {
+    //TODO better validation?
+    'fingerprint': function(value){
+        return isFingerprint(value);
+    },
+    'armored': function(value){
+        return typeof(value === 'string');
+    },
+    'revoked': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'expired': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'disabled': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'invalid': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'can_encrypt': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'can_sign': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'can_certify': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'can_authenticate': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'secret': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'is_qualified': function(value){
+        return typeof(value) === 'boolean';
+    },
+    'protocol': function(value){
+        return typeof(value) === 'string';
+        //TODO check for implemented ones
+    },
+    'issuer_serial': function(value){
+        return typeof(value) === 'string';
+    },
+    'issuer_name': function(value){
+        return typeof(value) === 'string';
+    },
+    'chain_id': function(value){
+        return typeof(value) === 'string';
+    },
+    'owner_trust': function(value){
+        return typeof(value) === 'string';
+    },
+    'last_update': function(value){
+        return (Number.isInteger(value));
+        //TODO undefined/null possible?
+    },
+    'origin': function(value){
+        return (Number.isInteger(value));
+    },
+    'subkeys': function(value){
+        return (Array.isArray(value));
+    },
+    'userids': function(value){
+        return (Array.isArray(value));
+    },
+    'tofu': function(value){
+        return (Array.isArray(value));
+    },
+    'hasSecret': function(value){
+        return typeof(value) === 'boolean';
+    }
+
 }

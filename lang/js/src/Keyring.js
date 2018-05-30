@@ -20,7 +20,7 @@
 
 import {createMessage} from './Message'
 import {GPGME_Key, createKey} from './Key'
-import { isFingerprint } from './Helpers';
+import { isFingerprint, toKeyIdArray } from './Helpers';
 import { gpgme_error } from './Errors';
 
 export class GPGME_Keyring {
@@ -43,10 +43,10 @@ export class GPGME_Keyring {
         return new Promise(function(resolve, reject) {
             let msg;
             msg = createMessage('keylist');
-            if (pattern && typeof(pattern) === 'string'){
+            if (pattern !== undefined){
                 msg.setParameter('keys', pattern);
             }
-            msg.setParameter('sigs', true); //TODO do we need this?
+            msg.setParameter('sigs', true);
             msg.post().then(function(result){
                 let resultset = [];
                 let promises = [];
@@ -72,10 +72,30 @@ export class GPGME_Keyring {
             });
         });
     }
-//  TODO:
-    // deleteKey(key, include_secret=false)
-    // getKeysArmored(pattern) //just dump all armored keys
+
+    /**
+     * Fetches the armored public Key blocks for all Keys matchin the pattern
+     * (if no pattern is given, fetches all known to gnupg)
+     * @param {String|Array<String>} pattern (optional)
+     * @returns {Promise<String>} Armored Key blocks
+     */
+    getKeysArmored(pattern) {
+        if (pattern)
+        return new Promise(function(resolve, reject) {
+            let msg = createMessage('export');
+            msg.setParameter('armor', true);
+            if (pattern !== undefined){
+                msg.setParameter('keys', pattern);
+            }
+            msg.post().then(function(result){
+                resolve(result.data);
+            }, function(error){
+                reject(error);
+            });
+    }
+
     // getDefaultKey() Big TODO
     // importKeys(armoredKeys)
+    // generateKey  --> TODO (Andre noch anfragen!)
 
 };
