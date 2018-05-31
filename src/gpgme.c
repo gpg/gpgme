@@ -542,6 +542,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->no_symkey_cache = abool;
     }
+  else if (!strcmp (name, "ignore-mdc-error"))
+    {
+      ctx->ignore_mdc_error = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -590,6 +594,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "no-symkey-cache"))
     {
       return ctx->no_symkey_cache? "1":"";
+    }
+  else if (!strcmp (name, "ignore-mdc-error"))
+    {
+      return ctx->ignore_mdc_error? "1":"";
     }
   else
     return NULL;

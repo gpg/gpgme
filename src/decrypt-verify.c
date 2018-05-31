@@ -127,6 +127,7 @@ gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
   err = decrypt_verify_start (ctx, 1, GPGME_DECRYPT_VERIFY, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  ctx->ignore_mdc_error = 0;  /* Always reset.  */
   return TRACE_ERR (err);
 }
 
@@ -177,5 +178,6 @@ gpgme_op_decrypt_ext (gpgme_ctx_t ctx,
     err = _gpgme_decrypt_start (ctx, 1, flags, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  ctx->ignore_mdc_error = 0;  /* Always reset.  */
   return TRACE_ERR (err);
 }

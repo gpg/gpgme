@@ -86,6 +86,7 @@ show_usage (int ex)
          "  --override-session-key STRING   use STRING as session key\n"
          "  --request-origin STRING         use STRING as request origin\n"
          "  --no-symkey-cache               disable the use of that cache\n"
+         "  --ignore-mdc-error              allow decryption of legacy data\n"
          "  --unwrap         remove only the encryption layer\n"
          , stderr);
   exit (ex);
@@ -109,6 +110,7 @@ main (int argc, char **argv)
   const char *override_session_key = NULL;
   const char *request_origin = NULL;
   int no_symkey_cache = 0;
+  int ignore_mdc_error = 0;
   int raw_output = 0;
 
   if (argc)
@@ -168,6 +170,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--no-symkey-cache"))
         {
           no_symkey_cache = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--ignore-mdc-error"))
+        {
+          ignore_mdc_error = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--unwrap"))
@@ -241,7 +248,18 @@ main (int argc, char **argv)
       err = gpgme_set_ctx_flag (ctx, "no-symkey-cache", "1");
       if (err)
         {
-          fprintf (stderr, PGM ": error setting no-symkey-cache:  %s\n",
+          fprintf (stderr, PGM ": error setting no-symkey-cache: %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
+
+  if (ignore_mdc_error)
+    {
+      err = gpgme_set_ctx_flag (ctx, "ignore-mdc-error", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting ignore-mdc-error: %s\n",
                    gpgme_strerror (err));
           exit (1);
         }

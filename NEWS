@@ -7,6 +7,7 @@ Noteworthy changes in version 1.11.2 (unreleased)
  * Interface changes relative to the 1.11.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_decrypt_result_t           EXTENDED: New field legacy_cipher_nomdc.
+ gpgme_set_ctx_flag               EXTENDED: New flag 'ignore-mdc-error'.
  cpp: DecryptionResult::sessionKey     NEW.
  cpp: DecryptionResult::symkeyAlgo     NEW.
  cpp: Data::rewind                     NEW.

@@ -124,6 +124,10 @@ struct gpgme_context
   /* Do not use the symmtric encryption passphrase cache.  */
   unsigned int no_symkey_cache : 1;
 
+  /* Pass --ignore-mdc-error to gpg.  Note that this flag is reset
+   * after the operation.  */
+  unsigned int ignore_mdc_error : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

@@ -3078,13 +3078,22 @@ the time when you verified the signature.
 The string given in @var{value} is passed to the GnuPG engines to
 request restrictions based on the origin of the request.  Valid values
 are documented in the GnuPG manual and the gpg man page under the
-option ``--request-origin''.  Requires at least GnuPG 2.2.6 to have an
+option @option{--request-origin}.  Requires at least GnuPG 2.2.6 to have an
 effect.
 
 @item "no-symkey-cache"
 For OpenPGP disable the passphrase cache used for symmetrical en- and
 decryption.  This cache is based on the message specific salt value.
 Requires at least GnuPG 2.2.7 to have an effect.
+
+@item "ignore-mdc-error"
+This flag passes the option @option{--ignore-mdc-error} to gpg.  This
+can be used to force decryption of a message which failed due to a
+missing integrity check.  This flag must be used with great caution
+and only if it is a known non-corrupted old message and the decryption
+result of the former try had the decryption result flag
+@code{legacy_cipher_nomdc} set.  For failsafe reasons this flag is
+reset after each operation.
 
 @end table
 

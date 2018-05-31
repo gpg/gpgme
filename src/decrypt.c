@@ -97,6 +97,8 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 
   TRACE_BEG (DEBUG_CTX, "gpgme_op_decrypt_result", ctx);
 
+  ctx->ignore_mdc_error = 0;  /* Always reset this flag.  */
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_DECRYPT, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
@@ -362,7 +364,8 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
         return opd->pkdecrypt_failed;
       else if (opd->failed && opd->any_no_seckey)
 	return gpg_error (GPG_ERR_NO_SECKEY);
-      else if (opd->failed || opd->not_integrity_protected)
+      else if (opd->failed || (opd->not_integrity_protected
+                               && !ctx->ignore_mdc_error))
 	return gpg_error (GPG_ERR_DECRYPT_FAILED);
       else if (!opd->okay)
 	return gpg_error (GPG_ERR_NO_DATA);
@@ -564,5 +567,6 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
   err = _gpgme_decrypt_start (ctx, 1, 0, cipher, plain);
   if (!err)
     err = _gpgme_wait_one (ctx);
+  ctx->ignore_mdc_error = 0;  /* Always reset.  */
   return TRACE_ERR (err);
 }
