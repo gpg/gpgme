@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <errno.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -1039,10 +1038,10 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	    if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound ? 1 : 0)
 		== -1)
 	      {
-		int saved_errno = errno;
+		int saved_err = gpg_error_from_syserror ();
 		free (fd_data_map);
 		free_argv (argv);
-		return gpg_error (saved_errno);
+		return saved_err;
 	      }
 	    if (_gpgme_io_set_close_notify (fds[0],
 					    close_notify_handler, gpg)

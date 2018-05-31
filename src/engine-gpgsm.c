@@ -37,7 +37,6 @@
 #include <locale.h>
 #endif
 #include <fcntl.h> /* FIXME */
-#include <errno.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -986,8 +985,7 @@ status_handler (void *opaque, int fd)
           while (linelen > 0)
             {
               nwritten = gpgme_data_write (gpgsm->inline_data, src, linelen);
-              if (!nwritten || (nwritten < 0 && errno != EINTR)
-                  || nwritten > linelen)
+              if (nwritten <= 0 || nwritten > linelen)
                 {
                   err = gpg_error_from_syserror ();
                   break;
