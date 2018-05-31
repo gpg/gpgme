@@ -93,7 +93,7 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (ctx->passphrase_cb)
     {
       err = _gpgme_engine_set_command_handler
-	(ctx->engine, _gpgme_passphrase_command_handler, ctx, NULL);
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx);
       if (err)
 	return err;
     }

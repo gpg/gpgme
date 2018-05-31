@@ -78,8 +78,7 @@ void _gpgme_engine_set_status_handler (engine_t engine,
 				       void *fnc_value);
 gpgme_error_t _gpgme_engine_set_command_handler (engine_t engine,
 						 engine_command_handler_t fnc,
-						 void *fnc_value,
-						 gpgme_data_t data);
+						 void *fnc_value);
 gpgme_error_t
 _gpgme_engine_set_colon_line_handler (engine_t engine,
 				      engine_colon_line_handler_t fnc,

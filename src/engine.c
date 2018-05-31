@@ -596,8 +596,7 @@ _gpgme_engine_set_status_handler (engine_t engine,
 gpgme_error_t
 _gpgme_engine_set_command_handler (engine_t engine,
 				   engine_command_handler_t fnc,
-				   void *fnc_value,
-				   gpgme_data_t linked_data)
+				   void *fnc_value)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -605,8 +604,7 @@ _gpgme_engine_set_command_handler (engine_t engine,
   if (!engine->ops->set_command_handler)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->set_command_handler) (engine->engine,
-					      fnc, fnc_value, linked_data);
+  return (*engine->ops->set_command_handler) (engine->engine, fnc, fnc_value);
 }
 
 gpgme_error_t

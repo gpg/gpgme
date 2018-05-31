@@ -139,8 +139,7 @@ interact_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   opd->fnc_old = NULL;
   opd->fnc_value = fnc_value;
 
-  err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,
-					   ctx, out);
+  err = _gpgme_engine_set_command_handler (ctx->engine, command_handler, ctx);
   if (err)
     return err;
 
@@ -219,8 +218,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
   opd->fnc_old = fnc;
   opd->fnc_value = fnc_value;
 
-  err = _gpgme_engine_set_command_handler (ctx->engine, command_handler,
-					   ctx, out);
+  err = _gpgme_engine_set_command_handler (ctx->engine, command_handler, ctx);
   if (err)
     return err;
 

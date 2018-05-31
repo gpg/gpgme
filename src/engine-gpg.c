@@ -135,10 +135,6 @@ struct engine_gpg
     char *keyword;       /* what has been requested (malloced) */
     engine_command_handler_t fnc;
     void *fnc_value;
-    /* The kludges never end.  This is used to couple command handlers
-       with output data in edit key mode.  */
-    gpgme_data_t linked_data;
-    int linked_idx;
   } cmd;
 
   struct gpgme_io_cbs io_cbs;
@@ -502,8 +498,6 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
   gpg->colon.fd[1] = -1;
   gpg->cmd.fd = -1;
   gpg->cmd.idx = -1;
-  gpg->cmd.linked_data = NULL;
-  gpg->cmd.linked_idx = -1;
 
   /* Allocate the read buffer for the status pipe.  */
   gpg->status.bufsize = 1024;
@@ -792,14 +786,14 @@ command_handler (void *opaque, int fd)
 
 
 
-/* The Fnc will be called to get a value for one of the commands with
-   a key KEY.  If the Code passed to FNC is 0, the function may release
-   resources associated with the returned value from another call.  To
-   match such a second call to a first call, the returned value from
-   the first call is passed as keyword.  */
+/* The FNC will be called to get a value for one of the commands with
+ * a key KEY.  If the code passed to FNC is 0, the function may
+ * release resources associated with the returned value from another
+ * call.  To match such a second call to a first call, the returned
+ * value from the first call is passed as keyword.  */
 static gpgme_error_t
 gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
-			 void *fnc_value, gpgme_data_t linked_data)
+			 void *fnc_value)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t rc;
@@ -818,7 +812,6 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
   gpg->cmd.fnc = fnc;
   gpg->cmd.cb_data = (void *) &gpg->cmd;
   gpg->cmd.fnc_value = fnc_value;
-  gpg->cmd.linked_data = linked_data;
   gpg->cmd.used = 1;
   return 0;
 }
@@ -1076,11 +1069,6 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 		  assert (gpg->cmd.idx == -1);
 		  gpg->cmd.idx = datac;
 		}
-	      else if (gpg->cmd.linked_data == a->data)
-		{
-		  assert (gpg->cmd.linked_idx == -1);
-		  gpg->cmd.linked_idx = datac;
-		}
 	    }
 
 	  fd_data_map[datac].data = a->data;
@@ -1266,44 +1254,6 @@ read_status (engine_gpg_t gpg)
                             err = 0; /* Drop special error code.  */
 			  if (err)
 			    return err;
-                        }
-
-		      if (r == GPGME_STATUS_END_STREAM)
-			{
-			  if (gpg->cmd.used)
-			    {
-			      /* Before we can actually add the
-				 command fd, we might have to flush
-				 the linked output data pipe.  */
-			      if (gpg->cmd.linked_idx != -1
-				  && gpg->fd_data_map[gpg->cmd.linked_idx].fd
-				  != -1)
-				{
-				  struct io_select_fd_s fds;
-				  fds.fd =
-				    gpg->fd_data_map[gpg->cmd.linked_idx].fd;
-				  fds.for_read = 1;
-				  fds.for_write = 0;
-				  fds.opaque = NULL;
-				  do
-				    {
-				      fds.signaled = 0;
-				      _gpgme_io_select (&fds, 1, 1);
-				      if (fds.signaled)
-					_gpgme_data_inbound_handler
-					  (gpg->cmd.linked_data, fds.fd);
-				    }
-				  while (fds.signaled);
-				}
-
-			      /* XXX We must check if there are any
-				 more fds active after removing this
-				 one.  */
-			      (*gpg->io_cbs.remove)
-				(gpg->fd_data_map[gpg->cmd.idx].tag);
-			      gpg->cmd.fd = gpg->fd_data_map[gpg->cmd.idx].fd;
-			      gpg->fd_data_map[gpg->cmd.idx].fd = -1;
-			    }
                         }
                     }
                 }

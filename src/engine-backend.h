@@ -55,7 +55,7 @@ struct engine_ops
 			      void *fnc_value);
   gpgme_error_t (*set_command_handler) (void *engine,
 					engine_command_handler_t fnc,
-					void *fnc_value, gpgme_data_t data);
+					void *fnc_value);
   gpgme_error_t (*set_colon_line_handler) (void *engine,
 					   engine_colon_line_handler_t fnc,
 					   void *fnc_value);
