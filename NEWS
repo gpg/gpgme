@@ -6,9 +6,11 @@ Noteworthy changes in version 1.11.2 (unreleased)
 
  * Interface changes relative to the 1.11.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- cpp: DecryptionResult::sessionKey    NEW.
- cpp: DecryptionResult::symkeyAlgo    NEW.
- cpp: Data::rewind                    NEW.
+ gpgme_decrypt_result_t           EXTENDED: New field legacy_cipher_nomdc.
+ cpp: DecryptionResult::sessionKey     NEW.
+ cpp: DecryptionResult::symkeyAlgo     NEW.
+ cpp: Data::rewind                     NEW.
+
 
 Noteworthy changes in version 1.11.1 (2018-04-20)
 -------------------------------------------------

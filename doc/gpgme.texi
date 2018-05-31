@@ -5368,7 +5368,7 @@ This is a pointer to a structure used to store the result of a
 data, you can retrieve the pointer to the result with
 @code{gpgme_op_decrypt_result}.  As with all result structures, it
 this structure shall be considered read-only and an application must
-not allocated such a strucure on its own.  The structure contains the
+not allocate such a strucure on its own.  The structure contains the
 following members:
 
 @table @code
@@ -5378,8 +5378,21 @@ algorithm that is not supported.
 
 @item unsigned int wrong_key_usage : 1
 @since{0.9.0}
-
 This is true if the key was not used according to its policy.
+
+@item unsigned int legacy_cipher_nomdc : 1
+@since{1.11.2}
+The message was made by a legacy algorithm without any integrity
+protection.  This might be an old but legitimate message.
+
+@item unsigned int is_mime : 1;
+@since{1.11.0}
+The message claims that the content is a MIME object.
+
+@item unsigned int is_de_vs : 1;
+@since{1.10.0}
+The message was encrypted in a VS-NfD compliant way.  This is a
+specification in Germany for a restricted communication level.
 
 @item gpgme_recipient_t recipients
 @since{1.1.0}

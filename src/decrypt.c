@@ -57,7 +57,7 @@ typedef struct
   int any_no_seckey;
 
   /* If the engine emits a DECRYPTION_INFO status and that does not
-   * indicate that an integrity proetction mode is active, this flag
+   * indicate that an integrity protection mode is active, this flag
    * is set.  */
   int not_integrity_protected;
 
@@ -213,6 +213,11 @@ parse_status_error (char *args, op_data_t opd)
            * standard DECRYPT_FAILED is returned.  */
           break;
         }
+    }
+  else if (!strcmp (field[0], "nomdc_with_legacy_cipher"))
+    {
+      opd->result.legacy_cipher_nomdc = 1;
+      opd->not_integrity_protected = 1;
     }
 
 

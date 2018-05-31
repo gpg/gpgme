@@ -1365,8 +1365,12 @@ struct _gpgme_op_decrypt_result
   /* The message claims that the content is a MIME object.  */
   unsigned int is_mime : 1;
 
+  /* The message was made by a legacy algorithm without any integrity
+   * protection.  This might be an old but legitimate message. */
+  unsigned int legacy_cipher_nomdc : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 29;
+  int _unused : 28;
 
   gpgme_recipient_t recipients;
 

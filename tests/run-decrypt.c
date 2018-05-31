@@ -55,6 +55,7 @@ print_result (gpgme_decrypt_result_t result)
 
   printf ("Original file name .: %s\n", nonnull(result->file_name));
   printf ("Wrong key usage ....: %s\n", result->wrong_key_usage? "yes":"no");
+  printf ("Legacy w/o MDC ... .: %s\n", result->legacy_cipher_nomdc?"yes":"no");
   printf ("Compliance de-vs ...: %s\n", result->is_de_vs? "yes":"no");
   printf ("MIME flag ..........: %s\n", result->is_mime? "yes":"no");
   printf ("Unsupported algo ...: %s\n", nonnull(result->unsupported_algorithm));
@@ -267,6 +268,8 @@ main (int argc, char **argv)
   if (err)
     {
       fprintf (stderr, PGM ": decrypt failed: %s\n", gpgme_strerror (err));
+      if (result)
+        print_result (result);
       exit (1);
     }
   if (result)
