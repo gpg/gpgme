@@ -1478,6 +1478,16 @@ Error Context::startCreateSubkey(const Key &k, const char *algo,
                  k.impl(), algo, reserved, expires, flags));
 }
 
+Error Context::setFlag(const char *name, const char *value)
+{
+  return Error(d->lasterr = gpgme_set_ctx_flag(d->ctx, name, value));
+}
+
+const char *Context::getFlag(const char *name) const
+{
+  return gpgme_get_ctx_flag(d->ctx, name);
+}
+
 // Engine Spawn stuff
 Error Context::spawn(const char *file, const char *argv[],
                      Data &input, Data &output, Data &err,

@@ -8,9 +8,12 @@ Noteworthy changes in version 1.11.2 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_decrypt_result_t           EXTENDED: New field legacy_cipher_nomdc.
  gpgme_set_ctx_flag               EXTENDED: New flag 'ignore-mdc-error'.
- cpp: DecryptionResult::sessionKey     NEW.
- cpp: DecryptionResult::symkeyAlgo     NEW.
- cpp: Data::rewind                     NEW.
+ cpp: DecryptionResult::sessionKey          NEW.
+ cpp: DecryptionResult::symkeyAlgo          NEW.
+ cpp: DecryptionResult::isLegacyCipherNoMDC New.
+ cpp: Data::rewind                          NEW.
+ cpp: Context::setFlag                      NEW.
+ cpp: Context::getFlag                      NEW.
 
 
 Noteworthy changes in version 1.11.1 (2018-04-20)

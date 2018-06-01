@@ -86,6 +86,9 @@ public:
     void setOffline(bool useOfflineMode);
     bool offline() const;
 
+    const char *getFlag(const char *name) const;
+    Error setFlag(const char *name, const char *value);
+
     enum CertificateInclusion {
         DefaultCertificates = -256,
         AllCertificatesExceptRoot = -2,
@@ -453,6 +456,7 @@ public:
     {
         return d;
     }
+
 private:
     // Helper functions that need to be context because they rely
     // on the "Friendlyness" of context to access the gpgme types.
