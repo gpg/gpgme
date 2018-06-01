@@ -165,6 +165,11 @@ const char *GpgME::DecryptionResult::symkeyAlgo() const
   return d ? d->res.symkey_algo : nullptr;
 }
 
+bool GpgME::DecryptionResult::isLegacyCipherNoMDC() const
+{
+  return d && d->res.legacy_cipher_nomdc;
+}
+
 class GpgME::DecryptionResult::Recipient::Private : public _gpgme_recipient
 {
 public:
@@ -241,6 +246,7 @@ std::ostream &GpgME::operator<<(std::ostream &os, const DecryptionResult &result
            << "\n unsupportedAlgorithm: " << protect(result.unsupportedAlgorithm())
            << "\n isWrongKeyUsage:      " << result.isWrongKeyUsage()
            << "\n isDeVs                " << result.isDeVs()
+           << "\n legacyCipherNoMDC     " << result.isLegacyCipherNoMDC()
            << "\n symkeyAlgo:           " << protect(result.symkeyAlgo())
            << "\n recipients:\n";
         const std::vector<DecryptionResult::Recipient> recipients = result.recipients();

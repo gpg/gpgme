@@ -87,6 +87,8 @@ public:
     Recipient recipient(unsigned int idx) const;
     std::vector<Recipient> recipients() const;
 
+    bool isLegacyCipherNoMDC() const;
+
 private:
     class Private;
     void init(gpgme_ctx_t ctx);
