@@ -24,7 +24,7 @@ List of Copyright holders
   Copyright (C) 2004-2008 Igor Belyi
   Copyright (C) 2002 John Goerzen
   Copyright (C) 2014, 2015 Martin Albrecht
-  Copyright (C) 2015 Ben McGinnes
+  Copyright (C) 2015, 2018 Ben McGinnes
   Copyright (C) 2015-2016 Bundesamt für Sicherheit in der Informationstechnik
   Copyright (C) 2016 Intevation GmbH
 
@@ -58,6 +58,9 @@ Colin Watson <cjwatson@debian.org>
 
 Tobias Mueller <muelli@cryptobitch.de>
 2016-11-23:1479937342.11180.3.camel@cryptobitch.de:
+
+Ben McGinnes <ben@adversary.org>
+2017-12-16:20171216002102.l6aejk5xdp6xhtfi@adversary.org:
 
 
  Copyright 2001, 2002, 2012, 2013 g10 Code GmbH
