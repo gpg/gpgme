@@ -41,13 +41,13 @@
 #include "cJSON.h"
 
 /* We use malloc function wrappers from gpgrt (aka libgpg-error).  */
-#if 1
+#if GPGRT_VERSION_NUMBER >= 0x011c00 /* 1.28 */
 # include <gpgrt.h>
 # define xtrymalloc(a)   gpgrt_malloc ((a))
 # define xtrycalloc(a,b) gpgrt_calloc ((a), (b))
 # define xtrystrdup(a)   gpgrt_strdup ((a))
 # define xfree(a)        gpgrt_free ((a))
-#else
+#else /* Without gpgrt (aka libgpg-error).  */
 # define xtrymalloc(a)   malloc ((a))
 # define xtrycalloc(a,b) calloc ((a), (b))
 # define xtrystrdup(a)   strdup ((a))
