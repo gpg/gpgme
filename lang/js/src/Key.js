@@ -115,6 +115,9 @@ export class GPGME_Key {
                         new GPGME_UserId(data.userids[i]));
                 }
                 break;
+            case 'last_update':
+                this._data[dataKeys[i]] = new Date( data[dataKeys[i]] * 1000 );
+                break;
             default:
                 this._data[dataKeys[i]] = data[dataKeys[i]];
             }
@@ -124,7 +127,6 @@ export class GPGME_Key {
 
     /**
      * Query any property of the Key list
-     * (TODO: armor not in here, might be unexpected)
      * @param {String} property Key property to be retreived
      * @param {*} cached (optional) if false, the data will be directly queried
      * from gnupg.
@@ -313,7 +315,11 @@ class GPGME_Subkey {
         }
         if (validSubKeyProperties.hasOwnProperty(property)){
             if (validSubKeyProperties[property](value) === true) {
-                this._data[property] = value;
+                if (property === 'timestamp' || property === 'expires'){
+                    this._data[property] = new Date(value * 1000);
+                } else {
+                    this._data[property] = value;
+                }
             }
         }
     }
@@ -346,9 +352,14 @@ class GPGME_UserId {
         }
         if (validUserIdProperties.hasOwnProperty(property)){
             if (validUserIdProperties[property](value) === true) {
-                this._data[property] = value;
+                if (property === 'last_update'){
+                    this._data[property] = new Date(value*1000);
+                } else {
+                    this._data[property] = value;
+                }
             }
         }
+
     }
 
     /**
