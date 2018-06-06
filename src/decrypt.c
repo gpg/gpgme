@@ -53,13 +53,17 @@ typedef struct
    * status lines for each key the message has been encrypted to but
    * that secret key is not available.  This can't be done for hidden
    * recipients, though.  We track it here to allow for a better error
-   * message that the general DECRYPTION_FAILED. */
+   * message than the general DECRYPTION_FAILED. */
   int any_no_seckey;
 
   /* If the engine emits a DECRYPTION_INFO status and that does not
    * indicate that an integrity protection mode is active, this flag
    * is set.  */
   int not_integrity_protected;
+
+  /* The error code from the first ERROR line.  This is in some cases
+   * used to return a better matching error code to the caller.  */
+  gpg_error_t first_status_error;
 
   /* A pointer to the next pointer of the last recipient in the list.
      This makes appending new invalid signers painless while
@@ -222,6 +226,10 @@ parse_status_error (char *args, op_data_t opd)
       opd->not_integrity_protected = 1;
     }
 
+  /* Record the first error code.  */
+  if (err && !opd->first_status_error)
+    opd->first_status_error = err;
+
 
   free (args2);
   return 0;
@@ -360,17 +368,43 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
        * only a warning.
        * Fixme: These error values should probably be attributed to
        * the underlying crypto engine (as error source).  */
-      if (opd->failed && opd->pkdecrypt_failed)
-        return opd->pkdecrypt_failed;
-      else if (opd->failed && opd->any_no_seckey)
-	return gpg_error (GPG_ERR_NO_SECKEY);
-      else if (opd->failed || (opd->not_integrity_protected
-                               && !ctx->ignore_mdc_error))
-	return gpg_error (GPG_ERR_DECRYPT_FAILED);
+      if (opd->failed)
+        {
+          /* This comes from a specialized ERROR status line.  */
+          if (opd->pkdecrypt_failed)
+            return opd->pkdecrypt_failed;
+
+          /* For an integrity failure return just DECRYPTION_FAILED;
+           * the actual cause can be taken from an already set
+           * decryption result flag.  */
+          if ((opd->not_integrity_protected && !ctx->ignore_mdc_error))
+            return gpg_error (GPG_ERR_DECRYPT_FAILED);
+
+          /* If we have any other ERROR code we prefer that over
+           * NO_SECKEY because it is probably the better matching
+           * code.  For example a garbled message with multiple
+           * plaintext will return BAD_DATA here but may also have
+           * indicated a NO_SECKEY.  */
+          if (opd->first_status_error)
+            return opd->first_status_error;
+
+          /* No secret key is pretty common reason.  */
+          if (opd->any_no_seckey)
+            return gpg_error (GPG_ERR_NO_SECKEY);
+
+          /* Generic decryption failed error code.  */
+          return gpg_error (GPG_ERR_DECRYPT_FAILED);
+        }
       else if (!opd->okay)
-	return gpg_error (GPG_ERR_NO_DATA);
+        {
+          /* No data was found.  */
+          return gpg_error (GPG_ERR_NO_DATA);
+        }
       else if (opd->failure_code)
-        return opd->failure_code;
+        {
+          /* The engine returned failure code at program exit.  */
+          return opd->failure_code;
+        }
       break;
 
     case GPGME_STATUS_DECRYPTION_INFO:
@@ -389,8 +423,9 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_ERROR:
       /* Note that this is an informational status code which should
-         not lead to an error return unless it is something not
-         related to the backend.  */
+       * not lead to an error return unless it is something not
+       * related to the backend.  However, it is used to return a
+       * better matching final error code.  */
       err = parse_status_error (args, opd);
       if (err)
         return err;
