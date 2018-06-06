@@ -29,7 +29,6 @@ import { GPGME_Key } from "./Key";
 
 export function toKeyIdArray(input){
     if (!input){
-        gpgme_error('MSG_NO_KEYS');
         return [];
     }
     if (!Array.isArray(input)){
@@ -61,7 +60,6 @@ export function toKeyIdArray(input){
         }
     }
     if (result.length === 0){
-        gpgme_error('MSG_NO_KEYS');
         return [];
     } else {
         return result;

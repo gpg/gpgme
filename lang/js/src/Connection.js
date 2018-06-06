@@ -103,7 +103,7 @@ export class Connection{
         }
         if (!message || !message instanceof GPGME_Message){
             this.disconnect();
-            return Promise.reject(gpgme_error('PARAM_WRONG'), message);
+            return Promise.reject(gpgme_error('PARAM_WRONG', 'Connection.post'));
         }
         if (message.isComplete !== true){
             this.disconnect();
@@ -221,12 +221,13 @@ class Answer{
                         if (!this._response.hasOwnProperty(key)){
                             this._response[key] = [];
                         }
+
                         if (Array.isArray(msg[key])) {
                             for (let i=0; i< msg[key].length; i++) {
                                 this._response[key].push(msg[key][i]);
                             }
                         } else {
-                            this._response[key].push(msg[key][i]);
+                            this._response[key].push(msg[key]);
                         }
                     }
                     else {

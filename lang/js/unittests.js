@@ -17,19 +17,19 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  */
-import "./node_modules/mocha/mocha";
-import "./node_modules/chai/chai";
-import { helper_params as hp } from "./unittest_inputvalues";
-import { message_params as mp } from "./unittest_inputvalues";
-import { whatever_params as wp } from "./unittest_inputvalues";
-import { key_params as kp } from "./unittest_inputvalues";
-import { Connection } from "./src/Connection";
-import { gpgme_error } from "./src/Errors";
-import { toKeyIdArray , isFingerprint } from "./src/Helpers";
-import { GPGME_Key , createKey } from "./src/Key";
-import { GPGME_Keyring } from "./src/Keyring";
-import {GPGME_Message, createMessage} from "./src/Message";
-import { setTimeout } from "timers";
+
+import './node_modules/mocha/mocha'; /*global mocha, it, describe*/
+import './node_modules/chai/chai';/*global chai*/
+import { helper_params as hp } from './unittest_inputvalues';
+import { message_params as mp } from './unittest_inputvalues';
+import { whatever_params as wp } from './unittest_inputvalues';
+import { key_params as kp } from './unittest_inputvalues';
+import { Connection } from './src/Connection';
+import { gpgme_error } from './src/Errors';
+import { toKeyIdArray , isFingerprint } from './src/Helpers';
+import { GPGME_Key , createKey } from './src/Key';
+import { GPGME_Keyring } from './src/Keyring';
+import {GPGME_Message, createMessage} from './src/Message';
 
 mocha.setup('bdd');
 var expect = chai.expect;
@@ -74,12 +74,14 @@ function unittests (){
             expect(test0.code).to.equal('CONN_TIMEOUT');
         });
 
-        it('Error Object returns generic code if code is not listed', function(){
-            let test0 = gpgme_error(hp.invalidErrorCode);
+        it('Error Object returns generic code if code is not listed',
+            function(){
+                let test0 = gpgme_error(hp.invalidErrorCode);
 
-            expect(test0).to.be.an.instanceof(Error);
-            expect(test0.code).to.equal('GENERIC_ERROR');
-        });
+                expect(test0).to.be.an.instanceof(Error);
+                expect(test0.code).to.equal('GENERIC_ERROR');
+            }
+        );
 
         it('Warnings like PARAM_IGNORED should not return errors', function(){
             let test0 = gpgme_error('PARAM_IGNORED');
@@ -201,7 +203,7 @@ function unittests (){
 
         it('Non-cached key async armored Key', function (done){
             let key = createKey(kp.validKeyFingerprint);
-            key.get('armor', false).then(function(result){
+            key.get('armored', false).then(function(result){
                 expect(result).to.be.a('string');
                 expect(result).to.include('KEY BLOCK-----');
                 done();
@@ -233,7 +235,7 @@ function unittests (){
                     expect(error).to.be.an.instanceof(Error);
                     expect(error.code).to.equal('KEY_NOKEY');
                     done();
-            });
+                });
         });
 
         it('createKey returns error if parameters are wrong', function(){
@@ -269,13 +271,73 @@ function unittests (){
             keyring.getKeys(null, true).then(function(result){
                 expect(result).to.be.an('array');
                 expect(result[0]).to.be.an.instanceof(GPGME_Key);
-                expect(result[0].get('armor')).to.be.a('string');
-                expect(result[0].get('armor')).to.include(
+                expect(result[0].get('armored')).to.be.a('string');
+                expect(result[0].get('armored')).to.include(
                     '-----END PGP PUBLIC KEY BLOCK-----');
                 done();
             });
         });
+
+        it('Loading specific Key from Keyring, to be used synchronously', function(done){
+            let keyring = new GPGME_Keyring;
+            keyring.getKeys(kp.validKeyFingerprint, true).then(function(result){
+                expect(result).to.be.an('array');
+                expect(result[0]).to.be.an.instanceof(GPGME_Key);
+                expect(result[0].get('armored')).to.be.a('string');
+                expect(result[0].get('armored')).to.include(
+                    '-----END PGP PUBLIC KEY BLOCK-----');
+                done();
+            });
+        });
+
+        it('Querying non-existing Key from Keyring', function(done){
+            let keyring = new GPGME_Keyring;
+            keyring.getKeys(kp.invalidKeyFingerprint, true).then(function(result){
+                expect(result).to.be.an('array');
+                expect(result.length).to.equal(0);
+                done();
+            });
+        });
     });
+
+    // describe('Keyring import/export', function(){
+    //     before(function(done) {
+    //         let keyring = new GPGME_Keyring;
+
+    //         keyring.getKeys(ak.fingerprint, false).then(function(result){
+    //             if (result.length === 1){
+    //                 result[0].delete().then(function(delete_result){
+    //                     if (delete_result === true){
+    //                         done();
+    //                     }
+    //                 });
+    //             } else {
+    //                 done();
+    //             }
+    //         });
+    //     });
+    //     it('Import Public Key', function(done){
+    //         keyring.importKey(ak.key).then(function(result){
+    //             expect(result).to.be.an('array');
+    //             expect(result[0].key).to.be.an.instanceof(GPGME_Key);
+    //             expect(result[0].changed).to.equal('newkey');
+    //             expect(result[0].key.keyring).to.equal(ak.fingerprint);
+    //             done();
+    //         });
+    //     });
+
+    //     it('Update Public Key', function(done){
+    //         keyring.importKey(ak.key).then(function(result){
+    //             expect(result).to.be.an('array');
+    //             expect(result[0].key).to.be.an.instanceof(GPGME_Key);
+    //             expect(result[0].changed).to.equal('change');
+    //             expect(result[0].changes.userId).to.be.true;
+    //             expect(result[0].changes.subkeys).to.be.false;
+    //             expect(result[0].key.keyring).to.equal(ak.fingerprint);
+    //             done();
+    //         });
+    //     });
+    // });
 
     describe('GPGME_Message', function(){
 
@@ -330,12 +392,12 @@ function unittests (){
             let test0 = createMessage(mp.invalid_param_test.valid_op);
             for (let i=0;
                 i < mp.invalid_param_test.invalid_param_names.length; i++){
-                    let ret = test0.setParameter(
-                        mp.invalid_param_test.invalid_param_names[i],
-                        'Somevalue');
+                let ret = test0.setParameter(
+                    mp.invalid_param_test.invalid_param_names[i],
+                    'Somevalue');
 
-                    expect(ret).to.be.an.instanceof(Error);
-                    expect(ret.code).to.equal('PARAM_WRONG');
+                expect(ret).to.be.an.instanceof(Error);
+                expect(ret.code).to.equal('PARAM_WRONG');
             }
         });
 
@@ -343,12 +405,12 @@ function unittests (){
             let test0 = createMessage(mp.invalid_param_test.valid_op);
             for (let j=0;
                 j < mp.invalid_param_test.invalid_values_0.length; j++){
-                    let ret = test0.setParameter(
-                        mp.invalid_param_test.validparam_name_0,
-                        mp.invalid_param_test.invalid_values_0[j]);
+                let ret = test0.setParameter(
+                    mp.invalid_param_test.validparam_name_0,
+                    mp.invalid_param_test.invalid_values_0[j]);
 
-                    expect(ret).to.be.an.instanceof(Error);
-                    expect(ret.code).to.equal('PARAM_WRONG');
+                expect(ret).to.be.an.instanceof(Error);
+                expect(ret.code).to.equal('PARAM_WRONG');
             }
         });
     });

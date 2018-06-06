@@ -207,7 +207,7 @@ export class GPGME_Key {
             msg.setParameter('armor', true);
             msg.setParameter('keys', me._data.fingerprint);
             msg.post().then(function(result){
-                me._data.armor = result.data;
+                me._data.armored = result.data;
                 resolve(result.data);
             }, function(error){
                 reject(error);
@@ -280,7 +280,7 @@ export class GPGME_Key {
     /**
      * Deletes the public Key from the GPG Keyring. Note that a deletion of a
      * secret key is not supported by the native backend.
-     * @returns {Boolean} Success if key was deleted, rejects with a GPG error
+     * @returns {Promise<Boolean>} Success if key was deleted, rejects with a GPG error
      * otherwise
      */
     delete(){

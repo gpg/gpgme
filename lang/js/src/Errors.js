@@ -74,7 +74,7 @@ const err_list = {
     'KEY_NO_INIT': {
         msg:'This property has not been retrieved yet from GPG',
         type: 'error'
-    }
+    },
     // generic
     'PARAM_WRONG':{
         msg: 'Invalid parameter was found',
@@ -118,7 +118,11 @@ class GPGME_Error extends Error{
         if (code === 'GNUPG_ERROR' && typeof(msg) === 'string'){
             super(msg);
         } else if (err_list.hasOwnProperty(code)){
-            super(err_list[code].msg);
+            if (msg){
+                super(err_list[code].msg + "--" + msg);
+            } else {
+                super(err_list[code].msg);
+            }
         } else {
             super(err_list['GENERIC_ERROR'].msg);
         }

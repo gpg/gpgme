@@ -163,7 +163,6 @@ describe('Encryption and Decryption', function () {
     }).timeout(3000);
 
     it('Random data, input as base64', function (done) {
-        //TODO fails. The result is
         let data = bigBoringString(0.001);
         let b64data = btoa(data);
         let prm = Gpgmejs.init();
@@ -177,11 +176,11 @@ describe('Encryption and Decryption', function () {
                         'BEGIN PGP MESSAGE');
                     expect(answer.data).to.include(
                         'END PGP MESSAGE');
-                    context.decrypt(answer.data).then(
+                    context.decrypt(answer.data, true).then(
                         function (result) {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
-                            expect(result.data).to.equal(data);
+                            expect(result.data).to.equal(b64data);
                             done();
                         });
                 });
