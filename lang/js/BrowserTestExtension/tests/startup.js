@@ -16,25 +16,31 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
- describe('GPGME context', function(){
+/* global describe, it, expect, Gpgmejs */
+/* global inputvalues */
+
+describe('GPGME context', function(){
     it('Starting a GpgME instance', function(done){
         let prm = Gpgmejs.init();
         prm.then(
-         function(context){
-            expect(context).to.be.an('object');
-            expect(context.encrypt).to.be.a('function');
-            expect(context.decrypt).to.be.a('function');
-            done();
-        });
+            function(context){
+                expect(context).to.be.an('object');
+                expect(context.encrypt).to.be.a('function');
+                expect(context.decrypt).to.be.a('function');
+                done();
+            });
     });
 });
 
 describe('GPGME does not start with invalid parameters', function(){
     for (let i=0; i < inputvalues.init.invalid_startups.length; i++){
         it('Parameter '+ i, function(done){
-        let prm = Gpgmejs.init(inputvalues.init.invalid_startups[i]);
+            let prm = Gpgmejs.init(inputvalues.init.invalid_startups[i]);
             prm.then(function(context){
                 expect(context).to.be.undefined;
                 done();
@@ -43,6 +49,6 @@ describe('GPGME does not start with invalid parameters', function(){
                 expect(error.code).to.equal('PARAM_WRONG');
                 done();
             });
-        })
+        });
     }
 });

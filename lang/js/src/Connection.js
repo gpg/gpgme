@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-/**
- * A connection port will be opened for each communication between gpgmejs and
- * gnupg. It should be alive as long as there are additional messages to be
- * expected.
- */
-import { permittedOperations } from './permittedOperations'
-import { gpgme_error } from "./Errors"
-import { GPGME_Message, createMessage } from "./Message";
+/* global chrome */
+
+import { permittedOperations } from './permittedOperations';
+import { gpgme_error } from './Errors';
+import { GPGME_Message, createMessage } from './Message';
 
 /**
  * A Connection handles the nativeMessaging interaction.
@@ -55,7 +55,7 @@ export class Connection{
             return this.post(createMessage('version'));
         } else {
             let me = this;
-            return new Promise(function(resolve,reject) {
+            return new Promise(function(resolve) {
                 Promise.race([
                     me.post(createMessage('version')),
                     new Promise(function(resolve, reject){
@@ -63,9 +63,9 @@ export class Connection{
                             reject(gpgme_error('CONN_TIMEOUT'));
                         }, 500);
                     })
-                ]).then(function(result){
-                        resolve(true);
-                }, function(reject){
+                ]).then(function(){ // success
+                    resolve(true);
+                }, function(){ // failure
                     resolve(false);
                 });
             });
@@ -98,12 +98,10 @@ export class Connection{
      * information.
      */
     post(message){
-        if (!this._connection) {
-
-        }
-        if (!message || !message instanceof GPGME_Message){
+        if (!message || !(message instanceof GPGME_Message)){
             this.disconnect();
-            return Promise.reject(gpgme_error('PARAM_WRONG', 'Connection.post'));
+            return Promise.reject(gpgme_error(
+                'PARAM_WRONG', 'Connection.post'));
         }
         if (message.isComplete !== true){
             this.disconnect();
@@ -114,10 +112,10 @@ export class Connection{
             let answer = new Answer(message);
             let listener = function(msg) {
                 if (!msg){
-                    me._connection.onMessage.removeListener(listener)
+                    me._connection.onMessage.removeListener(listener);
                     me._connection.disconnect();
                     reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
-                } else if (msg.type === "error"){
+                } else if (msg.type === 'error'){
                     me._connection.onMessage.removeListener(listener);
                     me._connection.disconnect();
                     reject(gpgme_error('GNUPG_ERROR', msg.msg));
@@ -130,7 +128,7 @@ export class Connection{
                     } else if (msg.more === true){
                         me._connection.postMessage({'op': 'getmore'});
                     } else {
-                        me._connection.onMessage.removeListener(listener)
+                        me._connection.onMessage.removeListener(listener);
                         me._connection.disconnect();
                         resolve(answer.message);
                     }
@@ -148,9 +146,9 @@ export class Connection{
                             reject(gpgme_error('CONN_TIMEOUT'));
                         }, 5000);
                     }]).then(function(result){
-                        return result;
+                    return result;
                 }, function(reject){
-                    if(!reject instanceof Error) {
+                    if(!(reject instanceof Error)) {
                         me._connection.disconnect();
                         return gpgme_error('GNUPG_ERROR', reject);
                     } else {
@@ -159,13 +157,14 @@ export class Connection{
                 });
             }
         });
-     }
-};
+    }
+}
 
 /**
  * A class for answer objects, checking and processing the return messages of
  * the nativeMessaging communication.
- * @param {String} operation The operation, to look up validity of returning messages
+ * @param {String} operation The operation, to look up validity of returning
+ * messages
  */
 class Answer{
 
@@ -191,49 +190,49 @@ class Answer{
         for (let i= 0; i < messageKeys.length; i++){
             let key = messageKeys[i];
             switch (key) {
-                case 'type':
-                    if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
-                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
+            case 'type':
+                if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
+                    return gpgme_error('CONN_UNEXPECTED_ANSWER');
+                }
+                break;
+            case 'more':
+                break;
+            default:
+                //data should be concatenated
+                if (poa.data.indexOf(key) >= 0){
+                    if (!this._response.hasOwnProperty(key)){
+                        this._response[key] = '';
                     }
-                    break;
-                case 'more':
-                    break;
-                default:
-                    //data should be concatenated
-                    if (poa.data.indexOf(key) >= 0){
-                        if (!this._response.hasOwnProperty(key)){
-                            this._response[key] = '';
-                        }
-                        this._response[key] += msg[key];
+                    this._response[key] += msg[key];
+                }
+                //params should not change through the message
+                else if (poa.params.indexOf(key) >= 0){
+                    if (!this._response.hasOwnProperty(key)){
+                        this._response[key] = msg[key];
                     }
-                    //params should not change through the message
-                    else if (poa.params.indexOf(key) >= 0){
-                        if (!this._response.hasOwnProperty(key)){
-                            this._response[key] = msg[key];
-                        }
-                        else if (this._response[key] !== msg[key]){
-                                return gpgme_error('CONN_UNEXPECTED_ANSWER',msg[key]);
-                        }
+                    else if (this._response[key] !== msg[key]){
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER',msg[key]);
                     }
-                    //infos may be json objects etc. Not yet defined.
-                    // Pushing them into arrays for now
-                    else if (poa.infos.indexOf(key) >= 0){
-                        if (!this._response.hasOwnProperty(key)){
-                            this._response[key] = [];
-                        }
+                }
+                //infos may be json objects etc. Not yet defined.
+                // Pushing them into arrays for now
+                else if (poa.infos.indexOf(key) >= 0){
+                    if (!this._response.hasOwnProperty(key)){
+                        this._response[key] = [];
+                    }
 
-                        if (Array.isArray(msg[key])) {
-                            for (let i=0; i< msg[key].length; i++) {
-                                this._response[key].push(msg[key][i]);
-                            }
-                        } else {
-                            this._response[key].push(msg[key]);
+                    if (Array.isArray(msg[key])) {
+                        for (let i=0; i< msg[key].length; i++) {
+                            this._response[key].push(msg[key][i]);
                         }
+                    } else {
+                        this._response[key].push(msg[key]);
                     }
-                    else {
-                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
-                    }
-                    break;
+                }
+                else {
+                    return gpgme_error('CONN_UNEXPECTED_ANSWER');
+                }
+                break;
             }
         }
         return true;
@@ -256,10 +255,11 @@ class Answer{
                     msg[keys[i]] = this._response[keys[i]];
                 } else {
                     msg[keys[i]] = decodeURIComponent(
-                        atob(this._response[keys[i]]).split('').map(function(c) {
-                            return '%' +
+                        atob(this._response[keys[i]]).split('').map(
+                            function(c) {
+                                return '%' +
                                 ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                        }).join(''));
+                            }).join(''));
                 }
             } else {
                 msg[keys[i]] = this._response[keys[i]];

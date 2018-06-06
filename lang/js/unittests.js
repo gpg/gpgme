@@ -32,7 +32,7 @@ import { GPGME_Keyring } from './src/Keyring';
 import {GPGME_Message, createMessage} from './src/Message';
 
 mocha.setup('bdd');
-var expect = chai.expect;
+const expect = chai.expect;
 chai.config.includeStack = true;
 
 function unittests (){
@@ -266,78 +266,48 @@ function unittests (){
             expect(keyring.getKeys).to.be.a('function');
         });
 
-        it('Loading Keys from Keyring, to be used synchronously', function(done){
-            let keyring = new GPGME_Keyring;
-            keyring.getKeys(null, true).then(function(result){
-                expect(result).to.be.an('array');
-                expect(result[0]).to.be.an.instanceof(GPGME_Key);
-                expect(result[0].get('armored')).to.be.a('string');
-                expect(result[0].get('armored')).to.include(
-                    '-----END PGP PUBLIC KEY BLOCK-----');
-                done();
-            });
-        });
+        it('Loading Keys from Keyring, to be used synchronously',
+            function(done){
+                let keyring = new GPGME_Keyring;
+                keyring.getKeys(null, true).then(function(result){
+                    expect(result).to.be.an('array');
+                    expect(result[0]).to.be.an.instanceof(GPGME_Key);
+                    expect(result[0].get('armored')).to.be.a('string');
+                    expect(result[0].get('armored')).to.include(
+                        '-----END PGP PUBLIC KEY BLOCK-----');
+                    done();
+                });
+            }
+        );
 
-        it('Loading specific Key from Keyring, to be used synchronously', function(done){
-            let keyring = new GPGME_Keyring;
-            keyring.getKeys(kp.validKeyFingerprint, true).then(function(result){
-                expect(result).to.be.an('array');
-                expect(result[0]).to.be.an.instanceof(GPGME_Key);
-                expect(result[0].get('armored')).to.be.a('string');
-                expect(result[0].get('armored')).to.include(
-                    '-----END PGP PUBLIC KEY BLOCK-----');
-                done();
-            });
-        });
+        it('Loading specific Key from Keyring, to be used synchronously',
+            function(done){
+                let keyring = new GPGME_Keyring;
+                keyring.getKeys(kp.validKeyFingerprint, true).then(
+                    function(result){
+                        expect(result).to.be.an('array');
+                        expect(result[0]).to.be.an.instanceof(GPGME_Key);
+                        expect(result[0].get('armored')).to.be.a('string');
+                        expect(result[0].get('armored')).to.include(
+                            '-----END PGP PUBLIC KEY BLOCK-----');
+                        done();
+                    }
+                );
+            }
+        );
 
         it('Querying non-existing Key from Keyring', function(done){
             let keyring = new GPGME_Keyring;
-            keyring.getKeys(kp.invalidKeyFingerprint, true).then(function(result){
-                expect(result).to.be.an('array');
-                expect(result.length).to.equal(0);
-                done();
-            });
+            keyring.getKeys(kp.invalidKeyFingerprint, true).then(
+                function(result){
+                    expect(result).to.be.an('array');
+                    expect(result.length).to.equal(0);
+                    done();
+                }
+            );
         });
+
     });
-
-    // describe('Keyring import/export', function(){
-    //     before(function(done) {
-    //         let keyring = new GPGME_Keyring;
-
-    //         keyring.getKeys(ak.fingerprint, false).then(function(result){
-    //             if (result.length === 1){
-    //                 result[0].delete().then(function(delete_result){
-    //                     if (delete_result === true){
-    //                         done();
-    //                     }
-    //                 });
-    //             } else {
-    //                 done();
-    //             }
-    //         });
-    //     });
-    //     it('Import Public Key', function(done){
-    //         keyring.importKey(ak.key).then(function(result){
-    //             expect(result).to.be.an('array');
-    //             expect(result[0].key).to.be.an.instanceof(GPGME_Key);
-    //             expect(result[0].changed).to.equal('newkey');
-    //             expect(result[0].key.keyring).to.equal(ak.fingerprint);
-    //             done();
-    //         });
-    //     });
-
-    //     it('Update Public Key', function(done){
-    //         keyring.importKey(ak.key).then(function(result){
-    //             expect(result).to.be.an('array');
-    //             expect(result[0].key).to.be.an.instanceof(GPGME_Key);
-    //             expect(result[0].changed).to.equal('change');
-    //             expect(result[0].changes.userId).to.be.true;
-    //             expect(result[0].changes.subkeys).to.be.false;
-    //             expect(result[0].key.keyring).to.equal(ak.fingerprint);
-    //             done();
-    //         });
-    //     });
-    // });
 
     describe('GPGME_Message', function(){
 

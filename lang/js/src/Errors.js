@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
 const err_list = {
@@ -102,6 +105,7 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
             return new GPGME_Error(code);
         }
         if (err_list[code].type === 'warning'){
+            // eslint-disable-next-line no-console
             console.warn(code + ': ' + err_list[code].msg);
         }
         return null;
@@ -119,7 +123,7 @@ class GPGME_Error extends Error{
             super(msg);
         } else if (err_list.hasOwnProperty(code)){
             if (msg){
-                super(err_list[code].msg + "--" + msg);
+                super(err_list[code].msg + '--' + msg);
             } else {
                 super(err_list[code].msg);
             }

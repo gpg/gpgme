@@ -6,20 +6,25 @@ receiving an answer
     [*] nativeConnection successfull on Windows, macOS, Linux
     [X] nativeConnection with delayed, multipart (> 1MB) answer
 
-    [*] Message handling (encrypt, decrypt verify, sign)
+    [x] Message handling (encrypt, decrypt verify, sign)
         [x] encrypt, decrypt
-        [ ] verify
-        [ ] sign
+        [x] verify
+        [x] sign
     [*] Key handling (import/export, modifying, status queries)
+        [x] Import (not importing secret)
+        [x] Export (not exporting secret)
+        [x] status queries
+        [ ] key generation
+        [ ] modification
     [*] Configuration handling
     [ ] check for completeness
 
 Communication with other implementations
-
-    [ ] option to export SECRET Key into localstore used by e.g. mailvelope
-
+    [-] option to export SECRET Key into localstore used by e.g. mailvelope?
+        current discussion states that this won't be possible due to security
+        concerns
 Management:
     [*] Define the gpgme interface
     [x] check Permissions (e.g. csp) for the different envs
-    [X] agree on license
+    [x] agree on license
     [*] tests

@@ -16,16 +16,21 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-import { GpgME } from "./gpgmejs";
-import { gpgme_error } from "./Errors";
-import { Connection } from "./Connection";
-import { defaultConf, availableConf } from "./Config";
+
+import { GpgME } from './gpgmejs';
+import { gpgme_error } from './Errors';
+import { Connection } from './Connection';
+import { defaultConf, availableConf } from './Config';
 
 /**
  * Initializes a nativeMessaging Connection and returns a GPGMEjs object
- * @param {Object} config Configuration. See Config.js for available parameters. Still TODO
+ * @param {Object} config Configuration. See Config.js for available parameters.
+ * Still TODO
  */
 function init(config){
     let _conf = parseconfiguration(config);
@@ -41,16 +46,16 @@ function init(config){
                 } else {
                     reject(gpgme_error('CONN_NO_CONNECT'));
                 }
-            }, function(error){
+            }, function(){ //unspecific connection error. Should not happen
                 reject(gpgme_error('CONN_NO_CONNECT'));
-        });
+            });
     });
 }
 
 function parseconfiguration(rawconfig = {}){
     if ( typeof(rawconfig) !== 'object'){
         return gpgme_error('PARAM_WRONG');
-    };
+    }
     let result_config = {};
     let conf_keys = Object.keys(rawconfig);
 
@@ -75,8 +80,8 @@ function parseconfiguration(rawconfig = {}){
         }
     }
     return result_config;
-};
+}
 
 export default {
     init: init
-}
+};

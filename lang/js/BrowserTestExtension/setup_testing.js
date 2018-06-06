@@ -16,7 +16,13 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
+
+/* global mocha, chai */
+
 mocha.setup('bdd');
-var expect = chai.expect;
+const expect = chai.expect; //eslint-disable-line no-unused-vars
 chai.config.includeStack = true;

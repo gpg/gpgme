@@ -16,7 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
+
 
 import {createMessage} from './Message';
 import {createKey} from './Key';
@@ -99,18 +103,22 @@ export class GPGME_Keyring {
 
     /**
      *
-     * @param {String} armored Armored Key block of the Kex(s) to be imported into gnupg
-     * @param {Boolean} prepare_sync prepare the keys for synched use (see getKeys()).
-     * @returns {Promise<Array<Object>>} An array of objects for the Keys considered.
-    *       Key.key The key itself as a GPGME_Key
-     *      Key.status String:
+     * @param {String} armored Armored Key block of the Kex(s) to be imported
+     * into gnupg
+     * @param {Boolean} prepare_sync prepare the keys for synched use
+     * (see getKeys()).
+     * @returns {Promise<Array<Object>>} An array of objects for the Keys
+     * considered:
+    *       Key.key <Object>: The key itself as a GPGME_Key
+     *      Key.status <String>:
      *          'nochange' if the Key was not changed,
-     *          'newkey' if the Key was imported in gpg, and did not exist previously,
-     *          'change' if the key existed, but details were updated. For details,
-     *              Key.changes is available.
-     *      Key.changes.userId: Boolean userIds changed
-     *      Key.changes.signature: Boolean signatures changed
-     *      Key.changes.subkey: Boolean subkeys changed
+     *          'newkey' if the Key was imported in gpg, and did not exist
+     *              previously,
+     *          'change' if the key existed, but details were updated. For
+     *              details, Key.changes is available.
+     *          Key.changes.userId: <Boolean> userIds changed
+     *          Key.changes.signature: <Boolean> signatures changed
+     *          Key.changes.subkey: <Boolean> subkeys changed
      * // TODO: not yet implemented: Information about Keys that failed
      *          (e.g. malformed Keys, secretKeys are not accepted)
      */
@@ -125,7 +133,7 @@ export class GPGME_Keyring {
             msg.post().then(function(response){
                 let infos = {};
                 let fprs = [];
-                for (var res=0; res < response.result[0].imports.length; res++) {
+                for (let res=0; res < response.result[0].imports.length; res++){
                     let result = response.result[0].imports[res];
                     let status = '';
                     if (result.status === 0){

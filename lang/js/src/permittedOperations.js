@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
- /**
+/**
   * Definition of the possible interactions with gpgme-json.
   * operation: <Object>
       required: Array<Object>
@@ -41,7 +44,7 @@
           infos: Array<*> arbitrary information that may result in a list
       }
   }
-  */
+*/
 
 export const permittedOperations = {
     encrypt: {
@@ -65,7 +68,7 @@ export const permittedOperations = {
                 array_allowed: true
             },
             'chunksize': {
-                    allowed: ['number']
+                allowed: ['number']
             },
             'base64': {
                 allowed: ['boolean']
@@ -154,7 +157,8 @@ export const permittedOperations = {
             },
             'mode': {
                 allowed: ['string'],
-                allowed_data: ['detached', 'clearsign'] // TODO 'opaque' not used
+                allowed_data: ['detached', 'clearsign']
+                // TODO 'opaque' is not used, but available on native app
             },
             'base64': {
                 allowed: ['boolean']
@@ -166,14 +170,17 @@ export const permittedOperations = {
         answer: {
             type: ['signature', 'ciphertext'],
             data: ['data'], // Unless armor mode is used a Base64 encoded binary
-                            // signature.  In armor mode a string with an armored
-                            // OpenPGP or a PEM message.
+            // signature.  In armor mode a string with an armored
+            // OpenPGP or a PEM message.
             params: ['base64']
         }
     },
 
+    // note: For the meaning of the optional keylist flags, refer to
+    // https://www.gnupg.org/documentation/manuals/gpgme/Key-Listing-Mode.html
     keylist:{
         required: {},
+
         optional: {
             'protocol': {
                 allowed: ['string'],
@@ -182,8 +189,6 @@ export const permittedOperations = {
             'chunksize': {
                 allowed: ['number'],
             },
-            // note: For the meaning of the flags, refer to
-            // https://www.gnupg.org/documentation/manuals/gpgme/Key-Listing-Mode.html
             'secret': {
                 allowed: ['boolean']
             },
@@ -305,11 +310,6 @@ export const permittedOperations = {
             infos: []
         }
     },
-    /**
-     *TBD get armored secret different treatment from keyinfo!
-     * TBD key modification?
-
-     */
 
     version: {
         required: {},
@@ -321,4 +321,11 @@ export const permittedOperations = {
             params:[]
         }
     }
-}
+
+    /**
+     * TBD handling of secrets
+     * TBD key modification?
+     * TBD: key generation
+     */
+
+};

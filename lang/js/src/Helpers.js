@@ -16,14 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
-import { gpgme_error } from "./Errors";
-import { GPGME_Key } from "./Key";
+
+import { gpgme_error } from './Errors';
+import { GPGME_Key } from './Key';
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
- * from Key objects
- * @param {Key |Array<Key>| GPGME_Key | Array<GPGME_Key>|String|Array<String>} input
+ * from Key objects (openpgp Keys or GPGME_Keys are both expected)
+ * @param {Object |Array<Object>| String|Array<String>} input
  * @returns {Array<String>} Array of fingerprints.
  */
 
@@ -48,7 +52,7 @@ export function toKeyIdArray(input){
                 fpr = input[i].fingerprint;
             } else if (input[i].hasOwnProperty('primaryKey') &&
                 input[i].primaryKey.hasOwnProperty('getFingerprint')){
-                    fpr = input[i].primaryKey.getFingerprint();
+                fpr = input[i].primaryKey.getFingerprint();
             }
             if (isFingerprint(fpr) === true){
                 result.push(fpr);
@@ -64,7 +68,7 @@ export function toKeyIdArray(input){
     } else {
         return result;
     }
-};
+}
 
 /**
  * check if values are valid hexadecimal values of a specified length
@@ -72,7 +76,7 @@ export function toKeyIdArray(input){
  * @param {int} len the expected length of the value
  */
 function hextest(key, len){
-    if (!key || typeof(key) !== "string"){
+    if (!key || typeof(key) !== 'string'){
         return false;
     }
     if (key.length !== len){
@@ -80,23 +84,18 @@ function hextest(key, len){
     }
     let regexp= /^[0-9a-fA-F]*$/i;
     return regexp.test(key);
-};
+}
 
 /**
  * check if the input is a valid Hex string with a length of 40
  */
 export function isFingerprint(string){
     return hextest(string, 40);
-};
+}
 
 /**
  *  check if the input is a valid Hex string with a length of 16
  */
 export function isLongId(string){
     return hextest(string, 16);
-};
-
-// TODO still not needed anywhere
-function isShortId(string){
-    return hextest(string, 8);
-};
+}

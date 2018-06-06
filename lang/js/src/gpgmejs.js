@@ -16,12 +16,16 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-import {GPGME_Message, createMessage} from './Message'
-import {toKeyIdArray} from "./Helpers"
-import { gpgme_error } from "./Errors"
-import { GPGME_Keyring } from "./Keyring";
+
+import {GPGME_Message, createMessage} from './Message';
+import {toKeyIdArray} from './Helpers';
+import { gpgme_error } from './Errors';
+import { GPGME_Keyring } from './Keyring';
 
 export class GpgME {
     /**
@@ -32,7 +36,7 @@ export class GpgME {
         this._config = config;
     }
 
-   set Keyring(keyring){
+    set Keyring(keyring){
         if (keyring && keyring instanceof GPGME_Keyring){
             this._Keyring = keyring;
         }
@@ -47,13 +51,19 @@ export class GpgME {
 
     /**
      * Encrypt (and optionally sign) a Message
-     * @param {String|Object} data text/data to be encrypted as String. Also accepts Objects with a getText method
-     * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} publicKeys Keys used to encrypt the message
-     * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} secretKeys (optional) Keys used to sign the message
-     * @param {Boolean} base64 (optional) The data is already considered to be in base64 encoding
+     * @param {String|Object} data text/data to be encrypted as String. Also
+     * accepts Objects with a getText method
+     * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} publicKeys
+     * Keys used to encrypt the message
+     * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} secretKeys
+     * (optional) Keys used to sign the message
+     * @param {Boolean} base64 (optional) The data is already considered to be
+     * in base64 encoding
      * @param {Boolean} armor (optional) Request the output as armored block
-     * @param {Boolean} wildcard (optional) If true, recipient information will not be added to the message
-     * @param {Object} additional use additional gpg options (refer to src/permittedOperations)
+     * @param {Boolean} wildcard (optional) If true, recipient information will
+     *  not be added to the message
+     * @param {Object} additional use additional gpg options
+     * (refer to src/permittedOperations)
      * @returns {Promise<Object>} Encrypted message:
      *   data: The encrypted message
      *   base64: Boolean indicating whether data is base64 encoded.
@@ -64,7 +74,7 @@ export class GpgME {
     ){
         let msg = createMessage('encrypt');
         if (msg instanceof Error){
-            return Promise.reject(msg)
+            return Promise.reject(msg);
         }
         msg.setParameter('armor', armor);
         msg.setParameter('always-trust', true);
@@ -80,7 +90,7 @@ export class GpgME {
         putData(msg, data);
         if (wildcard === true){
             msg.setParameter('throw-keyids', true);
-        };
+        }
         if (additional){
             let additional_Keys = Object.keys(additional);
             for (let k = 0; k < additional_Keys.length; k++) {
@@ -97,14 +107,16 @@ export class GpgME {
 
     /**
     * Decrypt a Message
-    * @param {String|Object} data text/data to be decrypted. Accepts Strings and Objects with a getText method
-    * @param {Boolean} base64 (optional) Response is expected to be base64 encoded
+    * @param {String|Object} data text/data to be decrypted. Accepts Strings
+    *  and Objects with a getText method
+    * @param {Boolean} base64 (optional) Response is expected to be base64
+    * encoded
     * @returns {Promise<Object>} decrypted message:
         data:   The decrypted data.  This may be base64 encoded.
         base64: Boolean indicating whether data is base64 encoded.
         mime:   A Boolean indicating whether the data is a MIME object.
         signatures: Array of signature Objects TODO not yet implemented.
-            // should be an object that can tell if all signatures are valid etc.
+            // should be an object that can tell if all signatures are valid .
     * @async
     */
     decrypt(data, base64=false){
@@ -124,14 +136,16 @@ export class GpgME {
 
     /**
      * Sign a Message
-     * @param {String|Object} data text/data to be decrypted. Accepts Strings and Objects with a gettext methos
-     * @param {GPGME_Key|String|Array<String>|Array<GPGME_Key>} keys The key/keys to use for signing
+     * @param {String|Object} data text/data to be decrypted. Accepts Strings
+     * and Objects with a gettext methos
+     * @param {GPGME_Key|String|Array<String>|Array<GPGME_Key>} keys The
+     * key/keys to use for signing
      * @param {*} mode The signing mode. Currently supported:
      *      'clearsign': (default) The Message is embedded into the signature
      *      'detached': The signature is stored separately
      * @param {*} base64 input is considered base64
      * @returns {Promise<Object>}
-     *    data: The resulting data. In clearsign mode this includes the signature
+     *    data: The resulting data. Includes the signature in clearsign mode
      *    signature: The detached signature (if in detached mode)
      * @async
      */
@@ -154,7 +168,6 @@ export class GpgME {
         if (mode === 'detached') {
             msg.expected = 'base64';
         }
-        let me = this;
         return new Promise(function(resolve,reject) {
             msg.post().then( function(message) {
                 if (mode === 'clearsign'){
@@ -169,7 +182,7 @@ export class GpgME {
                 }
             }, function(error){
                 reject(error);
-            })
+            });
         });
     }
 }
@@ -180,7 +193,7 @@ export class GpgME {
  * @param {*} data The data to enter
  */
 function putData(message, data){
-    if (!message || !message instanceof GPGME_Message ) {
+    if (!message || !(message instanceof GPGME_Message) ) {
         return gpgme_error('PARAM_WRONG');
     }
     if (!data){

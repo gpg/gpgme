@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-var inputvalues = {// eslint-disable-line no-unused-vars
+const inputvalues = {// eslint-disable-line no-unused-vars
     encrypt: {
         good:{
             data : 'Hello World.',
@@ -131,7 +134,7 @@ function slightlyLessBoringString(megabytes, set){
 }
 
 // Data encrypted with testKey
-var encryptedData =// eslint-disable-line no-unused-vars
+const encryptedData =// eslint-disable-line no-unused-vars
     '-----BEGIN PGP MESSAGE-----\n' +
     '\n' +
     'hQEMA6B8jfIUScGEAQgAlANd3uyhmhYLzVcfz4LEqA8tgUC3n719YH0iuKEzG/dv\n' +
@@ -146,7 +149,7 @@ var encryptedData =// eslint-disable-line no-unused-vars
     '=zap6\n' +
     '-----END PGP MESSAGE-----\n';
 
-var ImportablePublicKey = {// eslint-disable-line no-unused-vars
+const ImportablePublicKey = {// eslint-disable-line no-unused-vars
     fingerprint: '78034948BA7F5D0E9BDB67E4F63790C11E60278A',
     key:'-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     '\n' +

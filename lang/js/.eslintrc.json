@@ -24,6 +24,9 @@
             "error",
             "always"
         ],
+        "no-var": [
+            "warn"
+        ],
         "max-len": 1
     }
 }

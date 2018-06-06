@@ -1,7 +1,7 @@
 {
   "name": "gpgmejs",
-  "version": "0.0.1",
-  "description": "javascript part of a nativeMessaging gnupg integration",
+  "version": "0.0.1-dev",
+  "description": "Javascript part of the GPGME nativeMessaging integration",
   "main": "src/index.js",
   "private": true,
   "keywords": [],

@@ -17,39 +17,41 @@
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
  *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
+
+/* global document, Gpgmejs */
 
 document.addEventListener('DOMContentLoaded', function() {
     Gpgmejs.init().then(function(gpgmejs){
-        document.getElementById("buttonencrypt").addEventListener("click",
+        document.getElementById('buttonencrypt').addEventListener('click',
             function(){
                 let data = document.getElementById('cleartext').value;
                 let keyId = document.getElementById('pubkey').value;
                 gpgmejs.encrypt(data, keyId).then(
                     function(answer){
-                        console.log(answer);
                         if (answer.data){
-                            console.log(answer.data);
-                        document.getElementById('answer').value = answer.data;
+                            document.getElementById(
+                                'answer').value = answer.data;
                         }
                     }, function(errormsg){
                         alert( errormsg.code + ' ' + errormsg.msg);
-                });
+                    });
             });
 
-        document.getElementById("buttondecrypt").addEventListener("click",
-        function(){
-            let data = document.getElementById("ciphertext").value;
-            gpgmejs.decrypt(data).then(
-                function(answer){
-                    console.log(answer);
-                    if (answer.data){
-                        document.getElementById('answer').value = answer.data;
-                    }
-                }, function(errormsg){
-                    alert( errormsg.code + ' ' + errormsg.msg);
+        document.getElementById('buttondecrypt').addEventListener('click',
+            function(){
+                let data = document.getElementById('ciphertext').value;
+                gpgmejs.decrypt(data).then(
+                    function(answer){
+                        if (answer.data){
+                            document.getElementById(
+                                'answer').value = answer.data;
+                        }
+                    }, function(errormsg){
+                        alert( errormsg.code + ' ' + errormsg.msg);
+                    });
             });
-        });
-    },
-    function(error){console.log(error)});
+    });
 });

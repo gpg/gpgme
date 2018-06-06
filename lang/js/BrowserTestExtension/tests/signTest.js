@@ -16,7 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
+
+/* global describe, it, expect, Gpgmejs */
+/* global bigString, inputvalues */
+
 describe('Signing', function () {
     it('Sign a message', function (done) {
         let prm = Gpgmejs.init();
@@ -25,12 +32,12 @@ describe('Signing', function () {
             context.sign(
                 data,
                 inputvalues.encrypt.good.fingerprint).then(function (answer) {
-                    expect(answer).to.not.be.empty;
-                    expect(answer.data).to.be.a('string');
-                    expect(answer.data).to.include('BEGIN PGP SIGNATURE');
-                    expect(answer.data).to.include('END PGP SIGNATURE');
-                    expect(answer.data).to.include(data);
-                    done();
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include('BEGIN PGP SIGNATURE');
+                expect(answer.data).to.include('END PGP SIGNATURE');
+                expect(answer.data).to.include(data);
+                done();
             });
         });
     });
@@ -43,12 +50,12 @@ describe('Signing', function () {
                 inputvalues.encrypt.good.fingerprint,
                 'detached'
             ).then(function (answer) {
-                    expect(answer).to.not.be.empty;
-                    expect(answer.data).to.be.a('string');
-                    expect(answer.data).to.include(data);
-                    expect(answer.signature).to.be.a('string');
-                    expect(answer.signature).to.be.a('string');
-                    done();
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include(data);
+                expect(answer.signature).to.be.a('string');
+                expect(answer.signature).to.be.a('string');
+                done();
             });
         });
     });

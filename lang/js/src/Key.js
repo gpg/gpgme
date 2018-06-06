@@ -16,20 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  * SPDX-License-Identifier: LGPL-2.1+
+ *
+ * Author(s):
+ *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-/**
- * The key class allows to query the information defined in gpgme Key Objects
- * (see https://www.gnupg.org/documentation/manuals/gpgme/Key-objects.html)
- *
- * This is a stub, as the gpgme-json side is not yet implemented
- *
- */
-
-import { isFingerprint, isLongId } from './Helpers'
-import { gpgme_error } from './Errors'
+import { isFingerprint, isLongId } from './Helpers';
+import { gpgme_error } from './Errors';
 import { createMessage } from './Message';
-import { permittedOperations } from './permittedOperations';
 
 /**
  * Validates the fingerprint.
@@ -44,6 +38,11 @@ export function createKey(fingerprint){
 
 /**
  * Representing the Keys as stored in GPG
+ * It allows to query almost all information defined in gpgme Key Objects
+ * Refer to validKeyProperties for available information, and the gpgme
+ * documentation on their meaning
+ * (https://www.gnupg.org/documentation/manuals/gpgme/Key-objects.html)
+ *
  */
 export class GPGME_Key {
 
@@ -102,22 +101,22 @@ export class GPGME_Key {
                 return gpgme_error('KEY_INVALID');
             }
             switch (dataKeys[i]){
-                case 'subkeys':
-                    this._data.subkeys = [];
-                    for (let i=0; i< data.subkeys.length; i++) {
-                        this._data.subkeys.push(
-                            new GPGME_Subkey(data.subkeys[i]));
-                    }
-                    break;
-                case 'userids':
-                    this._data.userids = [];
-                    for (let i=0; i< data.userids.length; i++) {
-                        this._data.userids.push(
-                            new GPGME_UserId(data.userids[i]));
-                    }
-                    break;
-                default:
-                    this._data[dataKeys[i]] = data[dataKeys[i]];
+            case 'subkeys':
+                this._data.subkeys = [];
+                for (let i=0; i< data.subkeys.length; i++) {
+                    this._data.subkeys.push(
+                        new GPGME_Subkey(data.subkeys[i]));
+                }
+                break;
+            case 'userids':
+                this._data.userids = [];
+                for (let i=0; i< data.userids.length; i++) {
+                    this._data.userids.push(
+                        new GPGME_UserId(data.userids[i]));
+                }
+                break;
+            default:
+                this._data[dataKeys[i]] = data[dataKeys[i]];
             }
         }
         return this;
@@ -162,11 +161,6 @@ export class GPGME_Key {
         }
     }
 
-    get armored () {
-        return this.get('armored');
-        //TODO exception if empty
-    }
-
     /**
      * Reloads the Key from gnupg
      */
@@ -188,7 +182,7 @@ export class GPGME_Key {
                 }
             }, function (error) {
                 reject(gpgme_error('GNUPG_ERROR'), error);
-            })
+            });
         });
     }
 
@@ -197,7 +191,7 @@ export class GPGME_Key {
      * from gpg.
      * @returns {Promise<String>}
      */
-     getArmor(){
+    getArmor(){
         let me = this;
         return new Promise(function(resolve, reject) {
             if (!me._data.fingerprint){
@@ -249,15 +243,16 @@ export class GPGME_Key {
                         }
                     }
                 } else {
-                    reject(gpgme_error('CONN_UNEXPECTED_ANSWER'))
+                    reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
                 }
             }, function(error){
-            })
+                reject(error);
+            });
         });
     }
 
     /**
-     * Convenience function to be directly used as properties of the Key
+     * Convenience functions to be directly used as properties of the Key
      * Notice that these rely on cached info and may be outdated. Use the async
      * get(property, false) if you need the most current info
      */
@@ -280,8 +275,8 @@ export class GPGME_Key {
     /**
      * Deletes the public Key from the GPG Keyring. Note that a deletion of a
      * secret key is not supported by the native backend.
-     * @returns {Promise<Boolean>} Success if key was deleted, rejects with a GPG error
-     * otherwise
+     * @returns {Promise<Boolean>} Success if key was deleted, rejects with a
+     * GPG error otherwise
      */
     delete(){
         let me = this;
@@ -295,7 +290,7 @@ export class GPGME_Key {
                 resolve(result.success);
             }, function(error){
                 reject(error);
-            })
+            });
         });
     }
 }
@@ -378,37 +373,37 @@ const validUserIdProperties = {
     },
     'uid': function(value){
         if (typeof(value) === 'string' || value === ''){
-            return true;;
+            return true;
         }
         return false;
     },
     'validity': function(value){
         if (typeof(value) === 'string'){
-            return true;;
+            return true;
         }
         return false;
     },
     'name': function(value){
         if (typeof(value) === 'string' || value === ''){
-        return true;;
+            return true;
         }
         return false;
     },
     'email': function(value){
         if (typeof(value) === 'string' || value === ''){
-            return true;;
+            return true;
         }
         return false;
     },
     'address': function(value){
         if (typeof(value) === 'string' || value === ''){
-            return true;;
+            return true;
         }
         return false;
     },
     'comment': function(value){
         if (typeof(value) === 'string' || value === ''){
-            return true;;
+            return true;
         }
         return false;
     },
@@ -449,8 +444,8 @@ const validSubKeyProperties = {
         return typeof(value) === 'boolean';
     },
     'pubkey_algo_name': function(value){
-            return typeof(value) === 'string';
-            // TODO: check against list of known?['']
+        return typeof(value) === 'string';
+        // TODO: check against list of known?['']
     },
     'pubkey_algo_string': function(value){
         return typeof(value) === 'string';
@@ -471,7 +466,7 @@ const validSubKeyProperties = {
     'expires': function(value){
         return (Number.isInteger(value) && value > 0);
     }
-}
+};
 const validKeyProperties = {
     //TODO better validation?
     'fingerprint': function(value){
@@ -546,4 +541,4 @@ const validKeyProperties = {
         return typeof(value) === 'boolean';
     }
 
-}
+};
