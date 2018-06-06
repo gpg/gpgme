@@ -454,6 +454,85 @@
    literals with the fingerprint when getting a key in this way.
 
 
+** Importing keys
+   :PROPERTIES:
+   :CUSTOM_ID: howto-import-key
+   :END:
+
+   Importing keys is possible with the =key_import()= method and takes
+   one argument which is a bytes literal object containing either the
+   binary or ASCII armoured key data for one or more keys.
+
+   In the following example a key will be retrieved from the SKS
+   keyservers via the web using the requests module. Since requests
+   returns the content as a bytes literal object, we can then use that
+   directly to import the resulting data into our keybox. In order to
+   demonstrate multiple imports this example searches for all the keys
+   of users at a particular domain name; in this case the EFF.
+
+   #+begin_src python
+     import gpg
+     import os.path
+     import requests
+
+     c = gpg.Context()
+
+     homedir = input("Enter the GPG configuration directory path (optional): ")
+     pattern = input("The pattern to search for in key or user IDs: ")
+     url = "https://sks-keyservers.net/pks/lookup"
+     payload = { "op": "get", "search": pattern }
+
+     if homedir.startswith("~"):
+	 if os.path.exists(os.path.expanduser(homedir)) is True:
+	     c.home_dir = os.path.expanduser(homedir)
+	 else:
+	     pass
+     elif os.path.exists(homedir) is True:
+	 c.home_dir = homedir
+     else:
+	 pass
+
+     r = requests.get(url, verify=True, params=payload)
+     incoming = c.key_import(r.content)
+
+     summary = """
+     Total number of keys:   {0}
+     Total number imported:  {1}
+     Number of version 3 keys ignored:  {2}
+
+     Number of imported key objects or updates:  {3}
+     Number of unchanged keys:  {4}
+     Number of new signatures:  {5}
+     Number of revoked keys:    {6}
+     """.format(incoming.considered, len(incoming.imports),
+		incoming.skipped_v3_keys, incoming.imported, incoming.unchanged,
+		incoming.new_signatures, incoming.new_revocations)
+
+     print(summary)
+   #+end_src
+
+   The resulting output in that case, where the search pattern entered
+   was =@eff.org= was:
+
+   #+begin_src shell
+     Total number of keys:   272
+     Total number imported:  249
+     Number of version 3 keys ignored:  23
+
+     Number of imported key objects or updates:  180
+     Number of unchanged keys:  66
+     Number of new signatures:  7
+     Number of revoked keys:    0
+   #+end_src
+
+   The examples for this document in =lang/python/examples/howto/ now
+   include to variations of this; one for searching the SKS keyserver
+   pool and the other for importing from a local file.
+
+   The example above and the corresponding executable script included
+   in the examples requires Kenneth Reitz's excellent [[http://docs.python-requests.org/en/master/][Requests module]].
+
+
 * Basic Functions
   :PROPERTIES:
   :CUSTOM_ID: howto-the-basics

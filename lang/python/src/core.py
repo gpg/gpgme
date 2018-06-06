@@ -509,6 +509,28 @@ class Context(GpgmeWrapper):
 
         return results
 
+    def key_import(self, keydata):
+        """Importing keys
+
+        Arguments:
+        keydata -- Binary or ASCII armored key(s) to be imported
+
+        Returns 
+                -- an object describing the results of keys imported or
+                   updated
+
+        Raises:
+        GPGMEError	-- as signaled by the underlying library
+        """
+        if keydata is not None:
+            try:
+                self.op_import(keydata)
+                result = self.op_import_result()
+            except GPGMEError as e:
+                result = e
+        else:
+            result = "No keys found."
+
     def keylist(self, pattern=None, secret=False,
                 mode=constants.keylist.mode.LOCAL,
                 source=None):
