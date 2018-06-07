@@ -565,7 +565,7 @@ _create_new_context (gpgme_protocol_t proto)
 static gpgme_ctx_t
 get_context (gpgme_protocol_t proto)
 {
-  static gpgme_ctx_t ctx_openpgp, ctx_cms;
+  static gpgme_ctx_t ctx_openpgp, ctx_cms, ctx_conf;
 
   if (proto == GPGME_PROTOCOL_OpenPGP)
     {
@@ -578,6 +578,12 @@ get_context (gpgme_protocol_t proto)
       if (!ctx_cms)
         ctx_cms = _create_new_context (proto);
       return ctx_cms;
+    }
+  else if (proto == GPGME_PROTOCOL_GPGCONF)
+    {
+      if (!ctx_conf)
+        ctx_conf = _create_new_context (proto);
+      return ctx_conf;
     }
   else
     log_bug ("invalid protocol %d requested\n", proto);
@@ -1109,6 +1115,119 @@ import_result_to_json (gpgme_import_result_t imp)
       for (status = imp->imports; status; status = status->next)
         cJSON_AddItemToArray (array, import_status_to_json (status));
       xjson_AddItemToObject (result, "imports", array);
+    }
+
+  return result;
+}
+
+
+/* Create a JSON object from a gpgconf arg */
+static cjson_t
+conf_arg_to_json (gpgme_conf_arg_t arg, gpgme_conf_type_t type)
+{
+  cjson_t result = xjson_CreateObject ();
+  int is_none = 0;
+  switch (type)
+    {
+      case GPGME_CONF_STRING:
+      case GPGME_CONF_PATHNAME:
+      case GPGME_CONF_LDAP_SERVER:
+      case GPGME_CONF_KEY_FPR:
+      case GPGME_CONF_PUB_KEY:
+      case GPGME_CONF_SEC_KEY:
+      case GPGME_CONF_ALIAS_LIST:
+        xjson_AddStringToObject0 (result, "string", arg->value.string);
+        break;
+
+      case GPGME_CONF_UINT32:
+        xjson_AddNumberToObject (result, "number", arg->value.uint32);
+        break;
+
+      case GPGME_CONF_INT32:
+        xjson_AddNumberToObject (result, "number", arg->value.int32);
+        break;
+
+      case GPGME_CONF_NONE:
+      default:
+        is_none = 1;
+        break;
+    }
+  xjson_AddBoolToObject (result, "is_none", is_none);
+  return result;
+}
+
+
+/* Create a JSON object from a gpgconf option */
+static cjson_t
+conf_opt_to_json (gpgme_conf_opt_t opt)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "name", opt->name);
+  xjson_AddStringToObject0 (result, "description", opt->description);
+  xjson_AddStringToObject0 (result, "argname", opt->argname);
+  xjson_AddStringToObject0 (result, "default_description",
+                            opt->default_description);
+  xjson_AddStringToObject0 (result, "no_arg_description",
+                            opt->no_arg_description);
+
+  xjson_AddNumberToObject (result, "flags", opt->flags);
+  xjson_AddNumberToObject (result, "level", opt->level);
+  xjson_AddNumberToObject (result, "type", opt->type);
+  xjson_AddNumberToObject (result, "alt_type", opt->alt_type);
+
+  if (opt->default_value)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_conf_arg_t arg;
+
+      for (arg = opt->default_value; arg; arg = arg->next)
+        cJSON_AddItemToArray (array, conf_arg_to_json (arg, opt->alt_type));
+      xjson_AddItemToObject (result, "default_value", array);
+    }
+
+  if (opt->no_arg_value)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_conf_arg_t arg;
+
+      for (arg = opt->no_arg_value; arg; arg = arg->next)
+        cJSON_AddItemToArray (array, conf_arg_to_json (arg, opt->alt_type));
+      xjson_AddItemToObject (result, "no_arg_value", array);
+    }
+
+  if (opt->value)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_conf_arg_t arg;
+
+      for (arg = opt->value; arg; arg = arg->next)
+        cJSON_AddItemToArray (array, conf_arg_to_json (arg, opt->alt_type));
+      xjson_AddItemToObject (result, "value", array);
+    }
+  return result;
+}
+
+
+/* Create a JSON object from a gpgconf component*/
+static cjson_t
+conf_comp_to_json (gpgme_conf_comp_t cmp)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "name", cmp->name);
+  xjson_AddStringToObject0 (result, "description", cmp->description);
+  xjson_AddStringToObject0 (result, "program_name", cmp->program_name);
+
+
+  if (cmp->options)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_conf_opt_t opt;
+
+      for (opt = cmp->options; opt; opt = opt->next)
+        cJSON_AddItemToArray (array, conf_opt_to_json (opt));
+      xjson_AddItemToObject (result, "options", array);
     }
 
   return result;
@@ -2341,6 +2460,91 @@ leave:
 }
 
 
+static const char hlp_config[] =
+  "op:     \"config\"\n"
+  "\n"
+  "Optional parameters:\n"
+  "component:    Component of entries to list.\n"
+  "              Default: all\n"
+  "\n"
+  "Response on success:\n"
+  "   components: Array of the component program configs.\n"
+  "     name:         The component name.\n"
+  "     description:  Description of the component.\n"
+  "     program_name: The absolute path to the program.\n"
+  "     options: Array of config options\n"
+  "      String values:\n"
+  "       name: The name of the option\n"
+  "       description: Localized description of the opt.\n"
+  "       argname: Thhe argument name e.g. --verbose\n"
+  "       default_description\n"
+  "       no_arg_description\n"
+  "      Number values:\n"
+  "       flags: Flags for this option.\n"
+  "       level: the level of the description. See gpgme_conf_level_t.\n"
+  "       type: The type of the option. See gpgme_conf_type_t.\n"
+  "       alt_type: Alternate type of the option. See gpgme_conf_type_t\n"
+  "      Arg type values: (see desc. below)\n"
+  "       default_value: Array of the default value.\n"
+  "       no_arg_value: Array of the value if it is not set.\n"
+  "       value: Array for the current value if the option is set.\n"
+  "\n"
+  "Conf type values are an array of values that are either\n"
+  "of type number named \"number\" or of type string,\n"
+  "named \"string\".\n"
+  "If the type is none the bool value is_none is true.\n"
+  "";
+static gpg_error_t
+op_config (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_conf_comp_t conf = NULL;
+  gpgme_conf_comp_t comp = NULL;
+  cjson_t j_tmp;
+  char *comp_name = NULL;
+  cjson_t j_comps = xjson_CreateArray ();
+
+  ctx = get_context (GPGME_PROTOCOL_GPGCONF);
+
+  j_tmp = cJSON_GetObjectItem (request, "component");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      comp_name = j_tmp->valuestring;
+    }
+  else if (j_tmp && !cjson_is_string (j_tmp))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  /* Load the config */
+  err = gpgme_op_conf_load (ctx, &conf);
+  if (err)
+    {
+      goto leave;
+    }
+
+  comp = conf;
+  for (comp = conf; comp; comp = comp->next)
+    {
+      if (comp_name && comp->name && strcmp (comp->name, comp_name))
+        {
+          /* Skip components if a single one is specified */
+          continue;
+        }
+      cJSON_AddItemToArray (j_comps, conf_comp_to_json (comp));
+    }
+  xjson_AddItemToObject (result, "components", j_comps);
+
+leave:
+  gpgme_conf_release (conf);
+  release_context (ctx);
+
+  return err;
+}
+
+
 
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
@@ -2436,6 +2640,7 @@ static const char hlp_help[] =
   "operation is not performned but a string with the documentation\n"
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
+  "  config      Read configuration values.\n"
   "  decrypt     Decrypt data.\n"
   "  delete      Delete a key.\n"
   "  encrypt     Encrypt data.\n"
@@ -2483,6 +2688,7 @@ process_request (const char *request)
     gpg_error_t (*handler)(cjson_t request, cjson_t result);
     const char * const helpstr;
   } optbl[] = {
+    { "config",  op_config,  hlp_config },
     { "encrypt", op_encrypt, hlp_encrypt },
     { "export",  op_export,  hlp_export },
     { "decrypt", op_decrypt, hlp_decrypt },
