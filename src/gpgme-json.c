@@ -2460,6 +2460,102 @@ leave:
 }
 
 
+static const char hlp_config_opt[] =
+  "op:       \"config_opt\"\n"
+  "component: The component of the option.\n"
+  "option:    The name of the option.\n"
+  "\n"
+  "Response on success:\n"
+  "\n"
+  "option: Information about the option.\n"
+  " String values:\n"
+  "  name: The name of the option\n"
+  "  description: Localized description of the opt.\n"
+  "  argname: Thhe argument name e.g. --verbose\n"
+  "  default_description\n"
+  "  no_arg_description\n"
+  " Number values:\n"
+  "  flags: Flags for this option.\n"
+  "  level: the level of the description. See gpgme_conf_level_t.\n"
+  "  type: The type of the option. See gpgme_conf_type_t.\n"
+  "  alt_type: Alternate type of the option. See gpgme_conf_type_t\n"
+  " Arg type values: (see desc. below)\n"
+  "  default_value: Array of the default value.\n"
+  "  no_arg_value: Array of the value if it is not set.\n"
+  "  value: Array for the current value if the option is set.\n"
+  "\n"
+  "If the response is empty the option was not found\n"
+  "";
+static gpg_error_t
+op_config_opt (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  gpgme_conf_comp_t conf = NULL;
+  gpgme_conf_comp_t comp = NULL;
+  cjson_t j_tmp;
+  char *comp_name = NULL;
+  char *opt_name = NULL;
+
+  ctx = get_context (GPGME_PROTOCOL_GPGCONF);
+
+  j_tmp = cJSON_GetObjectItem (request, "component");
+  if (!j_tmp || !cjson_is_string (j_tmp))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  comp_name = j_tmp->valuestring;
+
+
+  j_tmp = cJSON_GetObjectItem (request, "option");
+  if (!j_tmp || !cjson_is_string (j_tmp))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  opt_name = j_tmp->valuestring;
+
+  /* Load the config */
+  err = gpgme_op_conf_load (ctx, &conf);
+  if (err)
+    {
+      goto leave;
+    }
+
+  comp = conf;
+  for (comp = conf; comp; comp = comp->next)
+    {
+      gpgme_conf_opt_t opt = NULL;
+      int found = 0;
+      if (!comp->name || strcmp (comp->name, comp_name))
+        {
+          /* Skip components if a single one is specified */
+          continue;
+        }
+      for (opt = comp->options; opt; opt = opt->next)
+        {
+          if (!opt->name || strcmp (opt->name, opt_name))
+            {
+              /* Skip components if a single one is specified */
+              continue;
+            }
+          xjson_AddItemToObject (result, "option", conf_opt_to_json (opt));
+          found = 1;
+          break;
+        }
+      if (found)
+        break;
+    }
+
+leave:
+  gpgme_conf_release (conf);
+  release_context (ctx);
+
+  return err;
+}
+
+
 static const char hlp_config[] =
   "op:     \"config\"\n"
   "\n"
@@ -2688,18 +2784,19 @@ process_request (const char *request)
     gpg_error_t (*handler)(cjson_t request, cjson_t result);
     const char * const helpstr;
   } optbl[] = {
-    { "config",  op_config,  hlp_config },
-    { "encrypt", op_encrypt, hlp_encrypt },
-    { "export",  op_export,  hlp_export },
-    { "decrypt", op_decrypt, hlp_decrypt },
-    { "delete",  op_delete,  hlp_delete },
-    { "keylist", op_keylist, hlp_keylist },
-    { "import",  op_import,  hlp_import },
-    { "sign",    op_sign,    hlp_sign },
-    { "verify",  op_verify,  hlp_verify },
-    { "version", op_version, hlp_version },
-    { "getmore", op_getmore, hlp_getmore },
-    { "help",    op_help,    hlp_help },
+    { "config",     op_config,     hlp_config },
+    { "config_opt", op_config_opt, hlp_config_opt },
+    { "encrypt",    op_encrypt,    hlp_encrypt },
+    { "export",     op_export,     hlp_export },
+    { "decrypt",    op_decrypt,    hlp_decrypt },
+    { "delete",     op_delete,     hlp_delete },
+    { "keylist",    op_keylist,    hlp_keylist },
+    { "import",     op_import,     hlp_import },
+    { "sign",       op_sign,       hlp_sign },
+    { "verify",     op_verify,     hlp_verify },
+    { "version",    op_version,    hlp_version },
+    { "getmore",    op_getmore,    hlp_getmore },
+    { "help",       op_help,       hlp_help },
     { NULL }
   };
   size_t erroff;
