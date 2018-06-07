@@ -726,41 +726,68 @@ create_keylist_patterns (cjson_t request, const char *name)
 static cjson_t
 sigsum_to_json (gpgme_sigsum_t summary)
 {
-  cjson_t result = xjson_CreateArray ();
+  cjson_t result = xjson_CreateObject ();
+  cjson_t sigsum_array = xjson_CreateArray ();
 
   if ( (summary & GPGME_SIGSUM_VALID      ))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("valid"));
   if ( (summary & GPGME_SIGSUM_GREEN      ))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("green"));
   if ( (summary & GPGME_SIGSUM_RED        ))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("red"));
   if ( (summary & GPGME_SIGSUM_KEY_REVOKED))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("revoked"));
   if ( (summary & GPGME_SIGSUM_KEY_EXPIRED))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("key-expired"));
   if ( (summary & GPGME_SIGSUM_SIG_EXPIRED))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("sig-expired"));
   if ( (summary & GPGME_SIGSUM_KEY_MISSING))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("key-missing"));
   if ( (summary & GPGME_SIGSUM_CRL_MISSING))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("crl-missing"));
   if ( (summary & GPGME_SIGSUM_CRL_TOO_OLD))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("crl-too-old"));
   if ( (summary & GPGME_SIGSUM_BAD_POLICY ))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("bad-policy"));
   if ( (summary & GPGME_SIGSUM_SYS_ERROR  ))
-    cJSON_AddItemToArray (result,
+    cJSON_AddItemToArray (sigsum_array,
         cJSON_CreateString ("sys-error"));
+  /* The signature summary as string array. */
+  xjson_AddItemToObject (result, "sigsum", sigsum_array);
+
+  /* Bools for the same. */
+  xjson_AddBoolToObject (result, "valid",
+                         (summary & GPGME_SIGSUM_VALID      ));
+  xjson_AddBoolToObject (result, "green",
+                         (summary & GPGME_SIGSUM_GREEN      ));
+  xjson_AddBoolToObject (result, "red",
+                         (summary & GPGME_SIGSUM_RED        ));
+  xjson_AddBoolToObject (result, "revoked",
+                         (summary & GPGME_SIGSUM_KEY_REVOKED));
+  xjson_AddBoolToObject (result, "key-expired",
+                         (summary & GPGME_SIGSUM_KEY_EXPIRED));
+  xjson_AddBoolToObject (result, "sig-expired",
+                         (summary & GPGME_SIGSUM_SIG_EXPIRED));
+  xjson_AddBoolToObject (result, "key-missing",
+                         (summary & GPGME_SIGSUM_KEY_MISSING));
+  xjson_AddBoolToObject (result, "crl-missing",
+                         (summary & GPGME_SIGSUM_CRL_MISSING));
+  xjson_AddBoolToObject (result, "crl-too-old",
+                         (summary & GPGME_SIGSUM_CRL_TOO_OLD));
+  xjson_AddBoolToObject (result, "bad-policy",
+                         (summary & GPGME_SIGSUM_BAD_POLICY ));
+  xjson_AddBoolToObject (result, "sys-error",
+                         (summary & GPGME_SIGSUM_SYS_ERROR  ));
 
   return result;
 }
@@ -1014,18 +1041,38 @@ signature_to_json (gpgme_signature_t sig)
 {
   cjson_t result = xjson_CreateObject ();
 
-  xjson_AddStringToObject0 (result, "status",
-                            gpgme_strerror (sig->status));
-
-  xjson_AddStringToObject0 (result, "validity",
-                            validity_to_string (sig->validity));
-  xjson_AddStringToObject0 (result, "fingerprint", sig->fpr);
-
   xjson_AddItemToObject (result, "summary", sigsum_to_json (sig->summary));
 
-  xjson_AddNumberToObject (result, "created", sig->timestamp);
-  xjson_AddNumberToObject (result, "expired", sig->exp_timestamp);
-  xjson_AddNumberToObject (result, "code", sig->status);
+  xjson_AddBoolToObject (result, "wrong_key_usage", sig->wrong_key_usage);
+  xjson_AddBoolToObject (result, "chain_model", sig->chain_model);
+  xjson_AddBoolToObject (result, "is_de_vs", sig->is_de_vs);
+
+  xjson_AddStringToObject0 (result, "status_string",
+                            gpgme_strerror (sig->status));
+  xjson_AddStringToObject0 (result, "fingerprint", sig->fpr);
+  xjson_AddStringToObject0 (result, "validity_string",
+                            validity_to_string (sig->validity));
+  xjson_AddStringToObject0 (result, "pubkey_algo_name",
+                            gpgme_pubkey_algo_name (sig->pubkey_algo));
+  xjson_AddStringToObject0 (result, "hash_algo_name",
+                            gpgme_hash_algo_name (sig->hash_algo));
+  xjson_AddStringToObject0 (result, "pka_address", sig->pka_address);
+
+  xjson_AddNumberToObject (result, "status_code", sig->status);
+  xjson_AddNumberToObject (result, "timestamp", sig->timestamp);
+  xjson_AddNumberToObject (result, "exp_timestamp", sig->exp_timestamp);
+  xjson_AddNumberToObject (result, "pka_trust", sig->pka_trust);
+  xjson_AddNumberToObject (result, "validity", sig->validity);
+  xjson_AddNumberToObject (result, "validity_reason", sig->validity_reason);
+
+  if (sig->notations)
+    {
+      gpgme_sig_notation_t not;
+      cjson_t array = xjson_CreateArray ();
+      for (not = sig->notations; not; not = not->next)
+        cJSON_AddItemToArray (array, sig_notation_to_json (not));
+      xjson_AddItemToObject (result, "notations", array);
+    }
 
   return result;
 }
@@ -1035,7 +1082,10 @@ signature_to_json (gpgme_signature_t sig)
 static cjson_t
 verify_result_to_json (gpgme_verify_result_t verify_result)
 {
-  cjson_t response = xjson_CreateObject ();
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "file_name", verify_result->file_name);
+  xjson_AddBoolToObject (result, "is_mime", verify_result->is_mime);
 
   if (verify_result->signatures)
     {
@@ -1044,10 +1094,10 @@ verify_result_to_json (gpgme_verify_result_t verify_result)
 
       for (sig = verify_result->signatures; sig; sig = sig->next)
         cJSON_AddItemToArray (array, signature_to_json (sig));
-      xjson_AddItemToObject (response, "signatures", array);
+      xjson_AddItemToObject (result, "signatures", array);
     }
 
-  return response;
+  return result;
 }
 
 
@@ -1583,17 +1633,52 @@ static const char hlp_decrypt[] =
   "data:   The decrypted data.  This may be base64 encoded.\n"
   "base64: Boolean indicating whether data is base64 encoded.\n"
   "mime:   A Boolean indicating whether the data is a MIME object.\n"
-  "info:   An object with optional signature information.\n"
+  "info:   An object with verification information. (gpgme_verify_result_t)\n"
+  " file_name: Optional string of the plaintext file name.\n"
+  " is_mime:    Boolean that is true if the messages claims it is MIME.\n"
+  " signatures: Array of signatures\n"
+  "  summary: Object containing summary information.\n"
+  "   Boolean values: (Check gpgme_sigsum_t doc for meaning)\n"
+  "    valid\n"
+  "    green\n"
+  "    red\n"
+  "    revoked\n"
+  "    key-expired\n"
+  "    sig-expired\n"
+  "    key-missing\n"
+  "    crl-missing\n"
+  "    crl-too-old\n"
+  "    bad-policy\n"
+  "    sys-error\n"
+  "   sigsum: Array of strings representing the sigsum.\n"
+  "  Boolean values:\n"
+  "   wrong_key_usage: Key should not have been used for signing.\n"
+  "   chain_model:     Validity has been verified using the chain model.\n"
+  "   is_de_vs:        signature is in compliance to the de-vs mode.\n"
+  "  String values:\n"
+  "   status_string:      The status code as localized gpg-error string\n"
+  "   fingerprint:        The fingerprint of the signing key.\n"
+  "   validity_string:    The validity as string.\n"
+  "   pubkey_algo_name:   gpgme_pubkey_algo_name of used algo.\n"
+  "   hash_algo_name:     gpgme_hash_algo_name of used hash algo\n"
+  "   pka_address:        The mailbox from the PKA information.\n"
+  "  Number values:\n"
+  "   status_code:     The status as a number. (gpg_error_t)\n"
+  "   timestamp:       Signature creation time. (secs since epoch)\n"
+  "   exp_timestamp:   Signature expiration or 0. (secs since epoch)\n"
+  "   pka_trust: PKA status: 0 = not available, 1 = bad, 2 = okay, 3 = RFU.\n"
+  "   validity: validity as number (gpgme_validity_t)\n"
+  "   validity_reason: (gpg_error_t)\n"
   "  Array values:\n"
-  "   signatures\n"
+  "   notations: Notation data and policy urls (gpgme_sig_notation_t)\n"
+  "    Boolean values:\n"
+  "     human_readable\n"
+  "     critical\n"
   "    String values:\n"
-  "     status: The status of the signature.\n"
-  "     fingerprint: The fingerprint of the signing key.\n"
-  "     validity: The validity as string.\n"
+  "     name\n"
+  "     value\n"
   "    Number values:\n"
-  "     code: The status as a number.\n"
-  "    Array values:\n"
-  "     summary: A string array of the sig summary.\n"
+  "     flags\n"
   "more:   Optional boolean indicating that \"getmore\" is required.";
 static gpg_error_t
 op_decrypt (cjson_t request, cjson_t result)
@@ -1829,17 +1914,52 @@ static const char hlp_verify[] =
   "type:   \"plaintext\"\n"
   "data:   The verified data.  This may be base64 encoded.\n"
   "base64: Boolean indicating whether data is base64 encoded.\n"
-  "info:   An object with signature information.\n"
+  "info:   An object with verification information (gpgme_verify_result_t).\n"
+  " file_name: Optional string of the plaintext file name.\n"
+  " is_mime:    Boolean that is true if the messages claims it is MIME.\n"
+  " signatures: Array of signatures\n"
+  "  summary: Object containing summary information.\n"
+  "   Boolean values: (Check gpgme_sigsum_t doc for meaning)\n"
+  "    valid\n"
+  "    green\n"
+  "    red\n"
+  "    revoked\n"
+  "    key-expired\n"
+  "    sig-expired\n"
+  "    key-missing\n"
+  "    crl-missing\n"
+  "    crl-too-old\n"
+  "    bad-policy\n"
+  "    sys-error\n"
+  "   sigsum: Array of strings representing the sigsum.\n"
+  "  Boolean values:\n"
+  "   wrong_key_usage: Key should not have been used for signing.\n"
+  "   chain_model:     Validity has been verified using the chain model.\n"
+  "   is_de_vs:        signature is in compliance to the de-vs mode.\n"
+  "  String values:\n"
+  "   status_string:      The status code as localized gpg-error string\n"
+  "   fingerprint:        The fingerprint of the signing key.\n"
+  "   validity_string:    The validity as string.\n"
+  "   pubkey_algo_name:   gpgme_pubkey_algo_name of used algo.\n"
+  "   hash_algo_name:     gpgme_hash_algo_name of used hash algo\n"
+  "   pka_address:        The mailbox from the PKA information.\n"
+  "  Number values:\n"
+  "   status_code:     The status as a number. (gpg_error_t)\n"
+  "   timestamp:       Signature creation time. (secs since epoch)\n"
+  "   exp_timestamp:   Signature expiration or 0. (secs since epoch)\n"
+  "   pka_trust: PKA status: 0 = not available, 1 = bad, 2 = okay, 3 = RFU.\n"
+  "   validity: validity as number (gpgme_validity_t)\n"
+  "   validity_reason: (gpg_error_t)\n"
   "  Array values:\n"
-  "   signatures\n"
+  "   notations: Notation data and policy urls (gpgme_sig_notation_t)\n"
+  "    Boolean values:\n"
+  "     human_readable\n"
+  "     critical\n"
   "    String values:\n"
-  "     status: The status of the signature.\n"
-  "     fingerprint: The fingerprint of the signing key.\n"
-  "     validity: The validity as string.\n"
+  "     name\n"
+  "     value\n"
   "    Number values:\n"
-  "     code: The status as a number.\n"
-  "    Array values:\n"
-  "     summary: A string array of the sig summary.\n"
+  "     flags\n"
   "more:   Optional boolean indicating that \"getmore\" is required.";
 static gpg_error_t
 op_verify (cjson_t request, cjson_t result)
