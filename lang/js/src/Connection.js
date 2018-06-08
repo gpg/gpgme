@@ -108,6 +108,7 @@ export class Connection{
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
         let me = this;
+        let chunksize = message.chunksize;
         return new Promise(function(resolve, reject){
             let answer = new Answer(message);
             let listener = function(msg) {
@@ -115,22 +116,27 @@ export class Connection{
                     me._connection.onMessage.removeListener(listener);
                     me._connection.disconnect();
                     reject(gpgme_error('CONN_EMPTY_GPG_ANSWER'));
-                } else if (msg.type === 'error'){
-                    me._connection.onMessage.removeListener(listener);
-                    me._connection.disconnect();
-                    reject(gpgme_error('GNUPG_ERROR', msg.msg));
                 } else {
-                    let answer_result = answer.add(msg);
+                    let answer_result = answer.collect(msg);
                     if (answer_result !== true){
                         me._connection.onMessage.removeListener(listener);
                         me._connection.disconnect();
                         reject(answer_result);
-                    } else if (msg.more === true){
-                        me._connection.postMessage({'op': 'getmore'});
                     } else {
-                        me._connection.onMessage.removeListener(listener);
-                        me._connection.disconnect();
-                        resolve(answer.message);
+                        if (msg.more === true){
+                            me._connection.postMessage({
+                                'op': 'getmore',
+                                'chunksize': chunksize
+                            });
+                        } else {
+                            me._connection.onMessage.removeListener(listener);
+                            me._connection.disconnect();
+                            if (answer.message instanceof Error){
+                                reject(answer.message);
+                            } else {
+                                resolve(answer.message);
+                            }
+                        }
                     }
                 }
             };
@@ -170,19 +176,32 @@ class Answer{
 
     constructor(message){
         this.operation = message.operation;
-        this.expected = message.expected;
+        this.expect = message.expect;
     }
 
-    /**
-     * Add the information to the answer
-     * @param {Object} msg The message as received with nativeMessaging
-     * returns true if successfull, gpgme_error otherwise
-     */
-    add(msg){
-        if (this._response === undefined){
-            this._response = {};
+    collect(msg){
+        if (typeof(msg) !== 'object' || !msg.hasOwnProperty('response')) {
+            return gpgme_error('CONN_UNEXPECTED_ANSWER');
         }
-        let messageKeys = Object.keys(msg);
+        if (this._responseb64 === undefined){
+            //this._responseb64 = [msg.response];
+            this._responseb64 = msg.response;
+            return true;
+        } else {
+            //this._responseb64.push(msg.response);
+            this._responseb64 += msg.response;
+            return true;
+        }
+    }
+
+    get message(){
+        if (this._responseb64 === undefined){
+            return gpgme_error('CONN_UNEXPECTED_ANSWER');
+        }
+        // let _decodedResponse = JSON.parse(atob(this._responseb64.join('')));
+        let _decodedResponse = JSON.parse(atob(this._responseb64));
+        let _response = {};
+        let messageKeys = Object.keys(_decodedResponse);
         let poa = permittedOperations[this.operation].answer;
         if (messageKeys.length === 0){
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
@@ -191,80 +210,42 @@ class Answer{
             let key = messageKeys[i];
             switch (key) {
             case 'type':
-                if ( msg.type !== 'error' && poa.type.indexOf(msg.type) < 0){
+                if (_decodedResponse.type === 'error'){
+                    return (gpgme_error('GNUPG_ERROR', _decodedResponse.msg));
+                } else if (poa.type.indexOf(_decodedResponse.type) < 0){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
                 break;
-            case 'more':
+            case 'base64':
+                break;
+            case 'msg':
+                if (_decodedResponse.type === 'error'){
+                    return (gpgme_error('GNUPG_ERROR', _decodedResponse.msg));
+                }
                 break;
             default:
-                //data should be concatenated
-                if (poa.data.indexOf(key) >= 0){
-                    if (!this._response.hasOwnProperty(key)){
-                        this._response[key] = '';
-                    }
-                    this._response[key] += msg[key];
-                }
-                //params should not change through the message
-                else if (poa.params.indexOf(key) >= 0){
-                    if (!this._response.hasOwnProperty(key)){
-                        this._response[key] = msg[key];
-                    }
-                    else if (this._response[key] !== msg[key]){
-                        return gpgme_error('CONN_UNEXPECTED_ANSWER',msg[key]);
-                    }
-                }
-                //infos may be json objects etc. Not yet defined.
-                // Pushing them into arrays for now
-                else if (poa.infos.indexOf(key) >= 0){
-                    if (!this._response.hasOwnProperty(key)){
-                        this._response[key] = [];
-                    }
-
-                    if (Array.isArray(msg[key])) {
-                        for (let i=0; i< msg[key].length; i++) {
-                            this._response[key].push(msg[key][i]);
-                        }
-                    } else {
-                        this._response[key].push(msg[key]);
-                    }
-                }
-                else {
+                if (!poa.data.hasOwnProperty(key)){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
+                }
+                if( typeof(_decodedResponse[key]) !== poa.data[key] ){
+                    return gpgme_error('CONN_UNEXPECTED_ANSWER');
+                }
+                if (_decodedResponse.base64 === true
+                    && poa.data[key] === 'string'
+                    && this.expect === undefined
+                ){
+                    _response[key] = decodeURIComponent(
+                        atob(_decodedResponse[key]).split('').map(
+                            function(c) {
+                                return '%' +
+                            ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                            }).join(''));
+                } else {
+                    _response[key] = _decodedResponse[key];
                 }
                 break;
             }
         }
-        return true;
-    }
-
-    /**
-     * @returns {Object} the assembled message, original data assumed to be
-     * (javascript-) strings
-     */
-    get message(){
-        let keys = Object.keys(this._response);
-        let msg = {};
-        let poa = permittedOperations[this.operation].answer;
-        for (let i=0; i < keys.length; i++) {
-            if (poa.data.indexOf(keys[i]) >= 0
-                && this._response.base64 === true
-            ) {
-                msg[keys[i]] = atob(this._response[keys[i]]);
-                if (this.expected === 'base64'){
-                    msg[keys[i]] = this._response[keys[i]];
-                } else {
-                    msg[keys[i]] = decodeURIComponent(
-                        atob(this._response[keys[i]]).split('').map(
-                            function(c) {
-                                return '%' +
-                                ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                            }).join(''));
-                }
-            } else {
-                msg[keys[i]] = this._response[keys[i]];
-            }
-        }
-        return msg;
+        return _response;
     }
 }

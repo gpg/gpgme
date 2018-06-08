@@ -339,7 +339,8 @@ function unittests (){
             test0.setParameter('keys', hp.validFingerprints);
 
             expect(test0.message).to.not.be.null;
-            expect(test0.message).to.have.keys('op', 'data', 'keys');
+            expect(test0.message).to.have.keys('op', 'data', 'keys',
+                'chunksize');
             expect(test0.message.op).to.equal('encrypt');
             expect(test0.message.data).to.equal(
                 mp.valid_encrypt_data);

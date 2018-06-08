@@ -37,11 +37,8 @@
                 5000 ms would be too short
       answer: <Object>
           type: <String< The content type of answer expected
-          data: Array<String> The payload property of the answer. May be
-                partial and in need of concatenation
-          params: Array<String> Information that do not change throughout
-                the message
-          infos: Array<*> arbitrary information that may result in a list
+          data: <Object>
+            the properties expected and their type, eg: {'data':'string'}
       }
   }
 */
@@ -66,9 +63,6 @@ export const permittedOperations = {
             'signing_keys': {
                 allowed: ['string'],
                 array_allowed: true
-            },
-            'chunksize': {
-                allowed: ['number']
             },
             'base64': {
                 allowed: ['boolean']
@@ -101,9 +95,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['ciphertext'],
-            data: ['data'],
-            params: ['base64'],
-            infos: []
+            data: {
+                'data': 'string',
+                'base64':'boolean'
+            }
         }
     },
 
@@ -119,18 +114,18 @@ export const permittedOperations = {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
             },
-            'chunksize': {
-                allowed: ['number'],
-            },
             'base64': {
                 allowed: ['boolean']
             }
         },
         answer: {
             type: ['plaintext'],
-            data: ['data'],
-            params: ['base64', 'mime'],
-            infos: ['signatures']
+            data: {
+                'data': 'string',
+                'base64': 'boolean',
+                'mime': 'boolean',
+                'signatures': 'object'
+            }
         }
     },
 
@@ -149,9 +144,6 @@ export const permittedOperations = {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
             },
-            'chunksize': {
-                allowed: ['number'],
-            },
             'sender': {
                 allowed: ['string'],
             },
@@ -169,10 +161,11 @@ export const permittedOperations = {
         },
         answer: {
             type: ['signature', 'ciphertext'],
-            data: ['data'], // Unless armor mode is used a Base64 encoded binary
-            // signature.  In armor mode a string with an armored
-            // OpenPGP or a PEM message.
-            params: ['base64']
+            data: {
+                'data': 'string',
+                'base64':'boolean'
+            }
+
         }
     },
 
@@ -185,9 +178,6 @@ export const permittedOperations = {
             'protocol': {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
-            },
-            'chunksize': {
-                allowed: ['number'],
             },
             'secret': {
                 allowed: ['boolean']
@@ -220,9 +210,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['keys'],
-            data: [],
-            params: ['base64'],
-            infos: ['keys']
+            data: {
+                'base64': 'boolean',
+                'keys': 'object'
+            }
         }
     },
 
@@ -232,9 +223,6 @@ export const permittedOperations = {
             'protocol': {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
-            },
-            'chunksize': {
-                allowed: ['number'],
             },
             'keys': {
                 allowed: ['string'],
@@ -259,8 +247,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['keys'],
-            data: ['data'],
-            params: ['base64']
+            data: {
+                'data': 'string',
+                'base64': 'boolean'
+            }
         }
     },
 
@@ -280,10 +270,10 @@ export const permittedOperations = {
             },
         },
         answer: {
-            infos: ['result'],
             type: [],
-            data: [],
-            params: []
+            data: {
+                'result': 'Object'
+            }
         }
     },
 
@@ -299,15 +289,15 @@ export const permittedOperations = {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
             },
-            // 'secret': { not yet implemented
+            // 'secret': { not implemented
             //     allowed: ['boolean']
             // }
 
         },
         answer: {
-            data: [],
-            params:['success'],
-            infos: []
+            data: {
+                'success': 'boolean'
+            }
         }
     },
 
@@ -316,9 +306,10 @@ export const permittedOperations = {
         optional: {},
         answer: {
             type:  [''],
-            data: ['gpgme'],
-            infos: ['info'],
-            params:[]
+            data: {
+                'gpgme': 'string',
+                'info': 'object'
+            }
         }
     }
 

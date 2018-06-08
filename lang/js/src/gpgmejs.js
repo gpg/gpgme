@@ -57,8 +57,8 @@ export class GpgME {
      * Keys used to encrypt the message
      * @param  {GPGME_Key|String|Array<String>|Array<GPGME_Key>} secretKeys
      * (optional) Keys used to sign the message
-     * @param {Boolean} base64 (optional) The data is already considered to be
-     * in base64 encoding
+     * @param {Boolean} base64 (optional) The data will be interpreted as
+     * base64 encoded data
      * @param {Boolean} armor (optional) Request the output as armored block
      * @param {Boolean} wildcard (optional) If true, recipient information will
      *  not be added to the message
@@ -109,24 +109,20 @@ export class GpgME {
     * Decrypt a Message
     * @param {String|Object} data text/data to be decrypted. Accepts Strings
     *  and Objects with a getText method
-    * @param {Boolean} base64 (optional) Response is expected to be base64
-    * encoded
     * @returns {Promise<Object>} decrypted message:
-        data:   The decrypted data.  This may be base64 encoded.
+        data:   The decrypted data.
         base64: Boolean indicating whether data is base64 encoded.
         mime:   A Boolean indicating whether the data is a MIME object.
         signatures: Array of signature Objects TODO not yet implemented.
-            // should be an object that can tell if all signatures are valid .
+            // should be an object that can tell if all signatures are valid.
     * @async
     */
-    decrypt(data, base64=false){
+    decrypt(data){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
         let msg = createMessage('decrypt');
-        if (base64 === true){
-            msg.expected = 'base64';
-        }
+
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
@@ -165,10 +161,10 @@ export class GpgME {
         }
         msg.setParameter('mode', mode);
         putData(msg, data);
-        if (mode === 'detached') {
-            msg.expected = 'base64';
-        }
         return new Promise(function(resolve,reject) {
+            if (mode ==='detached'){
+                msg.expect= 'base64';
+            }
             msg.post().then( function(message) {
                 if (mode === 'clearsign'){
                     resolve({

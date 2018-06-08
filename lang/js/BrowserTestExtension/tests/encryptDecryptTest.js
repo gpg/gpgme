@@ -152,7 +152,7 @@ describe('Encryption and Decryption', function () {
         let prm = Gpgmejs.init();
         prm.then(function (context) {
             context.encrypt(b64data,
-                inputvalues.encrypt.good.fingerprint).then(
+                inputvalues.encrypt.good.fingerprint, true).then(
                 function (answer) {
                     expect(answer).to.not.be.empty;
                     expect(answer.data).to.be.a('string');
@@ -185,7 +185,7 @@ describe('Encryption and Decryption', function () {
                         'BEGIN PGP MESSAGE');
                     expect(answer.data).to.include(
                         'END PGP MESSAGE');
-                    context.decrypt(answer.data, true).then(
+                    context.decrypt(answer.data).then(
                         function (result) {
                             expect(result).to.not.be.empty;
                             expect(result.data).to.be.a('string');
@@ -195,32 +195,5 @@ describe('Encryption and Decryption', function () {
                 });
         });
     }).timeout(3000);
-
-    it('Random data, input and output as base64', function (done) {
-        let data = bigBoringString(0.0001);
-        let b64data = btoa(data);
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            context.encrypt(b64data,
-                inputvalues.encrypt.good.fingerprint).then(
-                function (answer) {
-                    expect(answer).to.not.be.empty;
-                    expect(answer.data).to.be.a('string');
-
-                    expect(answer.data).to.include(
-                        'BEGIN PGP MESSAGE');
-                    expect(answer.data).to.include(
-                        'END PGP MESSAGE');
-                    context.decrypt(answer.data, true).then(
-                        function (result) {
-                            expect(result).to.not.be.empty;
-                            expect(result.data).to.be.a('string');
-                            expect(result.data).to.equal(b64data);
-                            done();
-                        });
-                });
-        });
-    }).timeout(3000);
-
 
 });

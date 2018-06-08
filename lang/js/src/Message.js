@@ -46,7 +46,6 @@ export class GPGME_Message {
 
     constructor(operation){
         this.operation = operation;
-        this._expected = 'string';
     }
 
     set operation (op){
@@ -59,23 +58,49 @@ export class GPGME_Message {
             }
         }
     }
-
     get operation(){
         return this._msg.op;
     }
 
-    set expected(string){
-        if (string === 'base64'){
-            this._expected = 'base64';
+    /**
+     * Set the maximum size of responses from gpgme in bytes. Values allowed
+     * range from 10kB to 1MB. The lower limit is arbitrary, the upper limit
+     * fixed by browsers' nativeMessaging specifications
+     */
+    set chunksize(value){
+        if (
+            Number.isInteger(value) &&
+            value > 10 * 1024 &&
+            value <= 1024 * 1024
+        ){
+            this._chunksize = value;
+        }
+    }
+    get chunksize(){
+        if (this._chunksize === undefined){
+            return 1024 * 1023;
+        } else {
+            return this._chunksize;
         }
     }
 
-    get expected() {
-        if (this._expected === 'base64'){
-            return this._expected;
+    /**
+     * If expect is set to 'base64', the response is expected to be base64
+     * encoded binary
+     */
+    set expect(value){
+        if (value ==='base64'){
+            this._expect = value;
         }
-        return 'string';
     }
+
+    get expect(){
+        if ( this._expect === 'base64'){
+            return this._expect;
+        }
+        return undefined;
+    }
+
 
     /**
      * Sets a parameter for the message. Note that the operation has to be set
@@ -188,6 +213,7 @@ export class GPGME_Message {
      */
     get message(){
         if (this.isComplete === true){
+            this._msg.chunksize = this.chunksize;
             return this._msg;
         }
         else {
@@ -201,10 +227,13 @@ export class GPGME_Message {
         return new Promise(function(resolve, reject) {
             if (me.isComplete === true) {
                 let conn  = new Connection;
+                if (me._msg.chunksize === undefined){
+                    me._msg.chunksize = 1023*1024;
+                }
                 conn.post(me).then(function(response) {
                     resolve(response);
                 }, function(reason) {
-                    reject(gpgme_error('GNUPG_ERROR', reason));
+                    reject(reason);
                 });
             }
             else {
