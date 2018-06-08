@@ -2778,7 +2778,7 @@ static const char hlp_createkey[] =
   "expires: Seconds since epoch to expiry as Number. 0 means no expiry.\n"
   "\n"
   "Response on success:\n"
-  "success:   Boolean true.\n"
+  "fingerprint:   The fingerprint of the created key.\n"
   "\n"
   "Note: This interface does not allow key generation if the userid\n"
   "of the new key already exists in the keyring.\n";
@@ -2792,6 +2792,7 @@ op_createkey (cjson_t request, cjson_t result)
   cjson_t j_tmp;
   const char *algo = "default";
   const char *userid;
+  gpgme_genkey_result_t res;
 
 #ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
   /* GnuPG forbids keygen through the browser socket so for
@@ -2838,7 +2839,14 @@ op_createkey (cjson_t request, cjson_t result)
   if ((err = gpgme_op_createkey (ctx, userid, algo, 0, expires, NULL, flags)))
     goto leave;
 
-  xjson_AddBoolToObject (result, "success", 1);
+  res = gpgme_op_genkey_result (ctx);
+  if (!res)
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  xjson_AddStringToObject0 (result, "fingerprint", res->fpr);
 
 leave:
 #ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
