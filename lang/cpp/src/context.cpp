@@ -1436,6 +1436,23 @@ Error Context::createKey (const char *userid,
                  flags));
 }
 
+KeyGenerationResult Context::createKeyEx (const char *userid,
+                                          const char *algo,
+                                          unsigned long reserved,
+                                          unsigned long expires,
+                                          const Key &certkey,
+                                          unsigned int flags)
+{
+    d->lasterr = gpgme_op_createkey(d->ctx,
+                 userid,
+                 algo,
+                 reserved,
+                 expires,
+                 certkey.impl(),
+                 flags);
+    return KeyGenerationResult(d->ctx, Error(d->lasterr));
+}
+
 Error Context::addUid(const Key &k, const char *userid)
 {
     return Error(d->lasterr = gpgme_op_adduid(d->ctx,

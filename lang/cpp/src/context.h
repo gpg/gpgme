@@ -234,6 +234,14 @@ public:
                      const Key &certkey,
                      unsigned int flags);
 
+    // Same as create key but returning a result
+    GpgME::KeyGenerationResult createKeyEx (const char *userid,
+                                            const char *algo,
+                                            unsigned long reserved,
+                                            unsigned long expires,
+                                            const Key &certkey,
+                                            unsigned int flags);
+
     Error addUid(const Key &key, const char *userid);
     Error startAddUid(const Key &key, const char *userid);
 

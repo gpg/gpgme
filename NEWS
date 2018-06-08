@@ -14,6 +14,7 @@ Noteworthy changes in version 1.11.2 (unreleased)
  cpp: Data::rewind                          NEW.
  cpp: Context::setFlag                      NEW.
  cpp: Context::getFlag                      NEW.
+ cpp: Context::createKeyEx                  NEW.
 
 
 Noteworthy changes in version 1.11.1 (2018-04-20)
