@@ -2769,6 +2769,89 @@ leave:
 
 
 
+static const char hlp_createkey[] =
+  "op:      \"createkey\"\n"
+  "userid:  The user id. E.g. \"Foo Bar <foo@bar.baz>\"\n"
+  "\n"
+  "Optional parameters:\n"
+  "algo:    Algo of the key as string. See doc for gpg --quick-gen-key.\n"
+  "expires: Seconds since epoch to expiry as Number. 0 means no expiry.\n"
+  "\n"
+  "Response on success:\n"
+  "success:   Boolean true.\n"
+  "\n"
+  "Note: This interface does not allow key generation if the userid\n"
+  "of the new key already exists in the keyring.\n";
+static gpg_error_t
+op_createkey (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+  unsigned int flags = 0;
+  unsigned long expires = 0;
+  cjson_t j_tmp;
+  const char *algo = "default";
+  const char *userid;
+
+#ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
+  /* GnuPG forbids keygen through the browser socket so for
+     this we create an unrestricted context.
+     See GnuPG-Bug-Id: T4010 for more info */
+  ctx = get_context (GPGME_PROTOCOL_OpenPGP);
+#else
+    err = gpgme_new (&ctx);
+  if (err)
+    log_fatal ("error creating GPGME context: %s\n", gpg_strerror (err));
+  gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
+#endif
+
+  j_tmp = cJSON_GetObjectItem (request, "algo");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      algo = j_tmp->valuestring;
+    }
+
+  j_tmp = cJSON_GetObjectItem (request, "userid");
+  if (!j_tmp || !cjson_is_string (j_tmp))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  userid = j_tmp->valuestring;
+
+  j_tmp = cJSON_GetObjectItem (request, "expires");
+  if (j_tmp)
+    {
+      if (!cjson_is_number (j_tmp))
+        {
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
+        }
+      expires = j_tmp->valueint;
+
+      if (!expires)
+        flags |= GPGME_CREATE_NOEXPIRE;
+    }
+
+
+  if ((err = gpgme_op_createkey (ctx, userid, algo, 0, expires, NULL, flags)))
+    goto leave;
+
+  xjson_AddBoolToObject (result, "success", 1);
+
+leave:
+#ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
+  release_context (ctx);
+#else
+  gpgme_release (ctx);
+#endif
+
+  return err;
+}
+
+
+
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
   "\n"
@@ -2858,10 +2941,12 @@ static const char hlp_help[] =
   "returned.  To list all operations it is allowed to leave out \"op\" in\n"
   "help mode.  Supported values for \"op\" are:\n\n"
   "  config      Read configuration values.\n"
+  "  config_opt  Read a single configuration value.\n"
   "  decrypt     Decrypt data.\n"
   "  delete      Delete a key.\n"
   "  encrypt     Encrypt data.\n"
   "  export      Export keys.\n"
+  "  createkey   Generate a keypair (OpenPGP only).\n"
   "  import      Import data.\n"
   "  keylist     List keys.\n"
   "  sign        Sign data.\n"
@@ -2918,6 +3003,7 @@ process_request (const char *request)
     { "export",     op_export,     hlp_export },
     { "decrypt",    op_decrypt,    hlp_decrypt },
     { "delete",     op_delete,     hlp_delete },
+    { "createkey",  op_createkey,  hlp_createkey },
     { "keylist",    op_keylist,    hlp_keylist },
     { "import",     op_import,     hlp_import },
     { "sign",       op_sign,       hlp_sign },
