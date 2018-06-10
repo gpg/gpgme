@@ -24,6 +24,7 @@ from __future__ import absolute_import, division, unicode_literals
 # <http://www.gnu.org/licenses/>.
 
 import subprocess
+import sys
 
 """
 Intended for use with other scripts.
@@ -31,7 +32,12 @@ Intended for use with other scripts.
 Usage: from groups import group_lists
 """
 
-lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+if sys.platform == "win32":
+    gpgconfcmd = "gpgconf.exe --list-options gpg"
+else:
+    gpgconfcmd = "gpgconf --list-options gpg"
+
+lines = subprocess.getoutput(gpgconfcmd).splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:
