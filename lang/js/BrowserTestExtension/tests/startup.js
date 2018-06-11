@@ -22,7 +22,6 @@
  */
 
 /* global describe, it, expect, Gpgmejs */
-/* global inputvalues */
 
 describe('GPGME context', function(){
     it('Starting a GpgME instance', function(done){
@@ -35,20 +34,4 @@ describe('GPGME context', function(){
                 done();
             });
     });
-});
-
-describe('GPGME does not start with invalid parameters', function(){
-    for (let i=0; i < inputvalues.init.invalid_startups.length; i++){
-        it('Parameter '+ i, function(done){
-            let prm = Gpgmejs.init(inputvalues.init.invalid_startups[i]);
-            prm.then(function(context){
-                expect(context).to.be.undefined;
-                done();
-            }, function(error){
-                expect(error).to.be.an.instanceof(Error);
-                expect(error.code).to.equal('PARAM_WRONG');
-                done();
-            });
-        });
-    }
 });

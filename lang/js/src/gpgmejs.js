@@ -30,10 +30,8 @@ import { GPGME_Keyring } from './Keyring';
 export class GpgME {
     /**
      * initializes GpgME by opening a nativeMessaging port
-     * TODO: add configuration
      */
-    constructor(config){ //TODO config not parsed
-        this._config = config;
+    constructor(){
     }
 
     set Keyring(keyring){

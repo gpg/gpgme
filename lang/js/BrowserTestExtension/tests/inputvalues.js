@@ -53,14 +53,6 @@ const inputvalues = {// eslint-disable-line no-unused-vars
             // bogus fingerprint)
             fingerprint: 'CDC3A2B2860625CCBFC5AAAAAC6D1B604967FC4A'
         }
-    },
-    init: {
-        // some parameters
-        invalid_startups: [
-            {all_passwords: true},
-            'openpgpmode',
-            {api_style:'frankenstein'}
-        ]
     }
 };
 
