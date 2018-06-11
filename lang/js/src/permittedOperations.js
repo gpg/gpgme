@@ -311,12 +311,31 @@ export const permittedOperations = {
                 'info': 'object'
             }
         }
-    }
+    },
 
+    createkey: {
+	pinentry: true,
+        required: {
+            userid: {
+                allowed: ['string']
+            }
+        },
+        optional: {
+            algo: {
+                allowed: ['string']
+            },
+            expires: {
+                allowed: ['number'],
+            }
+        },
+        answer: {
+            type: [''],
+            data: {'fingerprint': 'string'}
+        }
+    }
     /**
      * TBD handling of secrets
      * TBD key modification?
-     * TBD: key generation
      */
 
 };

@@ -197,5 +197,63 @@ export class GPGME_Keyring {
         }
     }
 
-    // generateKey
+    /**
+     * Generates a new Key pair directly in gpg, and returns a GPGME_Key
+     * representing that Key. Please note that due to security concerns, secret
+     * Keys can not be _deleted_ from inside gpgmejs.
+     *
+     * @param {String} userId The user Id, e.g. "Foo Bar <foo@bar.baz>"
+     * @param {*} algo (optional) algorithm to be used. See
+     *      {@link supportedKeyAlgos } below for supported values.
+     * @param {Number} keyLength (optional) TODO
+     * @param {Date} expires (optional) Expiration date. If not set, expiration
+     * will be set to 'never'
+     *
+     * @returns{Promise<Key>}
+     */
+    generateKey(userId, algo = 'default', keyLength, expires){
+        if (
+            typeof(userId) !== 'string' ||
+            supportedKeyAlgos.indexOf(algo) < 0 ||
+            (expires && !(expires instanceof Date))
+            // TODO keylength
+            // TODO check for completeness of algos
+        ){
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
+        let me = this;
+        return new Promise(function(resolve, reject){
+            let msg = createMessage('createkey');
+            msg.setParameter('userid', userId);
+            msg.setParameter('algo', algo);
+            if (expires){
+                msg.setParameter('expires',
+                    Math.floor(expires.valueOf()/1000));
+            }
+            // TODO append keylength to algo
+            msg.post().then(function(response){
+                me.getKeys(response.fingerprint, true).then(
+                    // TODO make prepare_sync (second parameter) optional here.
+                    function(result){
+                        resolve(result);
+                    }, function(error){
+                        reject(error);
+                    });
+            }, function(error) {
+                reject(error);
+            });
+        });
+    }
 }
+
+/**
+ * A list of algorithms supported for key generation.
+ */
+const supportedKeyAlgos = [
+    'default',
+    'rsa',
+    'dsa',
+    'elg',
+    'ed25519',
+    'cv25519'
+];
