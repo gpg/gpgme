@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 'answer').value = answer.data;
                         }
                     }, function(errormsg){
-                        alert( errormsg.code + ' ' + errormsg.msg);
+                        alert( errormsg.message);
                     });
             });
 
@@ -50,8 +50,18 @@ document.addEventListener('DOMContentLoaded', function() {
                                 'answer').value = answer.data;
                         }
                     }, function(errormsg){
-                        alert( errormsg.code + ' ' + errormsg.msg);
+                        alert(errormsg.message);
                     });
+            });
+
+        document.getElementById('getdefaultkey').addEventListener('click',
+            function(){
+                gpgmejs.Keyring.getDefaultKey().then(function(answer){
+                    document.getElementById('defaultkey').innerHtml =
+                        answer.fingerprint;
+                }, function(errormsg){
+                    alert(errormsg.message);
+                });
             });
     });
 });

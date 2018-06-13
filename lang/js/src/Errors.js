@@ -78,6 +78,11 @@ const err_list = {
         msg:'This property has not been retrieved yet from GPG',
         type: 'error'
     },
+    'KEY_NO_DEFAULT': {
+        msg:'A default key could not be established. Please check yout gpg ' +
+            'configuration',
+        type: 'error'
+    },
     // generic
     'PARAM_WRONG':{
         msg: 'Invalid parameter was found',

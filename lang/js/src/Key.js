@@ -192,6 +192,7 @@ export class GPGME_Key {
      * Query the armored block of the non- secret parts of the Key directly
      * from gpg.
      * @returns {Promise<String>}
+     * @async
      */
     getArmor(){
         let me = this;
@@ -211,6 +212,13 @@ export class GPGME_Key {
         });
     }
 
+    /**
+     * Find out if the Key includes a secret part
+     * @returns {Promise<Boolean>}
+     *
+     * @async
+     */
+    // TODO: Does not work yet, result is always false
     getHasSecret(){
         let me = this;
         return new Promise(function(resolve, reject) {

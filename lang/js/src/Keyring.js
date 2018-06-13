@@ -99,7 +99,61 @@ export class GPGME_Keyring {
         });
     }
 
-    // getDefaultKey() Big TODO
+    /**
+     * Returns the Key to be used by default for signing operations,
+     * looking up the gpg configuration, or returning the first key that
+     * contains a secret key.
+     * @returns {Promise<GPGME_Key>}
+     *
+     * @async
+     * TODO: getHasSecret always returns false at this moment, so this fucntion
+     * still does not fully work as intended.
+     *
+     */
+    getDefaultKey() {
+        let me = this;
+        return new Promise(function(resolve, reject){
+            let msg = createMessage('config_opt');
+            msg.setParameter('component', 'gpg');
+            msg.setParameter('option', 'default-key');
+            msg.post().then(function(response){
+                if (response.value !== undefined
+                    && response.value.hasOwnProperty('string')
+                    && typeof(response.value.string) === 'string'
+                ){
+                    me.getKeys(response.value.string,true).then(function(keys){
+                        if(keys.length === 1){
+                            resolve(keys[0]);
+                        } else {
+                            reject(gpgme_error('KEY_NO_DEFAULT'));
+                        }
+                    }, function(error){
+                        reject(error);
+                    });
+                } else {
+                    // TODO: this is overly 'expensive' in communication
+                    // and probably performance, too
+                    me.getKeys(null,true).then(function(keys){
+                        for (let i=0; i < keys.length; i++){
+                            console.log(keys[i]);
+                            console.log(keys[i].get('hasSecret'));
+                            if (keys[i].get('hasSecret') === true){
+                                resolve(keys[i]);
+                                break;
+                            }
+                            if (i === keys.length -1){
+                                reject(gpgme_error('KEY_NO_DEFAULT'));
+                            }
+                        }
+                    }, function(error){
+                        reject(error);
+                    });
+                }
+            }, function(error){
+                reject(error);
+            });
+        });
+    }
 
     /**
      *

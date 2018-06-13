@@ -314,7 +314,7 @@ export const permittedOperations = {
     },
 
     createkey: {
-	pinentry: true,
+        pinentry: true,
         required: {
             userid: {
                 allowed: ['string']
@@ -332,7 +332,59 @@ export const permittedOperations = {
             type: [''],
             data: {'fingerprint': 'string'}
         }
+    },
+
+    verify: {
+        required: {
+            data: {
+                allowed: ['string']
+            }
+        },
+        optional: {
+            'protocol': {
+                allowed: ['string'],
+                allowed_data: ['cms', 'openpgp']
+            },
+            'signature': {
+                allowed: ['string']
+            },
+            'base64':{
+                allowed: ['boolean']
+            }
+        },
+        answer: {
+            type: ['plaintext'],
+            data:{
+                data: 'string',
+                base64:'boolean',
+                info: 'object'
+                // file_name: Optional string of the plaintext file name.
+                //  is_mime: Boolean if the messages claims it is MIME.
+                // signatures: Array of signatures
+            }
+        }
+    },
+
+    config_opt: {
+        required: {
+            'component':{
+                allowed: ['string'],
+                // allowed_data: ['gpg'] // TODO check all available
+            },
+            'option': {
+                allowed: ['string'],
+                // allowed_data: ['default-key'] // TODO check all available
+            }
+        },
+        optional: {},
+        answer: {
+            type: [],
+            data: {
+                option: 'object'
+            }
+        }
     }
+
     /**
      * TBD handling of secrets
      * TBD key modification?

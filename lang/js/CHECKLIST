@@ -13,10 +13,11 @@ receiving an answer
     [*] Key handling (import/export, modifying, status queries)
         [x] Import (not importing secret)
         [x] Export (not exporting secret)
-        [x] status queries
+        [*] status queries
+            [ ] getHasSecret
         [ ] key generation
         [ ] modification
-    [*] Configuration handling
+    [x] Configuration handling
     [ ] check for completeness
 
 Communication with other implementations
