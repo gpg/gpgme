@@ -83,6 +83,14 @@ const err_list = {
             'configuration',
         type: 'error'
     },
+    'SIG_WRONG': {
+        msg:'A malformed signature was created',
+        type: 'error'
+    },
+    'SIG_NO_SIGS': {
+        msg:'There were no signatures found',
+        type: 'error'
+    },
     // generic
     'PARAM_WRONG':{
         msg: 'Invalid parameter was found',

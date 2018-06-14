@@ -135,8 +135,6 @@ export class GPGME_Keyring {
                     // and probably performance, too
                     me.getKeys(null,true).then(function(keys){
                         for (let i=0; i < keys.length; i++){
-                            console.log(keys[i]);
-                            console.log(keys[i].get('hasSecret'));
                             if (keys[i].get('hasSecret') === true){
                                 resolve(keys[i]);
                                 break;

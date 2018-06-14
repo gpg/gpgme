@@ -26,6 +26,7 @@ import {GPGME_Message, createMessage} from './Message';
 import {toKeyIdArray} from './Helpers';
 import { gpgme_error } from './Errors';
 import { GPGME_Keyring } from './Keyring';
+import { createSignature } from './Signature';
 
 export class GpgME {
     /**
@@ -107,15 +108,28 @@ export class GpgME {
     * Decrypt a Message
     * @param {String|Object} data text/data to be decrypted. Accepts Strings
     *  and Objects with a getText method
-    * @returns {Promise<Object>} decrypted message:
-        data:   The decrypted data.
-        base64: Boolean indicating whether data is base64 encoded.
-        mime:   A Boolean indicating whether the data is a MIME object.
-        signatures: Array of signature Objects TODO not yet implemented.
-            // should be an object that can tell if all signatures are valid.
+    * @param {Boolean} base64 (optional) false if the data is an armored block,
+    *   true if it is base64 encoded binary data
+    * @returns {Promise<Object>} result: Decrypted Message and information
+    * @returns {String} result.data: The decrypted data.
+    * @returns {Boolean} result.base64: indicating whether data is base64
+    *   encoded.
+    * @returns {Boolean} result.is_mime: Indicating whether the data is a MIME
+    *   object.
+    * @returns {String} result.file_name: The optional original file name
+    * @returns {Object} message.signatures Verification details for signatures:
+    * @returns {Boolean} message.signatures.all_valid: true if all signatures
+    *   are valid
+    * @returns {Number} message.signatures.count: Number of signatures found
+    * @returns {Number} message.signatures.failures Number of invalid
+    *   signatures
+    * @returns {Array<Object>} message.signatures.signatures. Two arrays
+    *   (good & bad) of {@link GPGME_Signature} objects, offering further
+    *   information.
+    *
     * @async
     */
-    decrypt(data){
+    decrypt(data, base64=false){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -124,8 +138,32 @@ export class GpgME {
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
+        if (base64 === true){
+            msg.setParameter('base64', true);
+        }
         putData(msg, data);
-        return msg.post();
+        if (base64 === true){
+            msg.setParameter('base64', true);
+        }
+        return new Promise(function(resolve, reject){
+            msg.post().then(function(result){
+                let _result = {data: result.data};
+                _result.base64 = result.base64 ? true: false;
+                _result.is_mime = result.mime ? true: false;
+                if (result.file_name){
+                    _result.file_name = result.file_name;
+                }
+                if (
+                    result.hasOwnProperty('signatures') &&
+                    Array.isArray(result.signatures)
+                ) {
+                    _result.signatures = collectSignatures(result.signatures);
+                }
+                resolve(_result);
+            }, function(error){
+                reject(error);
+            });
+        });
     }
 
     /**
@@ -179,6 +217,59 @@ export class GpgME {
             });
         });
     }
+
+    /**
+     * Verifies data.
+     * @param {String|Object} data text/data to be verified. Accepts Strings
+     * and Objects with a gettext method
+     * @param {String} (optional) A detached signature. If not present, opaque
+     * mode is assumed
+     * @param {Boolean} (optional) Data and signature are base64 encoded
+     * // TODO verify if signature really is assumed to be base64
+     * @returns {Promise<Object>} result:
+     * @returns {Boolean} result.data: The verified data
+     * @returns {Boolean} result.is_mime: The message claims it is MIME
+     * @returns {String} result.file_name: The optional filename of the message
+     * @returns {Boolean} result.all_valid: true if all signatures are valid
+     * @returns {Number} result.count: Number of signatures found
+     * @returns {Number} result.failures Number of unsuccessful signatures
+     * @returns {Array<Object>} result.signatures. Two arrays (good & bad) of
+     *      {@link GPGME_Signature} objects, offering further information.
+     */
+    verify(data, signature, base64 = false){
+        let msg = createMessage('verify');
+        let dt = this.putData(msg, data);
+        if (dt instanceof Error){
+            return Promise.reject(dt);
+        }
+        if (signature){
+            if (typeof(signature)!== 'string'){
+                return Promise.reject(gpgme_error('PARAM_WRONG'));
+            } else {
+                msg.setParameter('signature', signature);
+            }
+        }
+        if (base64 === true){
+            msg.setParameter('base64', true);
+        }
+        return new Promise(function(resolve, reject){
+            msg.post().then(function (message){
+                if (!message.info.signatures){
+                    reject(gpgme_error('SIG_NO_SIGS'));
+                } else {
+                    let _result = collectSignatures(message.info.signatures);
+                    _result.is_mime = message.info.is_mime? true: false;
+                    if (message.info.filename){
+                        _result.file_name = message.info.filename;
+                    }
+                    _result.data = message.data;
+                    resolve(_result);
+                }
+            }, function(error){
+                reject(error);
+            });
+        });
+    }
 }
 
 /**
@@ -208,4 +299,35 @@ function putData(message, data){
     } else {
         return gpgme_error('PARAM_WRONG');
     }
+}
+
+function collectSignatures(sigs){
+    if (!Array.isArray(sigs)){
+        return gpgme_error('SIG_NO_SIGS');
+    }
+    let summary = {
+        all_valid: false,
+        count: sigs.length,
+        failures: 0,
+        signatures: {
+            good: [],
+            bad: [],
+        }
+    };
+    for (let i=0; i< sigs.length; i++){
+        let sigObj = createSignature(sigs[i]);
+        if (sigObj instanceof Error){
+            return gpgme_error('SIG_WRONG');
+        }
+        if (sigObj.valid !== true){
+            summary.failures += 1;
+            summary.signatures.bad.push(sigObj);
+        } else {
+            summary.signatures.good.push(sigObj);
+        }
+    }
+    if (summary.failures === 0){
+        summary.all_valid = true;
+    }
+    return summary;
 }
