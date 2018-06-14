@@ -155,26 +155,36 @@ export class GPGME_Keyring {
 
     /**
      *
-     * @param {String} armored Armored Key block of the Kex(s) to be imported
+     * @param {String} armored Armored Key block of the Key(s) to be imported
      * into gnupg
      * @param {Boolean} prepare_sync prepare the keys for synched use
      * (see getKeys()).
-     * @returns {Promise<Array<Object>>} An array of objects for the Keys
-     * considered:
-    *       Key.key <Object>: The key itself as a GPGME_Key
-     *      Key.status <String>:
-     *          'nochange' if the Key was not changed,
-     *          'newkey' if the Key was imported in gpg, and did not exist
-     *              previously,
-     *          'change' if the key existed, but details were updated. For
-     *              details, Key.changes is available.
-     *          Key.changes.userId: <Boolean> userIds changed
-     *          Key.changes.signature: <Boolean> signatures changed
-     *          Key.changes.subkey: <Boolean> subkeys changed
-     * // TODO: not yet implemented: Information about Keys that failed
-     *          (e.g. malformed Keys, secretKeys are not accepted)
+     *
+     * @returns {Promise<Object>} result: A summary and an array of Keys
+     * considered
+     *
+     * @returns result.summary: Numerical summary of the result. See the
+     * feedbackValues variable for available values and the gnupg documentation
+     * https://www.gnupg.org/documentation/manuals/gpgme/Importing-Keys.html
+     * for details on their meaning.
+     * @returns {Array<Object>} result.Keys: Array of objects containing:
+     * @returns {GPGME_Key} Key.key The resulting key
+     * @returns {String} Key.status:
+     *      'nochange' if the Key was not changed,
+     *      'newkey' if the Key was imported in gpg, and did not exist
+     *         previously,
+     *      'change' if the key existed, but details were updated. For
+     *         details, Key.changes is available.
+     * @returns {Boolean} Key.changes.userId: userIds changed
+     * @returns {Boolean} Key.changes.signature: signatures changed
+     * @returns {Boolean} Key.changes.subkey: subkeys changed
      */
     importKey(armored, prepare_sync) {
+        let feedbackValues = ['considered', 'no_user_id', 'imported',
+            'imported_rsa', 'unchanged', 'new_user_ids', 'new_sub_keys',
+            'new_signatures', 'new_revocations', 'secret_read',
+            'secret_imported', 'secret_unchanged', 'skipped_new_keys',
+            'not_imported', 'skipped_v3_keys'];
         if (!armored || typeof(armored) !== 'string'){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
@@ -185,8 +195,8 @@ export class GPGME_Keyring {
             msg.post().then(function(response){
                 let infos = {};
                 let fprs = [];
-                for (let res=0; res < response.result[0].imports.length; res++){
-                    let result = response.result[0].imports[res];
+                for (let res=0; res<response.result.imports.length; res++){
+                    let result = response.result.imports[res];
                     let status = '';
                     if (result.status === 0){
                         status = 'nochange';
@@ -217,7 +227,15 @@ export class GPGME_Keyring {
                                 status: infos[result[i].fingerprint].status
                             });
                         }
-                        resolve(resultset);
+                        let summary = {};
+                        for (let i=0; i < feedbackValues.length; i++ ){
+                            summary[feedbackValues[i]] =
+                                response[feedbackValues[i]];
+                        }
+                        resolve({
+                            Keys:resultset,
+                            summary: summary
+                        });
                     }, function(error){
                         reject(error);
                     });
