@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2016 g10 Code GmbH
+# Copyright (C) 2016 Tobias Mueller <muelli at cryptobitch.de>
 #
 # This file is part of GPGME.
 #
@@ -69,10 +69,14 @@ def check_result(result, fpr, secret):
 
 c = gpg.Context()
 
-c.op_import(gpg.Data(file=support.make_filename("pubkey-1.asc")))
-result = c.op_import_result()
+result = c.key_import(open(support.make_filename("pubkey-1.asc"), 'rb').read())
 check_result(result, "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", False)
 
-c.op_import(gpg.Data(file=support.make_filename("seckey-1.asc")))
-result = c.op_import_result()
+result = c.key_import(open(support.make_filename("seckey-1.asc"), 'rb').read())
 check_result(result, "ADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", True)
+
+try:
+    result = c.key_import(b"thisisnotakey")
+except ValueError:
+    pass
+assert result.considered == 0

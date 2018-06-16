@@ -509,6 +509,25 @@ class Context(GpgmeWrapper):
 
         return results
 
+    def key_import(self, data):
+        """Import data
+
+        Imports the given data into the Context.
+
+        Returns:
+        result -- information about the imported data
+
+        Raises:
+        GPGMEError      -- as signaled by the underlying library
+        ValueError      -- Raised if no keys are present in the data
+
+        """
+        self.op_import(data)
+        result = self.op_import_result()
+        if result.considered == 0:
+            raise ValueError
+        return result
+
     def keylist(self, pattern=None, secret=False,
                 mode=constants.keylist.mode.LOCAL,
                 source=None):
