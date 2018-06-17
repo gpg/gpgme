@@ -515,18 +515,46 @@ class Context(GpgmeWrapper):
         Imports the given data into the Context.
 
         Returns:
-        result -- information about the imported data
+                -- an object describing the results of imported or updated 
+                   keys
 
         Raises:
-        GPGMEError      -- as signaled by the underlying library
-        ValueError      -- Raised if no keys are present in the data
+        TypeError      -- Very rarely.
+        GPGMEError     -- as signaled by the underlying library:
 
+                          Import status errors, when they occur, will usually 
+                          be of NODATA.  NO_PUBKEY indicates something
+                          managed to run the function without any
+                          arguments, while an argument of None triggers
+                          the first NODATA of errors.GPGME in the
+                           exception.
         """
-        self.op_import(data)
-        result = self.op_import_result()
-        if result.considered == 0:
-            raise ValueError
-        return result
+        try:
+            self.op_import(data)
+            result = self.op_import_result()
+            if result.considered == 0:
+                status = constants.STATUS_IMPORT_PROBLEM
+            else:
+                status = constants.STATUS_KEY_CONSIDERED
+        except Exception as e:
+            if e == errors.GPGMEError:
+                if e.code_str == "No data":
+                    status = constants.STATUS_NODATA
+                else:
+                    status = constants.STATUS_FILE_ERROR
+            elif e == TypeError and hasattr(data, "decode") is True:
+                status = constants.STATUS_NO_PUBKEY
+            elif e == TypeError and hasattr(data, "encode") is True:
+                status = constants.STATUS_FILE_ERROR
+            else:
+                status = constants.STATUS_ERROR
+
+        if status == constants.STATUS_KEY_CONSIDERED:
+            import_result = result
+        else:
+            import_result = status
+
+        return import_result
 
     def keylist(self, pattern=None, secret=False,
                 mode=constants.keylist.mode.LOCAL,
