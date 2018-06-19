@@ -18,6 +18,6 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 
 SUBDIRS = $(ENABLED_LANGUAGES)
-DIST_SUBDIRS = cl cpp qt python
+DIST_SUBDIRS = cl cpp qt python js
 
 EXTRA_DIST = README
