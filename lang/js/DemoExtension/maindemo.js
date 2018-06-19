@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('getdefaultkey').addEventListener('click',
             function(){
                 gpgmejs.Keyring.getDefaultKey().then(function(answer){
-                    document.getElementById('defaultkey').innerHtml =
+                    document.getElementById('defaultkey').textContent =
                         answer.fingerprint;
                 }, function(errormsg){
                     alert(errormsg.message);

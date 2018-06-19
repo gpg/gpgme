@@ -218,7 +218,6 @@ export class GPGME_Key {
      *
      * @async
      */
-    // TODO: Does not work yet, result is always false
     getHasSecret(){
         let me = this;
         return new Promise(function(resolve, reject) {
@@ -230,30 +229,16 @@ export class GPGME_Key {
             msg.setParameter('secret', true);
             msg.post().then(function(result){
                 me._data.hasSecret = null;
-                if (result.keys === undefined || result.keys.length < 1) {
+                if (
+                    result.keys &&
+                    result.keys.length === 1 &&
+                    result.keys[0].secret === true
+                ) {
+                    me._data.hasSecret = true;
+                    resolve(true);
+                } else {
                     me._data.hasSecret = false;
                     resolve(false);
-                }
-                else if (result.keys.length === 1){
-                    let key = result.keys[0];
-                    if (!key.subkeys){
-                        me._data.hasSecret = false;
-                        resolve(false);
-                    } else {
-                        for (let i=0; i < key.subkeys.length; i++) {
-                            if (key.subkeys[i].secret === true) {
-                                me._data.hasSecret = true;
-                                resolve(true);
-                                break;
-                            }
-                            if (i === (key.subkeys.length -1)) {
-                                me._data.hasSecret = false;
-                                resolve(false);
-                            }
-                        }
-                    }
-                } else {
-                    reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
                 }
             }, function(error){
                 reject(error);

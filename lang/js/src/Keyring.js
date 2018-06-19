@@ -273,21 +273,18 @@ export class GPGME_Keyring {
      * Keys can not be _deleted_ from inside gpgmejs.
      *
      * @param {String} userId The user Id, e.g. "Foo Bar <foo@bar.baz>"
-     * @param {*} algo (optional) algorithm to be used. See
-     *      {@link supportedKeyAlgos } below for supported values.
-     * @param {Number} keyLength (optional) TODO
+     * @param {*} algo (optional) algorithm (and optionally key size to be
+     *  used. See {@link supportedKeyAlgos } below for supported values.
      * @param {Date} expires (optional) Expiration date. If not set, expiration
      * will be set to 'never'
      *
      * @returns{Promise<Key>}
      */
-    generateKey(userId, algo = 'default', keyLength, expires){
+    generateKey(userId, algo = 'default', expires){
         if (
             typeof(userId) !== 'string' ||
             supportedKeyAlgos.indexOf(algo) < 0 ||
             (expires && !(expires instanceof Date))
-            // TODO keylength
-            // TODO check for completeness of algos
         ){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
@@ -295,12 +292,11 @@ export class GPGME_Keyring {
         return new Promise(function(resolve, reject){
             let msg = createMessage('createkey');
             msg.setParameter('userid', userId);
-            msg.setParameter('algo', algo);
+            msg.setParameter('algo', algo );
             if (expires){
                 msg.setParameter('expires',
                     Math.floor(expires.valueOf()/1000));
             }
-            // TODO append keylength to algo
             msg.post().then(function(response){
                 me.getKeys(response.fingerprint, true).then(
                     // TODO make prepare_sync (second parameter) optional here.
@@ -321,9 +317,11 @@ export class GPGME_Keyring {
  */
 const supportedKeyAlgos = [
     'default',
-    'rsa',
-    'dsa',
-    'elg',
+    'rsa', 'rsa2048', 'rsa3072', 'rsa4096',
+    'dsa', 'dsa2048', 'dsa3072', 'dsa4096',
+    'elg', 'elg2048', 'elg3072', 'elg4096',
     'ed25519',
-    'cv25519'
+    'cv25519',
+    'brainpoolP256r1', 'brainpoolP384r1', 'brainpoolP512r1',
+    'NIST P-256', 'NIST P-384', 'NIST P-521'
 ];
