@@ -7,38 +7,37 @@
         <script src="maindemo.js"></script>
     </head>
     <body>
-	<ul>
-            <li>
-                <span class="label">Text: </span>
-	        <input type="text" id='cleartext' />
-            </li>
-            <li>
-                <span class="label">Public key ID: </span>
-                <input type="text" id="pubkey" value="" />
-            </li>
-    </ul>
-        <button id="buttonencrypt">Encrypt</button><br>
-    <hr>
-    <ul>
-        <li>
-            <span class="label">Encrypted armored Text: </span>
-            <textarea rows="5" cols="65" id="ciphertext" wrap="hard"></textarea>
-        </li>
-    </ul>
-        <button id="buttondecrypt">Decrypt</button><br>
-    <hr>
-    <h3>Result data:</h3>
-    <textarea id="answer" rows="5" cols="65" wrap="hard"></textarea>
+    <div>
 
-    <hr>
-    <ul>
-        <li>
-            <span class="label">Default Key:</span>
-            <button id="getdefaultkey">Get</button><br>
-            <span id="defaultkey"></span>
-        </li>
+        <div class="left">
+            <ul>
+                <li>
+                    <span class="label">Input</span>
+                    <textarea rows="5" cols="65" id="inputtext" wrap="hard"></textarea>
+                </li>
+                <li>
+                    <span class="label">Fingerprint of Key to use: </span>
+                </li>
+                    <input type="text" id="pubkey" value="" /> <br>
+                    <button id="getdefaultkey">Set to default signing key</button>
+                </li>
+            </ul>
+        </div>
+        <div class="right">
+            <ul>
+                    <li>
+                        <span class="label">Result</span>
+                        <textarea id="answer" rows="5" cols="65" wrap="hard"></textarea>
+                    </li>
+                </ul>
+        </div>
+    </div>
+    <div class="center">
+            <button id="buttonencrypt">Encrypt input text</button><br>
+            <button id="buttondecrypt">Decrypt input text</button><br>
+            <button id="signtext">Sign input text</button> <br>
+            <button id="verifytext">Verify input text</button><br>
 
-
-    </ul>
-    </body>
+        </div>
+</body>
 </html>

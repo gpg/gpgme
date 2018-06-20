@@ -35,7 +35,7 @@ export function createSignature(sigObject){
     if (
         typeof(sigObject) !=='object' ||
         !sigObject.hasOwnProperty('summary') ||
-        !sigObject.hasOwnProperty('fingerpprint') ||
+        !sigObject.hasOwnProperty('fingerprint') ||
         !sigObject.hasOwnProperty('timestamp')
         //TODO check if timestamp is mandatory in specification
     ){
@@ -67,6 +67,7 @@ export function createSignature(sigObject){
             }
         }
     }
+    console.log('sig created');
     return new GPGME_Signature(sigObject);
 }
 
@@ -178,7 +179,8 @@ const expSum = {
     'crl-missing': 'boolean',
     'crl-too-old': 'boolean',
     'bad-policy': 'boolean',
-    'sys-error': 'boolean'
+    'sys-error': 'boolean',
+    'sigsum': 'object'
 };
 
 /**

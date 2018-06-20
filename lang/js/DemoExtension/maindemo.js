@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     Gpgmejs.init().then(function(gpgmejs){
         document.getElementById('buttonencrypt').addEventListener('click',
             function(){
-                let data = document.getElementById('cleartext').value;
+                let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
                 gpgmejs.encrypt(data, keyId).then(
                     function(answer){
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         document.getElementById('buttondecrypt').addEventListener('click',
             function(){
-                let data = document.getElementById('ciphertext').value;
+                let data = document.getElementById('inputtext').value;
                 gpgmejs.decrypt(data).then(
                     function(answer){
                         if (answer.data){
@@ -57,11 +57,46 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('getdefaultkey').addEventListener('click',
             function(){
                 gpgmejs.Keyring.getDefaultKey().then(function(answer){
-                    document.getElementById('defaultkey').textContent =
+                    document.getElementById('pubkey').value =
                         answer.fingerprint;
                 }, function(errormsg){
                     alert(errormsg.message);
                 });
+            });
+
+        document.getElementById('signtext').addEventListener('click',
+            function(){
+                let data = document.getElementById('inputtext').value;
+                let keyId = document.getElementById('pubkey').value;
+                gpgmejs.sign(data, keyId).then(
+                    function(answer){
+                        if (answer.data){
+                            document.getElementById(
+                                'answer').value = answer.data;
+                        }
+                    }, function(errormsg){
+                        alert( errormsg.message);
+                    });
+            });
+
+        document.getElementById('verifytext').addEventListener('click',
+            function(){
+                let data = document.getElementById('inputtext').value;
+                gpgmejs.verify(data).then(
+                    function(answer){
+                        let vals = '';
+                        if (answer.all_valid === true){
+                            vals = 'Success! ';
+                        } else {
+                            vals = 'Failure! ';
+                        }
+                        vals = vals + (answer.count - answer.failures) + 'of '
+                            + answer.count + ' signature(s) were successfully '
+                            + 'verified.\n\n' + answer.data;
+                        document.getElementById('answer').value = vals;
+                    }, function(errormsg){
+                        alert( errormsg.message);
+                    });
             });
     });
 });

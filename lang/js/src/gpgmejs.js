@@ -168,7 +168,7 @@ export class GpgME {
 
     /**
      * Sign a Message
-     * @param {String|Object} data text/data to be decrypted. Accepts Strings
+     * @param {String|Object} data text/data to be signed. Accepts Strings
      * and Objects with a gettext methos
      * @param {GPGME_Key|String|Array<String>|Array<GPGME_Key>} keys The
      * key/keys to use for signing
@@ -238,7 +238,7 @@ export class GpgME {
      */
     verify(data, signature, base64 = false){
         let msg = createMessage('verify');
-        let dt = this.putData(msg, data);
+        let dt = putData(msg, data);
         if (dt instanceof Error){
             return Promise.reject(dt);
         }
@@ -317,7 +317,7 @@ function collectSignatures(sigs){
     for (let i=0; i< sigs.length; i++){
         let sigObj = createSignature(sigs[i]);
         if (sigObj instanceof Error){
-            return gpgme_error('SIG_WRONG');
+            return gpgme_error(sigObj);
         }
         if (sigObj.valid !== true){
             summary.failures += 1;
