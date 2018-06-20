@@ -3617,6 +3617,8 @@ main (int argc, char *argv[])
   };
   gpgrt_argparse_t pargs = { &argc, &argv};
 
+  int log_file_set = 0;
+
   gpgrt_set_strusage (my_strusage);
 
 #ifdef HAVE_SETLOCALE
@@ -3653,12 +3655,24 @@ main (int argc, char *argv[])
 
   if (!opt_debug)
     {
+      /* Handling is similar to GPGME_DEBUG */
       const char *s = getenv ("GPGME_JSON_DEBUG");
+      const char *s1;
+
       if (s && atoi (s) > 0)
-        opt_debug = 1;
+        {
+          opt_debug = 1;
+          s1 = strchr (s, PATHSEP_C);
+          if (s1 && strlen (s1) > 2)
+            {
+              s1++;
+              log_set_file (s1);
+              log_file_set = 1;
+            }
+        }
     }
 
-  if (opt_debug)
+  if (opt_debug && !log_file_set)
     {
       const char *home = getenv ("HOME");
       char *file = xstrconcat ("socket://",
