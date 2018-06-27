@@ -537,7 +537,7 @@ class Context(GpgmeWrapper):
                           managed to run the function without any
                           arguments, while an argument of None triggers
                           the first NODATA of errors.GPGME in the
-                           exception.
+                          exception.
         """
         try:
             self.op_import(data)
@@ -565,6 +565,63 @@ class Context(GpgmeWrapper):
             import_result = status
 
         return import_result
+
+    def key_export(self, pattern=None):
+        """Export keys.
+
+        Exports public keys matching the pattern specified.  If no
+        pattern is specified then exports all available keys.
+
+        Keyword arguments:
+        pattern	-- return keys matching pattern (default: all keys)
+
+        Returns:
+                -- A key block containing one or more OpenPGP keys in
+                   either ASCII armoured or binary format as determined
+                   by the Context().
+
+        Raises:
+        GPGMEError     -- as signaled by the underlying library.
+        """
+        data = Data()
+        mode = 0
+        try:
+            self.op_export(pattern, mode, data)
+            data.seek(0, os.SEEK_SET)
+            result = data.read()
+        except GPGMEError as e:
+            result = e
+
+        return result
+
+    def key_export_minimal(self, pattern=None):
+        """Export keys.
+
+        Exports public keys matching the pattern specified in a
+        minimised format.  If no pattern is specified then exports all
+        available keys.
+
+        Keyword arguments:
+        pattern	-- return keys matching pattern (default: all keys)
+
+        Returns: 
+                -- A key block containing one or more minimised OpenPGP
+                   keys in either ASCII armoured or binary format as 
+                   determined by the Context().
+
+        Raises:
+        GPGMEError     -- as signaled by the underlying library.
+"""
+        data = Data()
+        mode = gpgme.GPGME_EXPORT_MODE_MINIMAL
+        try:
+            self.op_export(pattern, mode, data)
+            data.seek(0, os.SEEK_SET)
+            result = data.read()
+        except GPGMEError as e:
+            result = e
+
+        return result
 
     def keylist(self, pattern=None, secret=False,
                 mode=constants.keylist.mode.LOCAL,
