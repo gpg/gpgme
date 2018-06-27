@@ -618,7 +618,7 @@ class Context(GpgmeWrapper):
 
         Raises:
         GPGMEError     -- as signaled by the underlying library.
-"""
+        """
         data = Data()
         mode = gpgme.GPGME_EXPORT_MODE_MINIMAL
         try:
@@ -630,6 +630,47 @@ class Context(GpgmeWrapper):
 
         if len(pk_result) > 0:
             result = pk_result
+        else:
+            result = None
+
+        return result
+
+    def key_export_secret(self, pattern=None):
+        """Export secret keys.
+
+        Exports secret keys matching the pattern specified.  If no
+        pattern is specified then exports or attempts to export all
+        available secret keys.
+
+        IMPORTANT: Each secret key to be exported will prompt for its
+        passphrase via an invocation of pinentry and gpg-agent.  If the
+        passphrase is not entered or does not match then no data will be
+        exported.  This is the same result as when specifying a pattern
+        that is not matched by the available keys.
+
+        Keyword arguments:
+        pattern	-- return keys matching pattern (default: all keys)
+
+        Returns:
+                -- On success a key block containing one or more OpenPGP
+                   secret keys in either ASCII armoured or binary format
+                   as determined by the Context().
+                -- On failure while not raising an exception, returns None.
+
+        Raises:
+        GPGMEError     -- as signaled by the underlying library.
+        """
+        data = Data()
+        mode = gpgme.GPGME_EXPORT_MODE_SECRET
+        try:
+            self.op_export(pattern, mode, data)
+            data.seek(0, os.SEEK_SET)
+            sk_result = data.read()
+        except GPGMEError as e:
+            sk_result = e
+
+        if len(sk_result) > 0:
+            result = sk_result
         else:
             result = None
 
