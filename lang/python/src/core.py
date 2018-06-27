@@ -578,7 +578,8 @@ class Context(GpgmeWrapper):
         Returns:
                 -- A key block containing one or more OpenPGP keys in
                    either ASCII armoured or binary format as determined
-                   by the Context().
+                   by the Context().  If there are no matching keys it
+                   returns None.
 
         Raises:
         GPGMEError     -- as signaled by the underlying library.
@@ -588,9 +589,14 @@ class Context(GpgmeWrapper):
         try:
             self.op_export(pattern, mode, data)
             data.seek(0, os.SEEK_SET)
-            result = data.read()
+            pk_result = data.read()
         except GPGMEError as e:
-            result = e
+            pk_result = e
+
+        if len(pk_result) > 0:
+            result = pk_result
+        else:
+            result = None
 
         return result
 
@@ -607,7 +613,8 @@ class Context(GpgmeWrapper):
         Returns: 
                 -- A key block containing one or more minimised OpenPGP
                    keys in either ASCII armoured or binary format as 
-                   determined by the Context().
+                   determined by the Context().  If there are no matching
+                   keys it returns None.
 
         Raises:
         GPGMEError     -- as signaled by the underlying library.
@@ -617,9 +624,14 @@ class Context(GpgmeWrapper):
         try:
             self.op_export(pattern, mode, data)
             data.seek(0, os.SEEK_SET)
-            result = data.read()
+            pk_result = data.read()
         except GPGMEError as e:
-            result = e
+            pk_result = e
+
+        if len(pk_result) > 0:
+            result = pk_result
+        else:
+            result = None
 
         return result
 
