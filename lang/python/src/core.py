@@ -610,9 +610,9 @@ class Context(GpgmeWrapper):
         Keyword arguments:
         pattern	-- return keys matching pattern (default: all keys)
 
-        Returns: 
+        Returns:
                 -- A key block containing one or more minimised OpenPGP
-                   keys in either ASCII armoured or binary format as 
+                   keys in either ASCII armoured or binary format as
                    determined by the Context().  If there are no matching
                    keys it returns None.
 
