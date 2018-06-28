@@ -30,9 +30,20 @@ else:
     pass
 </codeblock>
       </p>
-      <p>The data available in <codeph>plaintext</codeph> in this example is the decrypted content
-        as a byte object, the recipient key IDs and algorithms in <codeph>result</codeph> and the
-        results of verifying any signatures of the data in <codeph>verify_result</codeph>.</p>
+      <p>The data available in <codeph>plaintext</codeph> following a successful decryption in this
+        example is the decrypted content as a byte object, the recipient key IDs and algorithms in
+          <codeph>result</codeph> and the results of verifying any signatures of the data in
+          <codeph>verify_result</codeph>.</p>
+      <p>
+        <note>The graceful handling of <codeph>GPGMEError</codeph> with the try/except statement is
+          to handle the decryption error message produced if the file <codeph>ciphertext</codeph>,
+          and thus <codeph>cfile</codeph>, are encrypted with deprecated and insecure methods.
+          Particularly without MDC integrity checks or utilising deprecated encryption algorithms.
+          Messages and files encrypted with these are not decrypted with GPGME at all and any user
+          requiring archival access will need to access it manually with pre-GnuPG 2.3 versions of
+          the software which meets the requirements of the specific use case.</note>
+      </p>
+      <p/>
     </body>
   </topic>
 </dita>

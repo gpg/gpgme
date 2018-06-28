@@ -14,15 +14,16 @@
         <ol id="ol_k3b_wrx_5db">
           <li>A <xref href="https://dev.gnupg.org/T3977" format="html" scope="external">bug</xref>
             in either Org-Mode or Babel prevented the more complex examples included in the HOWTO
-            from displaying correctly.</li>
+            from displaying correctly while also retaining syntax highlighting.</li>
           <li>To demonstrate some of the advantages of DITA XML over existing documentation
             production software used in the project (particularly Texinfo and LaTeX).</li>
         </ol>
       </p>
-      <p>The XML format definitely supports displaying all the more complex Python code correctly,
-        as well as being designed to produce standards compliant print and HTML output.  Whereas
-        currently the existing tools utilised by the GnuPG Project can't display the example code in
-        a way which would actually pass the project's own git commit ruleset.</p>
+      <p>The XML format definitely supports displaying all the more complex Python code correctly
+        with syntax highlighting, as well as being designed to produce standards compliant print and
+        HTML output. Whereas currently the existing tools utilised by the GnuPG Project can't
+        display the example code in a way which would actually pass the project's own git commit
+        ruleset.</p>
       <p> </p>
         </body>
     </topic>

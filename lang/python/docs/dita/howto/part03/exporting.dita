@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita xml:lang="en-GB">
+  <topic id="exporting-keys">
+    <title>Exporting Keys</title>
+    <body>
+      <p>Exporting keys remains a reasonably simple task, but has been separated into three
+        different functions for the OpenPGP cryptographic engine. Two of those functions are for
+        exporting public keys and the third is for exporting secret keys.</p>
+    </body>
+  </topic>
+</dita>

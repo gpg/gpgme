@@ -44,6 +44,10 @@ for i in range(len(group_lists)):
       <p>
         <codeblock id="groups-2" outputclass="language-python">from groups import group_lists</codeblock>
       </p>
+          <p>A demonstration of using the <filepath>groups.py</filepath> module is also available in
+            the form of the executable <cmdname>mutt-groups.py</cmdname> script. This second script
+        reads all the group entries in a user's <filepath>gpg.conf</filepath> file and converts them
+        into crypt-hooks suitable for use with the Mutt and Neomutt mail clients.</p>
         </body>
     </topic>
 </dita>

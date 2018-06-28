@@ -3,4 +3,5 @@
 <map>
   <title>GPGME Python Bindings</title>
   <mapref id="howto-map" href="gpgme-python-howto.ditamap"/>
+  <mapref id="resources" href="resources.ditamap" processing-role="resource-only"/>
 </map>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita xml:lang="en-GB">
+  <topic id="importing-keys">
+    <title>Importing keys</title>
+    <body>
+      <p>Importing keys is possible with the <codeph>key_import()</codeph> method and takes one
+        argument which is a bytes literal object containing either the binary or ASCII armoured key
+        data for one or more keys.</p>
+      <p>The following example retrieves one or more keys from the SKS keyservers via the web using
+        the requests module. Since requests returns the content as a bytes literal object, we can
+        then use that directly to import the resulting data into our keybox.</p>
+      <p>
+        <codeblock id="key-import-01" outputclass="language-python">import gpg
+import os.path
+import requests
+
+c = gpg.Context()
+url = "https://sks-keyservers.net/pks/lookup"
+pattern = input("Enter the pattern to search for key or user IDs: ")
+payload = { "op": "get", "search": pattern }
+
+r = requests.get(url, verify=True, params=payload)
+result = c.key_import(r.content)
+
+if result is not None and hasattr(result, "considered") is False:
+    print(result)
+elif result is not None and hasattr(result, "considered") is True:
+    num_keys = len(result.imports)
+    new_revs = result.new_revocations
+    new_sigs = result.new_signatures
+    new_subs = result.new_sub_keys
+    new_uids = result.new_user_ids
+    new_scrt = result.secret_imported
+    nochange = result.unchanged
+    print("""
+The total number of keys considered for import was:  {0}
+
+   Number of keys revoked:  {1}
+ Number of new signatures:  {2}
+    Number of new subkeys:  {3}
+   Number of new user IDs:  {4}
+Number of new secret keys:  {5}
+ Number of unchanged keys:  {6}
+
+The key IDs for all considered keys were:
+""".format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+	    nochange))
+    for i in range(num_keys):
+	print(result.imports[i].fpr)
+    print("")
+else:
+    pass
+</codeblock>
+      </p>
+      <p>
+        <note>When searching for a key ID of any length or a fingerprint (without spaces), the SKS
+          servers require the the leading <codeph>0x</codeph> indicative of hexadecimal be included.
+          Also note that the old short key IDs (e.g. <codeph>0xDEADBEEF</codeph>) should no longer
+          be used due to the relative ease by which such key IDs can be reproduced, as demonstrated
+          by the <xref href="https://evil32.com/" format="html" scope="external">Evil32
+            Project</xref> in 2014 (which was subsequently exploited in 2016).</note>
+      </p>
+      <p/>
+    </body>
+  </topic>
+</dita>

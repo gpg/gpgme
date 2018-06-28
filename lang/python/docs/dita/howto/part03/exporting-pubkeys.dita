@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita xml:lang="en-GB">
+  <topic id="exporting-pubkeys">
+    <title>Exporting Public Keys</title>
+    <body>
+      <p>There are two methods of exporting public keys, both of which are very similar to the
+        other. The default method, <codeph>key_export()</codeph> will export a public key or keys
+        matching a specified pattern as normal. The alternative, the
+          <codeph>key_export_minimal()</codeph> method will do the same thing except producing a
+        minimised output with extra signatures and third party signatures or certifications
+        removed.</p>
+      <p>
+        <codeblock id="export-pubkey-01" outputclass="language-python">import gpg
+import os.path
+import sys
+
+print("""
+This script exports one or more public keys.
+""")
+
+c = gpg.Context(armor=True)
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the path and filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+try:
+    result = c.key_export(pattern=logrus)
+except:
+    result = c.key_export(pattern=None)
+
+if result is not None:
+    with open(keyfile, "wb") as f:
+        f.write(result)
+else:
+    pass
+</codeblock>
+      </p>
+      <p>It is important to note that the <codeph>result</codeph> will only return
+          <codeph>None</codeph> when a pattern has been entered for <varname>logrus</varname>, but
+        it has not matched any keys. When the search pattern itself is set to <codeph>None</codeph>
+        this triggers the exporting of the entire public keybox.</p>
+      <p>
+        <codeblock id="export-pubkey-02" outputclass="language-python">import gpg
+import os.path
+import sys
+
+print("""
+This script exports one or more public keys in minimised form.
+""")
+
+c = gpg.Context(armor=True)
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the path and filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+try:
+    result = c.key_export_minimal(pattern=logrus)
+except:
+    result = c.key_export_minimal(pattern=None)
+
+if result is not None:
+    with open(keyfile, "wb") as f:
+        f.write(result)
+else:
+    pass
+</codeblock>
+      </p>
+      <p/>
+    </body>
+  </topic>
+</dita>

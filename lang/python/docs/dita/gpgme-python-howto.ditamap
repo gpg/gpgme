@@ -58,6 +58,11 @@
       <topicref id="key-count" href="howto/part03/key-counting.dita"/>
     </topicref>
     <topicref id="get-key" href="howto/part03/get-key.dita"/>
+    <topicref id="import-key" href="howto/part03/importing.dita"/>
+    <topicref id="export-key" href="howto/part03/exporting.dita">
+      <topicref id="export-key-pub" href="howto/part03/exporting-pubkeys.dita"/>
+      <topicref id="export-key-sec" href="howto/part03/exporting-seckeys.dita"/>
+    </topicref>
   </part>
   <part id="part-4" href="howto/part-4.dita">
     <topicref id="basics" href="howto/part04/basic-functions.dita"/>
@@ -87,4 +92,7 @@
   <part id="part-6" href="howto/part-6.dita">
     <topicref id="groups" href="howto/part06/group-lines.dita"/>
   </part>
+  <backmatter>
+    <mapref id="resources" href="resources.ditamap" processing-role="resource-only"/>
+  </backmatter>
 </bookmap>
