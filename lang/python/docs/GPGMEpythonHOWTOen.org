@@ -454,6 +454,364 @@
    literals with the fingerprint when getting a key in this way.
 
 
+** Importing keys
+   :PROPERTIES:
+   :CUSTOM_ID: howto-import-key
+   :END:
+
+   Importing keys is possible with the =key_import()= method and takes
+   one argument which is a bytes literal object containing either the
+   binary or ASCII armoured key data for one or more keys.
+
+   The following example retrieves one or more keys from the SKS
+   keyservers via the web using the requests module. Since requests
+   returns the content as a bytes literal object, we can then use that
+   directly to import the resulting data into our keybox.
+
+   #+begin_src python
+     import gpg
+     import os.path
+     import requests
+
+     c = gpg.Context()
+     url = "https://sks-keyservers.net/pks/lookup"
+     pattern = input("Enter the pattern to search for key or user IDs: ")
+     payload = { "op": "get", "search": pattern }
+
+     r = requests.get(url, verify=True, params=payload)
+     result = c.key_import(r.content)
+
+     if result is not None and hasattr(result, "considered") is False:
+	 print(result)
+     elif result is not None and hasattr(result, "considered") is True:
+	 num_keys = len(result.imports)
+	 new_revs = result.new_revocations
+	 new_sigs = result.new_signatures
+	 new_subs = result.new_sub_keys
+	 new_uids = result.new_user_ids
+	 new_scrt = result.secret_imported
+	 nochange = result.unchanged
+	 print("""
+     The total number of keys considered for import was:  {0}
+
+	Number of keys revoked:  {1}
+      Number of new signatures:  {2}
+	 Number of new subkeys:  {3}
+	Number of new user IDs:  {4}
+     Number of new secret keys:  {5}
+      Number of unchanged keys:  {6}
+
+     The key IDs for all considered keys were:
+     """.format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+		 nochange))
+	 for i in range(num_keys):
+	     print(result.imports[i].fpr)
+	 print("")
+     else:
+	 pass
+   #+end_src
+
+   *NOTE:* When searching for a key ID of any length or a fingerprint
+   (without spaces), the SKS servers require the the leading =0x=
+   indicative of hexadecimal be included. Also note that the old short
+   key IDs (e.g. =0xDEADBEEF=) should no longer be used due to the
+   relative ease by which such key IDs can be reproduced, as
+   demonstrated by the Evil32 Project in 2014 (which was subsequently
+   exploited in 2016).
+
+
+** Exporting keys
+   :PROPERTIES:
+   :CUSTOM_ID: howto-export-key
+   :END:
+
+   Exporting keys remains a reasonably simple task, but has been
+   separated into three different functions for the OpenPGP
+   cryptographic engine.  Two of those functions are for exporting
+   public keys and the third is for exporting secret keys.
+
+
+*** Exporting public keys
+    :PROPERTIES:
+    :CUSTOM_ID: howto-export-public-key
+    :END:
+
+    There are two methods of exporting public keys, both of which are
+    very similar to the other.  The default method, =key_export()=,
+    will export a public key or keys matching a specified pattern as
+    normal.  The alternative, the =key_export_minimal()= method, will
+    do the same thing except producing a minimised output with extra
+    signatures and third party signatures or certifications removed.
+
+    #+begin_src python
+      import gpg
+      import os.path
+      import sys
+
+      print("""
+      This script exports one or more public keys.
+      """)
+
+      c = gpg.Context(armor=True)
+
+      if len(sys.argv) >= 4:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = sys.argv[3]
+      elif len(sys.argv) == 3:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      elif len(sys.argv) == 2:
+	  keyfile = sys.argv[1]
+	  logrus = input("Enter the UID matching the key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      else:
+	  keyfile = input("Enter the path and filename to save the secret key to: ")
+	  logrus = input("Enter the UID matching the key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+
+      if homedir.startswith("~"):
+	  if os.path.exists(os.path.expanduser(homedir)) is True:
+	      c.home_dir = os.path.expanduser(homedir)
+	  else:
+	      pass
+      elif os.path.exists(homedir) is True:
+	  c.home_dir = homedir
+      else:
+	  pass
+
+      try:
+	  result = c.key_export(pattern=logrus)
+      except:
+	  result = c.key_export(pattern=None)
+
+      if result is not None:
+	  with open(keyfile, "wb") as f:
+	      f.write(result)
+      else:
+	  pass
+    #+end_src
+
+    It is important to note that the result will only return =None=
+    when a pattern has been entered for =logrus=, but it has not
+    matched any keys. When the search pattern itself is set to =None=
+    this triggers the exporting of the entire public keybox.
+
+    #+begin_src python
+      import gpg
+      import os.path
+      import sys
+
+      print("""
+      This script exports one or more public keys in minimised form.
+      """)
+
+      c = gpg.Context(armor=True)
+
+      if len(sys.argv) >= 4:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = sys.argv[3]
+      elif len(sys.argv) == 3:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      elif len(sys.argv) == 2:
+	  keyfile = sys.argv[1]
+	  logrus = input("Enter the UID matching the key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      else:
+	  keyfile = input("Enter the path and filename to save the secret key to: ")
+	  logrus = input("Enter the UID matching the key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+
+      if homedir.startswith("~"):
+	  if os.path.exists(os.path.expanduser(homedir)) is True:
+	      c.home_dir = os.path.expanduser(homedir)
+	  else:
+	      pass
+      elif os.path.exists(homedir) is True:
+	  c.home_dir = homedir
+      else:
+	  pass
+
+      try:
+	  result = c.key_export_minimal(pattern=logrus)
+      except:
+	  result = c.key_export_minimal(pattern=None)
+
+      if result is not None:
+	  with open(keyfile, "wb") as f:
+	      f.write(result)
+      else:
+	  pass
+    #+end_src
+
+
+*** Exporting secret keys
+    :PROPERTIES:
+    :CUSTOM_ID: howto-export-secret-key
+    :END:
+
+    Exporting secret keys is, functionally, very similar to exporting
+    public keys; save for the invocation of =pinentry= via =gpg-agent=
+    in order to securely enter the key's passphrase and authorise the
+    export.
+
+    The following example exports the secret key to a file which is
+    then set with the same permissions as the output files created by
+    the command line secret key export options.
+
+    #+begin_src python
+      import gpg
+      import os
+      import os.path
+      import sys
+
+      print("""
+      This script exports one or more secret keys.
+
+      The gpg-agent and pinentry are invoked to authorise the export.
+      """)
+
+      c = gpg.Context(armor=True)
+
+      if len(sys.argv) >= 4:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = sys.argv[3]
+      elif len(sys.argv) == 3:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      elif len(sys.argv) == 2:
+	  keyfile = sys.argv[1]
+	  logrus = input("Enter the UID matching the secret key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      else:
+	  keyfile = input("Enter the path and filename to save the secret key to: ")
+	  logrus = input("Enter the UID matching the secret key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+
+      if homedir.startswith("~"):
+	  if os.path.exists(os.path.expanduser(homedir)) is True:
+	      c.home_dir = os.path.expanduser(homedir)
+	  else:
+	      pass
+      elif os.path.exists(homedir) is True:
+	  c.home_dir = homedir
+      else:
+	  pass
+
+      try:
+	  result = c.key_export_secret(pattern=logrus)
+      except:
+	  result = c.key_export_secret(pattern=None)
+
+      if result is not None:
+	  with open(keyfile, "wb") as f:
+	      f.write(result)
+	  os.chmod(keyfile, 0o600)
+      else:
+	  pass
+    #+end_src
+
+    Alternatively the approach of the following script can be
+    used.  This longer example saves the exported secret key(s) in
+    files in the GnuPG home directory, in addition to setting the file
+    permissions as only readable and writable by the user.  It also
+    exports the secret key(s) twice in order to output both GPG binary
+    (=.gpg=) and ASCII armoured (=.asc=) files.
+
+    #+begin_src python
+      import gpg
+      import os
+      import os.path
+      import subprocess
+      import sys
+
+      print("""
+      This script exports one or more secret keys as both ASCII armored and binary
+      file formats, saved in files within the user's GPG home directory.
+
+      The gpg-agent and pinentry are invoked to authorise the export.
+      """)
+
+      if sys.platform == "win32":
+	  gpgconfcmd = "gpgconf.exe --list-dirs homedir"
+      else:
+	  gpgconfcmd = "gpgconf --list-dirs homedir"
+
+      a = gpg.Context(armor=True)
+      b = gpg.Context()
+      c = gpg.Context()
+
+      if len(sys.argv) >= 4:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = sys.argv[3]
+      elif len(sys.argv) == 3:
+	  keyfile = sys.argv[1]
+	  logrus = sys.argv[2]
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      elif len(sys.argv) == 2:
+	  keyfile = sys.argv[1]
+	  logrus = input("Enter the UID matching the secret key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+      else:
+	  keyfile = input("Enter the filename to save the secret key to: ")
+	  logrus = input("Enter the UID matching the secret key(s) to export: ")
+	  homedir = input("Enter the GPG configuration directory path (optional): ")
+
+      if homedir.startswith("~"):
+	  if os.path.exists(os.path.expanduser(homedir)) is True:
+	      c.home_dir = os.path.expanduser(homedir)
+	  else:
+	      pass
+      elif os.path.exists(homedir) is True:
+	  c.home_dir = homedir
+      else:
+	  pass
+
+      if c.home_dir is not None:
+	  if c.home_dir.endswith("/"):
+	      gpgfile = "{0}{1}.gpg".format(c.home_dir, keyfile)
+	      ascfile = "{0}{1}.asc".format(c.home_dir, keyfile)
+	  else:
+	      gpgfile = "{0}/{1}.gpg".format(c.home_dir, keyfile)
+	      ascfile = "{0}/{1}.asc".format(c.home_dir, keyfile)
+      else:
+	  if os.path.exists(os.environ["GNUPGHOME"]) is True:
+	      hd = os.environ["GNUPGHOME"]
+	  else:
+	      hd = subprocess.getoutput(gpgconfcmd)
+	  gpgfile = "{0}/{1}.gpg".format(hd, keyfile)
+	  ascfile = "{0}/{1}.asc".format(hd, keyfile)
+
+      try:
+	  a_result = a.key_export_secret(pattern=logrus)
+	  b_result = b.key_export_secret(pattern=logrus)
+      except:
+	  a_result = a.key_export_secret(pattern=None)
+	  b_result = b.key_export_secret(pattern=None)
+
+      if a_result is not None:
+	  with open(ascfile, "wb") as f:
+	      f.write(a_result)
+	  os.chmod(ascfile, 0o600)
+      else:
+	  pass
+
+      if b_result is not None:
+	  with open(gpgfile, "wb") as f:
+	      f.write(b_result)
+	  os.chmod(gpgfile, 0o600)
+      else:
+	  pass
+    #+end_src
+
+
 * Basic Functions
   :PROPERTIES:
   :CUSTOM_ID: howto-the-basics
