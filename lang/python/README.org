@@ -27,8 +27,8 @@ Please report bugs using our bug tracker
 * Authors
 
 PyME was created by John Goerzen, and maintained, developed, and
-cherished by Igor Belyi, Martin Albrecht, Ben McGinnes, and everyone
-who contributed to it in any way.
+cherished by Igor Belyi, Martin Albrecht, Ben McGinnes, Justus Winter,
+and everyone who contributed to it in any way.
 
 In 2016 we merged a port of PyME to into the GPGME repository, and
 development will continue there.  Please see the VCS history for the

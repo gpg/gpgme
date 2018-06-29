@@ -14,7 +14,7 @@
   :CUSTOM_ID: intro
   :END:
 
-  | Version:        | 0.1.1                                    |
+  | Version:        | 0.1.2                                    |
   | Author:         | Ben McGinnes <ben@gnupg.org>             |
   | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
   | Language:       | Australian English, British English      |
@@ -247,7 +247,7 @@
    =python=, =python2= and =python2.7=.
 
    For Python 3 it checks for these executables in this order:
-   =python3=, =python3.6=, =python3.5= and =python3.4=.
+   =python3=, =python3.6=, =python3.5=, =python3.4= and =python3.7=.[fn:4]
 
 
 *** Installing GPGME
@@ -1777,3 +1777,7 @@
 keyservers for "gnupg.org" produces over 400 results, the majority of
 which aren't actually at the gnupg.org domain, but just included a
 comment regarding the project in their key somewhere.
+
+[fn:4] As Python 3.7 is a very recent release, it is not given
+priority over 3.6 yet, but will probably be prioritised by the release
+of Python 3.7.2.

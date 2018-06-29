@@ -39,8 +39,12 @@ AC_DEFUN([AM_PATH_PYTHON],
   m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
 [python2 python2.7 dnl
  python dnl
- python3 python3.0 python3.1 python3.2 python3.3  dnl
- python3.4 python3.5 python3.6 python3.7 python3.8])
+ dnl old listing was pointless since biundings only work from Python 3.4:
+ dnl python3 python3.0 python3.1 python3.2 python3.3
+ dnl move 3.7 to the front once 3.7.1 or 3.7.2 is released:
+ dnl python3 python3.7 python3.6 python3.5 python3.4 python3.8])
+ dnl until then:
+ python3 python3.6 python3.5 python3.4 python3.7 python3.8])
 
   AC_ARG_VAR([PYTHON], [the Python interpreter])
 
