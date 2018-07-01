@@ -762,41 +762,6 @@ class Context(GpgmeWrapper):
         GPGMEError   -- as signaled by the underlying library
 
         """
-        if sign is True:
-            _sign = constants.create.SIGN
-        else:
-            _sign = 0
-
-        if encrypt is True:
-            _encrypt = constants.create.ENCR
-        else:
-            _encrypt = 0
-
-        if certify is True:
-            _certify = constants.create.CERT
-        else:
-            _certify = 0
-
-        if authenticate is True:
-            _authenticate = constants.create.AUTH
-        else:
-            _authenticate = 0
-
-        if passphrase is None:
-            _nopasswd = constants.create.NOPASSWD
-        else:
-            _nopasswd = 0
-
-        if expires is True:
-            _expires = 0
-        else:
-            _expires = constants.create.NOEXPIRE
-
-        if force is True:
-            _force = constants.create.FORCE
-        else:
-            _force = 0
-
         if util.is_a_string(passphrase):
             old_pinentry_mode = self.pinentry_mode
             old_passphrase_cb = getattr(self, '_passphrase_cb', None)
@@ -809,8 +774,14 @@ class Context(GpgmeWrapper):
         try:
             self.op_createkey(userid, algorithm, 0,  # reserved
                               expires_in, None,  # extrakey
-                              _sign, _encrypt, _certify, _authenticate,
-                              _nopasswd, _expires, _force)
+                              ((constants.create.SIGN if sign else 0)
+                               | (constants.create.ENCR if encrypt else 0)
+                               | (constants.create.CERT if certify else 0)
+                               | (constants.create.AUTH if authenticate else 0)
+                               | (constants.create.NOPASSWD
+                                  if passphrase is None else 0)
+                               | (0 if expires else constants.create.NOEXPIRE)
+                               | (constants.create.FORCE if force else 0)))
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
@@ -867,36 +838,6 @@ class Context(GpgmeWrapper):
         GPGMEError   -- as signaled by the underlying library
 
         """
-        if sign is True:
-            _sign = constants.create.SIGN
-        else:
-            _sign = 0
-
-        if encrypt is True:
-            _encrypt = constants.create.ENCR
-        else:
-            _encrypt = 0
-
-        if authenticate is True:
-            _authenticate = constants.create.AUTH
-        else:
-            _authenticate = 0
-
-        if passphrase is None:
-            _nopasswd = constants.create.NOPASSWD
-        else:
-            _nopasswd = 0
-
-        if expires is True:
-            _expires = 0
-        else:
-            _expires = constants.create.NOEXPIRE
-
-        if force is True:
-            _force = constants.create.FORCE
-        else:
-            _force = 0
-
         if util.is_a_string(passphrase):
             old_pinentry_mode = self.pinentry_mode
             old_passphrase_cb = getattr(self, '_passphrase_cb', None)
@@ -908,8 +849,15 @@ class Context(GpgmeWrapper):
 
         try:
             self.op_createsubkey(key, algorithm, 0,  # reserved
-                                 expires_in, _sign, _encrypt, _authenticate,
-                                 _nopasswd, _expires, _force)
+                                 expires_in,
+                                 ((constants.create.SIGN if sign else 0)
+                                  | (constants.create.ENCR if encrypt else 0)
+                                  | (constants.create.AUTH
+                                     if authenticate else 0)
+                                  | (constants.create.NOPASSWD
+                                     if passphrase is None else 0)
+                                  | (0 if expires
+                                     else constants.create.NOEXPIRE)))
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
