@@ -19,6 +19,7 @@
  *
  * Author(s):
  *     Maximilian Krambach <mkrambach@intevation.de>
+ *     Raimund Renkert <rrenkert@intevation.de>
  */
 
 /* global describe, it, expect, Gpgmejs, ImportablePublicKey */
@@ -53,27 +54,27 @@ describe('Key importing', function () {
                     expect(result.length).to.equal(0);
                     context.Keyring.importKey(ImportablePublicKey.key, true)
                         .then(function(result){
-                            expect(result[0]).to.not.be.undefined;
-                            expect(result[0].key).to.be.an('object');
-                            expect(result[0].key.fingerprint).to.equal(
+                            expect(result.Keys[0]).to.not.be.undefined;
+                            expect(result.Keys[0].key).to.be.an('object');
+                            expect(result.Keys[0].key.fingerprint).to.equal(
                                 ImportablePublicKey.fingerprint);
-                            expect(result[0].status).to.equal('newkey');
+                            expect(result.Keys[0].status).to.equal('newkey');
                             context.Keyring.importKey(
                                 ImportablePublicKey.keyChangedUserId,true)
                                 .then(function(res){
-                                    expect(res[0]).to.not.be.undefined;
-                                    expect(res[0].key).to.be.an('object');
-                                    expect(res[0].key.fingerprint).to.equal(
+                                    expect(res.Keys[0]).to.not.be.undefined;
+                                    expect(res.Keys[0].key).to.be.an('object');
+                                    expect(res.Keys[0].key.fingerprint).to.equal(
                                         ImportablePublicKey.fingerprint);
-                                    expect(res[0].status).to.equal(
+                                    expect(res.Keys[0].status).to.equal(
                                         'change');
                                     expect(
-                                        res[0].changes.userId).to.be.true;
+                                        res.Keys[0].changes.userId).to.be.true;
                                     expect(
-                                        res[0].changes.subkey).to.be.false;
+                                        res.Keys[0].changes.subkey).to.be.false;
                                     expect(
-                                        res[0].changes.signature).to.be.true;
-                                    res[0].key.delete().then(function(result){
+                                        res.Keys[0].changes.signature).to.be.true;
+                                    res.Keys[0].key.delete().then(function(result){
                                         expect(result).to.be.true;
                                         done();
                                     });

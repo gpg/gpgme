@@ -272,7 +272,7 @@ export const permittedOperations = {
         answer: {
             type: [],
             data: {
-                'result': 'Object'
+                'result': 'object'
             }
         }
     },
