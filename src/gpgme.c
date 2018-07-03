@@ -249,6 +249,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->lc_messages);
   free (ctx->override_session_key);
   free (ctx->request_origin);
+  free (ctx->auto_key_locate);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -546,6 +547,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->ignore_mdc_error = abool;
     }
+  else if (!strcmp (name, "auto-key-locate"))
+    {
+      free (ctx->auto_key_locate);
+      ctx->auto_key_locate = strdup (value);
+      if (!ctx->auto_key_locate)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -598,6 +606,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "ignore-mdc-error"))
     {
       return ctx->ignore_mdc_error? "1":"";
+    }
+  else if (!strcmp (name, "auto-key-locate"))
+    {
+      return ctx->auto_key_locate? ctx->auto_key_locate : "";
     }
   else
     return NULL;

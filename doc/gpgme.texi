@@ -3096,6 +3096,16 @@ result of the former try had the decryption result flag
 @code{legacy_cipher_nomdc} set.  For failsafe reasons this flag is
 reset after each operation.
 
+@item "auto-key-locate"
+The string given in @var{value} is passed to gpg.  This can be used
+to change the behavior of a @code{GPGME_KEYLIST_MODE_LOCATE} keylisting.
+Valid values are documented in the GnuPG manual and the gpg man page under
+the option @option{--auto-key-locate}.
+Requires at least GnuPG 2.1.18.
+
+Note: Keys retrieved through @code{auto-key-locate} are automatically
+imported in the keyring.
+
 @end table
 
 This function returns @code{0} on success.

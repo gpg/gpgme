@@ -155,6 +155,9 @@ struct gpgme_context
   /* The optional request origin.  */
   char *request_origin;
 
+  /* The optional auto key locate options.  */
+  char *auto_key_locate;
+
   /* The locale for the pinentry.  */
   char *lc_ctype;
   char *lc_messages;

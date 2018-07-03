@@ -57,6 +57,7 @@ show_usage (int ex)
          "  --import         import all keys\n"
          "  --offline        use offline mode\n"
          "  --from-file      list all keys in the given file\n"
+         "  --from-wkd       list key from a web key directory\n"
          "  --require-gnupg  required at least the given GnuPG version\n"
          , stderr);
   exit (ex);
@@ -100,6 +101,7 @@ main (int argc, char **argv)
   int only_secret = 0;
   int offline = 0;
   int from_file = 0;
+  int from_wkd = 0;
   gpgme_data_t data = NULL;
 
 
@@ -194,6 +196,12 @@ main (int argc, char **argv)
           gpgme_set_global_flag ("require-gnupg", *argv);
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--from-wkd"))
+        {
+          argc--; argv++;
+          mode |= GPGME_KEYLIST_MODE_LOCATE;
+          from_wkd = 1;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
     }
@@ -212,6 +220,13 @@ main (int argc, char **argv)
   gpgme_set_keylist_mode (ctx, mode);
 
   gpgme_set_offline (ctx, offline);
+
+  if (from_wkd)
+    {
+      err = gpgme_set_ctx_flag (ctx, "auto-key-locate",
+                                "clear,nodefault,wkd");
+      fail_if_err (err);
+    }
 
   if (from_file)
     {

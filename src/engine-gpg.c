@@ -140,6 +140,7 @@ struct engine_gpg
   struct gpgme_io_cbs io_cbs;
   gpgme_pinentry_mode_t pinentry_mode;
   char request_origin[10];
+  char *auto_key_locate;
 
   struct {
     unsigned int no_symkey_cache : 1;
@@ -453,6 +454,7 @@ gpg_release (void *engine)
     free_argv (gpg->argv);
   if (gpg->cmd.keyword)
     free (gpg->cmd.keyword);
+  free (gpg->auto_key_locate);
 
   gpgme_data_release (gpg->override_session_key);
   gpgme_data_release (gpg->diagnostics);
@@ -658,6 +660,14 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
     }
   else
     *gpg->request_origin = 0;
+
+  if (ctx->auto_key_locate && have_gpg_version (gpg, "2.1.18"))
+    {
+      if (gpg->auto_key_locate)
+        free (gpg->auto_key_locate);
+      gpg->auto_key_locate = _gpgme_strconcat ("--auto-key-locate=",
+                                               ctx->auto_key_locate, NULL);
+    }
 
   gpg->flags.no_symkey_cache = (ctx->no_symkey_cache
                                 && have_gpg_version (gpg, "2.2.7"));
@@ -954,6 +964,19 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	  free (fd_data_map);
 	  free_argv (argv);
 	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (gpg->auto_key_locate)
+    {
+      argv[argc] = strdup (gpg->auto_key_locate);
+      if (!argv[argc])
+        {
+          int saved_err = gpg_error_from_syserror ();
+          free (fd_data_map);
+          free_argv (argv);
+          return saved_err;
         }
       argc++;
     }
