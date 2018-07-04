@@ -2426,6 +2426,7 @@ started.  In fact, these references are accessed through the
 * Progress Meter Callback::       Being informed about the progress.
 * Status Message Callback::       Status messages received from gpg.
 * Locale::                        Setting the locale of a context.
+* Additional Logs::               Additional logs of a context.
 @end menu
 
 
@@ -3154,6 +3155,70 @@ value at startup.
 The function returns an error if not enough memory is available.
 @end deftypefun
 
+
+@node Additional Logs
+@subsection Additional Logs
+@cindex auditlog, of the engine
+@cindex auditlog
+
+Additional logs can be associated with a context.  These logs are
+engine specific and can be be obtained with @code{gpgme_op_getauditlog}.
+
+@deftypefun gpgme_error_t gpgme_op_getauditlog @
+            (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{output}}, @
+            @w{unsigned int @var{flags}})
+@since{1.1.1}
+
+The function @code{gpgme_op_getauditlog} is used to obtain additional
+logs as specified by @var{flags} into the @var{output} data.  If
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if a
+log could be queried from the engine, and @code{GPG_ERR_NOT_IMPLEMENTED}
+if the log specified in @var{flags} is not available for this engine.
+If no log is available @code{GPG_ERR_NO_DATA} is returned.
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_AUDITLOG_DIAG
+@since{1.11.2}
+
+Obtain diagnostic output which would be written to @code{stderr} in
+interactive use of the engine.  This can be used to provide additional
+diagnostic information in case of errors in other operations.
+
+Note: If log-file has been set in the configuration the log will
+be empty and @code{GPG_ERR_NO_DATA} will be returned.
+
+Implemented for: @code{GPGME_PROTOCOL_OpenPGP}
+
+@item GPGME_AUDITLOG_DEFAULT
+@since{1.11.2}
+
+This flag has the value 0 for compatibility reasons.  Obtains additional
+information from the engine by issuing the @code{GETAUDITLOG} command.
+For @code{GPGME_PROTOCOL_CMS} this provides additional information about
+the X509 certificate chain.
+
+Implemented for: @code{GPGME_PROTOCOL_CMS}
+
+@item GPGME_AUDITLOG_HTML
+@since{1.1.1}
+
+Same as @code{GPGME_AUDITLOG_DEFAULT} but in HTML.
+
+Implemented for: @code{GPGME_PROTOCOL_CMS}
+@end table
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_getauditlog_start @
+            (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{output}}, @
+            @w{unsigned int @var{flags}})
+@since{1.1.1}
+
+This is the asynchronous variant of @code{gpgme_op_getauditlog}.
+@end deftypefun
 
 @node Key Management
 @section Key Management

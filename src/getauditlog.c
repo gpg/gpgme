@@ -47,9 +47,12 @@ getauditlog_start (gpgme_ctx_t ctx, int synchronous,
   if (!output)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  err = _gpgme_op_reset (ctx, ((synchronous&255) | 256) );
-  if (err)
-    return err;
+  if (!(flags & GPGME_AUDITLOG_DIAG))
+    {
+      err = _gpgme_op_reset (ctx, ((synchronous&255) | 256) );
+      if (err)
+        return err;
+    }
 
   _gpgme_engine_set_status_handler (ctx->engine,
                                     getauditlog_status_handler, ctx);

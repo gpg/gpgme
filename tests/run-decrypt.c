@@ -88,6 +88,7 @@ show_usage (int ex)
          "  --no-symkey-cache               disable the use of that cache\n"
          "  --ignore-mdc-error              allow decryption of legacy data\n"
          "  --unwrap         remove only the encryption layer\n"
+         "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
 }
@@ -112,6 +113,7 @@ main (int argc, char **argv)
   int no_symkey_cache = 0;
   int ignore_mdc_error = 0;
   int raw_output = 0;
+  int diagnostics = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -175,6 +177,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--ignore-mdc-error"))
         {
           ignore_mdc_error = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--diagnostics"))
+        {
+          diagnostics = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--unwrap"))
@@ -283,6 +290,28 @@ main (int argc, char **argv)
 
   err = gpgme_op_decrypt_ext (ctx, flags, in, out);
   result = gpgme_op_decrypt_result (ctx);
+
+  if (diagnostics)
+    {
+      gpgme_data_t diag;
+      gpgme_error_t diag_err;
+
+      gpgme_data_new (&diag);
+      diag_err = gpgme_op_getauditlog (ctx, diag, GPGME_AUDITLOG_DIAG);
+      if (diag_err)
+        {
+          fprintf (stderr, PGM ": getting diagnostics failed: %s\n",
+                   gpgme_strerror (diag_err));
+        }
+      else
+        {
+          fputs ("Begin Diagnostics:\n", stdout);
+          print_data (diag);
+          fputs ("End Diagnostics.\n", stdout);
+        }
+      gpgme_data_release (diag);
+    }
+
   if (err)
     {
       fprintf (stderr, PGM ": decrypt failed: %s\n", gpgme_strerror (err));

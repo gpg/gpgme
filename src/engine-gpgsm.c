@@ -2064,6 +2064,9 @@ gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
   if (!gpgsm || !output)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if ((flags & GPGME_AUDITLOG_DIAG))
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
 #if USE_DESCRIPTOR_PASSING
   gpgsm->output_cb.data = output;
   err = gpgsm_set_fd (gpgsm, OUTPUT_FD, 0);

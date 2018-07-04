@@ -404,7 +404,9 @@ typedef unsigned int gpgme_export_mode_t;
 
 
 /* Flags for the audit log functions.  */
+#define GPGME_AUDITLOG_DEFAULT   0
 #define GPGME_AUDITLOG_HTML      1
+#define GPGME_AUDITLOG_DIAG      2
 #define GPGME_AUDITLOG_WITH_HELP 128
 
 

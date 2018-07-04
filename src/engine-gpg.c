@@ -149,6 +149,9 @@ struct engine_gpg
 
   /* NULL or the data object fed to --override_session_key-fd.  */
   gpgme_data_t override_session_key;
+
+  /* Memory data containing diagnostics (--logger-fd) of gpg */
+  gpgme_data_t diagnostics;
 };
 
 typedef struct engine_gpg *engine_gpg_t;
@@ -452,6 +455,7 @@ gpg_release (void *engine)
     free (gpg->cmd.keyword);
 
   gpgme_data_release (gpg->override_session_key);
+  gpgme_data_release (gpg->diagnostics);
 
   free (gpg);
 }
@@ -619,6 +623,16 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 	    goto leave;
 	}
     }
+
+  rc = gpgme_data_new (&gpg->diagnostics);
+  if (rc)
+    goto leave;
+
+  rc = add_arg (gpg, "--logger-fd");
+  if (rc)
+    goto leave;
+
+  rc = add_data (gpg, gpg->diagnostics, -2, 1);
 
  leave:
   if (rc)
@@ -3243,6 +3257,52 @@ gpg_set_pinentry_mode (void *engine, gpgme_pinentry_mode_t mode)
 }
 
 
+static gpgme_error_t
+gpg_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
+{
+  engine_gpg_t gpg = engine;
+#define MYBUFLEN 4096
+  char buf[MYBUFLEN];
+  int nread;
+  int any_written = 0;
+
+  if (!(flags & GPGME_AUDITLOG_DIAG))
+    {
+      return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+
+  if (!gpg || !output)
+    {
+      return gpg_error (GPG_ERR_INV_VALUE);
+    }
+
+  if (!gpg->diagnostics)
+    {
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  gpgme_data_rewind (gpg->diagnostics);
+
+  while ((nread = gpgme_data_read (gpg->diagnostics, buf, MYBUFLEN)) > 0)
+    {
+      any_written = 1;
+      if (gpgme_data_write (output, buf, nread) == -1)
+        return gpg_error_from_syserror ();
+    }
+  if (!any_written)
+    {
+      return gpg_error (GPG_ERR_NO_DATA);
+    }
+
+  if (nread == -1)
+    return gpg_error_from_syserror ();
+
+  gpgme_data_rewind (output);
+  return 0;
+#undef MYBUFLEN
+}
+
+
 
 struct engine_ops _gpgme_engine_ops_gpg =
   {
@@ -3280,7 +3340,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_sign,
     gpg_trustlist,
     gpg_verify,
-    NULL,		/* getauditlog */
+    gpg_getauditlog,
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
