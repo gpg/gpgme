@@ -51,6 +51,9 @@ public:
         if (res.file_name) {
             res.file_name = strdup(res.file_name);
         }
+        if (res.symkey_algo) {
+            res.symkey_algo = strdup(res.symkey_algo);
+        }
         //FIXME: copying gpgme_recipient_t objects invalidates the keyid member,
         //thus we use _keyid for now (internal API)
         for (gpgme_recipient_t r = res.recipients ; r ; r = r->next) {
@@ -68,6 +71,10 @@ public:
             std::free(res.file_name);
         }
         res.file_name = 0;
+        if (res.symkey_algo) {
+            std::free(res.symkey_algo);
+        }
+        res.symkey_algo = 0;
     }
 
     _gpgme_op_decrypt_result res;
