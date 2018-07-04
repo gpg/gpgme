@@ -40,9 +40,10 @@ export class Connection{
      * Retrieves the information about the backend.
      * @param {Boolean} details (optional) If set to false, the promise will
      *  just return a connection status
-     * @returns {Promise<Object>}
-     *      {String} The property 'gpgme': Version number of gpgme
-     *      {Array<Object>} 'info' Further information about the backends.
+     * @returns {Promise<Object>} result
+     * @returns {String} result.gpgme Version number of gpgme
+     * @returns {Array<Object>} result.info Further information about the
+     * backends.
      *      Example:
      *          "protocol":     "OpenPGP",
      *          "fname":        "/usr/bin/gpg",

@@ -19,16 +19,18 @@
  *
  * This is the configuration file for building the gpgmejs-Library with webpack
  */
+/* global require, module, __dirname */
+
 const path = require('path');
 
 module.exports = {
-  entry: './unittests.js',
-  mode: 'production',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'gpgmejs_unittests.bundle.js',
-    libraryTarget: 'var',
-    libraryExport: 'default',
-    library: 'Gpgmejs_test'
-  }
+    entry: './unittests.js',
+    mode: 'production',
+    output: {
+        path: path.resolve(__dirname, 'build'),
+        filename: 'gpgmejs_unittests.bundle.js',
+        libraryTarget: 'var',
+        libraryExport: 'default',
+        library: 'Gpgmejs_test'
+    }
 };

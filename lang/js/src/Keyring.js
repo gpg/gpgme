@@ -110,10 +110,10 @@ export class GPGME_Keyring {
      * contains a secret key.
      * @returns {Promise<GPGME_Key>}
      *
-     * @async
+     *
      * TODO: getHasSecret always returns false at this moment, so this fucntion
      * still does not fully work as intended.
-     *
+     * * @async
      */
     getDefaultKey() {
         let me = this;
@@ -283,7 +283,7 @@ export class GPGME_Keyring {
      * @param {Date} expires (optional) Expiration date. If not set, expiration
      * will be set to 'never'
      *
-     * @returns{Promise<Key>}
+     * @return {Promise<Key>}
      */
     generateKey(userId, algo = 'default', expires){
         if (

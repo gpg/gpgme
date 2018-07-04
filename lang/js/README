@@ -3,50 +3,80 @@ of gnupg in browsers, with the help of nativeMessaging.
 
 Installation
 -------------
-gpgmejs uses webpack, and thus depends on nodejs for building. Webpack can be
-installed by running
-`npm install webpack webpack-cli --save-dev`.
+gpgmejs uses webpack, and thus depends on nodejs for building. All dependencies
+will be installed (in a local subdirectory) with the command `npm install`.
 
 To create a current version of the package, the command is
 `npx webpack --config webpack.conf.js`.
 If you want a more debuggable (i.e. not minified) build, just change the mode
 in webpack.conf.js.
 
-Demo WebExtension:
-As soon as a bundled webpack is in dist/
-the gpgmejs folder can just be included in the extensions tab of the browser in
-questions (extension debug mode needs to be active). For chrome, selecting the
-folder is sufficient, for firefox, the manifest.json needs to be selected.
+Demo and Test WebExtension:
+---------------------------
+
+The Demo Extension shows simple examples of the usage of gpgmejs.
+
+The BrowsertestExtension runs more intensive tests (using the mocha and chai
+frameworks). Tests from BrowserTestExtension/tests will be run against the
+gpgmejs.bundle.js itself. They aim to test the outward facing functionality
+and API.
+
+Unittests as defined in ./unittests.js will be bundled in
+gpgmejs_unittests.bundle.js, and test the separate components of gpgmejs,
+which mostly are not exported.
+
+. The file `build_extension.sh` may serve as a pointer on how to
+build and assemble these two Extensions and their dependencies. It can directly
+be used in most linux systems.
+
+The resulting folders can just be included in the extensions tab of the browser
+in questions (extension debug mode needs to be active). For chrome, selecting
+the folder is sufficient, for firefox, the manifest.json needs to be selected.
 Please note that it is just for demonstration/debug purposes!
+
+For the Extensions to successfully communicate with gpgme-json, a manifest file
+is needed.
+
+- `~/.config/chromium/NativeMessagingHosts/gpgmejson.json`
 
 In the browsers' nativeMessaging configuration folder a file 'gpgmejs.json'
 is needed, with the following content:
 
-(The path to the native app gpgme-json may need adaption)
+- For Chrome/Chromium:
+  ```
+  {
+    "name": "gpgmejson",
+    "description": "This is a test application for gpgmejs",
+    "path": "/usr/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://ExtensionIdentifier/"]
+  }
+  ```
+  The usual path for Linux is similar to:
+  `~/.config/chromium/NativeMessagingHosts/gpgmejson.json` for
+  For Windows, the path to the manifest needs to be placed in
+  `HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\gpgmejson`
 
-Chromium:
-~/.config/chromium/NativeMessagingHosts/gpgmejson.json
+  - For firefox:
+  ```
+  {
+    "name": "gpgmejson",
+    "description": "This is a test application for gpgmejs",
+    "path": "/usr/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_extensions": ["ExtensionIdentifier@temporary-addon"]
+  }
+  ```
 
-{
-  "name": "gpgmejson",
-  "description": "This is a test application for gpgmejs",
-  "path": "/usr/bin/gpgme-json",
-  "type": "stdio",
-  "allowed_origins": ["chrome-extension://ExtensionIdentifier/"]
-}
-The ExtensionIdentifier can be seen on the chrome://extensions page, and
-changes on each reinstallation. Note the slashes in allowed_origins.
+  The ExtensionIdentifier can be seen as Extension ID on the about:addons page
+  if addon-debugging is active. In firefox, the temporary addon is removed once
+  firefox exits, and the identifier will need to be changed more often.
 
+  The manifest for linux is usually placed at:
+    `~/.mozilla/native-messaging-hosts/gpgmejson.json`
 
-Firefox:
-~/.mozilla/native-messaging-hosts/gpgmejson.json
-{
-  "name": "gpgmejson",
-  "description": "This is a test application for gpgmejs",
-  "path": "/usr/bin/gpgme-json",
-  "type": "stdio",
-  "allowed_extensions": ["ExtensionIdentifier@temporary-addon"]
-}
-The ExtensionIdentifier can be seen as Extension ID on the about:addons page if
-addon-debugging is active. In firefox, the temporary addon is removed once
-firefox exits, and the identifier will need to be changed more often.
+Documentation
+-------------
+
+The documentation can be built by jsdoc. It currently uses the command
+`./node_modules/.bin/jsdoc -c jsdoc.conf`.

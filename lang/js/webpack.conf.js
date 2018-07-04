@@ -19,17 +19,18 @@
  *
  * This is the configuration file for building the gpgmejs-Library with webpack
  */
+/* global require, module, __dirname */
 const path = require('path');
 
 module.exports = {
-  entry: './src/index.js',
-  // mode: 'development',
-  mode: 'production',
-  output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'gpgmejs.bundle.js',
-    libraryTarget: 'var',
-    libraryExport: 'default',
-    library: 'Gpgmejs'
-  }
+    entry: './src/index.js',
+    // mode: 'development',
+    mode: 'production',
+    output: {
+        path: path.resolve(__dirname, 'build'),
+        filename: 'gpgmejs.bundle.js',
+        libraryTarget: 'var',
+        libraryExport: 'default',
+        library: 'Gpgmejs'
+    }
 };
