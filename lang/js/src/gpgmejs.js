@@ -254,7 +254,7 @@ export class GpgME {
         }
         return new Promise(function(resolve, reject){
             msg.post().then(function (message){
-                if (!message.info.signatures){
+                if (!message.info || !message.info.signatures){
                     reject(gpgme_error('SIG_NO_SIGS'));
                 } else {
                     let _result = collectSignatures(message.info.signatures);
