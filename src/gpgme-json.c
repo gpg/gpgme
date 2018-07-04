@@ -2125,6 +2125,7 @@ static const char hlp_keylist[] =
   "tofu:          Add KEYLIST_MODE_WITH_TOFU.\n"
   "ephemeral:     Add KEYLIST_MODE_EPHEMERAL.\n"
   "validate:      Add KEYLIST_MODE_VALIDATE.\n"
+  "locate:        Add KEYLIST_MODE_LOCATE.\n"
   "\n"
   "Response on success:\n"
   "keys:   Array of keys.\n"
@@ -2289,6 +2290,11 @@ op_keylist (cjson_t request, cjson_t result)
     goto leave;
   if (abool)
     mode |= GPGME_KEYLIST_MODE_VALIDATE;
+
+  if ((err = get_boolean_flag (request, "locate", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_LOCATE;
 
   if (!mode)
     {
