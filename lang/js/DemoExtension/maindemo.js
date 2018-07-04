@@ -98,5 +98,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         alert( errormsg.message);
                     });
             });
+        document.getElementById('searchkey').addEventListener('click',
+            function(){
+                let data = document.getElementById('inputtext').value;
+                gpgmejs.Keyring.getKeys(data, true, true).then(function(keys){
+                    if (keys.length === 1){
+                        document.getElementById(
+                            'pubkey').value = keys[0].fingerprint;
+                    } else if (keys.length > 1) {
+                        alert('The pattern was not unambigious enough for a Key. '
+                        + keys.length + ' Keys were found');
+                    } else {
+                        alert('No keys found');
+                    }
+                }, function(errormsg){
+                    alert( errormsg.message);
+                });
+            });
     });
 });

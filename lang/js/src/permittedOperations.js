@@ -188,6 +188,9 @@ export const permittedOperations = {
             'local':{
                 allowed: ['boolean']
             },
+            'locate': {
+                allowed: ['boolean']
+            },
             'sigs':{
                 allowed: ['boolean']
             },

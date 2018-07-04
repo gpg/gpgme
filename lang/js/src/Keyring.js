@@ -39,16 +39,21 @@ export class GPGME_Keyring {
      * inmediately. This allows for full synchronous use. If set to false,
      * these will initially only be available as Promises in getArmor() and
      * getHasSecret()
+     * @param {Boolean} search (optional) retrieve the Keys from servers with
+     * the method(s) defined in gnupg (e.g. WKD/HKP lookup)
      * @returns {Promise.<Array<GPGME_Key>>}
      *
      */
-    getKeys(pattern, prepare_sync){
+    getKeys(pattern, prepare_sync, search){
         return new Promise(function(resolve, reject) {
             let msg = createMessage('keylist');
             if (pattern !== undefined){
                 msg.setParameter('keys', pattern);
             }
             msg.setParameter('sigs', true);
+            if (search === true){
+                msg.setParameter('locate', true);
+            }
             msg.post().then(function(result){
                 let resultset = [];
                 let promises = [];
