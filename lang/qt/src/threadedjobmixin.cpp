@@ -53,7 +53,16 @@
 using namespace QGpgME;
 using namespace GpgME;
 
-static const unsigned int GetAuditLogFlags = Context::AuditLogWithHelp | Context::HtmlAuditLog;
+static QString markupDiagnostics(const QString &data)
+{
+    // First ensure that we don't have html in the diag.
+    QString ret = QStringLiteral("<pre>%1</pre>").arg(data.toHtmlEscaped());
+
+    return ret;
+}
+
+static const unsigned int CMSAuditLogFlags = Context::AuditLogWithHelp | Context::HtmlAuditLog;
+static const unsigned int OpenPGPAuditLogFlags = Context::DiagnosticAuditLog;
 
 QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
 {
@@ -61,11 +70,24 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
     assert(!data.isNull());
-    if ((err = ctx->lastError()) || (err = ctx->getAuditLog(data, GetAuditLogFlags))) {
-        return QString::fromLocal8Bit(err.asString());
+
+    if (ctx->protocol() == OpenPGP) {
+        if ((err = ctx->getAuditLog(data, OpenPGPAuditLogFlags))) {
+            return QString::fromLocal8Bit(err.asString());
+        }
+        const QByteArray ba = dp.data();
+        return markupDiagnostics(QString::fromUtf8(ba.data(), ba.size()));
     }
-    const QByteArray ba = dp.data();
-    return QString::fromUtf8(ba.data(), ba.size());
+
+    if (ctx->protocol() == CMS) {
+        if ((err = ctx->lastError()) || (err = ctx->getAuditLog(data, CMSAuditLogFlags))) {
+            return QString::fromLocal8Bit(err.asString());
+        }
+        const QByteArray ba = dp.data();
+        return QString::fromUtf8(ba.data(), ba.size());
+    }
+
+    return QStringLiteral("Unsupported protocol for Audit Log");
 }
 
 static QList<QByteArray> from_sl(const QStringList &sl)
