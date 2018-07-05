@@ -401,7 +401,9 @@ public:
     //
     //
     enum AuditLogFlags {
+        DefaultAuditLog = 0,
         HtmlAuditLog = 1,
+        DiagnosticAuditLog = 2,
         AuditLogWithHelp = 128
     };
     GpgME::Error startGetAuditLog(Data &output, unsigned int flags = 0);

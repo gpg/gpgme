@@ -1028,6 +1028,9 @@ unsigned int to_auditlog_flags(unsigned int flags)
     if (flags & Context::AuditLogWithHelp) {
         result |= GPGME_AUDITLOG_WITH_HELP;
     }
+    if (flags & Context::DiagnosticAuditLog) {
+        result |= GPGME_AUDITLOG_DIAG;
+    }
     return result;
 }
 
