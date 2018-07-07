@@ -32,10 +32,10 @@ if len(sys.argv) == 3:
     newfile = sys.argv[2]
 elif len(sys.argv) == 2:
     ciphertext = sys.argv[1]
-    newfile = input("Enter path and filename of file to save decrypted data to: ")
+    newfile = input("Enter path and filename to save decrypted data to: ")
 else:
     ciphertext = input("Enter path and filename of encrypted file: ")
-    newfile = input("Enter path and filename of file to save decrypted data to: ")
+    newfile = input("Enter path and filename to save decrypted data to: ")
 
 with open(ciphertext, "rb") as cfile:
     try:

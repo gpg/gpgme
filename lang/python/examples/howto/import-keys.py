@@ -3,6 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import gpg
+import os.path
+import requests
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -24,21 +28,14 @@ from __future__ import absolute_import, division, unicode_literals
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
 
-import gpg
-import os.path
-import requests
-
 print("""
 This script imports one or more public keys from the SKS keyservers.
 """)
 
-import gpg
-import requests
-
 c = gpg.Context()
 url = "https://sks-keyservers.net/pks/lookup"
 pattern = input("Enter the pattern to search for key or user IDs: ")
-payload = { "op": "get", "search": pattern }
+payload = {"op": "get", "search": pattern}
 
 r = requests.get(url, verify=True, params=payload)
 result = c.key_import(r.content)

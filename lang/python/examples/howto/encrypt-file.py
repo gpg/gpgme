@@ -3,6 +3,9 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import gpg
+import sys
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -23,9 +26,6 @@ from __future__ import absolute_import, division, unicode_literals
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
-
-import gpg
-import sys
 
 """
 Encrypts a file to a specified key.  If entering both the key and the filename
@@ -55,7 +55,7 @@ with open(filename, "rb") as f:
 with gpg.Context(armor=True) as ca:
     try:
         ciphertext, result, sign_result = ca.encrypt(text, recipients=rkey,
-                                                    sign=False)
+                                                     sign=False)
         with open("{0}.asc".format(filename), "wb") as fa:
             fa.write(ciphertext)
     except gpg.errors.InvalidRecipients as e:
@@ -64,7 +64,7 @@ with gpg.Context(armor=True) as ca:
 with gpg.Context() as cg:
     try:
         ciphertext, result, sign_result = cg.encrypt(text, recipients=rkey,
-                                                    sign=False)
+                                                     sign=False)
         with open("{0}.gpg".format(filename), "wb") as fg:
             fg.write(ciphertext)
     except gpg.errors.InvalidRecipients as e:

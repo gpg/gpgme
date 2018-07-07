@@ -3,6 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import gpg
+import sys
+from groups import group_lists
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -23,10 +27,6 @@ from __future__ import absolute_import, division, unicode_literals
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
-
-import gpg
-import sys
-from groups import group_lists
 
 """
 Uses the groups module to encrypt to multiple recipients.
@@ -83,7 +83,7 @@ if klist is not None:
         except:
             pass
     with open("{0}.asc".format(filepath), "wb") as f:
-              f.write(ciphertext)
+        f.write(ciphertext)
 else:
     pass
 

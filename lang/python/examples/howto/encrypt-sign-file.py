@@ -3,6 +3,9 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import gpg
+import sys
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -23,9 +26,6 @@ from __future__ import absolute_import, division, unicode_literals
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
-
-import gpg
-import sys
 
 """
 Signs and encrypts a file to a specified key.  If entering both the key and the
@@ -58,13 +58,13 @@ with open(filename, "rb") as f:
 with gpg.Context(armor=True) as ca:
     ciphertext, result, sign_result = ca.encrypt(text, recipients=rkey,
                                                  always_trust=True,
-                                                     add_encrypt_to=True)
+                                                 add_encrypt_to=True)
     with open("{0}.asc".format(filename), "wb") as fa:
         fa.write(ciphertext)
 
 with gpg.Context() as cg:
     ciphertext, result, sign_result = cg.encrypt(text, recipients=rkey,
                                                  always_trust=True,
-                                                     add_encrypt_to=True)
+                                                 add_encrypt_to=True)
     with open("{0}.gpg".format(filename), "wb") as fg:
         fg.write(ciphertext)

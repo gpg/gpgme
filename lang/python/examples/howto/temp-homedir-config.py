@@ -3,6 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import os
+import os.path
+import sys
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -23,10 +27,6 @@ from __future__ import absolute_import, division, unicode_literals
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
 # <http://www.gnu.org/licenses/>.
-
-import os
-import os.path
-import sys
 
 intro = """
 This script creates a temporary directory to use as a homedir for
@@ -54,6 +54,13 @@ message telling you to specify a new directory name.  There is no
 default directory name.
 """
 
+ciphers256 = "TWOFISH CAMELLIA256 AES256"
+ciphers192 = "CAMELLIA192 AES192"
+ciphers128 = "CAMELLIA128 AES"
+ciphersBad = "BLOWFISH IDEA CAST5 3DES"
+digests = "SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1"
+compress = "ZLIB BZIP2 ZIP Uncompressed"
+
 gpgconf = """# gpg.conf settings for key generation:
 expert
 allow-freeform-uid
@@ -63,11 +70,11 @@ tofu-default-policy unknown
 enable-large-rsa
 enable-dsa2
 cert-digest-algo SHA512
-default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
-personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
-personal-digest-preferences SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1
-personal-compress-preferences ZLIB BZIP2 ZIP Uncompressed
-"""
+default-preference-list {0} {1} {2} {3} {4} {5}
+personal-cipher-preferences {0} {1} {2} {3}
+personal-digest-preferences {4}
+personal-compress-preferences {5}
+""".format(ciphers256, ciphers192, ciphers128, ciphersBad, digests, compress)
 
 agentconf = """# gpg-agent.conf settings for key generation:
 default-cache-ttl 300
