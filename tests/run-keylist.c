@@ -47,6 +47,7 @@ show_usage (int ex)
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
          "  --secret         list only secret keys\n"
+         "  --with-secret    list pubkeys with secret info filled\n"
          "  --local          use GPGME_KEYLIST_MODE_LOCAL\n"
          "  --extern         use GPGME_KEYLIST_MODE_EXTERN\n"
          "  --sigs           use GPGME_KEYLIST_MODE_SIGS\n"
@@ -171,6 +172,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--validate"))
         {
           mode |= GPGME_KEYLIST_MODE_VALIDATE;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--with-secret"))
+        {
+          mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--import"))
