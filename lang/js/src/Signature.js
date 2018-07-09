@@ -67,7 +67,6 @@ export function createSignature(sigObject){
             }
         }
     }
-    console.log('sig created');
     return new GPGME_Signature(sigObject);
 }
 
@@ -114,7 +113,7 @@ class GPGME_Signature {
      * additional information
      */
     get valid() {
-        if (this._rawSigObject.valid === true){
+        if (this._rawSigObject.summary.valid === true){
             return true;
         } else {
             return false;
