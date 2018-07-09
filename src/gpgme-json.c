@@ -2117,7 +2117,8 @@ static const char hlp_keylist[] =
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "\n"
   "Optional boolean flags (default is false):\n"
-  "secret:        List secret keys.\n"
+  "secret:        List only secret keys.\n"
+  "with-secret:   Add KEYLIST_MODE_WITH_SECRET.\n"
   "extern:        Add KEYLIST_MODE_EXTERN.\n"
   "local:         Add KEYLIST_MODE_LOCAL. (default mode).\n"
   "sigs:          Add KEYLIST_MODE_SIGS.\n"
@@ -2242,6 +2243,7 @@ op_keylist (cjson_t request, cjson_t result)
   gpgme_protocol_t protocol;
   char **patterns = NULL;
   int abool;
+  int secret_only = 0;
   gpgme_keylist_mode_t mode = 0;
   gpgme_key_t key = NULL;
   cjson_t keyarray = xjson_CreateArray ();
@@ -2254,8 +2256,14 @@ op_keylist (cjson_t request, cjson_t result)
   if ((err = get_boolean_flag (request, "secret", 0, &abool)))
     goto leave;
   if (abool)
+    {
+      mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
+      secret_only = 1;
+    }
+  if ((err = get_boolean_flag (request, "with-secret", 0, &abool)))
+    goto leave;
+  if (abool)
     mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
-
   if ((err = get_boolean_flag (request, "extern", 0, &abool)))
     goto leave;
   if (abool)
@@ -2309,8 +2317,7 @@ op_keylist (cjson_t request, cjson_t result)
   gpgme_set_keylist_mode (ctx, mode);
 
   err = gpgme_op_keylist_ext_start (ctx, (const char **) patterns,
-                                    (mode & GPGME_KEYLIST_MODE_WITH_SECRET),
-                                    0);
+                                    secret_only, 0);
   if (err)
     {
       gpg_error_object (result, err, "Error listing keys: %s",
