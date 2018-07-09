@@ -2763,6 +2763,8 @@ The @code{GPGME_KEYLIST_MODE_LOCAL} symbol specifies that the local
 keyring should be searched for keys in the keylisting operation.  This
 is the default.
 
+Using only this option results in a @code{--list-keys}.
+
 @item GPGME_KEYLIST_MODE_EXTERN
 The @code{GPGME_KEYLIST_MODE_EXTERN} symbol specifies that an external
 source should be searched for keys in the keylisting operation.  The
@@ -2770,10 +2772,14 @@ type of external source is dependent on the crypto engine used and
 whether it is combined with @code{GPGME_KEYLIST_MODE_LOCAL}.  For
 example, it can be a remote keyserver or LDAP certificate server.
 
+Using only this option results in a @code{--search-keys} for
+@code{GPGME_PROTOCOL_OpenPGP} and something similar to
+@code{--list-external-keys} for @code{GPGME_PROTOCOL_CMS}.
+
 @item GPGME_KEYLIST_MODE_LOCATE
 This is a shortcut for the combination of
-@code{GPGME_KEYLIST_MODE_LOCAL} and @code{GPGME_KEYLIST_MODE_EXTERN}
-and convenient when the --locate-key feature of OpenPGP is desired.
+@code{GPGME_KEYLIST_MODE_LOCAL} and @code{GPGME_KEYLIST_MODE_EXTERN}, which
+results in a @code{--locate-keys} for @code{GPGME_PROTOCOL_OpenPGP}.
 
 @item GPGME_KEYLIST_MODE_SIGS
 The @code{GPGME_KEYLIST_MODE_SIGS} symbol specifies that the key
