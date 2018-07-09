@@ -133,7 +133,7 @@ describe('Encryption', function () {
         });
     }).timeout(5000);
 
-    it('Overly large message ( > 65MB) is rejected', function (done) {
+    it('Overly large message ( > 64MB) is rejected', function (done) {
         let prm = Gpgmejs.init();
         prm.then(function (context) {
             context.encrypt(
@@ -142,10 +142,11 @@ describe('Encryption', function () {
                 expect(answer).to.be.undefined;
             }, function(error){
                 expect(error).to.be.an.instanceof(Error);
-                // expect(error.code).to.equal('GNUPG_ERROR');
                 // TODO: there is a 64 MB hard limit at least in chrome at:
                 // chromium//extensions/renderer/messaging_util.cc:
                 // kMaxMessageLength
+                // The error will be a browser error, not from gnupg or from
+                // this library
                 done();
             });
         });

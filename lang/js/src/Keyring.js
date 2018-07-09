@@ -56,28 +56,46 @@ export class GPGME_Keyring {
             }
             msg.post().then(function(result){
                 let resultset = [];
-                let promises = [];
                 if (result.keys.length === 0){
                     resolve([]);
                 } else {
-                    for (let i=0; i< result.keys.length; i++){
-                        let k = createKey(result.keys[i].fingerprint);
-                        k.setKeyData(result.keys[i]);
-                        if (prepare_sync === true){
-                            promises.push(k.getArmor());
-                            promises.push(k.getHasSecret());
-                        }
-                        resultset.push(k);
-                    }
-                    if (promises.length > 0) {
-                        Promise.all(promises).then(function() {
-                            resolve(resultset);
-                        }, function(error){
-                            reject(error);
-                        });
+                    let secondrequest;
+                    if (prepare_sync === true) {
+                        secondrequest = function() {
+                            msg.setParameter('secret', true);
+                            return msg.post();
+                        };
                     } else {
-                        resolve(resultset);
+                        secondrequest = function() {
+                            return Promise.resolve(true);
+                        };
                     }
+                    secondrequest().then(function(answer) {
+                        for (let i=0; i < result.keys.length; i++){
+                            if (prepare_sync === true){
+                                result.keys[i].hasSecret = false;
+                                if (answer && answer.keys) {
+                                    for (let j=0; j < answer.keys.length; j++ ){
+                                        if (result.keys[i].fingerprint ===
+                                            answer.keys[j].fingerprint
+                                        ) {
+                                            if (answer.keys[j].secret === true){
+                                                result.keys[i].hasSecret = true;
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    // TODO getArmor() to be used in sync
+                                }
+                            }
+                            let k = createKey(result.keys[i].fingerprint);
+                            k.setKeyData(result.keys[i]);
+                            resultset.push(k);
+                        }
+                        resolve(resultset);
+                    }, function(error){
+                        reject(error);
+                    });
                 }
             });
         });
