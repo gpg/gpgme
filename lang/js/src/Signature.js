@@ -20,17 +20,16 @@
  * Author(s):
  *     Maximilian Krambach <mkrambach@intevation.de>
  */
-
-/**
- * Validates a signature object and returns
- * @param {Object} sigObject Object as returned by gpgme-json. The definition
- * of the expected values are to be found in the constants 'expKeys', 'expSum',
- * 'expNote' in this file.
- * @returns {GPGME_Signature} Signature Object
- */
-
 import { gpgme_error } from './Errors';
 
+/**
+ * Validates an object containing a signature, as sent by the nativeMessaging
+ * interface
+ * @param {Object} sigObject Object as returned by gpgme-json. The definition
+ * of the expected values are to be found in {@link expKeys}, {@link expSum},
+ * {@link expNote}.
+ * @returns {GPGME_Signature|GPGME_Error} Signature Object
+ */
 export function createSignature(sigObject){
     if (
         typeof(sigObject) !=='object' ||
@@ -72,18 +71,20 @@ export function createSignature(sigObject){
 
 
 /**
- * Representing the details of a signature. It is supposed to be read-only. The
- * full details as given by gpgme-json can be accessed from the _rawSigObject.
- * )
+ * Representing the details of a signature. The full details as given by
+ * gpgme-json can be read from the _rawSigObject.
+ *
+ * Note to reviewers: This class should be read only except via
+ * {@link createSignature}
+ * @protected
+ * @class
  */
 class GPGME_Signature {
+
     constructor(sigObject){
         this._rawSigObject = sigObject;
     }
 
-    /**
-     * The signatures' fingerprint
-     */
     get fingerprint(){
         return this._rawSigObject.fingerprint;
     }
@@ -105,7 +106,7 @@ class GPGME_Signature {
      * @returns {Date}
      */
     get timestamp(){
-        return new Date(this._rawSigObject.timestamp* 1000);
+        return new Date(this._rawSigObject.timestamp * 1000);
     }
 
     /**

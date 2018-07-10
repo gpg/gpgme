@@ -1,10 +1,17 @@
-gpgmejs, as contained in this directory, is a javascript library for direct use
+gpgme.js, as contained in this directory, is a javascript library for direct use
 of gnupg in browsers, with the help of nativeMessaging.
 
-Installation
--------------
-gpgmejs uses webpack, and thus depends on nodejs for building. All dependencies
-will be installed (in a local subdirectory) with the command `npm install`.
+Prerequisites:
+--------------
+gpgme.js will make use of the application gpgme-json, which is distributed with
+gpgme. Gpgme-json needs to be installed; it will further need to accept the
+browser extension in the manifest file.
+
+Building gpgme.js
+-----------------
+gpgme.js uses webpack, and thus depends on nodejs for building. All
+dependencies will be installed (in a local subdirectory) with the command
+`npm install`.
 
 To create a current version of the package, the command is
 `npx webpack --config webpack.conf.js`.
@@ -14,7 +21,7 @@ in webpack.conf.js.
 Demo and Test WebExtension:
 ---------------------------
 
-The Demo Extension shows simple examples of the usage of gpgmejs.
+The Demo Extension shows simple examples of the usage of gpgme.js.
 
 The BrowsertestExtension runs more intensive tests (using the mocha and chai
 frameworks). Tests from BrowserTestExtension/tests will be run against the
@@ -22,11 +29,11 @@ gpgmejs.bundle.js itself. They aim to test the outward facing functionality
 and API.
 
 Unittests as defined in ./unittests.js will be bundled in
-gpgmejs_unittests.bundle.js, and test the separate components of gpgmejs,
+gpgmejs_unittests.bundle.js, and test the separate components of gpgme.js,
 which mostly are not exported.
 
-. The file `build_extension.sh` may serve as a pointer on how to
-build and assemble these two Extensions and their dependencies. It can directly
+The file `build_extension.sh` may serve as a pointer on how to build and
+assemble these two Extensions and their dependencies. It can directly
 be used in most linux systems.
 
 The resulting folders can just be included in the extensions tab of the browser
@@ -46,7 +53,7 @@ is needed, with the following content:
   ```
   {
     "name": "gpgmejson",
-    "description": "This is a test application for gpgmejs",
+    "description": "This is a test application for gpgme.js",
     "path": "/usr/bin/gpgme-json",
     "type": "stdio",
     "allowed_origins": ["chrome-extension://ExtensionIdentifier/"]
@@ -61,7 +68,7 @@ is needed, with the following content:
   ```
   {
     "name": "gpgmejson",
-    "description": "This is a test application for gpgmejs",
+    "description": "This is a test application for gpgme.js",
     "path": "/usr/bin/gpgme-json",
     "type": "stdio",
     "allowed_extensions": ["ExtensionIdentifier@temporary-addon"]

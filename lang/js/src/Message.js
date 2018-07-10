@@ -25,6 +25,12 @@ import { permittedOperations } from './permittedOperations';
 import { gpgme_error } from './Errors';
 import { Connection } from './Connection';
 
+/**
+ * Initializes a message for gnupg, validating the message's purpose with
+ *   {@link permittedOperations} first
+ * @param {String} operation
+ * @returns {GPGME_Message|GPGME_Error} The Message object
+ */
 export function createMessage(operation){
     if (typeof(operation) !== 'string'){
         return gpgme_error('PARAM_WRONG');
@@ -37,12 +43,13 @@ export function createMessage(operation){
 }
 
 /**
- * Prepares a communication request. It checks operations and parameters in
- * ./permittedOperations.
- * @param {String} operation
+ * A Message collects, validates and handles all information required to
+ * successfully establish a meaningful communication with gpgme-json via
+ * {@link Connection.post}. The definition on which communication is available
+ * can be found in {@link permittedOperations}.
+ * @class
  */
 export class GPGME_Message {
-    //TODO getter
 
     constructor(operation){
         this.operation = operation;
@@ -63,9 +70,13 @@ export class GPGME_Message {
     }
 
     /**
-     * Set the maximum size of responses from gpgme in bytes. Values allowed
-     * range from 10kB to 1MB. The lower limit is arbitrary, the upper limit
-     * fixed by browsers' nativeMessaging specifications
+     * The maximum size of responses from gpgme in bytes. As of July 2018,
+     * most browsers will only accept answers up to 1 MB of size. Everything
+     * above that threshold will not pass through nativeMessaging; answers that
+     * are larger need to be sent in parts. The lower limit is set to 10 KB.
+     * Messages smaller than the threshold will not encounter problems, larger
+     * messages will be received in chunks.
+     * If the value is not explicitly specified, 1023 KB is used.
      */
     set chunksize(value){
         if (
@@ -85,8 +96,9 @@ export class GPGME_Message {
     }
 
     /**
-     * If expect is set to 'base64', the response is expected to be base64
-     * encoded binary
+     * Expect indicates which format data is expected to be in. It currently
+     * only supports 'base64', indicating that the response data from gnupg are
+     * expected to be base64 encoded binary
      */
     set expect(value){
         if (value ==='base64'){
@@ -103,13 +115,13 @@ export class GPGME_Message {
 
 
     /**
-     * Sets a parameter for the message. Note that the operation has to be set
-     * first, to be able to check if the parameter is permittted
+     * Sets a parameter for the message. It validates with
+     *      {@link permittedOperations}
      * @param {String} param Parameter to set
-     * @param {any} value Value to set //TODO: Some type checking
+     * @param {any} value Value to set
      * @returns {Boolean} If the parameter was set successfully
      */
-    setParameter(param,value){
+    setParameter( param,value ){
         if (!param || typeof(param) !== 'string'){
             return gpgme_error('PARAM_WRONG');
         }
@@ -125,6 +137,7 @@ export class GPGME_Message {
         } else {
             return gpgme_error('PARAM_WRONG');
         }
+        // check incoming value for correctness
         let checktype = function(val){
             switch(typeof(val)){
             case 'string':
@@ -187,9 +200,9 @@ export class GPGME_Message {
     }
 
     /**
-     * Check if the message has the minimum requirements to be sent, according
-     * to the definitions in permittedOperations
-     * @returns {Boolean}
+     * Check if the message has the minimum requirements to be sent, that is
+     * all 'required' parameters according to {@link permittedOperations}.
+     * @returns {Boolean} true if message is complete.
      */
     get isComplete(){
         if (!this._msg.op){
@@ -222,13 +235,18 @@ export class GPGME_Message {
 
     }
 
+    /**
+     * Sends the Message via nativeMessaging and resolves with the answer.
+     * @returns {Promise<Object|GPGME_Error>}
+     * @async
+     */
     post(){
         let me = this;
         return new Promise(function(resolve, reject) {
             if (me.isComplete === true) {
                 let conn  = new Connection;
                 if (me._msg.chunksize === undefined){
-                    me._msg.chunksize = 1023*1024;
+                    me._msg.chunksize = me.chunksize;
                 }
                 conn.post(me).then(function(response) {
                     resolve(response);

@@ -22,27 +22,30 @@
  */
 
 /**
-  * Definition of the possible interactions with gpgme-json.
-  * operation: <Object>
-      required: Array<Object>
-            <String> name The name of the property
-            allowed: Array of allowed types. Currently accepted values:
-                ['number', 'string', 'boolean', 'Uint8Array']
-            array_allowed: Boolean. If the value can be an array of the above
-            allowed_data: <Array> If present, restricts to the given value
-      optional: Array<Object>
-            see 'required', with these parameters not being mandatory for a
-            complete message
-      pinentry: boolean If a pinentry dialog is expected, and a timeout of
-                5000 ms would be too short
-      answer: <Object>
-          type: <String< The content type of answer expected
-          data: <Object>
-            the properties expected and their type, eg: {'data':'string'}
-      }
-  }
-*/
+ * @typedef {Object} messageProperty
+ * A message Property is defined by it's key.
+ * @property {Array<String>} allowed Array of allowed types.
+ * Currently accepted values are 'number', 'string', 'boolean'.
+ * @property {Boolean} array_allowed If the value can be an array of types
+ *      defined in allowed
+ * @property {<Array>} allowed_data (optional) restricts to the given values
+  */
 
+/**
+ * Definition of the possible interactions with gpgme-json.
+ * @param {Object} operation Each operation is named by a key and contains
+ * the following properties:
+ * @property {messageProperty} required An object with all required parameters
+ * @property {messageProperty} optional An object with all optional parameters
+ * @property {Boolean} pinentry (optional) If true, a password dialog is
+ *      expected, thus a connection tuimeout is not advisable
+ * @property {Object} answer The definition on what to expect as answer, if the
+ *      answer is not an error
+ * @property {Array<String>} answer.type the type(s) as reported by gpgme-json.
+ * @property {Object} answer.data key-value combinations of expected properties
+ * of an answer and their type ('boolean', 'string', object)
+  @const
+*/
 export const permittedOperations = {
     encrypt: {
         pinentry: true, //TODO only with signing_keys

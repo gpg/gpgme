@@ -26,11 +26,11 @@ import { GPGME_Key } from './Key';
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
- * from Key objects (openpgp Keys or GPGME_Keys are both expected)
- * @param {Object |Array<Object>| String|Array<String>} input
- * @returns {Array<String>} Array of fingerprints.
+ * from Key objects (openpgp Keys or GPGME_Keys are both accepted).
+ *
+ * @param {Object | Array<Object> | String | Array<String>} input
+ * @returns {Array<String>} Array of fingerprints, or an empty array
  */
-
 export function toKeyIdArray(input){
     if (!input){
         return [];
@@ -44,6 +44,8 @@ export function toKeyIdArray(input){
             if (isFingerprint(input[i]) === true){
                 result.push(input[i]);
             } else {
+                // MSG_NOT_A_FPR is just a console warning if warning enabled
+                // in src/Errors.js
                 gpgme_error('MSG_NOT_A_FPR');
             }
         } else if (typeof(input[i]) === 'object'){
@@ -71,9 +73,11 @@ export function toKeyIdArray(input){
 }
 
 /**
- * check if values are valid hexadecimal values of a specified length
- * @param {*} key input value.
+ * Check if values are valid hexadecimal values of a specified length
+ * @param {String} key input value.
  * @param {int} len the expected length of the value
+ * @returns {Boolean} true if value passes test
+ * @private
  */
 function hextest(key, len){
     if (!key || typeof(key) !== 'string'){
@@ -87,15 +91,21 @@ function hextest(key, len){
 }
 
 /**
- * check if the input is a valid Hex string with a length of 40
+ * check if the input is a valid Fingerprint
+ *      (Hex string with a length of 40 characters)
+ * @param {String} value to check
+ * @returns {Boolean} true if value passes test
  */
-export function isFingerprint(string){
-    return hextest(string, 40);
+export function isFingerprint(value){
+    return hextest(value, 40);
 }
 
 /**
- *  check if the input is a valid Hex string with a length of 16
+ * check if the input is a valid gnupg long ID (Hex string with a length of 16
+ * characters)
+ * @param {String} value to check
+ * @returns {Boolean} true if value passes test
  */
-export function isLongId(string){
-    return hextest(string, 16);
+export function isLongId(value){
+    return hextest(value, 16);
 }

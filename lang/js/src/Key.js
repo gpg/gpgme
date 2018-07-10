@@ -26,8 +26,9 @@ import { gpgme_error } from './Errors';
 import { createMessage } from './Message';
 
 /**
- * Validates the fingerprint.
+ * Validates the given fingerprint and creates a new {@link GPGME_Key}
  * @param {String} fingerprint
+ * @returns {GPGME_Key|GPGME_Error}
  */
 export function createKey(fingerprint){
     if (!isFingerprint(fingerprint)){
@@ -37,12 +38,13 @@ export function createKey(fingerprint){
 }
 
 /**
- * Representing the Keys as stored in GPG
+ * Represents the Keys as stored in the gnupg backend
  * It allows to query almost all information defined in gpgme Key Objects
- * Refer to validKeyProperties for available information, and the gpgme
+ * Refer to {@link validKeyProperties} for available information, and the gpgme
  * documentation on their meaning
  * (https://www.gnupg.org/documentation/manuals/gpgme/Key-objects.html)
  *
+ * @class
  */
 export class GPGME_Key {
 
@@ -62,6 +64,9 @@ export class GPGME_Key {
         }
     }
 
+    /**
+     * @returns {String} The fingerprint defining this Key
+     */
     get fingerprint(){
         if (!this._data || !this._data.fingerprint){
             return gpgme_error('KEY_INVALID');
@@ -70,11 +75,11 @@ export class GPGME_Key {
     }
 
     /**
-     *
-     * @param {Object} data Bulk set data for this key, with the Object as sent
+     * @param {Object} data Bulk set the data for this key, with an Object sent
      * by gpgme-json.
-     * @returns {GPGME_Key|GPGME_Error} The Key object itself after values have
-     * been set
+     * @returns {GPGME_Key|GPGME_Error} Itself after values have been set, an
+     * error if something went wrong
+     * @private
      */
     setKeyData(data){
         if (this._data === undefined) {
@@ -126,12 +131,17 @@ export class GPGME_Key {
     }
 
     /**
-     * Query any property of the Key list
-     * @param {String} property Key property to be retreived
-     * @param {*} cached (optional) if false, the data will be directly queried
-     * from gnupg.
-     *  @returns {*|Promise<*>} the value, or if not cached, a Promise
-     * resolving on the value
+     * Query any property of the Key listed in {@link validKeyProperties}
+     * @param {String} property property to be retreived
+     * @param {Boolean} cached (optional) if false, the data will be directly
+     * queried from gnupg, and the operation will be asynchronous. Else, the
+     * data will be fetched from the state of the initialization of the Key.
+     * The cached mode may contain outdated information, but can be used as
+     * synchronous operation, where the backend is not expected to change Keys
+     * during a session. The key still can be reloaded by invoking
+     * {@link refreshKey}.
+     * @returns {*|Promise<*>} the value (Boolean, String, Array, Object).
+     * If 'cached' is true, the value will be resolved as a Promise.
      */
     get(property, cached=true) {
         if (cached === false) {
@@ -164,7 +174,12 @@ export class GPGME_Key {
     }
 
     /**
-     * Reloads the Key from gnupg
+     * Reloads the Key information from gnupg. This is only useful if you use
+     * the GPGME_Keys cached. Note that this is a performance hungry operation.
+     * If you desire more than a few refreshs, it may be advisable to run
+     * {@link Keyring.getKeys} instead.
+     * @returns {Promise<GPGME_Key|GPGME_Error>}
+     * @async
      */
     refreshKey() {
         let me = this;
@@ -178,7 +193,12 @@ export class GPGME_Key {
             msg.post().then(function(result){
                 if (result.keys.length === 1){
                     me.setKeyData(result.keys[0]);
-                    resolve(me);
+                    me.getHasSecret().then(function(){
+                        //TODO retrieve armored Key
+                        resolve(me);
+                    }, function(error){
+                        reject(error);
+                    });
                 } else {
                     reject(gpgme_error('KEY_NOKEY'));
                 }
@@ -189,9 +209,9 @@ export class GPGME_Key {
     }
 
     /**
-     * Query the armored block of the non- secret parts of the Key directly
-     * from gpg.
-     * @returns {Promise<String>}
+     * Query the armored block of the Key directly from gnupg. Please note that
+     * this will not get you any export of the secret/private parts of a Key
+     * @returns {Promise<String|GPGME_Error>}
      * @async
      */
     getArmor(){
@@ -213,9 +233,12 @@ export class GPGME_Key {
     }
 
     /**
-     * Find out if the Key includes a secret part
-     * @returns {Promise<Boolean>}
-     *
+     * Find out if the Key includes a secret part. Note that this is a rather
+     * nonperformant operation, as it needs to query gnupg twice. If you want
+     * this inforrmation about more than a few Keys, it may be advisable to run
+     * {@link Keyring.getKeys} instead.
+     * @returns {Promise<Boolean|GPGME_Error>} True if a secret/private Key is
+     * available in the gnupg Keyring
      * @async
      */
     getHasSecret(){
@@ -253,25 +276,30 @@ export class GPGME_Key {
      */
 
     /**
-     * @returns {String} The armored public Key block
+     * Property for the export of armored Key. If the armored Key is not
+     * cached, it returns an {@link GPGME_Error} with code 'KEY_NO_INIT'.
+     * Running {@link refreshKey} may help in this case.
+     * @returns {String|GPGME_Error} The armored public Key block.
      */
     get armored(){
         return this.get('armored', true);
     }
 
     /**
-     * @returns {Boolean} If the key is considered a "private Key",
-     * i.e. owns a secret subkey.
+     * Property indicating if the Key possesses a private/secret part. If this
+     * information is not yet cached, it returns an {@link GPGME_Error} with
+     * code 'KEY_NO_INIT'.  Running {@link refreshKey} may help in this case.
+     * @returns {Boolean} If the Key has a secret subkey.
      */
     get hasSecret(){
         return this.get('hasSecret', true);
     }
 
     /**
-     * Deletes the public Key from the GPG Keyring. Note that a deletion of a
+     * Deletes the (public) Key from the GPG Keyring. Note that a deletion of a
      * secret key is not supported by the native backend.
-     * @returns {Promise<Boolean>} Success if key was deleted, rejects with a
-     * GPG error otherwise
+     * @returns {Promise<Boolean|GPGME_Error>} Success if key was deleted,
+     * rejects with a GPG error otherwise.
      */
     delete(){
         let me = this;
@@ -291,10 +319,17 @@ export class GPGME_Key {
 }
 
 /**
- * The subkeys of a Key. Currently, they cannot be refreshed separately
+ * Representing a subkey of a Key.
+ * @class
+ * @protected
  */
 class GPGME_Subkey {
 
+    /**
+     * Initializes with the json data sent by gpgme-json
+     * @param {Object} data
+     * @private
+     */
     constructor(data){
         let keys = Object.keys(data);
         for (let i=0; i< keys.length; i++) {
@@ -302,6 +337,13 @@ class GPGME_Subkey {
         }
     }
 
+    /**
+     * Validates a subkey property against {@link validSubKeyProperties} and
+     * sets it if validation is successful
+     * @param {String} property
+     * @param {*} value
+     * @param private
+     */
     setProperty(property, value){
         if (!this._data){
             this._data = {};
@@ -318,10 +360,9 @@ class GPGME_Subkey {
     }
 
     /**
-     *
+     * Fetches any information about this subkey
      * @param {String} property Information to request
-     * @returns {String | Number}
-     * TODO: date properties are numbers with Date in seconds
+     * @returns {String | Number | Date}
      */
     get(property) {
         if (this._data.hasOwnProperty(property)){
@@ -330,15 +371,31 @@ class GPGME_Subkey {
     }
 }
 
+/**
+ * Representing user attributes associated with a Key or subkey
+ * @class
+ * @protected
+ */
 class GPGME_UserId {
 
+    /**
+     * Initializes with the json data sent by gpgme-json
+     * @param {Object} data
+     * @private
+     */
     constructor(data){
         let keys = Object.keys(data);
         for (let i=0; i< keys.length; i++) {
             this.setProperty(keys[i], data[keys[i]]);
         }
     }
-
+    /**
+     * Validates a subkey property against {@link validUserIdProperties} and
+     * sets it if validation is successful
+     * @param {String} property
+     * @param {*} value
+     * @param private
+     */
     setProperty(property, value){
         if (!this._data){
             this._data = {};
@@ -356,10 +413,9 @@ class GPGME_UserId {
     }
 
     /**
-     *
+     * Fetches information about the user
      * @param {String} property Information to request
      * @returns {String | Number}
-     * TODO: date properties are numbers with Date in seconds
      */
     get(property) {
         if (this._data.hasOwnProperty(property)){
@@ -368,6 +424,13 @@ class GPGME_UserId {
     }
 }
 
+/**
+ * Validation definition for userIds. Each valid userId property is represented
+ * as a key- Value pair, with their value being a validation function to check
+ * against
+ * @protected
+ * @const
+ */
 const validUserIdProperties = {
     'revoked': function(value){
         return typeof(value) === 'boolean';
@@ -419,6 +482,12 @@ const validUserIdProperties = {
     }
 };
 
+/**
+ * Validation definition for subKeys. Each valid userId property is represented
+ * as a key-value pair, with the value being a validation function
+ * @protected
+ * @const
+ */
 const validSubKeyProperties = {
     'invalid': function(value){
         return typeof(value) === 'boolean';
@@ -471,8 +540,14 @@ const validSubKeyProperties = {
         return (Number.isInteger(value) && value > 0);
     }
 };
+
+/**
+ * Validation definition for Keys. Each valid Key property is represented
+ * as a key-value pair, with their value being a validation function
+ * @protected
+ * @const
+ */
 const validKeyProperties = {
-    //TODO better validation?
     'fingerprint': function(value){
         return isFingerprint(value);
     },

@@ -27,24 +27,30 @@ import {createKey} from './Key';
 import { isFingerprint } from './Helpers';
 import { gpgme_error } from './Errors';
 
+/**
+ * This class offers access to the gnupg keyring
+ */
 export class GPGME_Keyring {
     constructor(){
     }
 
     /**
-     * @param {String} pattern (optional) pattern A pattern to search for,
-     * in userIds or KeyIds
-     * @param {Boolean} prepare_sync (optional, default true) if set to true,
-     * Key.armor and Key.hasSecret will be called, so they can be used
-     * inmediately. This allows for full synchronous use. If set to false,
-     * these will initially only be available as Promises in getArmor() and
-     * getHasSecret()
-     * @param {Boolean} search (optional) retrieve the Keys from servers with
-     * the method(s) defined in gnupg (e.g. WKD/HKP lookup)
-     * @returns {Promise.<Array<GPGME_Key>>}
+     * Queries Keys (all Keys or a subset) from gnupg.
      *
+     * @param {String | Array<String>} pattern (optional) A pattern to search
+     * for in userIds or KeyIds.
+     * @param {Boolean} prepare_sync (optional) if set to true, the 'hasSecret'
+     * and 'armored' properties will be fetched for the Keys as well. These
+     * require additional calls to gnupg, resulting in a performance hungry
+     * operation. Calling them here enables direct, synchronous use of these
+     * properties for all keys, without having to resort to a refresh() first.
+     * @param {Boolean} search (optional) retrieve Keys from external servers
+     * with the method(s) defined in gnupg (e.g. WKD/HKP lookup)
+     * @returns {Promise.<Array<GPGME_Key>|GPGME_Error>}
+     * @static
+     * @async
      */
-    getKeys(pattern, prepare_sync, search){
+    getKeys(pattern, prepare_sync=false, search=false){
         return new Promise(function(resolve, reject) {
             let msg = createMessage('keylist');
             if (pattern !== undefined){
@@ -102,10 +108,15 @@ export class GPGME_Keyring {
     }
 
     /**
-     * Fetches the armored public Key blocks for all Keys matchin the pattern
-     * (if no pattern is given, fetches all known to gnupg)
-     * @param {String|Array<String>} pattern (optional)
-     * @returns {Promise<String>} Armored Key blocks
+     * Fetches the armored public Key blocks for all Keys matching the pattern
+     * (if no pattern is given, fetches all keys known to gnupg). Note that the
+     * result may be one big armored block, instead of several smaller armored
+     * blocks
+     * @param {String|Array<String>} pattern (optional) The Pattern to search
+     * for
+     * @returns {Promise<String|GPGME_Error>} Armored Key blocks
+     * @static
+     * @async
      */
     getKeysArmored(pattern) {
         return new Promise(function(resolve, reject) {
@@ -123,15 +134,14 @@ export class GPGME_Keyring {
     }
 
     /**
-     * Returns the Key to be used by default for signing operations,
-     * looking up the gpg configuration, or returning the first key that
-     * contains a secret key.
-     * @returns {Promise<GPGME_Key>}
+     * Returns the Key used by default in gnupg.
+     * (a.k.a. 'primary Key or 'main key').
+     * It looks up the gpg configuration if set, or the first key that contains
+     * a secret key.
      *
-     *
-     * TODO: getHasSecret always returns false at this moment, so this fucntion
-     * still does not fully work as intended.
-     * * @async
+     * @returns {Promise<GPGME_Key|GPGME_Error>}
+     * @async
+     * @static
      */
     getDefaultKey() {
         let me = this;
@@ -177,30 +187,40 @@ export class GPGME_Keyring {
     }
 
     /**
+     * @typedef {Object} importResult The result of a Key update
+     * @property {Object} summary Numerical summary of the result. See the
+     * feedbackValues variable for available Keys values and the gnupg
+     * documentation.
+     * https://www.gnupg.org/documentation/manuals/gpgme/Importing-Keys.html
+     * for details on their meaning.
+     * @property {Array<importedKeyResult>} Keys Array of Object containing
+     * GPGME_Keys with additional import information
      *
+     */
+
+    /**
+     * @typedef {Object} importedKeyResult
+     * @property {GPGME_Key} key The resulting key
+     * @property {String} status:
+     *  'nochange' if the Key was not changed,
+     *  'newkey' if the Key was imported in gpg, and did not exist previously,
+     *  'change' if the key existed, but details were updated. For details,
+     *    Key.changes is available.
+     * @property {Boolean} changes.userId Changes in userIds
+     * @property {Boolean} changes.signature Changes in signatures
+     * @property {Boolean} changes.subkey Changes in subkeys
+     */
+
+    /**
+     * Import an armored Key block into gnupg. Note that this currently will
+     * not succeed on private Key blocks.
      * @param {String} armored Armored Key block of the Key(s) to be imported
      * into gnupg
      * @param {Boolean} prepare_sync prepare the keys for synched use
-     * (see getKeys()).
-     *
-     * @returns {Promise<Object>} result: A summary and an array of Keys
-     * considered
-     *
-     * @returns result.summary: Numerical summary of the result. See the
-     * feedbackValues variable for available values and the gnupg documentation
-     * https://www.gnupg.org/documentation/manuals/gpgme/Importing-Keys.html
-     * for details on their meaning.
-     * @returns {Array<Object>} result.Keys: Array of objects containing:
-     * @returns {GPGME_Key} Key.key The resulting key
-     * @returns {String} Key.status:
-     *      'nochange' if the Key was not changed,
-     *      'newkey' if the Key was imported in gpg, and did not exist
-     *         previously,
-     *      'change' if the key existed, but details were updated. For
-     *         details, Key.changes is available.
-     * @returns {Boolean} Key.changes.userId: userIds changed
-     * @returns {Boolean} Key.changes.signature: signatures changed
-     * @returns {Boolean} Key.changes.subkey: subkeys changed
+     * (see {@link getKeys}).
+     * @returns {Promise<importResult>} A summary and Keys considered.
+     * @async
+     * @static
      */
     importKey(armored, prepare_sync) {
         let feedbackValues = ['considered', 'no_user_id', 'imported',
@@ -283,25 +303,36 @@ export class GPGME_Keyring {
 
     }
 
+    /**
+     * Convenience function for deleting a Key. See {@link Key.delete} for
+     * further information about the return values.
+     * @param {String} fingerprint
+     * @returns {Promise<Boolean|GPGME_Error>}
+     * @async
+     * @static
+     */
     deleteKey(fingerprint){
         if (isFingerprint(fingerprint) === true) {
             let key = createKey(fingerprint);
-            key.delete();
+            return key.delete();
+        } else {
+            return Promise.reject(gpgme_error('KEY_INVALID'));
         }
     }
 
     /**
      * Generates a new Key pair directly in gpg, and returns a GPGME_Key
      * representing that Key. Please note that due to security concerns, secret
-     * Keys can not be _deleted_ from inside gpgmejs.
+     * Keys can not be deleted or exported from inside gpgme.js.
      *
-     * @param {String} userId The user Id, e.g. "Foo Bar <foo@bar.baz>"
-     * @param {*} algo (optional) algorithm (and optionally key size to be
-     *  used. See {@link supportedKeyAlgos } below for supported values.
+     * @param {String} userId The user Id, e.g. 'Foo Bar <foo@bar.baz>'
+     * @param {String} algo (optional) algorithm (and optionally key size) to
+     * be used. See {@link supportedKeyAlgos} below for supported values.
      * @param {Date} expires (optional) Expiration date. If not set, expiration
      * will be set to 'never'
      *
-     * @return {Promise<Key>}
+     * @return {Promise<Key|GPGME_Error>}
+     * @async
      */
     generateKey(userId, algo = 'default', expires){
         if (
@@ -336,7 +367,8 @@ export class GPGME_Keyring {
 }
 
 /**
- * A list of algorithms supported for key generation.
+ * List of algorithms supported for key generation. Please refer to the gnupg
+ * documentation for details
  */
 const supportedKeyAlgos = [
     'default',

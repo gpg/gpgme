@@ -28,7 +28,12 @@ import { gpgme_error } from './Errors';
 import { GPGME_Message, createMessage } from './Message';
 
 /**
- * A Connection handles the nativeMessaging interaction.
+ * A Connection handles the nativeMessaging interaction via a port. As the
+ * protocol only allows up to 1MB of message sent from the nativeApp to the
+ * browser, the connection will stay open until all parts of a communication
+ * are finished. For a new request, a new port will open, to avoid mixing
+ * contexts.
+ * @class
  */
 export class Connection{
 
@@ -37,19 +42,26 @@ export class Connection{
     }
 
     /**
-     * Retrieves the information about the backend.
-     * @param {Boolean} details (optional) If set to false, the promise will
-     *  just return a connection status
-     * @returns {Promise<Object>} result
-     * @returns {String} result.gpgme Version number of gpgme
-     * @returns {Array<Object>} result.info Further information about the
-     * backends.
-     *      Example:
+     * @typedef {Object} backEndDetails
+     * @property {String} gpgme Version number of gpgme
+     * @property {Array<Object>} info Further information about the backend
+     * and the used applications (Example:
+     * {
      *          "protocol":     "OpenPGP",
      *          "fname":        "/usr/bin/gpg",
      *          "version":      "2.2.6",
      *          "req_version":  "1.4.0",
      *          "homedir":      "default"
+     * }
+     */
+
+    /**
+     * Retrieves the information about the backend.
+     * @param {Boolean} details (optional) If set to false, the promise will
+     *  just return if a connection was successful.
+     * @returns {Promise<backEndDetails>|Promise<Boolean>} Details from the
+     * backend
+     * @async
      */
     checkConnection(details = true){
         if (details === true) {
@@ -74,7 +86,7 @@ export class Connection{
     }
 
     /**
-     * Immediately closes the open port.
+     * Immediately closes an open port.
      */
     disconnect() {
         if (this._connection){
@@ -93,10 +105,13 @@ export class Connection{
     }
 
     /**
-     * Sends a message and resolves with the answer.
+     * Sends a {@link GPGME_Message} via tghe nativeMessaging port. It resolves
+     * with the completed answer after all parts have been received and
+     * reassembled, or rejects with an {@link GPGME_Error}.
+     *
      * @param {GPGME_Message} message
-     * @returns {Promise<Object>} the gnupg answer, or rejection with error
-     * information.
+     * @returns {Promise<Object>} The collected answer
+     * @async
      */
     post(message){
         if (!message || !(message instanceof GPGME_Message)){
@@ -170,16 +185,25 @@ export class Connection{
 /**
  * A class for answer objects, checking and processing the return messages of
  * the nativeMessaging communication.
- * @param {String} operation The operation, to look up validity of returning
- * messages
+ * @protected
  */
 class Answer{
 
+    /**
+     * @param {GPGME_Message} message
+     */
     constructor(message){
         this.operation = message.operation;
         this.expect = message.expect;
     }
 
+    /**
+     * Adds incoming base64 encoded data to the existing response
+     * @param {*} msg base64 encoded data.
+     * @returns {Boolean}
+     *
+     * @private
+     */
     collect(msg){
         if (typeof(msg) !== 'object' || !msg.hasOwnProperty('response')) {
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
@@ -195,6 +219,10 @@ class Answer{
         }
     }
 
+    /**
+     * Returns the base64 encoded answer data with the content verified against
+     * {@link permittedOperations}.
+     */
     get message(){
         if (this._responseb64 === undefined){
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
