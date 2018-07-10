@@ -91,17 +91,17 @@ else:
 userdir = os.path.expanduser("~")
 
 if new_homedir.startswith("~"):
-    new_homdir.replace("~", "")
+    new_homedir.replace("~", "")
 else:
     pass
 
 if new_homedir.startswith("/"):
-    new_homdir.replace("/", "")
+    new_homedir.replace("/", "")
 else:
     pass
 
 if new_homedir.startswith("."):
-    new_homdir.replace(".", "_")
+    new_homedir.replace(".", "_")
 else:
     pass
 
