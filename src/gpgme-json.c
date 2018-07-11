@@ -720,6 +720,54 @@ create_keylist_patterns (cjson_t request, const char *name)
 }
 
 
+/* Do a secret keylisting for protocol proto and add the fingerprints of
+   the secret keys for patterns to the result as "sec-fprs" array. */
+static gpg_error_t
+add_secret_fprs (const char **patterns, gpgme_protocol_t protocol,
+                 cjson_t result)
+{
+  gpgme_ctx_t ctx;
+  gpg_error_t err;
+  gpgme_key_t key = NULL;
+  cjson_t j_fprs = xjson_CreateArray ();
+
+  ctx = create_onetime_context (protocol);
+
+  gpgme_set_keylist_mode (ctx, GPGME_KEYLIST_MODE_LOCAL |
+                               GPGME_KEYLIST_MODE_WITH_SECRET);
+
+  err = gpgme_op_keylist_ext_start (ctx, patterns, 1, 0);
+
+  if (err)
+    {
+      gpg_error_object (result, err, "Error listing keys: %s",
+                        gpg_strerror (err));
+      goto leave;
+    }
+
+  while (!(err = gpgme_op_keylist_next (ctx, &key)))
+    {
+      if (!key || !key->fpr)
+        continue;
+      cJSON_AddItemToArray (j_fprs, cJSON_CreateString (key->fpr));
+      gpgme_key_unref (key);
+      key = NULL;
+    }
+  err = 0;
+
+  release_onetime_context (ctx);
+  ctx = NULL;
+
+  xjson_AddItemToObject (result, "sec-fprs", j_fprs);
+
+leave:
+  release_onetime_context (ctx);
+  gpgme_key_unref (key);
+
+  return err;
+}
+
+
 /* Create sigsum json array */
 static cjson_t
 sigsum_to_json (gpgme_sigsum_t summary)
@@ -2438,13 +2486,17 @@ static const char hlp_export[] =
   "minimal:       Add EXPORT_MODE_MINIMAL.\n"
   "raw:           Add EXPORT_MODE_RAW.\n"
   "pkcs12:        Add EXPORT_MODE_PKCS12.\n"
+  "with-sec-fprs: Add the sec-fprs array to the result.\n"
   "\n"
   "Response on success:\n"
-  "type:   \"keys\"\n"
-  "data:   Unless armor mode is used a Base64 encoded binary.\n"
-  "        In armor mode a string with an armored\n"
-  "        OpenPGP or a PEM / PKCS12 key.\n"
-  "base64: Boolean indicating whether data is base64 encoded.\n";
+  "type:     \"keys\"\n"
+  "data:     Unless armor mode is used a Base64 encoded binary.\n"
+  "          In armor mode a string with an armored\n"
+  "          OpenPGP or a PEM / PKCS12 key.\n"
+  "base64:   Boolean indicating whether data is base64 encoded.\n"
+  "sec-fprs: Optional, only if with-secret is set. An array containing\n"
+  "          the fingerprints of the keys in the export for which a secret\n"
+  "          key is available";
 static gpg_error_t
 op_export (cjson_t request, cjson_t result)
 {
@@ -2453,6 +2505,7 @@ op_export (cjson_t request, cjson_t result)
   gpgme_protocol_t protocol;
   char **patterns = NULL;
   int abool;
+  int with_secret = 0;
   gpgme_export_mode_t mode = 0;
   gpgme_data_t output = NULL;
 
@@ -2493,6 +2546,11 @@ op_export (cjson_t request, cjson_t result)
   if (abool)
     mode |= GPGME_EXPORT_MODE_PKCS12;
 
+  if ((err = get_boolean_flag (request, "with-sec-fprs", 0, &abool)))
+    goto leave;
+  if (abool)
+    with_secret = 1;
+
   /* Get the export patterns.  */
   patterns = create_keylist_patterns (request, "keys");
 
@@ -2518,6 +2576,11 @@ op_export (cjson_t request, cjson_t result)
   err = make_data_object (result, output,
                           "keys", !gpgme_get_armor (ctx));
   output = NULL;
+
+  if (!err && with_secret)
+    {
+      err = add_secret_fprs ((const char **) patterns, protocol, result);
+    }
 
 leave:
   xfree_array (patterns);
