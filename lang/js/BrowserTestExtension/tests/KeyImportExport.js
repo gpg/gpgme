@@ -22,7 +22,7 @@
  *     Raimund Renkert <rrenkert@intevation.de>
  */
 
-/* global describe, it, expect, Gpgmejs, ImportablePublicKey */
+/* global describe, it, expect, Gpgmejs, ImportablePublicKey, inputvalues */
 
 describe('Key importing', function () {
     it('Prepare test Key (deleting it from gnupg, if present)', function(done){
@@ -83,5 +83,30 @@ describe('Key importing', function () {
                 });
         });
     });
-
+    it('exporting armored Key with getKeysArmored', function (done) {
+        let prm = Gpgmejs.init();
+        const fpr = inputvalues.encrypt.good.fingerprint;
+        prm.then(function (context) {
+            context.Keyring.getKeysArmored(fpr).then(function(result){
+                expect(result).to.be.an('object');
+                expect(result.armored).to.be.a('string');
+                expect(result.secret_fprs).to.be.undefined;
+                done();
+            });
+        });
+    });
+    it('exporting armored Key (including secret fingerprints) with '
+        + 'getKeysArmored', function (done) {
+        let prm = Gpgmejs.init();
+        const fpr = inputvalues.encrypt.good.fingerprint;
+        prm.then(function (context) {
+            context.Keyring.getKeysArmored(fpr, true).then(function(result){
+                expect(result).to.be.an('object');
+                expect(result.armored).to.be.a('string');
+                expect(result.secret_fprs).to.be.an('array');
+                expect(result.secret_fprs[0]).to.equal(fpr);
+                done();
+            });
+        });
+    });
 });

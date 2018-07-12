@@ -108,25 +108,45 @@ export class GPGME_Keyring {
     }
 
     /**
+     * @typedef {Object} exportResult The result of a getKeysArmored operation.
+     * @property {String} armored The public Key(s) as armored block. Note that
+     * the result is one armored block, and not a block per key.
+     * @property {Array<String>} secret_fprs (optional) list of fingerprints
+     * for those Keys that also have a secret Key available in gnupg. The
+     * secret key will not be exported, but the fingerprint can be used in
+     * operations needing a secret key.
+     */
+
+    /**
      * Fetches the armored public Key blocks for all Keys matching the pattern
-     * (if no pattern is given, fetches all keys known to gnupg). Note that the
-     * result may be one big armored block, instead of several smaller armored
-     * blocks
+     * (if no pattern is given, fetches all keys known to gnupg).
      * @param {String|Array<String>} pattern (optional) The Pattern to search
      * for
-     * @returns {Promise<String|GPGME_Error>} Armored Key blocks
+     * @param {Boolean} with_secret_fpr (optional) also return a list of
+     * fingerprints for the keys that have a secret key available
+     * @returns {Promise<exportResult|GPGME_Error>} Object containing the
+     * armored Key(s) and additional information.
      * @static
      * @async
      */
-    getKeysArmored(pattern) {
+    getKeysArmored(pattern, with_secret_fpr) {
         return new Promise(function(resolve, reject) {
             let msg = createMessage('export');
             msg.setParameter('armor', true);
+            if (with_secret_fpr === true) {
+                msg.setParameter('with-sec-fprs', true);
+            }
             if (pattern !== undefined){
                 msg.setParameter('keys', pattern);
             }
-            msg.post().then(function(result){
-                resolve(result.data);
+            msg.post().then(function(answer){
+                const result = {armored: answer.data};
+                if (with_secret_fpr === true
+                    && answer.hasOwnProperty('sec-fprs')
+                ) {
+                    result.secret_fprs = answer['sec-fprs'];
+                }
+                resolve(result);
             }, function(error){
                 reject(error);
             });

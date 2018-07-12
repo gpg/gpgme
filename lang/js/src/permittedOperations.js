@@ -246,7 +246,10 @@ export const permittedOperations = {
             'raw': {
                 allowed: ['boolean']
             },
-            'pkcs12':{
+            'pkcs12': {
+                allowed: ['boolean']
+            },
+            'with-sec-fprs': {
                 allowed: ['boolean']
             }
             // secret: not yet implemented
@@ -255,7 +258,8 @@ export const permittedOperations = {
             type: ['keys'],
             data: {
                 'data': 'string',
-                'base64': 'boolean'
+                'base64': 'boolean',
+                'sec-fprs': 'object'
             }
         }
     },
@@ -295,10 +299,6 @@ export const permittedOperations = {
                 allowed: ['string'],
                 allowed_data: ['cms', 'openpgp']
             },
-            // 'secret': { not implemented
-            //     allowed: ['boolean']
-            // }
-
         },
         answer: {
             data: {
