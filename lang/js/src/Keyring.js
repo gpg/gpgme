@@ -53,7 +53,7 @@ export class GPGME_Keyring {
     getKeys(pattern, prepare_sync=false, search=false){
         return new Promise(function(resolve, reject) {
             let msg = createMessage('keylist');
-            if (pattern !== undefined){
+            if (pattern !== undefined && pattern !== null){
                 msg.setParameter('keys', pattern);
             }
             msg.setParameter('sigs', true);
@@ -136,7 +136,7 @@ export class GPGME_Keyring {
             if (with_secret_fpr === true) {
                 msg.setParameter('with-sec-fprs', true);
             }
-            if (pattern !== undefined){
+            if (pattern !== undefined && pattern !== null){
                 msg.setParameter('keys', pattern);
             }
             msg.post().then(function(answer){
