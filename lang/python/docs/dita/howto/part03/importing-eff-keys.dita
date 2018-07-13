@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dita PUBLIC "-//OASIS//DTD DITA Composite//EN" "ditabase.dtd">
+<dita xml:lang="en-GB">
+  <topic id="eff-key-import">
+    <title>Importing Keys</title>
+    <shortdesc>DRAFT VERSION</shortdesc>
+    <body>
+      <p>Importing keys is possible with the <codeph>key_import()</codeph> method and takes one
+        argument which is a bytes literal object containing either the binary or ASCII armoured key
+        data for one or more keys.</p>
+      <p>In the following example a key will be retrieved from the SKS keyservers via the web using
+        the requests module. Since requests returns the content as a bytes literal object, we can
+        then use that directly to import the resulting data into our keybox. In order to demonstrate
+        multiple imports this example searches for all the keys of users at a particular domain
+        name. This time we're using the EFF, since they've always been such good supporters of
+        strong encryption and good security practices.</p>
+      <p>If this holds true then I would expect that some keys I already have will be updated and
+        some others will be added. Most of the keys created most recently and belonging to still
+        active people within the EFF should, if they are following their own recent statements, be
+        revoked. If they are not revoked then it would be best left to the reader to determine
+        whether or not the change in leadership at that organisation indicates a change in their
+        policy of supporting good security practices.</p>
+      <p>
+        <codeblock id="import-key-1" outputclass="language-python">import gpg
+import requests
+
+c = gpg.Context()
+url = "https://sks-keyservers.net/pks/lookup"
+pattern = input("Enter the pattern to search for key or user IDs: ")
+payload = { "op": "get", "search": pattern }
+
+r = requests.get(url, verify=True, params=payload)
+k = c.key_import(r.content)
+
+summary = """
+Total number of keys:   {0}
+Total number imported:  {1}
+Number of version 3 keys ignored:  {2}
+
+Number of imported key objects or updates:  {3}
+Number of unchanged keys:  {4}
+Number of new signatures:  {5}
+Number of revoked keys:    {6}
+""".format(k.considered, len(k.imports), k.skipped_v3_keys, k.imported,
+           k.unchanged, k.new_signatures, k.new_revocations)
+
+print(summary)</codeblock>
+      </p>
+      <p>The resulting output in that case, where the search pattern entered was
+          <codeph>@eff.org</codeph> was:</p>
+      <p>
+        <codeblock id="import-key-2" outputclass="language-bourne">Total number of keys:   272
+Total number imported:  249
+Number of version 3 keys ignored:  23
+
+Number of imported key objects or updates:  180
+Number of unchanged keys:  66
+Number of new signatures:  7
+Number of revoked keys:    0</codeblock>
+      </p>
+      <p>The 23 skipped keys all date back to the 1990s, some of which were made very shortly after
+        PGP 2 was first released.</p>
+      <p>
+        <note>Pretty Good Privacy version 2 and above are the only versions with any widespread use.
+          Pretty Good Privacy version 1 had a number of serious security problems, not least of
+          which being that it relied on an encryption algorithm called Bass-O-Matic which was
+          written by Phil Zimmermann. Following feedback on this algorithm, Zimmermann withdrew
+          version 1 and re-implemented version 2 using RSA and IDEA, even though both were subject
+          to software patents at the time (both of those software patents have long since
+          expired).</note>
+      </p>
+    </body>
+  </topic>
+</dita>

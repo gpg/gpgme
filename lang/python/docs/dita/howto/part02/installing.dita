@@ -16,8 +16,8 @@
       <p>For Python 2 it checks for these executables in this order: <cmdname>python</cmdname>,
           <cmdname>python2</cmdname> and <cmdname>python2.7</cmdname>.</p>
       <p>For Python 3 it checks for these executables in this order: <cmdname>python3</cmdname>,
-          <cmdname>python3.6</cmdname>, <cmdname>python3.5</cmdname> and
-          <cmdname>python3.4</cmdname>.</p>
+          <cmdname>python3.6</cmdname>, <cmdname>python3.5</cmdname>, <cmdname>python3.4</cmdname>
+        and <cmdname>python3.7</cmdname>.</p>
     </body>
   </topic>
 </dita>

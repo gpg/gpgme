@@ -5,9 +5,9 @@
     <title>Exporting Public Keys</title>
     <body>
       <p>There are two methods of exporting public keys, both of which are very similar to the
-        other. The default method, <codeph>key_export()</codeph> will export a public key or keys
+        other. The default method, <codeph>key_export()</codeph>, will export a public key or keys
         matching a specified pattern as normal. The alternative, the
-          <codeph>key_export_minimal()</codeph> method will do the same thing except producing a
+          <codeph>key_export_minimal()</codeph> method, will do the same thing except producing a
         minimised output with extra signatures and third party signatures or certifications
         removed.</p>
       <p>

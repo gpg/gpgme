@@ -39,7 +39,7 @@
       <topicref id="python-bindings" href="howto/part02/python-bindings.dita"/>
       <topicref id="py-diffs" href="howto/part02/differences-to-others.dita">
         <topicref id="vinay-sajip" href="howto/part02/python-gnupg.dita"/>
-        <topicref id="isis-lovecruft" href="howto/part02/daesh.dita"/>
+        <topicref id="isis-lovecruft" href="howto/part02/isis-gnupg.dita"/>
         <topicref id="martin-albrecht" href="howto/part02/pyme.dita"/>
       </topicref>
     </topicref>
