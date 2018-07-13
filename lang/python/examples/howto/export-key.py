@@ -47,7 +47,7 @@ elif len(sys.argv) == 2:
     logrus = input("Enter the UID matching the key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 else:
-    keyfile = input("Enter the path and filename to save the secret key to: ")
+    keyfile = input("Enter the path and filename to save the key(s) to: ")
     logrus = input("Enter the UID matching the key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
