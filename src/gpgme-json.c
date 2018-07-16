@@ -2607,7 +2607,7 @@ op_delete (cjson_t request, cjson_t result)
   gpgme_ctx_t ctx = NULL;
   gpgme_ctx_t keylist_ctx = NULL;
   gpgme_protocol_t protocol;
-  gpgme_key_t key;
+  gpgme_key_t key = NULL;
   int secret = 0;
   cjson_t j_key = NULL;
 
