@@ -275,17 +275,22 @@ parse_string (cJSON * item, const char *str, const char **ep)
 	      break;
 	    case 'u':		/* transcode utf16 to utf8. */
 	      uc = parse_hex4 (ptr + 1);
+              if (!uc)
+                break;          /* Bad hex; continue right after the 'u'. */
 	      ptr += 4;		/* get the unicode char. */
 
-	      if ((uc >= 0xDC00 && uc <= 0xDFFF) || uc == 0)
+	      if ((uc >= 0xDC00 && uc <= 0xDFFF))
 		break;		/* check for invalid.   */
 
 	      if (uc >= 0xD800 && uc <= 0xDBFF)	/* UTF16 surrogate pairs. */
 		{
 		  if (ptr[1] != '\\' || ptr[2] != 'u')
 		    break;	/* missing second-half of surrogate.    */
-		  uc2 = parse_hex4 (ptr + 3);
-		  ptr += 6;
+                  ptr += 2;
+		  uc2 = parse_hex4 (ptr + 1);
+                  if (!uc2)
+                    break;      /* Bad hex; continue right after the 'u'. */
+		  ptr += 4;
 		  if (uc2 < 0xDC00 || uc2 > 0xDFFF)
 		    break;	/* invalid second-half of surrogate.    */
 		  uc = 0x10000 + (((uc & 0x3FF) << 10) | (uc2 & 0x3FF));
