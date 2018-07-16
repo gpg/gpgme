@@ -3104,7 +3104,7 @@ process_request (const char *request)
   int helpmode;
   int is_getmore = 0;
   const char *op;
-  char *res;
+  char *res = NULL;
   int idx;
 
   response = xjson_CreateObject ();
@@ -3188,7 +3188,7 @@ process_request (const char *request)
       else
         res = cJSON_PrintUnformatted (response);
     }
-  else
+  else if (json)
     res = encode_and_chunk (json, response);
   if (!res)
     log_error ("Printing JSON data failed\n");
