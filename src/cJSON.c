@@ -22,7 +22,14 @@
  * SPDX-License-Identifier: MIT
  *
  * Note that this code has been modified from the original code taken
- * from cjson-code-58.zip.
+ * from cjson-code-58.zip before 2014 (my first local commit was in
+ * 2014 but I may used the code even earlier).  Since 2016 the project
+ * was revived and moved to https://github.com/DaveGamble/cJSON.git.
+ * It is now a lot more complex and has substantial changes so that it
+ * is not possible to merge them directly.  In any case we only need a
+ * simple parser and not a complete library.  I have looked through
+ * the commits and fixed a few things which should apply; I also added
+ * a few references to the upstream code.  Regression test are missing!
  */
 
 #ifdef HAVE_CONFIG_H
@@ -232,6 +239,9 @@ parse_string (cJSON * item, const char *str, const char **ep)
   char *out;
   int len = 0;
   unsigned uc, uc2;
+
+  /* FIXME: We should consider eary failure like it is done with
+   * commit 8656386c4f4a12f1cf3d6b26158407fd05e65029 in upstream.  */
   if (*str != '\"')
     {
       *ep = str;
@@ -242,8 +252,10 @@ parse_string (cJSON * item, const char *str, const char **ep)
     if (*ptr++ == '\\')
       ptr++;			/* Skip escaped quotes. */
 
-  out = xtrymalloc (len + 1);	/* This is how long we need for the
-                                   string, roughly. */
+  out = xtrymalloc (len + 2);	/* This is how long we need for the
+                                 * string, roughly.  We add one extra
+                                 * byte in case the last input
+                                 * character is a backslash.  */
   if (!out)
     return 0;
 
@@ -322,6 +334,8 @@ parse_string (cJSON * item, const char *str, const char **ep)
 	      ptr2 += len;
 	      break;
 	    default:
+              /* Fixme: Should we fail here: See
+               * https://github.com/DaveGamble/cJSON/issues/10  */
 	      *ptr2++ = *ptr;
 	      break;
 	    }
@@ -934,9 +948,11 @@ create_reference (cJSON * item)
 void
 cJSON_AddItemToArray (cJSON * array, cJSON * item)
 {
-  cJSON *c = array->child;
-  if (!item)
+  cJSON *c;
+
+  if (!item || !array)
     return;
+  c = array->child;
   if (!c)
     {
       array->child = item;
@@ -1137,6 +1153,8 @@ cJSON_ReplaceItemInObject (cJSON * object, const char *string,
     i++, c = c->next;
   if (c)
     {
+      /* FIXME: I guess we should free newitem->string here.  See
+       * upstream commit 0d10e279c8b604f71829b5d49d092719f4ae96b6.  */
       newitem->string = xtrystrdup (string);
       cJSON_ReplaceItemInArray (object, i, newitem);
     }
