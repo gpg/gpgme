@@ -3601,7 +3601,7 @@ native_messaging_repl (void)
         }
 
       /* Read request.  */
-      request = xtrymalloc (nrequest);
+      request = xtrymalloc (nrequest + 1);
       if (!request)
         {
           err = gpg_error_from_syserror ();
@@ -3626,6 +3626,7 @@ native_messaging_repl (void)
         }
       else /* Process request  */
         {
+          request[n] = '\0'; /* Esnure that request has an end */
           if (opt_debug)
             log_debug ("request='%s'\n", request);
           xfree (response);
