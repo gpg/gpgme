@@ -53,6 +53,58 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+
+static QString fromEncoding (unsigned int src_encoding, const char *data)
+{
+    int n = MultiByteToWideChar(src_encoding, 0, data, -1, NULL, 0);
+    if (n < 0) {
+        return QString();
+    }
+
+    wchar_t *result = (wchar_t *) malloc ((n+1) * sizeof *result);
+
+    n = MultiByteToWideChar(src_encoding, 0, data, -1, result, n);
+    if (n < 0) {
+        free(result);
+        return QString();
+    }
+    const auto ret = QString::fromWCharArray(result, n);
+    free(result);
+    return ret;
+}
+#endif
+
+static QString stringFromGpgOutput(const QByteArray &ba)
+{
+#ifdef Q_OS_WIN
+    /* Qt on Windows uses GetACP while GnuPG prefers
+     * GetConsoleOutputCP.
+     *
+     * As we are not a console application GetConsoleOutputCP
+     * usually returns 0.
+     * From experience the closest thing that let's us guess
+     * what GetConsoleOutputCP returns for a console application
+     * it appears to be the OEMCP.
+     */
+    unsigned int cpno = GetConsoleOutputCP ();
+    if (!cpno) {
+        cpno = GetOEMCP();
+    }
+    if (!cpno) {
+        cpno = GetACP();
+    }
+    if (!cpno) {
+        return QString();
+    }
+
+    return fromEncoding(cpno, ba.constData());
+#else
+    return QString::fromLocal8Bit(ba);
+#endif
+}
+
 static QString markupDiagnostics(const QString &data)
 {
     // First ensure that we don't have html in the diag.
@@ -76,7 +128,7 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
             return QString::fromLocal8Bit(err.asString());
         }
         const QByteArray ba = dp.data();
-        return markupDiagnostics(QString::fromUtf8(ba.data(), ba.size()));
+        return markupDiagnostics(stringFromGpgOutput(ba));
     }
 
     if (ctx->protocol() == CMS) {
