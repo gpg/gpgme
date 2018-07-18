@@ -28,7 +28,7 @@
  * Currently accepted values are 'number', 'string', 'boolean'.
  * @property {Boolean} array_allowed If the value can be an array of types
  *      defined in allowed
- * @property {<Array>} allowed_data (optional) restricts to the given values
+ * @property {Array<*>} allowed_data (optional) restricts to the given values
   */
 
 /**
