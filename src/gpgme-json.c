@@ -691,17 +691,17 @@ create_keylist_patterns (cjson_t request, const char *name)
   char *p;
   char *tmp;
   char **ret;
-  int cnt = 1;
+  int cnt = 2; /* Last NULL and one is not newline delimited */
   int i = 0;
 
   if (get_keys (request, name, &keystring))
     return NULL;
 
-  for (p = keystring; p; p++)
+  for (p = keystring; *p; p++)
     if (*p == '\n')
       cnt++;
 
-  ret = xmalloc (cnt * sizeof *ret);
+  ret = xcalloc (1, cnt * sizeof *ret);
 
   for (p = keystring, tmp = keystring; *p; p++)
     {
@@ -712,8 +712,7 @@ create_keylist_patterns (cjson_t request, const char *name)
       tmp = p + 1;
     }
   /* The last key is not newline delimted. */
-  ret[i++] = *tmp ? xstrdup (tmp) : NULL;
-  ret[i] = NULL;
+  ret[i] = *tmp ? xstrdup (tmp) : NULL;
 
   xfree (keystring);
   return ret;
