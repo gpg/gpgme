@@ -1473,13 +1473,28 @@ encode_and_chunk (cjson_t request, cjson_t response)
     data = cJSON_PrintUnformatted (response);
 
   if (!data)
-    goto leave;
+    {
+      err = GPG_ERR_NO_DATA;
+      goto leave;
+    }
+
+  if (!request)
+    {
+      err = GPG_ERR_INV_VALUE;
+      goto leave;
+    }
 
   if ((err = get_chunksize (request, &chunksize)))
-    goto leave;
+    {
+      err = GPG_ERR_INV_VALUE;
+      goto leave;
+    }
 
   if (!chunksize)
-    goto leave;
+    {
+      err = GPG_ERR_INV_VALUE;
+      goto leave;
+    }
 
   pending_data.buffer = data;
   /* Data should already be encoded so that it does not
@@ -1500,14 +1515,22 @@ encode_and_chunk (cjson_t request, cjson_t response)
 leave:
   xfree (getmore_request);
 
+  if (!err && !data)
+    {
+      err = GPG_ERR_GENERAL;
+    }
+
   if (err)
     {
       cjson_t err_obj = gpg_error_object (NULL, err,
                                           "Encode and chunk failed: %s",
                                           gpgme_strerror (err));
+      xfree (data);
       if (opt_interactive)
-        return cJSON_Print (err_obj);
-      return cJSON_PrintUnformatted (err_obj);
+        data = cJSON_Print (err_obj);
+      data = cJSON_PrintUnformatted (err_obj);
+
+      cJSON_Delete (err_obj);
     }
 
   return data;
@@ -3187,13 +3210,26 @@ process_request (const char *request)
       else
         res = cJSON_PrintUnformatted (response);
     }
-  else if (json)
+  else
     res = encode_and_chunk (json, response);
   if (!res)
-    log_error ("Printing JSON data failed\n");
+    {
+      log_error ("Printing JSON data failed\n");
+      cjson_t err_obj = error_object (NULL, "Printing JSON data failed");
+      if (opt_interactive)
+        res = cJSON_Print (err_obj);
+      res = cJSON_PrintUnformatted (err_obj);
+      cJSON_Delete (err_obj);
+    }
 
   cJSON_Delete (json);
   cJSON_Delete (response);
+
+  if (!res)
+    {
+      /* Can't happen unless we created a broken error_object above */
+      return strdup ("Bug: Fatal error in process request\n");
+    }
   return res;
 }
 
