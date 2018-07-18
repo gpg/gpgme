@@ -3665,6 +3665,10 @@ native_messaging_repl (void)
           log_error ("error writing request: %s\n", gpg_strerror (err));
           break;
         }
+      xfree (response);
+      response = NULL;
+      xfree (request);
+      request = NULL;
     }
 
   xfree (response);
