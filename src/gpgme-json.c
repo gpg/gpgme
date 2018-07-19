@@ -701,7 +701,7 @@ create_keylist_patterns (cjson_t request, const char *name)
     if (*p == '\n')
       cnt++;
 
-  ret = xcalloc (1, cnt * sizeof *ret);
+  ret = xcalloc (cnt, sizeof *ret);
 
   for (p = keystring, tmp = keystring; *p; p++)
     {
@@ -3214,8 +3214,11 @@ process_request (const char *request)
     res = encode_and_chunk (json, response);
   if (!res)
     {
-      log_error ("Printing JSON data failed\n");
-      cjson_t err_obj = error_object (NULL, "Printing JSON data failed");
+      cjson_t err_obj;
+
+      log_error ("printing JSON data failed\n");
+
+      err_obj = error_object (NULL, "Printing JSON data failed");
       if (opt_interactive)
         res = cJSON_Print (err_obj);
       res = cJSON_PrintUnformatted (err_obj);
@@ -3228,7 +3231,7 @@ process_request (const char *request)
   if (!res)
     {
       /* Can't happen unless we created a broken error_object above */
-      return strdup ("Bug: Fatal error in process request\n");
+      return xtrystrdup ("Bug: Fatal error in process request\n");
     }
   return res;
 }
@@ -3626,7 +3629,7 @@ native_messaging_repl (void)
         }
       else /* Process request  */
         {
-          request[n] = '\0'; /* Esnure that request has an end */
+          request[n] = '\0'; /* Ensure that request has an end */
           if (opt_debug)
             log_debug ("request='%s'\n", request);
           xfree (response);
