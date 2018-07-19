@@ -100,6 +100,9 @@ struct gpgme_data
     /* For gpgme_data_new_from_stream.  */
     FILE *stream;
 
+    /* For gpgme_data_new_from_estream.  */
+    gpgrt_stream_t e_stream;
+
     /* For gpgme_data_new_from_cbs.  */
     struct
     {

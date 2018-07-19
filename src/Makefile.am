@@ -70,6 +70,7 @@ main_sources =								\
 	parsetlv.c parsetlv.h                                           \
 	mbox-util.c mbox-util.h                                         \
 	data.h data.c data-fd.c data-stream.c data-mem.c data-user.c	\
+	data-estream.c                                                  \
 	data-compat.c data-identify.c					\
 	signers.c sig-notation.c					\
 	wait.c wait-global.c wait-private.c wait-user.c wait.h		\

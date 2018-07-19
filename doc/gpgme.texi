@@ -1909,6 +1909,25 @@ data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
 enough memory is available.
 @end deftypefun
 
+@deftypefun gpgme_error_t gpgme_data_new_from_estream (@w{gpgme_data_t *@var{dh}}, @w{gpgrt_stream_t @var{stream}})
+The function @code{gpgme_data_new_from_estream} creates a new
+@code{gpgme_data_t} object and uses the gpgrt stream @var{stream} to read
+from (if used as an input data object) and write to (if used as an
+output data object).
+
+When using the data object as an input buffer, the function might read
+a bit more from the stream than is actually needed by the crypto
+engine in the desired operation because of internal buffering.
+
+Note that GPGME assumes that the stream is in blocking mode.  Errors
+during I/O operations, except for EINTR, are usually fatal for crypto
+operations.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+data object was successfully created, and @code{GPG_ERR_ENOMEM} if not
+enough memory is available.
+@end deftypefun
+
 
 @node Callback Based Data Buffers
 @subsection Callback Based Data Buffers

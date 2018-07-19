@@ -1180,6 +1180,8 @@ gpgme_error_t gpgme_data_new_from_cbs (gpgme_data_t *dh,
 gpgme_error_t gpgme_data_new_from_fd (gpgme_data_t *dh, int fd);
 
 gpgme_error_t gpgme_data_new_from_stream (gpgme_data_t *dh, FILE *stream);
+gpgme_error_t gpgme_data_new_from_estream (gpgme_data_t *r_dh,
+                                           gpgrt_stream_t stream);
 
 /* Return the encoding attribute of the data buffer DH */
 gpgme_data_encoding_t gpgme_data_get_encoding (gpgme_data_t dh);

@@ -7,13 +7,16 @@ Noteworthy changes in version 1.11.2 (unreleased)
  * Added context flag "auto-key-locate" to control the
    behavior of GPGME_KEYLIST_MODE_LOCATE.
 
+ * New data function to create a data object from an estream.
+
  * Interface changes relative to the 1.11.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_data_new_from_estream                NEW.
  gpgme_decrypt_result_t           EXTENDED: New field legacy_cipher_nomdc.
  gpgme_set_ctx_flag               EXTENDED: New flag 'ignore-mdc-error'.
  GPGME_AUDITLOG_DEFAULT                     NEW.
  GPGME_AUDITLOG_DIAG                        NEW.
- gpgme_set_ctx_flag          EXTENDED: New flag 'auto-key-locate'.
+ gpgme_set_ctx_flag               EXTENDED: New flag 'auto-key-locate'.
  cpp: DecryptionResult::sessionKey          NEW.
  cpp: DecryptionResult::symkeyAlgo          NEW.
  cpp: DecryptionResult::isLegacyCipherNoMDC New.
