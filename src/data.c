@@ -63,6 +63,7 @@ typedef struct property_s *property_t;
 static property_t property_table;
 static unsigned int property_table_size;
 DEFINE_STATIC_LOCK (property_table_lock);
+#define PROPERTY_TABLE_ALLOCATION_CHUNK 32
 
 
 
@@ -79,7 +80,7 @@ insert_into_property_table (gpgme_data_t dh, unsigned int *r_idx)
   LOCK (property_table_lock);
   if (!property_table)
     {
-      property_table_size = 10;
+      property_table_size = PROPERTY_TABLE_ALLOCATION_CHUNK;
       property_table = calloc (property_table_size, sizeof *property_table);
       if (!property_table)
         {
@@ -98,7 +99,7 @@ insert_into_property_table (gpgme_data_t dh, unsigned int *r_idx)
       property_t newtbl;
       unsigned int newsize;
 
-      newsize = property_table_size + 10;
+      newsize = property_table_size + PROPERTY_TABLE_ALLOCATION_CHUNK;;
       if ((newsize * sizeof *property_table)
           < (property_table_size * sizeof *property_table))
         {
@@ -121,6 +122,7 @@ insert_into_property_table (gpgme_data_t dh, unsigned int *r_idx)
   /* Slot found. */
   property_table[idx].dh = dh;
   property_table[idx].dserial = ++last_dserial;
+  memset (&property_table[idx].flags, 0, sizeof property_table[idx].flags);
   *r_idx = idx;
   err = 0;
 
