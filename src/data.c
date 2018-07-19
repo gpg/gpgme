@@ -28,6 +28,7 @@
 #endif
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "data.h"
@@ -36,10 +37,269 @@
 #include "priv-io.h"
 #include "debug.h"
 
+
+/* The property table which has an entry for each active data object.
+ * The data object itself uses an index into this table and the table
+ * has a pointer back to the data object.  All access to that table is
+ * controlled by the property_table_lock.
+ *
+ * We use a separate table instead of linking all data objects
+ * together for faster locating properties of the data object using
+ * the data objects serial number.  We use 64 bit for the serial
+ * number which is good enough to create a new data object every
+ * nanosecond for more than 500 years.  Thus no wrap around will ever
+ * happen.
+ */
+struct property_s
+{
+  gpgme_data_t dh;   /* The data objcet or NULL if the slot is not used.  */
+  uint64_t dserial;  /* The serial number of the data object.  */
+  struct {
+    unsigned int blankout : 1;  /* Void the held data.  */
+  } flags;
+};
+typedef struct property_s *property_t;
+
+static property_t property_table;
+static unsigned int property_table_size;
+DEFINE_STATIC_LOCK (property_table_lock);
+
+
+
+/* Insert the newly created data object DH into the property table and
+ * store the index of it at R_IDX.  An error code is returned on error
+ * and the table is not changed.  */
+static gpg_error_t
+insert_into_property_table (gpgme_data_t dh, unsigned int *r_idx)
+{
+  static uint64_t last_dserial;
+  gpg_error_t err;
+  unsigned int idx;
+
+  LOCK (property_table_lock);
+  if (!property_table)
+    {
+      property_table_size = 10;
+      property_table = calloc (property_table_size, sizeof *property_table);
+      if (!property_table)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  /* Find an empty slot.  */
+  for (idx = 0; idx < property_table_size; idx++)
+    if (!property_table[idx].dh)
+      break;
+  if (!(idx < property_table_size))
+    {
+      /* No empty slot found.  Enlarge the table.  */
+      property_t newtbl;
+      unsigned int newsize;
+
+      newsize = property_table_size + 10;
+      if ((newsize * sizeof *property_table)
+          < (property_table_size * sizeof *property_table))
+        {
+          err = gpg_error (GPG_ERR_ENOMEM);
+          goto leave;
+        }
+      newtbl = realloc (property_table, newsize * sizeof *property_table);
+      if (!newtbl)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      property_table = newtbl;
+      for (idx = property_table_size; idx < newsize; idx++)
+        property_table[idx].dh = NULL;
+      idx = property_table_size;
+      property_table_size = newsize;
+    }
+
+  /* Slot found. */
+  property_table[idx].dh = dh;
+  property_table[idx].dserial = ++last_dserial;
+  *r_idx = idx;
+  err = 0;
+
+ leave:
+  UNLOCK (property_table_lock);
+  return err;
+}
+
+
+/* Remove the data object at PROPIDX from the table.  DH is only used
+ * for cross checking.  */
+static void
+remove_from_property_table (gpgme_data_t dh, unsigned int propidx)
+{
+  LOCK (property_table_lock);
+  assert (property_table);
+  assert (propidx < property_table_size);
+  assert (property_table[propidx].dh == dh);
+  property_table[propidx].dh = NULL;
+  UNLOCK (property_table_lock);
+}
+
+
+/* Return the data object's serial number for handle DH.  This is a
+ * unique serial number for each created data object.  */
+uint64_t
+_gpgme_data_get_dserial (gpgme_data_t dh)
+{
+  uint64_t dserial;
+  unsigned int idx;
+
+  if (!dh)
+    return 0;
+
+  idx = dh->propidx;
+  LOCK (property_table_lock);
+  assert (property_table);
+  assert (idx < property_table_size);
+  assert (property_table[idx].dh == dh);
+  dserial = property_table[idx].dserial;
+  UNLOCK (property_table_lock);
+
+  return dserial;
+}
+
+
+/* Set an internal property of a data object.  The data object may
+ * either be identified by the usual DH or by using the data serial
+ * number DSERIAL.  */
+gpg_error_t
+_gpgme_data_set_prop (gpgme_data_t dh, uint64_t dserial,
+                      data_prop_t name, int value)
+{
+  gpg_error_t err = 0;
+  int idx;
+  TRACE_BEG3 (DEBUG_DATA, "gpgme_data_set_prop", dh,
+	      "dserial=%llu %lu=%d",
+              (unsigned long long)dserial,
+              (unsigned long)name, value);
+
+  LOCK (property_table_lock);
+  if ((!dh && !dserial) || (dh && dserial))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (dh) /* Lookup via handle.  */
+    {
+      idx = dh->propidx;
+      assert (property_table);
+      assert (idx < property_table_size);
+      assert (property_table[idx].dh == dh);
+    }
+  else /* Lookup via DSERIAL.  */
+    {
+      if (!property_table)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      for (idx = 0; idx < property_table_size; idx++)
+        if (property_table[idx].dh && property_table[idx].dserial == dserial)
+          break;
+      if (!(idx < property_table_size))
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+    }
+
+  switch (name)
+    {
+    case DATA_PROP_NONE: /* Nothing to to do.  */
+      break;
+    case DATA_PROP_BLANKOUT:
+      property_table[idx].flags.blankout = !!value;
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+      break;
+    }
+
+ leave:
+  UNLOCK (property_table_lock);
+  return TRACE_ERR (err);
+}
+
+
+/* Get an internal property of a data object.  This is the counter
+ * part to _gpgme_data_set_property.  The value of the property is
+ * stored at R_VALUE.  On error 0 is stored at R_VALUE.  */
+gpg_error_t
+_gpgme_data_get_prop (gpgme_data_t dh, uint64_t dserial,
+                      data_prop_t name, int *r_value)
+{
+  gpg_error_t err = 0;
+  int idx;
+  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_get_prop", dh,
+	      "dserial=%llu %lu",
+              (unsigned long long)dserial,
+              (unsigned long)name);
+
+  *r_value = 0;
+
+  LOCK (property_table_lock);
+  if ((!dh && !dserial) || (dh && dserial))
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (dh) /* Lookup via handle.  */
+    {
+      idx = dh->propidx;
+      assert (property_table);
+      assert (idx < property_table_size);
+      assert (property_table[idx].dh == dh);
+    }
+  else /* Lookup via DSERIAL.  */
+    {
+      if (!property_table)
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+      for (idx = 0; idx < property_table_size; idx++)
+        if (property_table[idx].dh && property_table[idx].dserial == dserial)
+          break;
+      if (!(idx < property_table_size))
+        {
+          err = gpg_error (GPG_ERR_NOT_FOUND);
+          goto leave;
+        }
+    }
+
+  switch (name)
+    {
+    case DATA_PROP_NONE: /* Nothing to to do.  */
+      break;
+    case DATA_PROP_BLANKOUT:
+      *r_value = property_table[idx].flags.blankout;
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+      break;
+    }
+
+ leave:
+  UNLOCK (property_table_lock);
+  return TRACE_ERR (err);
+}
+
+
 
 gpgme_error_t
 _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
 {
+  gpgme_error_t err;
   gpgme_data_t dh;
 
   if (!r_dh)
@@ -56,6 +316,13 @@ _gpgme_data_new (gpgme_data_t *r_dh, struct _gpgme_data_cbs *cbs)
 
   dh->cbs = cbs;
 
+  err = insert_into_property_table (dh, &dh->propidx);
+  if (err)
+    {
+      free (dh);
+      return err;
+    }
+
   *r_dh = dh;
   return 0;
 }
@@ -67,10 +334,12 @@ _gpgme_data_release (gpgme_data_t dh)
   if (!dh)
     return;
 
+  remove_from_property_table (dh, dh->propidx);
   if (dh->file_name)
     free (dh->file_name);
   free (dh);
 }
+
 
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
@@ -80,6 +349,7 @@ gpgme_ssize_t
 gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   gpgme_ssize_t res;
+  int blankout;
   TRACE_BEG2 (DEBUG_DATA, "gpgme_data_read", dh,
 	      "buffer=%p, size=%u", buffer, size);
 
@@ -93,9 +363,16 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
       gpg_err_set_errno (ENOSYS);
       return TRACE_SYSRES (-1);
     }
-  do
-    res = (*dh->cbs->read) (dh, buffer, size);
-  while (res < 0 && errno == EINTR);
+
+  if (_gpgme_data_get_prop (dh, 0, DATA_PROP_BLANKOUT, &blankout)
+      || blankout)
+    res = 0;
+  else
+    {
+      do
+        res = (*dh->cbs->read) (dh, buffer, size);
+      while (res < 0 && errno == EINTR);
+    }
 
   return TRACE_SYSRES (res);
 }

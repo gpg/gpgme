@@ -224,7 +224,10 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 char *
 gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 {
+  gpg_error_t err;
   char *str = NULL;
+  size_t len;
+  int blankout;
 
   TRACE_BEG1 (DEBUG_DATA, "gpgme_data_release_and_get_mem", dh,
 	      "r_len=%p", r_len);
@@ -236,10 +239,22 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
       return NULL;
     }
 
+  err = _gpgme_data_get_prop (dh, 0, DATA_PROP_BLANKOUT, &blankout);
+  if (err)
+    {
+      gpgme_data_release (dh);
+      TRACE_ERR (err);
+      return NULL;
+    }
+
   str = dh->data.mem.buffer;
+  len = dh->data.mem.length;
+  if (blankout && len)
+    len = 1;
+
   if (!str && dh->data.mem.orig_buffer)
     {
-      str = malloc (dh->data.mem.length);
+      str = malloc (len);
       if (!str)
 	{
 	  int saved_err = gpg_error_from_syserror ();
@@ -247,15 +262,22 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 	  TRACE_ERR (saved_err);
 	  return NULL;
 	}
-      memcpy (str, dh->data.mem.orig_buffer, dh->data.mem.length);
+      if (blankout)
+        memset (str, 0, len);
+      else
+        memcpy (str, dh->data.mem.orig_buffer, len);
     }
   else
-    /* Prevent mem_release from releasing the buffer memory.  We must
-       not fail from this point.  */
-    dh->data.mem.buffer = NULL;
+    {
+      if (blankout && len)
+        *str = 0;
+      /* Prevent mem_release from releasing the buffer memory.  We
+       * must not fail from this point.  */
+      dh->data.mem.buffer = NULL;
+    }
 
   if (r_len)
-    *r_len = dh->data.mem.length;
+    *r_len = len;
 
   gpgme_data_release (dh);
 

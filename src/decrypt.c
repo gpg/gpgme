@@ -32,7 +32,7 @@
 #include "util.h"
 #include "context.h"
 #include "ops.h"
-
+#include "data.h"
 
 
 typedef struct
@@ -69,6 +69,9 @@ typedef struct
      This makes appending new invalid signers painless while
      preserving the order.  */
   gpgme_recipient_t *last_recipient_p;
+
+  /* The data object serial number of the plaintext.  */
+  uint64_t plaintext_dserial;
 } *op_data_t;
 
 
@@ -419,6 +422,14 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_DECRYPTION_FAILED:
       opd->failed = 1;
+      /* Tell the data object that it shall not return any data.  We
+       * use the serial number because the data object may be owned by
+       * another thread.  We also don't check for an error because it
+       * is possible that the data object has already been destroyed
+       * and we are then not interested in returning an error.  */
+      if (!ctx->ignore_mdc_error)
+        _gpgme_data_set_prop (NULL, opd->plaintext_dserial,
+                              DATA_PROP_BLANKOUT, 1);
       break;
 
     case GPGME_STATUS_ERROR:
@@ -508,7 +519,7 @@ decrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 gpgme_error_t
-_gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
+_gpgme_op_decrypt_init_result (gpgme_ctx_t ctx, gpgme_data_t plaintext)
 {
   gpgme_error_t err;
   void *hook;
@@ -521,6 +532,7 @@ _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx)
     return err;
 
   opd->last_recipient_p = &opd->result.recipients;
+  opd->plaintext_dserial = _gpgme_data_get_dserial (plaintext);
   return 0;
 }
 
@@ -538,7 +550,7 @@ _gpgme_decrypt_start (gpgme_ctx_t ctx, int synchronous,
   if (err)
     return err;
 
-  err = _gpgme_op_decrypt_init_result (ctx);
+  err = _gpgme_op_decrypt_init_result (ctx, plain);
   if (err)
     return err;
 

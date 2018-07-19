@@ -29,6 +29,7 @@
 # include <sys/types.h>
 #endif
 #include <limits.h>
+#include <stdint.h>
 
 #include "gpgme.h"
 
@@ -73,6 +74,7 @@ struct gpgme_data
 {
   struct _gpgme_data_cbs *cbs;
   gpgme_data_encoding_t encoding;
+  unsigned int propidx;  /* Index into the property table.  */
 
 #ifdef PIPE_BUF
 #define BUFFER_SIZE PIPE_BUF
@@ -89,7 +91,7 @@ struct gpgme_data
   /* File name of the data object.  */
   char *file_name;
 
-  /* Hint on the to be expected toatl size of the data.  */
+  /* Hint on the to be expected total size of the data.  */
   gpgme_off_t size_hint;
 
   union
@@ -130,7 +132,28 @@ struct gpgme_data
   } data;
 };
 
+
+/* The data property types.  */
+typedef enum
+  {
+    DATA_PROP_NONE = 0,   /* Dummy property. */
+    DATA_PROP_BLANKOUT    /* Do not return the held data.  */
+  } data_prop_t;
+
+
 
+/* Return the data object's serial number for handle DH.  */
+uint64_t _gpgme_data_get_dserial (gpgme_data_t dh);
+
+/* Set an internal property of a data object.  */
+gpg_error_t _gpgme_data_set_prop (gpgme_data_t dh, uint64_t dserial,
+                                  data_prop_t name, int value);
+
+/* Get an internal property of a data object.  */
+gpg_error_t _gpgme_data_get_prop (gpgme_data_t dh, uint64_t dserial,
+                                  data_prop_t name, int *r_value);
+
+/* Create a new data object.  */
 gpgme_error_t _gpgme_data_new (gpgme_data_t *r_dh,
 			       struct _gpgme_data_cbs *cbs);
 
@@ -142,5 +165,6 @@ int _gpgme_data_get_fd (gpgme_data_t dh);
 
 /* Get the size-hint value for DH or 0 if not available.  */
 gpgme_off_t _gpgme_data_get_size_hint (gpgme_data_t dh);
+
 
 #endif	/* DATA_H */

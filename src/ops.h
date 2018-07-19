@@ -85,7 +85,8 @@ gpgme_error_t _gpgme_verify_status_handler (void *priv,
 
 
 /* From decrypt.c.  */
-gpgme_error_t _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_op_decrypt_init_result (gpgme_ctx_t ctx,
+                                             gpgme_data_t plaintext);
 gpgme_error_t _gpgme_decrypt_status_handler (void *priv,
 					     gpgme_status_code_t code,
 					     char *args);

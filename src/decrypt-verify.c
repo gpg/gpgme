@@ -58,7 +58,7 @@ decrypt_verify_start (gpgme_ctx_t ctx, int synchronous,
   if (err)
     return err;
 
-  err = _gpgme_op_decrypt_init_result (ctx);
+  err = _gpgme_op_decrypt_init_result (ctx, plain);
   if (err)
     return err;
 

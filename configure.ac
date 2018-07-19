@@ -537,7 +537,7 @@ AM_CONDITIONAL(RUN_G13_TESTS, test "$run_g13_test" = "yes")
 
 
 # Checks for header files.
-AC_CHECK_HEADERS_ONCE([locale.h sys/select.h sys/uio.h argp.h
+AC_CHECK_HEADERS_ONCE([locale.h sys/select.h sys/uio.h argp.h stdint.h
                        unistd.h sys/time.h sys/types.h sys/stat.h])
 
 
@@ -547,6 +547,15 @@ AC_CHECK_SIZEOF(unsigned int)
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
 AC_TYPE_UINTPTR_T
+
+# We require uint64_t
+if test "$ac_cv_header_stdint_h" != yes; then
+   AC_MSG_ERROR([[
+***
+*** No stdint.h and thus no uint64_t type.  Can't build this library.
+***]])
+fi
+
 
 # A simple compile time check in gpgme.h for GNU/Linux systems that
 # prevents a file offset bits mismatch between gpgme and the application.
