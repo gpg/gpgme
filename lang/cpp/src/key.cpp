@@ -1042,6 +1042,8 @@ std::ostream &operator<<(std::ostream &os, const UserID &uid)
            << "\n revoked:   " << uid.isRevoked()
            << "\n invalid:   " << uid.isInvalid()
            << "\n numsigs:   " << uid.numSignatures()
+           << "\n origin:    " << uid.origin()
+           << "\n updated:   " << uid.lastUpdate()
            << "\n tofuinfo:\n" << uid.tofuInfo();
     }
     return os << ')';
@@ -1060,6 +1062,8 @@ std::ostream &operator<<(std::ostream &os, const Key &key)
            << "\n canEncrypt: " << key.canEncrypt()
            << "\n canCertify: " << key.canCertify()
            << "\n canAuth:    " << key.canAuthenticate()
+           << "\n origin:     " << key.origin()
+           << "\n updated:    " << key.lastUpdate()
            << "\n uids:\n";
         const std::vector<UserID> uids = key.userIDs();
         std::copy(uids.begin(), uids.end(),
