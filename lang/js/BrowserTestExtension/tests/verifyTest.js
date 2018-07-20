@@ -30,14 +30,14 @@ let verifyData = {
     'Matschige Münsteraner Marshmallows\n' +
     '-----BEGIN PGP SIGNATURE-----\n' +
     '\n' +
-    'iQEzBAEBCAAdFiEE34YHmHCyv9oBiN3shwTx6WpaVdQFAlsqWxYACgkQhwTx6Wpa\n' +
-    'VdRaTQf9Fj8agQzbE6DtonewZVGzj1KmjjpyAypnDldY21lrN8zIaQ+aKqRVkVrV\n' +
-    '5A/MeUfoHh0b/9G1Co4LOuNjGS14GRNlFvPtxeA2mCwlk7kgP2i6ekbHdEXWcG9c\n' +
-    'gSbzdJ3EgfVCFNkC/yhldXSLOJZ7oyiGEteDpi8dDSa9dIprT++sQ4kRuR8jPrIi\n' +
-    'UUY+DltG3it7PybcTFfQm53I0mtnpFsizzCmgyJAkfG5fwVL3uWwbYGofD049PSu\n' +
-    '6IEkSY74r8JbAbkCOiF/ln40RYGSwM0Ta5rrb3A3MixZNL/a1r17oljkaWz8e8VT\n' +
-    'N7NUgBHwbIQ4e3RLuUU8fF3ICCGDOw==\n' +
-    '=oGai\n' +
+    'iQEzBAEBCAAdFiEE1Bc1uRI2/biCBIxaIwFjXu/wywUFAltRoiMACgkQIwFjXu/w\n' +
+    'ywUvagf6ApQbZbTPOROqfTfxAPdtzJsSDKHla6D0G5wom2gJbAVb0B2YS1c3Gjpq\n' +
+    'I4kTKT1W1RRkne0mK9cexf4sjb5DQcV8PLhfmmAJEpljDFei6i/E309BvW4CZ4rG\n' +
+    'jiurf8CkaNkrwn2fXJDaT4taVCX3V5FQAlgLxgOrm1zjiGA4mz98gi5zL4hvZXF9\n' +
+    'dHY0jLwtQMVUO99q+5XC1TJfPsnteWL9m4e/YYPfYJMZZso+/0ib/yX5vHCk7RXH\n' +
+    'CfhY40nMXSYdfl8mDOhvnKcCvy8qxetFv9uCX06OqepAamu/bvxslrzocRyJ/eq0\n' +
+    'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
+    '=ioB6\n' +
     '-----END PGP SIGNATURE-----\n'
 };
 
