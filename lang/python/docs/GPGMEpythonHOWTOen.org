@@ -340,41 +340,41 @@ pattern is upper or lower case.
 
 So this is the best method:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 k = gpg.Context().keylist(pattern="258E88DCBD3CD44D8E7AB43F6ECB6AF0DEADBEEF")
 keys = list(k)
-#+end_src
+#+END_SRC
 
 This is passable and very likely to be common:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 k = gpg.Context().keylist(pattern="0x6ECB6AF0DEADBEEF")
 keys = list(k)
-#+end_src
+#+END_SRC
 
 And this is a really bad idea:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 k = gpg.Context().keylist(pattern="0xDEADBEEF")
 keys = list(k)
-#+end_src
+#+END_SRC
 
 Alternatively it may be that the intention is to create a list of keys
 which all match a particular search string.  For instance all the
 addresses at a particular domain, like this:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 ncsc = gpg.Context().keylist(pattern="ncsc.mil")
 nsa = list(ncsc)
-#+end_src
+#+END_SRC
 
 
 *** Counting keys
@@ -386,7 +386,7 @@ Counting the number of keys in your public keybox (=pubring.kbx=), the
 format which has superseded the old keyring format (=pubring.gpg= and
 =secring.gpg=), or the number of secret keys is a very simple task.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -403,7 +403,7 @@ print("""
   Number of secret keys:  {0}
   Number of public keys:  {1}
 """.format(secnum, pubnum))
-#+end_src
+#+END_SRC
 
 
 ** Get key
@@ -424,22 +424,22 @@ secret keys as well.
 This first example demonstrates selecting the current key of Werner
 Koch, which is due to expire at the end of 2018:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 fingerprint = "80615870F5BAD690333686D0F2AD85AC1E42B367"
 key = gpg.Context().get_key(fingerprint)
-#+end_src
+#+END_SRC
 
 Whereas this example demonstrates selecting the author's current key
 with the =secret= key word argument set to =True=:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 fingerprint = "DB4724E6FA4286C92B4E55C4321E4E2373590E5D"
 key = gpg.Context().get_key(fingerprint, secret=True)
-#+end_src
+#+END_SRC
 
 It is, of course, quite possible to select expired, disabled and
 revoked keys with this function, but only to effectively display
@@ -463,7 +463,7 @@ keyservers via the web using the requests module. Since requests
 returns the content as a bytes literal object, we can then use that
 directly to import the resulting data into our keybox.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import os.path
 import requests
@@ -498,13 +498,12 @@ elif result is not None and hasattr(result, "considered") is True:
 
   The key IDs for all considered keys were:
 """.format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
-	   nochange))
+           nochange))
     for i in range(num_keys):
-	print(result.imports[i].fpr)
-	print("")
+        print("{0}\n".format(result.imports[i].fpr))
 else:
     pass
-#+end_src
+#+END_SRC
 
 *NOTE:* When searching for a key ID of any length or a fingerprint
 (without spaces), the SKS servers require the the leading =0x=
@@ -538,13 +537,13 @@ alternative, the =key_export_minimal()= method, will do the same thing
 except producing a minimised output with extra signatures and third
 party signatures or certifications removed.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import os.path
 import sys
 
 print("""
-  This script exports one or more public keys.
+This script exports one or more public keys.
 """)
 
 c = gpg.Context(armor=True)
@@ -568,9 +567,9 @@ else:
 
 if homedir.startswith("~"):
     if os.path.exists(os.path.expanduser(homedir)) is True:
-	c.home_dir = os.path.expanduser(homedir)
+        c.home_dir = os.path.expanduser(homedir)
     else:
-	pass
+        pass
 elif os.path.exists(homedir) is True:
     c.home_dir = homedir
 else:
@@ -583,17 +582,17 @@ except:
 
 if result is not None:
     with open(keyfile, "wb") as f:
-	f.write(result)
+        f.write(result)
 else:
     pass
-#+end_src
+#+END_SRC
 
 It is important to note that the result will only return =None= when a
 pattern has been entered for =logrus=, but it has not matched any
 keys. When the search pattern itself is set to =None= this triggers
 the exporting of the entire public keybox.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import os.path
 import sys
@@ -623,9 +622,9 @@ else:
 
 if homedir.startswith("~"):
     if os.path.exists(os.path.expanduser(homedir)) is True:
-	c.home_dir = os.path.expanduser(homedir)
+        c.home_dir = os.path.expanduser(homedir)
     else:
-	pass
+        pass
 elif os.path.exists(homedir) is True:
     c.home_dir = homedir
 else:
@@ -638,10 +637,10 @@ except:
 
 if result is not None:
     with open(keyfile, "wb") as f:
-	f.write(result)
+        f.write(result)
 else:
     pass
-#+end_src
+#+END_SRC
 
 
 *** Exporting secret keys
@@ -657,7 +656,7 @@ The following example exports the secret key to a file which is then
 set with the same permissions as the output files created by the
 command line secret key export options.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import os
 import os.path
@@ -690,9 +689,9 @@ else:
 
 if homedir.startswith("~"):
     if os.path.exists(os.path.expanduser(homedir)) is True:
-	c.home_dir = os.path.expanduser(homedir)
+        c.home_dir = os.path.expanduser(homedir)
     else:
-	pass
+        pass
 elif os.path.exists(homedir) is True:
     c.home_dir = homedir
 else:
@@ -705,11 +704,11 @@ except:
 
 if result is not None:
     with open(keyfile, "wb") as f:
-	f.write(result)
+        f.write(result)
     os.chmod(keyfile, 0o600)
 else:
     pass
-#+end_src
+#+END_SRC
 
 Alternatively the approach of the following script can be used.  This
 longer example saves the exported secret key(s) in files in the GnuPG
@@ -718,7 +717,7 @@ readable and writable by the user.  It also exports the secret key(s)
 twice in order to output both GPG binary (=.gpg=) and ASCII armoured
 (=.asc=) files.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import os
 import os.path
@@ -760,9 +759,9 @@ else:
 
 if homedir.startswith("~"):
     if os.path.exists(os.path.expanduser(homedir)) is True:
-	c.home_dir = os.path.expanduser(homedir)
+        c.home_dir = os.path.expanduser(homedir)
     else:
-	pass
+        pass
 elif os.path.exists(homedir) is True:
     c.home_dir = homedir
 else:
@@ -770,16 +769,16 @@ else:
 
 if c.home_dir is not None:
     if c.home_dir.endswith("/"):
-	gpgfile = "{0}{1}.gpg".format(c.home_dir, keyfile)
-	ascfile = "{0}{1}.asc".format(c.home_dir, keyfile)
+        gpgfile = "{0}{1}.gpg".format(c.home_dir, keyfile)
+        ascfile = "{0}{1}.asc".format(c.home_dir, keyfile)
     else:
-	gpgfile = "{0}/{1}.gpg".format(c.home_dir, keyfile)
-	ascfile = "{0}/{1}.asc".format(c.home_dir, keyfile)
+        gpgfile = "{0}/{1}.gpg".format(c.home_dir, keyfile)
+        ascfile = "{0}/{1}.asc".format(c.home_dir, keyfile)
 else:
     if os.path.exists(os.environ["GNUPGHOME"]) is True:
-	hd = os.environ["GNUPGHOME"]
+        hd = os.environ["GNUPGHOME"]
     else:
-	hd = subprocess.getoutput(gpgconfcmd)
+        hd = subprocess.getoutput(gpgconfcmd)
     gpgfile = "{0}/{1}.gpg".format(hd, keyfile)
     ascfile = "{0}/{1}.asc".format(hd, keyfile)
 
@@ -792,18 +791,18 @@ except:
 
 if a_result is not None:
     with open(ascfile, "wb") as f:
-	f.write(a_result)
+        f.write(a_result)
     os.chmod(ascfile, 0o600)
 else:
     pass
 
 if b_result is not None:
     with open(gpgfile, "wb") as f:
-	f.write(b_result)
+        f.write(b_result)
     os.chmod(gpgfile, 0o600)
 else:
     pass
-#+end_src
+#+END_SRC
 
 
 * Basic Functions
@@ -850,7 +849,7 @@ trust model settings for recipient keys (defaults to =False=);
 =expect_sign=, prepare for signing (defaults to =False=); =compress=,
 compresses the plaintext prior to encryption (defaults to =True=).
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 a_key = "0x12345678DEADBEEF"
@@ -867,14 +866,14 @@ ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=False)
 
 with open("secret_plans.txt.asc", "wb") as afile:
     afile.write(ciphertext)
-#+end_src
+#+END_SRC
 
 Though this is even more likely to be used like this; with the
 plaintext input read from a file, the recipient keys used for
 encryption regardless of key trust status and the encrypted output
 also encrypted to any preconfigured keys set in the =gpg.conf= file:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 a_key = "0x12345678DEADBEEF"
@@ -885,12 +884,12 @@ with open("secret_plans.txt", "rb") as afile:
 c = gpg.Context(armor=True)
 rkey = list(c.keylist(pattern=a_key, secret=False))
 ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=True,
-					    always_trust=True,
-					    add_encrypt_to=True)
+                                            always_trust=True,
+                                            add_encrypt_to=True)
 
 with open("secret_plans.txt.asc", "wb") as afile:
     afile.write(ciphertext)
-#+end_src
+#+END_SRC
 
 If the =recipients= paramater is empty then the plaintext is encrypted
 symmetrically.  If no =passphrase= is supplied as a parameter or via a
@@ -911,7 +910,7 @@ email address on the =gnupg.org= domain,[fn:3] but does /not/ encrypt
 to a default key or other key which is configured to normally encrypt
 to.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 text = b"""Oh look, another test message.
@@ -933,24 +932,24 @@ logrus = []
 
 for i in range(len(rpattern)):
     if rpattern[i].can_encrypt == 1:
-	logrus.append(rpattern[i])
+        logrus.append(rpattern[i])
 
 ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
-					    sign=False, always_trust=True)
+                                            sign=False, always_trust=True)
 
 with open("secret_plans.txt.asc", "wb") as afile:
     afile.write(ciphertext)
-#+end_src
+#+END_SRC
 
 All it would take to change the above example to sign the message
 and also encrypt the message to any configured default keys would
 be to change the =c.encrypt= line to this:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
-					    always_trust=True,
-					    add_encrypt_to=True)
-#+end_src
+                                            always_trust=True,
+                                            add_encrypt_to=True)
+#+END_SRC
 
 The only keyword arguments requiring modification are those for which
 the default values are changing.  The default value of =sign= is
@@ -962,7 +961,7 @@ are not trusted (e.g. not signed or locally signed) then the
 encryption will raise an error.  It is possible to mitigate this
 somewhat with something more like this:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 with open("secret_plans.txt.asc", "rb") as afile:
@@ -974,27 +973,27 @@ logrus = []
 
 for i in range(len(rpattern)):
     if rpattern[i].can_encrypt == 1:
-	logrus.append(rpattern[i])
+        logrus.append(rpattern[i])
 
     try:
-	ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
-						    add_encrypt_to=True)
+        ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                                    add_encrypt_to=True)
     except gpg.errors.InvalidRecipients as e:
-	for i in range(len(e.recipients)):
-	    for n in range(len(logrus)):
-		if logrus[n].fpr == e.recipients[i].fpr:
-		    logrus.remove(logrus[n])
-		else:
-		    pass
-	try:
-	    ciphertext, result, sign_result = c.encrypt(text,
-							recipients=logrus,
-							add_encrypt_to=True)
-	    with open("secret_plans.txt.asc", "wb") as afile:
-		afile.write(ciphertext)
-	except:
-	    pass
-#+end_src
+        for i in range(len(e.recipients)):
+            for n in range(len(logrus)):
+                if logrus[n].fpr == e.recipients[i].fpr:
+                    logrus.remove(logrus[n])
+                else:
+                    pass
+        try:
+            ciphertext, result, sign_result = c.encrypt(text,
+                                                        recipients=logrus,
+                                                        add_encrypt_to=True)
+            with open("secret_plans.txt.asc", "wb") as afile:
+                afile.write(ciphertext)
+        except:
+            pass
+#+END_SRC
 
 This will attempt to encrypt to all the keys searched for, then remove
 invalid recipients if it fails and try again.
@@ -1014,7 +1013,7 @@ to modify the Context prior to conducting the decryption and since the
 Context is only used once, setting it to =c= simply adds lines for no
 gain.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 ciphertext = input("Enter path and filename of encrypted file: ")
@@ -1022,17 +1021,17 @@ newfile = input("Enter path and filename of file to save decrypted data to: ")
 
 with open(ciphertext, "rb") as cfile:
     try:
-	plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+        plaintext, result, verify_result = gpg.Context().decrypt(cfile)
     except gpg.errors.GPGMEError as e:
-	plaintext = None
-	print(e)
+        plaintext = None
+        print(e)
 
-    if plaintext is not None:
-	with open(newfile, "wb") as nfile:
+if plaintext is not None:
+    with open(newfile, "wb") as nfile:
 	    nfile.write(plaintext)
     else:
-	pass
-#+end_src
+        pass
+#+END_SRC
 
 The data available in =plaintext= in this example is the decrypted
 content as a byte object, the recipient key IDs and algorithms in
@@ -1059,13 +1058,13 @@ default key specified and there is more than one secret key available
 it may be necessary to specify the key or keys with which to sign
 messages and files.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 logrus = input("Enter the email address or string to match signing keys to: ")
 hancock = gpg.Context().keylist(pattern=logrus, secret=True)
 sig_src = list(hancock)
-#+end_src
+#+END_SRC
 
 The signing examples in the following sections include the explicitly
 designated =signers= parameter in two of the five examples; once where
@@ -1100,7 +1099,7 @@ multiple keys are involved; from the preferences saved into the key
 itself or by comparison with the preferences with all other keys
 involved.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 text0 = """Declaration of ... something.
@@ -1113,14 +1112,14 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
 with open("/path/to/statement.txt.asc", "w") as afile:
     afile.write(signed_data.decode())
-#+end_src
+#+END_SRC
 
 Though everything in this example is accurate, it is more likely that
 reading the input data from another file and writing the result to a
 new file will be performed more like the way it is done in the next
 example.  Even if the output format is ASCII armoured.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 with open("/path/to/statement.txt", "rb") as tfile:
@@ -1131,7 +1130,7 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
 
 with open("/path/to/statement.txt.sig", "wb") as afile:
     afile.write(signed_data)
-#+end_src
+#+END_SRC
 
 
 *** Detached signing messages and files
@@ -1143,7 +1142,7 @@ Detached signatures will often be needed in programmatic uses of
 GPGME, either for signing files (e.g. tarballs of code releases) or as
 a component of message signing (e.g. PGP/MIME encoded email).
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 text0 = """Declaration of ... something.
@@ -1156,12 +1155,12 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
 with open("/path/to/statement.txt.asc", "w") as afile:
     afile.write(signed_data.decode())
-#+end_src
+#+END_SRC
 
 As with normal signatures, detached signatures are best handled as
 byte literals, even when the output is ASCII armoured.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 with open("/path/to/statement.txt", "rb") as tfile:
@@ -1172,7 +1171,7 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
 
 with open("/path/to/statement.txt.sig", "wb") as afile:
     afile.write(signed_data)
-#+end_src
+#+END_SRC
 
 
 *** Clearsigning messages or text
@@ -1184,7 +1183,7 @@ Though PGP/in-line messages are no longer encouraged in favour of
 PGP/MIME, there is still sometimes value in utilising in-line
 signatures.  This is where clear-signed messages or text is of value.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 text0 = """Declaration of ... something.
@@ -1197,12 +1196,12 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
 with open("/path/to/statement.txt.asc", "w") as afile:
     afile.write(signed_data.decode())
-#+end_src
+#+END_SRC
 
 In spite of the appearance of a clear-signed message, the data handled
 by GPGME in signing it must still be byte literals.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 with open("/path/to/statement.txt", "rb") as tfile:
@@ -1213,7 +1212,7 @@ signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
 
 with open("/path/to/statement.txt.asc", "wb") as afile:
     afile.write(signed_data)
-#+end_src
+#+END_SRC
 
 
 ** Signature verification
@@ -1229,7 +1228,7 @@ with files and data with detached signatures.
 The following example is intended for use with the default signing
 method where the file was not ASCII armoured:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import time
 
@@ -1247,21 +1246,21 @@ except gpg.errors.BadSignatures as e:
 
 if verified is True:
     for i in range(len(result.signatures)):
-	sign = result.signatures[i]
-	print("""Good signature from:
+        sign = result.signatures[i]
+        print("""Good signature from:
 {0}
 with key {1}
 made at {2}
 """.format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
-	   time.ctime(sign.timestamp)))
+           time.ctime(sign.timestamp)))
 else:
     pass
-#+end_src
+#+END_SRC
 
 Whereas this next example, which is almost identical would work with
 normal ASCII armoured files and with clear-signed files:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import time
 
@@ -1279,22 +1278,22 @@ except gpg.errors.BadSignatures as e:
 
 if verified is True:
     for i in range(len(result.signatures)):
-	sign = result.signatures[i]
-	print("""Good signature from:
+        sign = result.signatures[i]
+        print("""Good signature from:
 {0}
 with key {1}
 made at {2}
 """.format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
-	   time.ctime(sign.timestamp)))
+           time.ctime(sign.timestamp)))
 else:
     pass
-#+end_src
+#+END_SRC
 
 In both of the previous examples it is also possible to compare the
 original data that was signed against the signed data in =data= to see
 if it matches with something like this:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 with open(filename, "rb") as afile:
     text = afile.read()
 
@@ -1302,7 +1301,7 @@ if text == data:
     print("Good signature.")
 else:
     pass
-#+end_src
+#+END_SRC
 
 The following two examples, however, deal with detached signatures.
 With his method of verification the data that was signed does not get
@@ -1310,7 +1309,7 @@ returned since it is already being explicitly referenced in the first
 argument of =c.verify=.  So =data= is =None= and only the information
 in =result= is available.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import time
 
@@ -1328,18 +1327,18 @@ except gpg.errors.BadSignatures as e:
 
 if verified is True:
     for i in range(len(result.signatures)):
-	sign = result.signatures[i]
-	print("""Good signature from:
+        sign = result.signatures[i]
+        print("""Good signature from:
 {0}
 with key {1}
 made at {2}
 """.format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
-	   time.ctime(sign.timestamp)))
+           time.ctime(sign.timestamp)))
 else:
     pass
-#+end_src
+#+END_SRC
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 import time
 
@@ -1357,16 +1356,16 @@ except gpg.errors.BadSignatures as e:
 
 if verified is True:
     for i in range(len(result.signatures)):
-	sign = result.signatures[i]
-	print("""Good signature from:
+        sign = result.signatures[i]
+        print("""Good signature from:
 {0}
 with key {1}
 made at {2}
 """.format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
-	   time.ctime(sign.timestamp)))
+           time.ctime(sign.timestamp)))
 else:
     pass
-#+end_src
+#+END_SRC
 
 
 * Creating keys and subkeys
@@ -1387,7 +1386,7 @@ clearance, so his keys will be 3072-bit keys.
 The pre-configured =gpg.conf= file which sets cipher, digest and other
 preferences contains the following configuration parameters:
 
-#+begin_src conf
+#+BEGIN_SRC conf
   expert
   allow-freeform-uid
   allow-secret-key-import
@@ -1400,7 +1399,7 @@ preferences contains the following configuration parameters:
   personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
   personal-digest-preferences SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1
   personal-compress-preferences ZLIB BZIP2 ZIP Uncompressed
-#+end_src
+#+END_SRC
 
 
 ** Primary key
@@ -1423,7 +1422,7 @@ be the passphrase and if =passphrase= is set to =True= then gpg-agent
 will launch pinentry to prompt for a passphrase.  For the sake of
 convenience, these examples will keep =passphrase= set to =None=.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -1432,8 +1431,8 @@ c.home_dir = "~/.gnupg-dm"
 userid = "Danger Mouse <dm@secret.example.net>"
 
 dmkey = c.create_key(userid, algorithm="rsa3072", expires_in=31536000,
-		     sign=True, certify=True)
-#+end_src
+                     sign=True, certify=True)
+#+END_SRC
 
 One thing to note here is the use of setting the =c.home_dir=
 parameter.  This enables generating the key or keys in a different
@@ -1451,22 +1450,22 @@ already set and the correct directory and file permissions.
 The successful generation of the key can be confirmed via the returned
 =GenkeyResult= object, which includes the following data:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 print("""
-   Fingerprint:  {0}
-   Primary Key:  {1}
-    Public Key:  {2}
-    Secret Key:  {3}
-   Sub Key:  {4}
-  User IDs:  {5}
-   """.format(dmkey.fpr, dmkey.primary, dmkey.pubkey, dmkey.seckey, dmkey.sub,
-	      dmkey.uid))
-#+end_src
+ Fingerprint:  {0}
+ Primary Key:  {1}
+  Public Key:  {2}
+  Secret Key:  {3}
+ Sub Key:  {4}
+User IDs:  {5}
+""".format(dmkey.fpr, dmkey.primary, dmkey.pubkey, dmkey.seckey, dmkey.sub,
+           dmkey.uid))
+#+END_SRC
 
 Alternatively the information can be confirmed using the command line
 program:
 
-#+begin_src shell
+#+BEGIN_SRC shell
   bash-4.4$ gpg --homedir ~/.gnupg-dm -K
   ~/.gnupg-dm/pubring.kbx
   ----------------------
@@ -1475,7 +1474,7 @@ program:
   uid           [ultimate] Danger Mouse <dm@secret.example.net>
 
   bash-4.4$
-#+end_src
+#+END_SRC
 
 As with generating keys manually, to preconfigure expanded preferences
 for the cipher, digest and compression algorithms, the =gpg.conf= file
@@ -1483,7 +1482,7 @@ must contain those details in the home directory in which the new key
 is being generated.  I used a cut down version of my own =gpg.conf=
 file in order to be able to generate this:
 
-#+begin_src shell
+#+BEGIN_SRC shell
   bash-4.4$ gpg --homedir ~/.gnupg-dm --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
   Secret key is available.
 
@@ -1499,7 +1498,7 @@ file in order to be able to generate this:
        Features: MDC, Keyserver no-modify
 
   bash-4.4$
-#+end_src
+#+END_SRC
 
 
 ** Subkeys
@@ -1518,7 +1517,7 @@ primary key.  Since Danger Mouse is a security conscious secret agent,
 this subkey will only be valid for about six months, half the length
 of the primary key.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -1526,26 +1525,26 @@ c.home_dir = "~/.gnupg-dm"
 
 key = c.get_key(dmkey.fpr, secret=True)
 dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
-			encrypt=True)
-#+end_src
+                        encrypt=True)
+#+END_SRC
 
 As with the primary key, the results here can be checked with:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 print("""
-   Fingerprint:  {0}
-   Primary Key:  {1}
-    Public Key:  {2}
-    Secret Key:  {3}
-   Sub Key:  {4}
-  User IDs:  {5}
-   """.format(dmsub.fpr, dmsub.primary, dmsub.pubkey, dmsub.seckey, dmsub.sub,
-	      dmsub.uid))
-#+end_src
+ Fingerprint:  {0}
+ Primary Key:  {1}
+  Public Key:  {2}
+  Secret Key:  {3}
+ Sub Key:  {4}
+User IDs:  {5}
+""".format(dmsub.fpr, dmsub.primary, dmsub.pubkey, dmsub.seckey, dmsub.sub,
+           dmsub.uid))
+#+END_SRC
 
 As well as on the command line with:
 
-#+begin_src shell
+#+BEGIN_SRC shell
   bash-4.4$ gpg --homedir ~/.gnupg-dm -K
   ~/.gnupg-dm/pubring.kbx
   ----------------------
@@ -1555,7 +1554,7 @@ As well as on the command line with:
   ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
 
   bash-4.4$
-#+end_src
+#+END_SRC
 
 
 ** User IDs
@@ -1574,7 +1573,7 @@ ID to an existing key is much simpler.  The method used to do this is
 =key_add_uid= and the only arguments it takes are for the =key= and
 the new =uid=.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -1585,11 +1584,11 @@ key = c.get_key(dmfpr, secret=True)
 uid = "Danger Mouse <danger.mouse@secret.example.net>"
 
 c.key_add_uid(key, uid)
-#+end_src
+#+END_SRC
 
 Unsurprisingly the result of this is:
 
-#+begin_src shell
+#+BEGIN_SRC shell
   bash-4.4$ gpg --homedir ~/.gnupg-dm -K
   ~/.gnupg-dm/pubring.kbx
   ----------------------
@@ -1600,7 +1599,7 @@ Unsurprisingly the result of this is:
   ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
 
   bash-4.4$
-#+end_src
+#+END_SRC
 
 
 *** Revokinging User IDs
@@ -1611,7 +1610,7 @@ Unsurprisingly the result of this is:
 Revoking a user ID is a fairly similar process, except that it uses
 the =key_revoke_uid= method.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -1622,7 +1621,7 @@ key = c.get_key(dmfpr, secret=True)
 uid = "Danger Mouse <danger.mouse@secret.example.net>"
 
 c.key_revoke_uid(key, uid)
-#+end_src
+#+END_SRC
 
 
 ** Key certification
@@ -1651,7 +1650,7 @@ it is case sensitive.
 To sign Danger Mouse's key for just the initial user ID with a
 signature which will last a little over a month, do this:
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import gpg
 
 c = gpg.Context()
@@ -1660,7 +1659,7 @@ uid = "Danger Mouse <dm@secret.example.net>"
 dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
 key = c.get_key(dmfpr, secret=True)
 c.key_sign(key, uids=uid, expires_in=2764800)
-#+end_src
+#+END_SRC
 
 
 * Miscellaneous work-arounds
@@ -1682,16 +1681,16 @@ MUAs readily.
 The following code, however, provides a work-around for obtaining this
 information in Python.
 
-#+begin_src python -i
+#+BEGIN_SRC python -i
 import subprocess
 
 lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:
-	line = lines[i]
+        line = lines[i]
     else:
-	pass
+        pass
 
 groups = line.split(":")[-1].replace('"', '').split(',')
 
@@ -1704,7 +1703,7 @@ for i in range(len(groups)):
 
 for i in range(len(group_lists)):
     group_lists[i][1] = group_lists[i][1].split()
-#+end_src
+#+END_SRC
 
 The result of that code is that =group_lines= is a list of lists where
 =group_lines[i][0]= is the name of the group and =group_lines[i][1]=
