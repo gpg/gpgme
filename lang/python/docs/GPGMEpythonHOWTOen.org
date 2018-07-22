@@ -1,4 +1,5 @@
 #+TITLE: GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
+#+AUTHOR: Ben McGinnes
 #+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: article
 #+LATEX_CLASS_OPTIONS: [12pt]
