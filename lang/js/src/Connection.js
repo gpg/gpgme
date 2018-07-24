@@ -240,7 +240,8 @@ class Answer{
             switch (key) {
             case 'type':
                 if (_decodedResponse.type === 'error'){
-                    return (gpgme_error('GNUPG_ERROR', _decodedResponse.msg));
+                    return (gpgme_error('GNUPG_ERROR',
+                        decodeURIComponent(escape(_decodedResponse.msg))));
                 } else if (poa.type.indexOf(_decodedResponse.type) < 0){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
