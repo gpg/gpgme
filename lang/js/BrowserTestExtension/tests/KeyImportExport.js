@@ -83,6 +83,32 @@ describe('Key importing', function () {
                 });
         });
     });
+
+    it('Import result feedback', function(done){
+        let prm = Gpgmejs.init();
+        prm.then(function (context) {
+            context.Keyring.getKeys(ImportablePublicKey.fingerprint).then(
+                function(result){
+                    expect(result).to.be.an('array');
+                    expect(result.length).to.equal(0);
+                    context.Keyring.importKey(ImportablePublicKey.key, true)
+                        .then(function(result){
+                            expect(result).to.be.an('object');
+                            expect(result.Keys[0]).to.be.an('object');
+                            expect(result.Keys[0].key.fingerprint).to.equal(
+                                ImportablePublicKey.fingerprint);
+                            expect(result.Keys[0].status).to.equal('newkey');
+                            result.Keys[0].key.getArmor().then(function(armor){
+                                expect(armor).to.be.a('string');
+                                result.Keys[0].key.delete().then(function(){
+                                    done();
+                                });
+                            });
+                        });
+                });
+        });
+    });
+
     it('exporting armored Key with getKeysArmored', function (done) {
         let prm = Gpgmejs.init();
         const fpr = inputvalues.encrypt.good.fingerprint;

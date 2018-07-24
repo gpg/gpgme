@@ -141,7 +141,7 @@ export class GPGME_Key {
      * during a session. The key still can be reloaded by invoking
      * {@link refreshKey}.
      * @returns {*|Promise<*>} the value (Boolean, String, Array, Object).
-     * If 'cached' is true, the value will be resolved as a Promise.
+     * If 'cached' is false, the value will be resolved as a Promise.
      */
     get(property, cached=true) {
         if (cached === false) {
@@ -194,8 +194,11 @@ export class GPGME_Key {
                 if (result.keys.length === 1){
                     me.setKeyData(result.keys[0]);
                     me.getHasSecret().then(function(){
-                        //TODO retrieve armored Key
-                        resolve(me);
+                        me.getArmor().then(function(){
+                            resolve(me);
+                        }, function(error){
+                            reject(error);
+                        });
                     }, function(error){
                         reject(error);
                     });
