@@ -347,6 +347,9 @@ const Key &Key::mergeWith(const Key &other)
 
 void Key::update()
 {
+    if (isNull() || !primaryFingerprint()) {
+        return;
+    }
     auto ctx = Context::createForProtocol(protocol());
     if (!ctx) {
         return;

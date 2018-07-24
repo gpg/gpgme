@@ -406,7 +406,7 @@ GpgME::Key GpgME::Signature::key(bool search, bool update) const
     }
 
     GpgME::Key ret = key();
-    if (ret.isNull() && search) {
+    if (ret.isNull() && search && fingerprint ()) {
         auto ctx = Context::createForProtocol (d->proto);
         if (ctx) {
             ctx->setKeyListMode(KeyListMode::Local |
