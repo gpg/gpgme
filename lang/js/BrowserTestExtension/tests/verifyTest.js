@@ -21,64 +21,63 @@
  *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-/* global describe, it, expect, bigString, inputvalues, Gpgmejs */
+/* global describe, it, expect, before, bigString, inputvalues, Gpgmejs */
 
-let verifyData = {
-    signedMessage: '-----BEGIN PGP SIGNED MESSAGE-----\n' +
-    'Hash: SHA256\n' +
-    '\n' +
-    'Matschige Münsteraner Marshmallows\n' +
-    '-----BEGIN PGP SIGNATURE-----\n' +
-    '\n' +
-    'iQEzBAEBCAAdFiEE1Bc1uRI2/biCBIxaIwFjXu/wywUFAltRoiMACgkQIwFjXu/w\n' +
-    'ywUvagf6ApQbZbTPOROqfTfxAPdtzJsSDKHla6D0G5wom2gJbAVb0B2YS1c3Gjpq\n' +
-    'I4kTKT1W1RRkne0mK9cexf4sjb5DQcV8PLhfmmAJEpljDFei6i/E309BvW4CZ4rG\n' +
-    'jiurf8CkaNkrwn2fXJDaT4taVCX3V5FQAlgLxgOrm1zjiGA4mz98gi5zL4hvZXF9\n' +
-    'dHY0jLwtQMVUO99q+5XC1TJfPsnteWL9m4e/YYPfYJMZZso+/0ib/yX5vHCk7RXH\n' +
-    'CfhY40nMXSYdfl8mDOhvnKcCvy8qxetFv9uCX06OqepAamu/bvxslrzocRyJ/eq0\n' +
-    'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
-    '=ioB6\n' +
-    '-----END PGP SIGNATURE-----\n'
-};
 
-describe('Verify data', function () {
+
+describe('Verifying data', function () {
+    let context = null;
+    before(function(done){
+        const prm = Gpgmejs.init();
+        prm.then(function(gpgmejs){
+            context = gpgmejs;
+            done();
+        });
+    });
     it('Successful verify message', function (done) {
-        let message = verifyData.signedMessage;
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            context.verify(message).then(function(result){
-                expect(result.data).to.be.a('string');
-                expect(result.all_valid).to.be.true;
-                expect(result.count).to.equal(1);
-                expect(result.signatures.good).to.be.an('array');
-                expect(result.signatures.good.length).to.equal(1);
-                expect(result.signatures.good[0].fingerprint)
-                    .to.be.a('string');
-                expect(result.signatures.good[0].valid).to.be.true;
-                done();
-            });
+        const message = inputvalues.signedMessage.good;
+        context.verify(message).then(function(result){
+            expect(result.data).to.be.a('string');
+            expect(result.all_valid).to.be.true;
+            expect(result.count).to.equal(1);
+            expect(result.signatures.good).to.be.an('array');
+            expect(result.signatures.good.length).to.equal(1);
+            expect(result.signatures.good[0].fingerprint).to.be.a('string');
+            expect(result.signatures.good[0].valid).to.be.true;
+            done();
+        });
+    });
+
+    it('Successfully recognize changed cleartext', function (done) {
+        const message = inputvalues.signedMessage.bad;
+        context.verify(message).then(function(result){
+            expect(result.data).to.be.a('string');
+            expect(result.all_valid).to.be.false;
+            expect(result.count).to.equal(1);
+            expect(result.signatures.bad).to.be.an('array');
+            expect(result.signatures.bad.length).to.equal(1);
+            expect(result.signatures.bad[0].fingerprint).to.be.a('string');
+            expect(result.signatures.bad[0].valid).to.be.false;
+            done();
         });
     });
 
     it('Encrypt-Sign-Verify random message', function (done) {
-        let message = bigString(2000);
+        const message = bigString(2000);
         let fpr = inputvalues.encrypt.good.fingerprint;
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            context.encrypt(message, fpr).then(function(message_enc){
-                context.sign(message_enc.data, fpr).then(function(message_encsign){
-                    context.verify(message_encsign.data).then(function(result){
-                        expect(result.data).to.equal(message_enc.data);
-                        expect(result.data).to.be.a('string');
-                        expect(result.all_valid).to.be.true;
-                        expect(result.count).to.equal(1);
-                        expect(result.signatures.good).to.be.an('array');
-                        expect(result.signatures.good.length).to.equal(1);
-                        expect(result.signatures.good[0].fingerprint)
-                            .to.equal(fpr);
-                        expect(result.signatures.good[0].valid).to.be.true;
-                        done();
-                    });
+        context.encrypt(message, fpr).then(function(message_enc){
+            context.sign(message_enc.data, fpr).then(function(message_encsign){
+                context.verify(message_encsign.data).then(function(result){
+                    expect(result.data).to.equal(message_enc.data);
+                    expect(result.data).to.be.a('string');
+                    expect(result.all_valid).to.be.true;
+                    expect(result.count).to.equal(1);
+                    expect(result.signatures.good).to.be.an('array');
+                    expect(result.signatures.good.length).to.equal(1);
+                    expect(
+                        result.signatures.good[0].fingerprint).to.equal(fpr);
+                    expect(result.signatures.good[0].valid).to.be.true;
+                    done();
                 });
             });
         });

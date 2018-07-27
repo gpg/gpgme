@@ -22,18 +22,25 @@
  *     Raimund Renkert <rrenkert@intevation.de>
  */
 
-/* global describe, it, expect, Gpgmejs, ImportablePublicKey, inputvalues */
+/* global describe, it, expect, before, afterEach, Gpgmejs*/
+/* global ImportablePublicKey, inputvalues */
 
 describe('Key importing', function () {
-    it('Prepare test Key (deleting it from gnupg, if present)', function(done){
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            expect(context.Keyring.getKeys).to.be.a('function');
-            context.Keyring.getKeys(ImportablePublicKey.fingerprint).then(
+    const fpr = ImportablePublicKey.fingerprint;
+    const pubKey = ImportablePublicKey.key;
+    const changedKey = ImportablePublicKey.keyChangedUserId;
+
+    let context = null;
+    before(function(done){
+        const prm = Gpgmejs.init();
+        prm.then(function(gpgmejs){
+            context = gpgmejs;
+            context.Keyring.getKeys(fpr).then(
                 function(result){
                     if (result.length === 1) {
-                        result[0].delete().then(function(result){
-                            expect(result).to.be.true;
+                        result[0].delete().then(function(){
+                            done();
+                        },function(){
                             done();
                         });
                     } else {
@@ -43,76 +50,79 @@ describe('Key importing', function () {
         });
     });
 
-    it('importing, updating, then deleting public Key', function (done) {
-        //This test runs in one large step, to ensure the proper state of the
-        // key in all stages.
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            context.Keyring.getKeys(ImportablePublicKey.fingerprint).then(
-                function(result){
-                    expect(result).to.be.an('array');
-                    expect(result.length).to.equal(0);
-                    context.Keyring.importKey(ImportablePublicKey.key, true)
-                        .then(function(result){
-                            expect(result.Keys[0]).to.not.be.undefined;
-                            expect(result.Keys[0].key).to.be.an('object');
-                            expect(result.Keys[0].key.fingerprint).to.equal(
-                                ImportablePublicKey.fingerprint);
-                            expect(result.Keys[0].status).to.equal('newkey');
-                            context.Keyring.importKey(
-                                ImportablePublicKey.keyChangedUserId,true)
-                                .then(function(res){
-                                    expect(res.Keys[0]).to.not.be.undefined;
-                                    expect(res.Keys[0].key).to.be.an('object');
-                                    expect(res.Keys[0].key.fingerprint).to.equal(
-                                        ImportablePublicKey.fingerprint);
-                                    expect(res.Keys[0].status).to.equal(
-                                        'change');
-                                    expect(
-                                        res.Keys[0].changes.userId).to.be.true;
-                                    expect(
-                                        res.Keys[0].changes.subkey).to.be.false;
-                                    expect(
-                                        res.Keys[0].changes.signature).to.be.true;
-                                    res.Keys[0].key.delete().then(function(result){
-                                        expect(result).to.be.true;
-                                        done();
-                                    });
-                                });
-                        });
+    afterEach(function(done){
+        // delete the test key if still present
+        context.Keyring.getKeys(fpr).then(
+            function(result){
+                if (result.length === 1) {
+                    result[0].delete().then(function(){
+                        done();
+                    },function(){
+                        done();
+                    });
+                } else {
+                    done();
+                }
+            });
+    });
+
+    it('Importing Key', function (done) {
+        context.Keyring.getKeys(fpr).then(function(result){
+            expect(result).to.be.an('array');
+            expect(result.length).to.equal(0);
+            context.Keyring.importKey(pubKey).then(function(result){
+                expect(result[0]).to.not.be.undefined;
+                expect(result[0].key).to.be.an('object');
+                expect(result[0].key.fingerprint).to.equal(fpr);
+                expect(result[0].status).to.equal('newkey');
+                done();
+            });
+        });
+    });
+
+    it('Updating Key', function(done){
+        context.Keyring.importKey(pubKey)
+            .then(function(result){
+                expect(result[0].key).to.not.be.undefined;
+                expect(result[0].status).to.equal('newkey');
+                context.Keyring.importKey(changedKey).then(function(res){
+                    expect(res[0].key).to.be.an('object');
+                    expect(res[0].key.fingerprint).to.equal(fpr);
+                    expect(res[0].status).to.equal('change');
+                    expect(res[0].changes.userId).to.be.true;
+                    expect(res[0].changes.subkey).to.be.false;
+                    expect(res[0].changes.signature).to.be.true;
+                    done();
                 });
+            });
+    });
+
+    it('Deleting Key', function(done) {
+        context.Keyring.importKey(pubKey).then(function(result){
+            expect(result[0].key).to.be.an('object');
+            expect(result[0].key.fingerprint).to.equal(fpr);
+            result[0].key.delete().then(function(result){
+                expect(result).to.be.true;
+                done();
+            });
         });
     });
 
     it('Import result feedback', function(done){
-        let prm = Gpgmejs.init();
-        prm.then(function (context) {
-            context.Keyring.getKeys(ImportablePublicKey.fingerprint).then(
-                function(result){
-                    expect(result).to.be.an('array');
-                    expect(result.length).to.equal(0);
-                    context.Keyring.importKey(ImportablePublicKey.key, true)
-                        .then(function(result){
-                            expect(result).to.be.an('object');
-                            expect(result.Keys[0]).to.be.an('object');
-                            expect(result.Keys[0].key.fingerprint).to.equal(
-                                ImportablePublicKey.fingerprint);
-                            expect(result.Keys[0].status).to.equal('newkey');
-                            result.Keys[0].key.getArmor().then(function(armor){
-                                expect(armor).to.be.a('string');
-                                result.Keys[0].key.delete().then(function(){
-                                    done();
-                                });
-                            });
-                        });
-                });
+        context.Keyring.importKey(pubKey, true).then(function(result){
+            expect(result).to.be.an('object');
+            expect(result.Keys[0]).to.be.an('object');
+            expect(result.Keys[0].key.fingerprint).to.equal(fpr);
+            expect(result.Keys[0].status).to.equal('newkey');
+            result.Keys[0].key.getArmor().then(function(armor){
+                expect(armor).to.be.a('string');
+                done();
+            });
         });
     });
 
     it('exporting armored Key with getKeysArmored', function (done) {
-        let prm = Gpgmejs.init();
-        const fpr = inputvalues.encrypt.good.fingerprint;
-        prm.then(function (context) {
+        context.Keyring.importKey(pubKey).then(function(){
             context.Keyring.getKeysArmored(fpr).then(function(result){
                 expect(result).to.be.an('object');
                 expect(result.armored).to.be.a('string');
@@ -121,18 +131,15 @@ describe('Key importing', function () {
             });
         });
     });
-    it('exporting armored Key (including secret fingerprints) with '
-        + 'getKeysArmored', function (done) {
-        let prm = Gpgmejs.init();
-        const fpr = inputvalues.encrypt.good.fingerprint;
-        prm.then(function (context) {
-            context.Keyring.getKeysArmored(fpr, true).then(function(result){
-                expect(result).to.be.an('object');
-                expect(result.armored).to.be.a('string');
-                expect(result.secret_fprs).to.be.an('array');
-                expect(result.secret_fprs[0]).to.equal(fpr);
-                done();
-            });
+
+    it('Exporting Key (including secret fingerprints)', function (done) {
+        const key_secret = inputvalues.encrypt.good.fingerprint;
+        context.Keyring.getKeysArmored(key_secret, true).then(function(result){
+            expect(result).to.be.an('object');
+            expect(result.armored).to.be.a('string');
+            expect(result.secret_fprs).to.be.an('array');
+            expect(result.secret_fprs[0]).to.equal(key_secret);
+            done();
         });
     });
 });

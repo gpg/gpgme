@@ -53,6 +53,39 @@ const inputvalues = {// eslint-disable-line no-unused-vars
             // bogus fingerprint)
             fingerprint: 'CDC3A2B2860625CCBFC5AAAAAC6D1B604967FC4A'
         }
+    },
+
+    signedMessage: {
+        good: '-----BEGIN PGP SIGNED MESSAGE-----\n' +
+        'Hash: SHA256\n' +
+        '\n' +
+        'Matschige Münsteraner Marshmallows\n' +
+        '-----BEGIN PGP SIGNATURE-----\n' +
+        '\n' +
+        'iQEzBAEBCAAdFiEE1Bc1uRI2/biCBIxaIwFjXu/wywUFAltRoiMACgkQIwFjXu/w\n' +
+        'ywUvagf6ApQbZbTPOROqfTfxAPdtzJsSDKHla6D0G5wom2gJbAVb0B2YS1c3Gjpq\n' +
+        'I4kTKT1W1RRkne0mK9cexf4sjb5DQcV8PLhfmmAJEpljDFei6i/E309BvW4CZ4rG\n' +
+        'jiurf8CkaNkrwn2fXJDaT4taVCX3V5FQAlgLxgOrm1zjiGA4mz98gi5zL4hvZXF9\n' +
+        'dHY0jLwtQMVUO99q+5XC1TJfPsnteWL9m4e/YYPfYJMZZso+/0ib/yX5vHCk7RXH\n' +
+        'CfhY40nMXSYdfl8mDOhvnKcCvy8qxetFv9uCX06OqepAamu/bvxslrzocRyJ/eq0\n' +
+        'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
+        '=ioB6\n' +
+        '-----END PGP SIGNATURE-----\n',
+        bad: '-----BEGIN PGP SIGNED MESSAGE-----\n' +
+        'Hash: SHA256\n' +
+        '\n' +
+        'Matschige Münchener Marshmallows\n' +
+        '-----BEGIN PGP SIGNATURE-----\n' +
+        '\n' +
+        'iQEzBAEBCAAdFiEE1Bc1uRI2/biCBIxaIwFjXu/wywUFAltRoiMACgkQIwFjXu/w\n' +
+        'ywUvagf6ApQbZbTPOROqfTfxAPdtzJsSDKHla6D0G5wom2gJbAVb0B2YS1c3Gjpq\n' +
+        'I4kTKT1W1RRkne0mK9cexf4sjb5DQcV8PLhfmmAJEpljDFei6i/E309BvW4CZ4rG\n' +
+        'jiurf8CkaNkrwn2fXJDaT4taVCX3V5FQAlgLxgOrm1zjiGA4mz98gi5zL4hvZXF9\n' +
+        'dHY0jLwtQMVUO99q+5XC1TJfPsnteWL9m4e/YYPfYJMZZso+/0ib/yX5vHCk7RXH\n' +
+        'CfhY40nMXSYdfl8mDOhvnKcCvy8qxetFv9uCX06OqepAamu/bvxslrzocRyJ/eq0\n' +
+        'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
+        '=ioB6\n' +
+        '-----END PGP SIGNATURE-----\n',
     }
 };
 
@@ -83,7 +116,7 @@ function bigUint8(megabytes){// eslint-disable-line no-unused-vars
     let maxlength = 1024 * 1024 * megabytes;
     let uint = new Uint8Array(maxlength);
     for (let i= 0; i < maxlength; i++){
-        uint[i] = Math.random() * Math.floor(256);
+        uint[i] = Math.floor(Math.random() * 256);
     }
     return uint;
 }
@@ -123,6 +156,27 @@ function slightlyLessBoringString(megabytes, set){
         string.push(chars[Math.floor(Math.random() * chars.length)]);
     }
     return string.join('');
+}
+
+// Take a gpg looking string and destroy it a bit by changing random values
+// eslint-disable-next-line no-unused-vars
+function destroylegitimateGpg(string, mutations=5){
+    const allowed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/\n';
+    for (let i=0; i < mutations.length; i++){
+        // leave the first and last 35 chars (header/footer) intact
+        let position = Math.floor(Math.random() *(string.length - 70)) + 35;
+        let str0 = string.substring(0,position - 1);
+        let str1 = string.substring(position, position + 1);
+        let str2 = string.substring(position +1);
+        let success = false;
+        while (!success){
+            let newchar = Math.floor(Math.random() * allowed.length);
+            if (newchar !== str1){
+                string = str0 + newchar + str2;
+                success = true;
+            }
+        }
+    }
 }
 
 // Data encrypted with testKey
