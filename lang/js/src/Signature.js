@@ -84,65 +84,65 @@ class GPGME_Signature {
     constructor(sigObject){
         let _rawSigObject = sigObject;
 
-    this.getFingerprint = function(){
-        if (!_rawSigObject.fingerprint){
-            return gpgme_error('SIG_WRONG');
-        } else {
-            return _rawSigObject.fingerprint;
-        }
-    };
-
-    /**
-     * The expiration of this Signature as Javascript date, or null if
-     * signature does not expire
-     * @returns {Date | null}
-     */
-    this.getExpiration = function(){
-        if (!_rawSigObject.exp_timestamp){
-            return null;
-        }
-        return new Date(_rawSigObject.exp_timestamp* 1000);
-    };
-
-    /**
-     * The creation date of this Signature in Javascript Date
-     * @returns {Date}
-     */
-    this.getTimestamp= function (){
-        return new Date(_rawSigObject.timestamp * 1000);
-    };
-
-    /**
-     * The overall validity of the key. If false, errorDetails may contain
-     * additional information
-     */
-    this.getValid= function() {
-        if (_rawSigObject.summary.valid === true){
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    /**
-     * gives more information on non-valid signatures. Refer to the gpgme docs
-     * https://www.gnupg.org/documentation/manuals/gpgme/Verify.html for
-     * details on the values
-     * @returns {Object} Object with boolean properties
-     */
-    this.getErrorDetails = function (){
-        let properties = ['revoked', 'key-expired', 'sig-expired',
-            'key-missing', 'crl-missing', 'crl-too-old', 'bad-policy',
-            'sys-error'];
-        let result = {};
-        for (let i=0; i< properties.length; i++){
-            if ( _rawSigObject.hasOwnProperty(properties[i]) ){
-                result[properties[i]] = _rawSigObject[properties[i]];
+        this.getFingerprint = function(){
+            if (!_rawSigObject.fingerprint){
+                return gpgme_error('SIG_WRONG');
+            } else {
+                return _rawSigObject.fingerprint;
             }
-        }
-        return result;
-    };
-}
+        };
+
+        /**
+         * The expiration of this Signature as Javascript date, or null if
+         * signature does not expire
+         * @returns {Date | null}
+         */
+        this.getExpiration = function(){
+            if (!_rawSigObject.exp_timestamp){
+                return null;
+            }
+            return new Date(_rawSigObject.exp_timestamp* 1000);
+        };
+
+        /**
+         * The creation date of this Signature in Javascript Date
+         * @returns {Date}
+         */
+        this.getTimestamp= function (){
+            return new Date(_rawSigObject.timestamp * 1000);
+        };
+
+        /**
+         * The overall validity of the key. If false, errorDetails may contain
+         * additional information.
+         */
+        this.getValid= function() {
+            if (_rawSigObject.summary.valid === true){
+                return true;
+            } else {
+                return false;
+            }
+        };
+
+        /**
+         * gives more information on non-valid signatures. Refer to the gpgme
+         * docs https://www.gnupg.org/documentation/manuals/gpgme/Verify.html
+         * for details on the values.
+         * @returns {Object} Object with boolean properties
+         */
+        this.getErrorDetails = function (){
+            let properties = ['revoked', 'key-expired', 'sig-expired',
+                'key-missing', 'crl-missing', 'crl-too-old', 'bad-policy',
+                'sys-error'];
+            let result = {};
+            for (let i=0; i< properties.length; i++){
+                if ( _rawSigObject.hasOwnProperty(properties[i]) ){
+                    result[properties[i]] = _rawSigObject[properties[i]];
+                }
+            }
+            return result;
+        };
+    }
 
     /**
      * Convenience getter for {@link getFingerprint}

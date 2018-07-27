@@ -61,162 +61,162 @@ export class GPGME_Message {
             return _msg.op;
         };
 
-    /**
-     * The maximum size of responses from gpgme in bytes. As of July 2018,
-     * most browsers will only accept answers up to 1 MB of size. Everything
-     * above that threshold will not pass through nativeMessaging; answers that
-     * are larger need to be sent in parts. The lower limit is set to 10 KB.
-     * Messages smaller than the threshold will not encounter problems, larger
-     * messages will be received in chunks.
-     * If the value is not explicitly specified, 1023 KB is used.
-     */
-    this.setChunksize = function (value){
-        if (
-            Number.isInteger(value) &&
-            value > 10 * 1024 &&
-            value <= 1024 * 1024
-        ){
-            _msg.chunksize = value;
-        }
-    };
-
-    this.getMsg = function(){
-        return _msg;
-    };
-
-    this.getChunksize= function() {
-        return _msg.chunksize;
-    };
-
-    /**
-     * Sets a parameter for the message. It validates with
-     *      {@link permittedOperations}
-     * @param {String} param Parameter to set
-     * @param {any} value Value to set
-     * @returns {Boolean} If the parameter was set successfully
-     */
-    this.setParameter = function ( param,value ){
-        if (!param || typeof(param) !== 'string'){
-            return gpgme_error('PARAM_WRONG');
-        }
-        let po = permittedOperations[_msg.op];
-        if (!po){
-            return gpgme_error('MSG_WRONG_OP');
-        }
-        let poparam = null;
-        if (po.required.hasOwnProperty(param)){
-            poparam = po.required[param];
-        } else if (po.optional.hasOwnProperty(param)){
-            poparam = po.optional[param];
-        } else {
-            return gpgme_error('PARAM_WRONG');
-        }
-        // check incoming value for correctness
-        let checktype = function(val){
-            switch(typeof(val)){
-            case 'string':
-                if (poparam.allowed.indexOf(typeof(val)) >= 0
-                        && val.length > 0) {
-                    return true;
-                }
-                return gpgme_error('PARAM_WRONG');
-            case 'number':
-                if (
-                    poparam.allowed.indexOf('number') >= 0
-                        && isNaN(value) === false){
-                    return true;
-                }
-                return gpgme_error('PARAM_WRONG');
-
-            case 'boolean':
-                if (poparam.allowed.indexOf('boolean') >= 0){
-                    return true;
-                }
-                return gpgme_error('PARAM_WRONG');
-            case 'object':
-                if (Array.isArray(val)){
-                    if (poparam.array_allowed !== true){
-                        return gpgme_error('PARAM_WRONG');
-                    }
-                    for (let i=0; i < val.length; i++){
-                        let res = checktype(val[i]);
-                        if (res !== true){
-                            return res;
-                        }
-                    }
-                    if (val.length > 0) {
-                        return true;
-                    }
-                } else if (val instanceof Uint8Array){
-                    if (poparam.allowed.indexOf('Uint8Array') >= 0){
-                        return true;
-                    }
-                    return gpgme_error('PARAM_WRONG');
-                } else {
-                    return gpgme_error('PARAM_WRONG');
-                }
-                break;
-            default:
-                return gpgme_error('PARAM_WRONG');
+        /**
+         * The maximum size of responses from gpgme in bytes. As of July 2018,
+         * most browsers will only accept answers up to 1 MB of size.
+         * Everything above that threshold will not pass through
+         * nativeMessaging; answers that are larger need to be sent in parts.
+         * The lower limit is set to 10 KB. Messages smaller than the threshold
+         * will not encounter problems, larger messages will be received in
+         * chunks. If the value is not explicitly specified, 1023 KB is used.
+         */
+        this.setChunksize = function (value){
+            if (
+                Number.isInteger(value) &&
+                value > 10 * 1024 &&
+                value <= 1024 * 1024
+            ){
+                _msg.chunksize = value;
             }
         };
-        let typechecked = checktype(value);
-        if (typechecked !== true){
-            return typechecked;
-        }
-        if (poparam.hasOwnProperty('allowed_data')){
-            if (poparam.allowed_data.indexOf(value) < 0){
+
+        this.getMsg = function(){
+            return _msg;
+        };
+
+        this.getChunksize= function() {
+            return _msg.chunksize;
+        };
+
+        /**
+         * Sets a parameter for the message. It validates with
+         *      {@link permittedOperations}
+         * @param {String} param Parameter to set
+         * @param {any} value Value to set
+         * @returns {Boolean} If the parameter was set successfully
+         */
+        this.setParameter = function ( param,value ){
+            if (!param || typeof(param) !== 'string'){
                 return gpgme_error('PARAM_WRONG');
             }
-        }
-        _msg[param] = value;
-        return true;
-    };
+            let po = permittedOperations[_msg.op];
+            if (!po){
+                return gpgme_error('MSG_WRONG_OP');
+            }
+            let poparam = null;
+            if (po.required.hasOwnProperty(param)){
+                poparam = po.required[param];
+            } else if (po.optional.hasOwnProperty(param)){
+                poparam = po.optional[param];
+            } else {
+                return gpgme_error('PARAM_WRONG');
+            }
+            // check incoming value for correctness
+            let checktype = function(val){
+                switch(typeof(val)){
+                case 'string':
+                    if (poparam.allowed.indexOf(typeof(val)) >= 0
+                            && val.length > 0) {
+                        return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+                case 'number':
+                    if (
+                        poparam.allowed.indexOf('number') >= 0
+                            && isNaN(value) === false){
+                        return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+
+                case 'boolean':
+                    if (poparam.allowed.indexOf('boolean') >= 0){
+                        return true;
+                    }
+                    return gpgme_error('PARAM_WRONG');
+                case 'object':
+                    if (Array.isArray(val)){
+                        if (poparam.array_allowed !== true){
+                            return gpgme_error('PARAM_WRONG');
+                        }
+                        for (let i=0; i < val.length; i++){
+                            let res = checktype(val[i]);
+                            if (res !== true){
+                                return res;
+                            }
+                        }
+                        if (val.length > 0) {
+                            return true;
+                        }
+                    } else if (val instanceof Uint8Array){
+                        if (poparam.allowed.indexOf('Uint8Array') >= 0){
+                            return true;
+                        }
+                        return gpgme_error('PARAM_WRONG');
+                    } else {
+                        return gpgme_error('PARAM_WRONG');
+                    }
+                    break;
+                default:
+                    return gpgme_error('PARAM_WRONG');
+                }
+            };
+            let typechecked = checktype(value);
+            if (typechecked !== true){
+                return typechecked;
+            }
+            if (poparam.hasOwnProperty('allowed_data')){
+                if (poparam.allowed_data.indexOf(value) < 0){
+                    return gpgme_error('PARAM_WRONG');
+                }
+            }
+            _msg[param] = value;
+            return true;
+        };
 
 
 
-    /**
-     * Check if the message has the minimum requirements to be sent, that is
-     * all 'required' parameters according to {@link permittedOperations}.
-     * @returns {Boolean} true if message is complete.
-     */
-    this.isComplete = function(){
-        if (!_msg.op){
-            return false;
-        }
-        let reqParams = Object.keys(
-            permittedOperations[_msg.op].required);
-        let msg_params = Object.keys(_msg);
-        for (let i=0; i < reqParams.length; i++){
-            if (msg_params.indexOf(reqParams[i]) < 0){
+        /**
+         * Check if the message has the minimum requirements to be sent, that is
+         * all 'required' parameters according to {@link permittedOperations}.
+         * @returns {Boolean} true if message is complete.
+         */
+        this.isComplete = function(){
+            if (!_msg.op){
                 return false;
             }
-        }
-        return true;
-    };
-    /**
-     * Sends the Message via nativeMessaging and resolves with the answer.
-     * @returns {Promise<Object|GPGME_Error>}
-     * @async
-     */
-    this.post = function(){
-        let me = this;
-        return new Promise(function(resolve, reject) {
-            if (me.isComplete() === true) {
+            let reqParams = Object.keys(
+                permittedOperations[_msg.op].required);
+            let msg_params = Object.keys(_msg);
+            for (let i=0; i < reqParams.length; i++){
+                if (msg_params.indexOf(reqParams[i]) < 0){
+                    return false;
+                }
+            }
+            return true;
+        };
+        /**
+         * Sends the Message via nativeMessaging and resolves with the answer.
+         * @returns {Promise<Object|GPGME_Error>}
+         * @async
+         */
+        this.post = function(){
+            let me = this;
+            return new Promise(function(resolve, reject) {
+                if (me.isComplete() === true) {
 
-                let conn  = new Connection;
-                conn.post(me).then(function(response) {
-                    resolve(response);
-                }, function(reason) {
-                    reject(reason);
-                });
-            }
-            else {
-                reject(gpgme_error('MSG_INCOMPLETE'));
-            }
-        });
-    };
-}
+                    let conn  = new Connection;
+                    conn.post(me).then(function(response) {
+                        resolve(response);
+                    }, function(reason) {
+                        reject(reason);
+                    });
+                }
+                else {
+                    reject(gpgme_error('MSG_INCOMPLETE'));
+                }
+            });
+        };
+    }
 
     /**
      * Returns the prepared message with parameters and completeness checked
@@ -231,11 +231,10 @@ export class GPGME_Message {
             return null;
         }
     }
-
-get operation(){
-    return this.getOperation();
-}
-get chunksize(){
-    return this.getChunksize();
-}
+    get operation(){
+        return this.getOperation();
+    }
+    get chunksize(){
+        return this.getChunksize();
+    }
 }
