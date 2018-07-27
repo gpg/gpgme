@@ -86,7 +86,9 @@ const inputvalues = {// eslint-disable-line no-unused-vars
         'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
         '=ioB6\n' +
         '-----END PGP SIGNATURE-----\n',
-    }
+    },
+
+    someInputParameter: 'bad string'
 };
 
 // (Pseudo-)Random String covering all of utf8.
@@ -156,27 +158,6 @@ function slightlyLessBoringString(megabytes, set){
         string.push(chars[Math.floor(Math.random() * chars.length)]);
     }
     return string.join('');
-}
-
-// Take a gpg looking string and destroy it a bit by changing random values
-// eslint-disable-next-line no-unused-vars
-function destroylegitimateGpg(string, mutations=5){
-    const allowed = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/\n';
-    for (let i=0; i < mutations.length; i++){
-        // leave the first and last 35 chars (header/footer) intact
-        let position = Math.floor(Math.random() *(string.length - 70)) + 35;
-        let str0 = string.substring(0,position - 1);
-        let str1 = string.substring(position, position + 1);
-        let str2 = string.substring(position +1);
-        let success = false;
-        while (!success){
-            let newchar = Math.floor(Math.random() * allowed.length);
-            if (newchar !== str1){
-                string = str0 + newchar + str2;
-                success = true;
-            }
-        }
-    }
 }
 
 // Data encrypted with testKey

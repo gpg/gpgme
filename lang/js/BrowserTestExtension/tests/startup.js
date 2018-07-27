@@ -21,16 +21,27 @@
  *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
-/* global describe, it, expect, Gpgmejs */
+/* global describe, it, expect, Gpgmejs, inputvalues */
 
 describe('GPGME context', function(){
     it('Starting a GpgME instance', function(done){
         let prm = Gpgmejs.init();
+        const input = inputvalues.someInputParameter;
         prm.then(
             function(context){
                 expect(context).to.be.an('object');
                 expect(context.encrypt).to.be.a('function');
                 expect(context.decrypt).to.be.a('function');
+                expect(context.sign).to.be.a('function');
+                expect(context.verify).to.be.a('function');
+                context.Keyring = input;
+                expect(context.Keyring).to.be.an('object');
+                expect(context.Keyring).to.not.equal(input);
+                expect(context._Keyring).to.equal(context.Keyring);
+                expect(context.Keyring.getKeys).to.be.a('function');
+                expect(context.Keyring.getDefaultKey).to.be.a('function');
+                expect(context.Keyring.importKey).to.be.a('function');
+                expect(context.Keyring.generateKey).to.be.a('function');
                 done();
             });
     });

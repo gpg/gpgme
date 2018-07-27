@@ -52,22 +52,14 @@ export function createMessage(operation){
 export class GPGME_Message {
 
     constructor(operation){
-        this.operation = operation;
-    }
+        let _msg = {
+            op: operation,
+            chunksize: 1023* 1024
+        };
 
-    set operation (op){
-        if (typeof(op) === 'string'){
-            if (!this._msg){
-                this._msg = {};
-            }
-            if (!this._msg.op & permittedOperations.hasOwnProperty(op)){
-                this._msg.op = op;
-            }
-        }
-    }
-    get operation(){
-        return this._msg.op;
-    }
+        this.getOperation = function(){
+            return _msg.op;
+        };
 
     /**
      * The maximum size of responses from gpgme in bytes. As of July 2018,
@@ -78,41 +70,23 @@ export class GPGME_Message {
      * messages will be received in chunks.
      * If the value is not explicitly specified, 1023 KB is used.
      */
-    set chunksize(value){
+    this.setChunksize = function (value){
         if (
             Number.isInteger(value) &&
             value > 10 * 1024 &&
             value <= 1024 * 1024
         ){
-            this._chunksize = value;
+            _msg.chunksize = value;
         }
-    }
-    get chunksize(){
-        if (this._chunksize === undefined){
-            return 1024 * 1023;
-        } else {
-            return this._chunksize;
-        }
-    }
+    };
 
-    /**
-     * Expect indicates which format data is expected to be in. It currently
-     * only supports 'base64', indicating that the response data from gnupg are
-     * expected to be base64 encoded binary
-     */
-    set expect(value){
-        if (value ==='base64'){
-            this._expect = value;
-        }
-    }
+    this.getMsg = function(){
+        return _msg;
+    };
 
-    get expect(){
-        if ( this._expect === 'base64'){
-            return this._expect;
-        }
-        return undefined;
-    }
-
+    this.getChunksize= function() {
+        return _msg.chunksize;
+    };
 
     /**
      * Sets a parameter for the message. It validates with
@@ -121,11 +95,11 @@ export class GPGME_Message {
      * @param {any} value Value to set
      * @returns {Boolean} If the parameter was set successfully
      */
-    setParameter( param,value ){
+    this.setParameter = function ( param,value ){
         if (!param || typeof(param) !== 'string'){
             return gpgme_error('PARAM_WRONG');
         }
-        let po = permittedOperations[this._msg.op];
+        let po = permittedOperations[_msg.op];
         if (!po){
             return gpgme_error('MSG_WRONG_OP');
         }
@@ -195,59 +169,42 @@ export class GPGME_Message {
                 return gpgme_error('PARAM_WRONG');
             }
         }
-        this._msg[param] = value;
+        _msg[param] = value;
         return true;
-    }
+    };
+
+
 
     /**
      * Check if the message has the minimum requirements to be sent, that is
      * all 'required' parameters according to {@link permittedOperations}.
      * @returns {Boolean} true if message is complete.
      */
-    get isComplete(){
-        if (!this._msg.op){
+    this.isComplete = function(){
+        if (!_msg.op){
             return false;
         }
         let reqParams = Object.keys(
-            permittedOperations[this._msg.op].required);
-        let msg_params = Object.keys(this._msg);
+            permittedOperations[_msg.op].required);
+        let msg_params = Object.keys(_msg);
         for (let i=0; i < reqParams.length; i++){
             if (msg_params.indexOf(reqParams[i]) < 0){
                 return false;
             }
         }
         return true;
-    }
-
-    /**
-     * Returns the prepared message with parameters and completeness checked
-     * @returns {Object|null} Object to be posted to gnupg, or null if
-     * incomplete
-     */
-    get message(){
-        if (this.isComplete === true){
-            this._msg.chunksize = this.chunksize;
-            return this._msg;
-        }
-        else {
-            return null;
-        }
-
-    }
-
+    };
     /**
      * Sends the Message via nativeMessaging and resolves with the answer.
      * @returns {Promise<Object|GPGME_Error>}
      * @async
      */
-    post(){
+    this.post = function(){
         let me = this;
         return new Promise(function(resolve, reject) {
-            if (me.isComplete === true) {
+            if (me.isComplete() === true) {
+
                 let conn  = new Connection;
-                if (me._msg.chunksize === undefined){
-                    me._msg.chunksize = me.chunksize;
-                }
                 conn.post(me).then(function(response) {
                     resolve(response);
                 }, function(reason) {
@@ -258,5 +215,27 @@ export class GPGME_Message {
                 reject(gpgme_error('MSG_INCOMPLETE'));
             }
         });
+    };
+}
+
+    /**
+     * Returns the prepared message with parameters and completeness checked
+     * @returns {Object|null} Object to be posted to gnupg, or null if
+     * incomplete
+     */
+    get message(){
+        if (this.isComplete() === true){
+            return this.getMsg();
+        }
+        else {
+            return null;
+        }
     }
+
+get operation(){
+    return this.getOperation();
+}
+get chunksize(){
+    return this.getChunksize();
+}
 }

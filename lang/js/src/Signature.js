@@ -82,44 +82,47 @@ export function createSignature(sigObject){
 class GPGME_Signature {
 
     constructor(sigObject){
-        this._rawSigObject = sigObject;
-    }
+        let _rawSigObject = sigObject;
 
-    get fingerprint(){
-        return this._rawSigObject.fingerprint;
-    }
+    this.getFingerprint = function(){
+        if (!_rawSigObject.fingerprint){
+            return gpgme_error('SIG_WRONG');
+        } else {
+            return _rawSigObject.fingerprint;
+        }
+    };
 
     /**
      * The expiration of this Signature as Javascript date, or null if
      * signature does not expire
      * @returns {Date | null}
      */
-    get expiration(){
-        if (!this._rawSigObject.exp_timestamp){
+    this.getExpiration = function(){
+        if (!_rawSigObject.exp_timestamp){
             return null;
         }
-        return new Date(this._rawSigObject.exp_timestamp* 1000);
-    }
+        return new Date(_rawSigObject.exp_timestamp* 1000);
+    };
 
     /**
      * The creation date of this Signature in Javascript Date
      * @returns {Date}
      */
-    get timestamp(){
-        return new Date(this._rawSigObject.timestamp * 1000);
-    }
+    this.getTimestamp= function (){
+        return new Date(_rawSigObject.timestamp * 1000);
+    };
 
     /**
      * The overall validity of the key. If false, errorDetails may contain
      * additional information
      */
-    get valid() {
-        if (this._rawSigObject.summary.valid === true){
+    this.getValid= function() {
+        if (_rawSigObject.summary.valid === true){
             return true;
         } else {
             return false;
         }
-    }
+    };
 
     /**
      * gives more information on non-valid signatures. Refer to the gpgme docs
@@ -127,19 +130,54 @@ class GPGME_Signature {
      * details on the values
      * @returns {Object} Object with boolean properties
      */
-    get errorDetails(){
+    this.getErrorDetails = function (){
         let properties = ['revoked', 'key-expired', 'sig-expired',
             'key-missing', 'crl-missing', 'crl-too-old', 'bad-policy',
             'sys-error'];
         let result = {};
         for (let i=0; i< properties.length; i++){
-            if ( this._rawSigObject.hasOwnProperty(properties[i]) ){
-                result[properties[i]] = this._rawSigObject[properties[i]];
+            if ( _rawSigObject.hasOwnProperty(properties[i]) ){
+                result[properties[i]] = _rawSigObject[properties[i]];
             }
         }
         return result;
+    };
+}
+
+    /**
+     * Convenience getter for {@link getFingerprint}
+     */
+    get fingerprint(){
+        return this.getFingerprint();
     }
 
+    /**
+     * Convenience getter for {@link getExpiration}
+     */
+    get expiration(){
+        return this.getExpiration();
+    }
+
+    /**
+     * Convenience getter for {@link getTimeStamp}
+     */
+    get timestamp(){
+        return this.getTimestamp();
+    }
+
+    /**
+     * Convenience getter for {@link getValid}
+     */
+    get valid(){
+        return this.getValid();
+    }
+
+    /**
+     * Convenience getter for {@link getErrorDetails}
+     */
+    get errorDetails(){
+        return this.getErrorDetails();
+    }
 }
 
 /**

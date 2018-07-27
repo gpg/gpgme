@@ -143,7 +143,7 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
  * @extends Error
  */
 class GPGME_Error extends Error{
-    constructor(code, msg=''){
+    constructor(code = 'GENERIC_ERROR', msg=''){
         if (code === 'GNUPG_ERROR' && typeof(msg) === 'string'){
             super(msg);
         } else if (err_list.hasOwnProperty(code)){
@@ -155,12 +155,12 @@ class GPGME_Error extends Error{
         } else {
             super(err_list['GENERIC_ERROR'].msg);
         }
-        this.code = code || 'GENERIC_ERROR';
+        this.getCode = function(){
+            return code;
+        };
     }
-    set code(value){
-        this._code = value;
-    }
+
     get code(){
-        return this._code;
+        return this.getCode();
     }
 }

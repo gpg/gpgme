@@ -32,7 +32,6 @@ import { gpgme_error } from './Errors';
  */
 export class GPGME_Keyring {
     constructor(){
-    }
 
     /**
      * Queries Keys (all Keys or a subset) from gnupg.
@@ -50,7 +49,7 @@ export class GPGME_Keyring {
      * @static
      * @async
      */
-    getKeys(pattern, prepare_sync=false, search=false){
+    this.getKeys = function(pattern, prepare_sync=false, search=false){
         return new Promise(function(resolve, reject) {
             let msg = createMessage('keylist');
             if (pattern !== undefined && pattern !== null){
@@ -107,7 +106,7 @@ export class GPGME_Keyring {
                 }
             });
         });
-    }
+    };
 
     /**
      * @typedef {Object} exportResult The result of a getKeysArmored operation.
@@ -131,7 +130,7 @@ export class GPGME_Keyring {
      * @static
      * @async
      */
-    getKeysArmored(pattern, with_secret_fpr) {
+    this.getKeysArmored = function(pattern, with_secret_fpr) {
         return new Promise(function(resolve, reject) {
             let msg = createMessage('export');
             msg.setParameter('armor', true);
@@ -153,7 +152,7 @@ export class GPGME_Keyring {
                 reject(error);
             });
         });
-    }
+    };
 
     /**
      * Returns the Key used by default in gnupg.
@@ -165,7 +164,7 @@ export class GPGME_Keyring {
      * @async
      * @static
      */
-    getDefaultKey() {
+    this.getDefaultKey = function() {
         let me = this;
         return new Promise(function(resolve, reject){
             let msg = createMessage('config_opt');
@@ -206,7 +205,7 @@ export class GPGME_Keyring {
                 reject(error);
             });
         });
-    }
+    };
 
     /**
      * @typedef {Object} importResult The result of a Key update
@@ -244,7 +243,7 @@ export class GPGME_Keyring {
      * @async
      * @static
      */
-    importKey(armored, prepare_sync) {
+    this.importKey = function (armored, prepare_sync) {
         let feedbackValues = ['considered', 'no_user_id', 'imported',
             'imported_rsa', 'unchanged', 'new_user_ids', 'new_sub_keys',
             'new_signatures', 'new_revocations', 'secret_read',
@@ -323,7 +322,7 @@ export class GPGME_Keyring {
         });
 
 
-    }
+    };
 
     /**
      * Convenience function for deleting a Key. See {@link Key.delete} for
@@ -333,14 +332,14 @@ export class GPGME_Keyring {
      * @async
      * @static
      */
-    deleteKey(fingerprint){
+    this.deleteKey = function(fingerprint){
         if (isFingerprint(fingerprint) === true) {
             let key = createKey(fingerprint);
             return key.delete();
         } else {
             return Promise.reject(gpgme_error('KEY_INVALID'));
         }
-    }
+    };
 
     /**
      * Generates a new Key pair directly in gpg, and returns a GPGME_Key
@@ -356,7 +355,7 @@ export class GPGME_Keyring {
      * @return {Promise<Key|GPGME_Error>}
      * @async
      */
-    generateKey(userId, algo = 'default', expires){
+    this.generateKey = function (userId, algo = 'default', expires){
         if (
             typeof(userId) !== 'string' ||
             supportedKeyAlgos.indexOf(algo) < 0 ||
@@ -385,7 +384,8 @@ export class GPGME_Keyring {
                 reject(error);
             });
         });
-    }
+    };
+}
 }
 
 /**

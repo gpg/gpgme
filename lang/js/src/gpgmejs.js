@@ -22,8 +22,8 @@
  */
 
 
-import {GPGME_Message, createMessage} from './Message';
-import {toKeyIdArray} from './Helpers';
+import { GPGME_Message, createMessage } from './Message';
+import { toKeyIdArray } from './Helpers';
 import { gpgme_error } from './Errors';
 import { GPGME_Keyring } from './Keyring';
 import { createSignature } from './Signature';
@@ -85,23 +85,27 @@ import { createSignature } from './Signature';
 export class GpgME {
 
     constructor(){
-    }
+        let _Keyring = null;
 
-    set Keyring(keyring){
-        if (keyring && keyring instanceof GPGME_Keyring){
-            this._Keyring = keyring;
-        }
-    }
+        /**
+         * Sets a new Keyring to be used
+         * @param {GPGME_Keyring} keyring
+         */
+        this.setKeyring = function(keyring){
+            if (keyring && keyring instanceof GPGME_Keyring){
+                _Keyring = keyring;
+            }
+        };
 
-    /**
-     * Accesses the {@link GPGME_Keyring}.
-     */
-    get Keyring(){
-        if (!this._Keyring){
-            this._Keyring = new GPGME_Keyring;
-        }
-        return this._Keyring;
-    }
+        /**
+         * Accesses the {@link GPGME_Keyring}.
+         */
+        this.getKeyring = function(){
+            if (!_Keyring){
+                _Keyring = new GPGME_Keyring;
+            }
+            return _Keyring;
+        };
 
     /**
      * Encrypt (and optionally sign) data
@@ -123,8 +127,8 @@ export class GpgME {
      * message and additional info.
      * @async
      */
-    encrypt(data, publicKeys, secretKeys, base64=false, armor=true,
-        wildcard=false, additional = {}
+    this.encrypt = function (data, publicKeys, secretKeys, base64=false,
+        armor=true, wildcard=false, additional = {}
     ){
         let msg = createMessage('encrypt');
         if (msg instanceof Error){
@@ -152,12 +156,12 @@ export class GpgME {
                     additional[additional_Keys[k]]);
             }
         }
-        if (msg.isComplete === true){
+        if (msg.isComplete() === true){
             return msg.post();
         } else {
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
-    }
+    };
 
     /**
     * Decrypts a Message
@@ -168,7 +172,7 @@ export class GpgME {
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
-    decrypt(data, base64=false){
+    this.decrypt = function (data, base64=false){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -203,7 +207,7 @@ export class GpgME {
                 reject(error);
             });
         });
-    }
+    };
 
     /**
      * Sign a Message
@@ -217,7 +221,7 @@ export class GpgME {
      * @returns {Promise<signResult>}
      * @async
      */
-    sign(data, keys, mode='clearsign', base64=false) {
+    this.sign = function (data, keys, mode='clearsign', base64=false) {
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -252,7 +256,7 @@ export class GpgME {
                 reject(error);
             });
         });
-    }
+    };
 
     /**
      * Verifies data.
@@ -264,7 +268,7 @@ export class GpgME {
      * @returns {Promise<verifyResult>}
      *@async
      */
-    verify(data, signature, base64 = false){
+    this.verify= function (data, signature, base64 = false){
         let msg = createMessage('verify');
         let dt = putData(msg, data);
         if (dt instanceof Error){
@@ -297,6 +301,25 @@ export class GpgME {
                 reject(error);
             });
         });
+    };
+}
+
+        /**
+     * setter for {@link setKeyring}.
+     * @param {GPGME_Keyring} keyring A Keyring to use
+     */
+    set Keyring(keyring){
+        this.setKeyring(keyring);
+    }
+
+    /**
+     * Accesses the {@link GPGME_Keyring}.
+     */
+    get Keyring(){
+        if (!this._Keyring){
+            this._Keyring = new GPGME_Keyring;
+        }
+        return this._Keyring;
     }
 }
 
@@ -309,7 +332,7 @@ export class GpgME {
  * @private
  */
 function putData(message, data){
-    if (!message || !(message instanceof GPGME_Message) ) {
+    if (!message || !message instanceof GPGME_Message) {
         return gpgme_error('PARAM_WRONG');
     }
     if (!data){

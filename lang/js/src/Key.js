@@ -28,13 +28,16 @@ import { createMessage } from './Message';
 /**
  * Validates the given fingerprint and creates a new {@link GPGME_Key}
  * @param {String} fingerprint
+ * @param {Boolean} async If True, Key properties (except fingerprint) will be
+ * queried from gnupg on each call, making the operation up-to-date, the
+ * answers will be Promises, and the performance will likely suffer
  * @returns {GPGME_Key|GPGME_Error}
  */
-export function createKey(fingerprint){
-    if (!isFingerprint(fingerprint)){
+export function createKey(fingerprint, async = false){
+    if (!isFingerprint(fingerprint) || typeof(async) !== 'boolean'){
         return gpgme_error('PARAM_WRONG');
     }
-    else return new GPGME_Key(fingerprint);
+    else return new GPGME_Key(fingerprint, async);
 }
 
 /**
@@ -48,31 +51,30 @@ export function createKey(fingerprint){
  */
 export class GPGME_Key {
 
-    constructor(fingerprint){
-        this.fingerprint = fingerprint;
-    }
+    constructor(fingerprint, async){
 
-    set fingerprint(fpr){
-        if (isFingerprint(fpr) === true) {
-            if (this._data === undefined) {
-                this._data = {fingerprint:  fpr};
-            } else {
-                if (this._data.fingerprint === undefined){
-                    this._data.fingerprint = fpr;
-                }
+        /**
+         * @property {Boolean} If true, most answers will be asynchronous
+         */
+        this.isAsync = async;
+
+        let _data = {fingerprint: fingerprint};
+        this.getFingerprint = function(){
+            if (!_data.fingerprint || !isFingerprint(_data.fingerprint)){
+                return gpgme_error('KEY_INVALID');
             }
-        }
-    }
+            return _data.fingerprint;
+        };
 
     /**
-     * @returns {String} The fingerprint defining this Key
+     * Property indicating if the Key possesses a private/secret part. If this
+     * information is not yet cached, it returns an {@link GPGME_Error} with
+     * code 'KEY_NO_INIT'.  Running {@link refreshKey} may help in this case.
+     * @returns {Boolean} If the Key has a secret subkey.
      */
-    get fingerprint(){
-        if (!this._data || !this._data.fingerprint){
-            return gpgme_error('KEY_INVALID');
-        }
-        return this._data.fingerprint;
-    }
+    this.hasSecret= function (){
+        return this.get('hasSecret', true);
+    };
 
     /**
      * @param {Object} data Bulk set the data for this key, with an Object sent
@@ -81,97 +83,89 @@ export class GPGME_Key {
      * error if something went wrong
      * @private
      */
-    setKeyData(data){
-        if (this._data === undefined) {
-            this._data = {};
-        }
-        if (
-            typeof(data) !== 'object') {
+    this.setKeyData = function (data){
+        if (typeof(data) !== 'object') {
             return gpgme_error('KEY_INVALID');
         }
-        if (!this._data.fingerprint && isFingerprint(data.fingerprint)){
-            if (data.fingerprint !== this.fingerprint){
-                return gpgme_error('KEY_INVALID');
-            }
-            this._data.fingerprint = data.fingerprint;
-        } else if (this._data.fingerprint !== data.fingerprint){
+        if (!data.fingerprint || data.fingerprint !== _data.fingerprint){
             return gpgme_error('KEY_INVALID');
         }
-        let dataKeys = Object.keys(data);
-        for (let i=0; i< dataKeys.length; i++){
-            if (!validKeyProperties.hasOwnProperty(dataKeys[i])){
-                return gpgme_error('KEY_INVALID');
-            }
-            if (validKeyProperties[dataKeys[i]](data[dataKeys[i]]) !== true ){
-                return gpgme_error('KEY_INVALID');
-            }
-            switch (dataKeys[i]){
+        let keys = Object.keys(data);
+        for (let i=0; i< keys.length; i++){
+            if (!validKeyProperties.hasOwnProperty(keys[i])){
+            return gpgme_error('KEY_INVALID');
+        }
+        //running the defined validation function
+        if (validKeyProperties[keys[i]](data[keys[i]]) !== true ){
+            return gpgme_error('KEY_INVALID');
+        }
+        switch (keys[i]){
             case 'subkeys':
-                this._data.subkeys = [];
+                _data.subkeys = [];
                 for (let i=0; i< data.subkeys.length; i++) {
-                    this._data.subkeys.push(
+                    _data.subkeys.push(
                         new GPGME_Subkey(data.subkeys[i]));
                 }
                 break;
             case 'userids':
-                this._data.userids = [];
+                _data.userids = [];
                 for (let i=0; i< data.userids.length; i++) {
-                    this._data.userids.push(
+                    _data.userids.push(
                         new GPGME_UserId(data.userids[i]));
                 }
                 break;
             case 'last_update':
-                this._data[dataKeys[i]] = new Date( data[dataKeys[i]] * 1000 );
+                _data[keys[i]] = new Date( data[keys[i]] * 1000 );
                 break;
             default:
-                this._data[dataKeys[i]] = data[dataKeys[i]];
+                    _data[keys[i]] = data[keys[i]];
             }
         }
         return this;
-    }
+    };
 
     /**
      * Query any property of the Key listed in {@link validKeyProperties}
      * @param {String} property property to be retreived
-     * @param {Boolean} cached (optional) if false, the data will be directly
-     * queried from gnupg, and the operation will be asynchronous. Else, the
-     * data will be fetched from the state of the initialization of the Key.
-     * The cached mode may contain outdated information, but can be used as
-     * synchronous operation, where the backend is not expected to change Keys
-     * during a session. The key still can be reloaded by invoking
-     * {@link refreshKey}.
      * @returns {*|Promise<*>} the value (Boolean, String, Array, Object).
      * If 'cached' is false, the value will be resolved as a Promise.
      */
-    get(property, cached=true) {
-        if (cached === false) {
+    this.get = function(property) {
+        if (this.isAsync === true) {
             let me = this;
             return new Promise(function(resolve, reject) {
-                if (!validKeyProperties.hasOwnProperty(property)){
-                    reject('PARAM_WRONG');
-                } else if (property === 'armored'){
+                if (property === 'armored'){
                     resolve(me.getArmor());
                 } else if (property === 'hasSecret'){
                     resolve(me.getHasSecret());
-                } else {
-                    me.refreshKey().then(function(key){
-                        resolve(key.get(property, true));
+                } else if (validKeyProperties.hasOwnProperty(property)){
+                    let msg = createMessage('keylist');
+                    msg.setParameter('keys', _data.fingerprint);
+                    msg.post().then(function(result){
+                        if (result.keys && result.keys.length === 1 &&
+                            result.keys[0].hasOwnProperty(property)){
+                            resolve(result.keys[0][property]);
+                        } else {
+                            reject(gpgme_error('CONN_UNEXPECTED_ANSWER'));
+                        }
                     }, function(error){
-                        reject(error);
+                        reject(gpgme_error(error));
                     });
+                } else {
+                    reject(gpgme_error('PARAM_WRONG'));
                 }
             });
         } else {
             if (!validKeyProperties.hasOwnProperty(property)){
                 return gpgme_error('PARAM_WRONG');
             }
-            if (!this._data.hasOwnProperty(property)){
+            if (!_data.hasOwnProperty(property)){
                 return gpgme_error('KEY_NO_INIT');
             } else {
-                return (this._data[property]);
+                    return (_data[property]);
             }
         }
-    }
+    };
 
     /**
      * Reloads the Key information from gnupg. This is only useful if you use
@@ -181,15 +175,15 @@ export class GPGME_Key {
      * @returns {Promise<GPGME_Key|GPGME_Error>}
      * @async
      */
-    refreshKey() {
+    this.refreshKey = function() {
         let me = this;
         return new Promise(function(resolve, reject) {
-            if (!me._data.fingerprint){
+            if (!_data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('keylist');
             msg.setParameter('sigs', true);
-            msg.setParameter('keys', me._data.fingerprint);
+            msg.setParameter('keys', _data.fingerprint);
             msg.post().then(function(result){
                 if (result.keys.length === 1){
                     me.setKeyData(result.keys[0]);
@@ -209,7 +203,7 @@ export class GPGME_Key {
                 reject(gpgme_error('GNUPG_ERROR'), error);
             });
         });
-    }
+    };
 
     /**
      * Query the armored block of the Key directly from gnupg. Please note that
@@ -217,23 +211,22 @@ export class GPGME_Key {
      * @returns {Promise<String|GPGME_Error>}
      * @async
      */
-    getArmor(){
-        let me = this;
+    this.getArmor = function(){
         return new Promise(function(resolve, reject) {
-            if (!me._data.fingerprint){
+            if (!_data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('export');
             msg.setParameter('armor', true);
-            msg.setParameter('keys', me._data.fingerprint);
+            msg.setParameter('keys', _data.fingerprint);
             msg.post().then(function(result){
-                me._data.armored = result.data;
+                _data.armored = result.data;
                 resolve(result.data);
             }, function(error){
                 reject(error);
             });
         });
-    }
+    };
 
     /**
      * Find out if the Key includes a secret part. Note that this is a rather
@@ -244,39 +237,61 @@ export class GPGME_Key {
      * available in the gnupg Keyring
      * @async
      */
-    getHasSecret(){
-        let me = this;
+    this.getHasSecret = function (){
         return new Promise(function(resolve, reject) {
-            if (!me._data.fingerprint){
+            if (!_data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('keylist');
-            msg.setParameter('keys', me._data.fingerprint);
+            msg.setParameter('keys', _data.fingerprint);
             msg.setParameter('secret', true);
             msg.post().then(function(result){
-                me._data.hasSecret = null;
+                _data.hasSecret = null;
                 if (
                     result.keys &&
                     result.keys.length === 1 &&
                     result.keys[0].secret === true
                 ) {
-                    me._data.hasSecret = true;
+                    _data.hasSecret = true;
                     resolve(true);
                 } else {
-                    me._data.hasSecret = false;
+                    _data.hasSecret = false;
                     resolve(false);
                 }
             }, function(error){
                 reject(error);
             });
         });
+    };
+
+    /**
+     * Deletes the (public) Key from the GPG Keyring. Note that a deletion of a
+     * secret key is not supported by the native backend.
+     * @returns {Promise<Boolean|GPGME_Error>} Success if key was deleted,
+     * rejects with a GPG error otherwise.
+     */
+    this.delete= function (){
+        return new Promise(function(resolve, reject){
+            if (!_data.fingerprint){
+                reject(gpgme_error('KEY_INVALID'));
+            }
+            let msg = createMessage('delete');
+            msg.setParameter('key', _data.fingerprint);
+            msg.post().then(function(result){
+                resolve(result.success);
+            }, function(error){
+                reject(error);
+            });
+        });
+    };
     }
 
     /**
-     * Convenience functions to be directly used as properties of the Key
-     * Notice that these rely on cached info and may be outdated. Use the async
-     * get(property, false) if you need the most current info
+     * @returns {String} The fingerprint defining this Key
      */
+    get fingerprint(){
+        return this.getFingerprint();
+    }
 
     /**
      * Property for the export of armored Key. If the armored Key is not
@@ -286,38 +301,6 @@ export class GPGME_Key {
      */
     get armored(){
         return this.get('armored', true);
-    }
-
-    /**
-     * Property indicating if the Key possesses a private/secret part. If this
-     * information is not yet cached, it returns an {@link GPGME_Error} with
-     * code 'KEY_NO_INIT'.  Running {@link refreshKey} may help in this case.
-     * @returns {Boolean} If the Key has a secret subkey.
-     */
-    get hasSecret(){
-        return this.get('hasSecret', true);
-    }
-
-    /**
-     * Deletes the (public) Key from the GPG Keyring. Note that a deletion of a
-     * secret key is not supported by the native backend.
-     * @returns {Promise<Boolean|GPGME_Error>} Success if key was deleted,
-     * rejects with a GPG error otherwise.
-     */
-    delete(){
-        let me = this;
-        return new Promise(function(resolve, reject){
-            if (!me._data.fingerprint){
-                reject(gpgme_error('KEY_INVALID'));
-            }
-            let msg = createMessage('delete');
-            msg.setParameter('key', me._data.fingerprint);
-            msg.post().then(function(result){
-                resolve(result.success);
-            }, function(error){
-                reject(error);
-            });
-        });
     }
 }
 
@@ -334,44 +317,45 @@ class GPGME_Subkey {
      * @private
      */
     constructor(data){
+        let _data = {};
         let keys = Object.keys(data);
-        for (let i=0; i< keys.length; i++) {
-            this.setProperty(keys[i], data[keys[i]]);
-        }
-    }
 
-    /**
+            /**
      * Validates a subkey property against {@link validSubKeyProperties} and
      * sets it if validation is successful
      * @param {String} property
      * @param {*} value
      * @param private
      */
-    setProperty(property, value){
-        if (!this._data){
-            this._data = {};
-        }
+    const setProperty = function (property, value){
         if (validSubKeyProperties.hasOwnProperty(property)){
             if (validSubKeyProperties[property](value) === true) {
                 if (property === 'timestamp' || property === 'expires'){
-                    this._data[property] = new Date(value * 1000);
+                    _data[property] = new Date(value * 1000);
                 } else {
-                    this._data[property] = value;
+                    _data[property] = value;
                 }
             }
         }
+    };
+    for (let i=0; i< keys.length; i++) {
+        setProperty(keys[i], data[keys[i]]);
     }
+
+
 
     /**
      * Fetches any information about this subkey
      * @param {String} property Information to request
      * @returns {String | Number | Date}
      */
-    get(property) {
-        if (this._data.hasOwnProperty(property)){
-            return (this._data[property]);
+    this.get = function(property) {
+        if (_data.hasOwnProperty(property)){
+            return (_data[property]);
         }
-    }
+    };
+}
+
 }
 
 /**
@@ -387,11 +371,23 @@ class GPGME_UserId {
      * @private
      */
     constructor(data){
+        let _data = {};
         let keys = Object.keys(data);
+        const setProperty = function(property, value){
+            if (validUserIdProperties.hasOwnProperty(property)){
+                if (validUserIdProperties[property](value) === true) {
+                    if (property === 'last_update'){
+                        _data[property] = new Date(value*1000);
+                    } else {
+                        _data[property] = value;
+                    }
+                }
+            }
+        };
         for (let i=0; i< keys.length; i++) {
-            this.setProperty(keys[i], data[keys[i]]);
+            setProperty(keys[i], data[keys[i]]);
         }
-    }
+
     /**
      * Validates a subkey property against {@link validUserIdProperties} and
      * sets it if validation is successful
@@ -399,34 +395,21 @@ class GPGME_UserId {
      * @param {*} value
      * @param private
      */
-    setProperty(property, value){
-        if (!this._data){
-            this._data = {};
-        }
-        if (validUserIdProperties.hasOwnProperty(property)){
-            if (validUserIdProperties[property](value) === true) {
-                if (property === 'last_update'){
-                    this._data[property] = new Date(value*1000);
-                } else {
-                    this._data[property] = value;
-                }
-            }
-        }
 
-    }
 
     /**
      * Fetches information about the user
      * @param {String} property Information to request
      * @returns {String | Number}
      */
-    get(property) {
-        if (this._data.hasOwnProperty(property)){
-            return (this._data[property]);
+    this.get = function (property) {
+        if (_data.hasOwnProperty(property)){
+            return (_data[property]);
         }
-    }
+    };
 }
 
+}
 /**
  * Validation definition for userIds. Each valid userId property is represented
  * as a key- Value pair, with their value being a validation function to check
