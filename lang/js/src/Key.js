@@ -37,7 +37,7 @@ export function createKey(fingerprint, async = false){
     if (!isFingerprint(fingerprint) || typeof(async) !== 'boolean'){
         return gpgme_error('PARAM_WRONG');
     }
-    else return new GPGME_Key(fingerprint, async);
+    else return Object.freeze(new GPGME_Key(fingerprint, async));
 }
 
 /**
@@ -104,15 +104,15 @@ export class GPGME_Key {
                 case 'subkeys':
                     _data.subkeys = [];
                     for (let i=0; i< data.subkeys.length; i++) {
-                        _data.subkeys.push(
-                            new GPGME_Subkey(data.subkeys[i]));
+                        _data.subkeys.push(Object.freeze(
+                            new GPGME_Subkey(data.subkeys[i])));
                     }
                     break;
                 case 'userids':
                     _data.userids = [];
                     for (let i=0; i< data.userids.length; i++) {
-                        _data.userids.push(
-                            new GPGME_UserId(data.userids[i]));
+                        _data.userids.push(Object.freeze(
+                            new GPGME_UserId(data.userids[i])));
                     }
                     break;
                 case 'last_update':

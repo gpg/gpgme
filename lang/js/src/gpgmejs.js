@@ -102,7 +102,7 @@ export class GpgME {
          */
         this.getKeyring = function(){
             if (!_Keyring){
-                _Keyring = new GPGME_Keyring;
+                _Keyring = Object.freeze(new GPGME_Keyring);
             }
             return _Keyring;
         };
@@ -241,7 +241,7 @@ export class GpgME {
             putData(msg, data);
             return new Promise(function(resolve,reject) {
                 if (mode ==='detached'){
-                    msg.expect= 'base64';
+                    msg.setExpect('base64');
                 }
                 msg.post().then( function(message) {
                     if (mode === 'clearsign'){
@@ -319,10 +319,7 @@ export class GpgME {
      * Accesses the {@link GPGME_Keyring}.
      */
     get Keyring(){
-        if (!this._Keyring){
-            this._Keyring = new GPGME_Keyring;
-        }
-        return this._Keyring;
+        return this.getKeyring();
     }
 }
 

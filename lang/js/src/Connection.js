@@ -118,7 +118,7 @@ export class Connection{
             }
             let chunksize = message.chunksize;
             return new Promise(function(resolve, reject){
-                let answer = new Answer(message);
+                let answer = Object.freeze(new Answer(message));
                 let listener = function(msg) {
                     if (!msg){
                         _connection.onMessage.removeListener(listener);
@@ -188,14 +188,15 @@ class Answer{
      */
     constructor(message){
         const operation = message.operation;
-        const expect = message.expect;
+        const expected = message.getExpect();
         let response_b64 = null;
 
         this.getOperation = function(){
             return operation;
         };
+
         this.getExpect = function(){
-            return expect;
+            return expected;
         };
 
         /**
@@ -260,7 +261,7 @@ class Answer{
                     }
                     if (_decodedResponse.base64 === true
                         && poa.data[key] === 'string'
-                        && this.getExpect() === undefined
+                        && this.getExpect() !== 'base64'
                     ){
                         _response[key] = decodeURIComponent(
                             atob(_decodedResponse[key]).split('').map(

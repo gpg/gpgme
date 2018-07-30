@@ -253,6 +253,22 @@ function unittests (){
                 expect(key.fingerprint.code).to.equal('KEY_INVALID');
             }
         });
+
+        it('Overwriting getFingerprint does not work', function(){
+            const evilFunction = function(){
+                return 'bad Data';
+            };
+            let key = createKey(kp.validKeyFingerprint, true);
+            expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
+            try {
+                key.getFingerprint = evilFunction;
+            }
+            catch(e) {
+                expect(e).to.be.an.instanceof(TypeError);
+            }
+            expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
+            expect(key.getFingerprint).to.not.equal(evilFunction);
+        });
         // TODO: tests for subkeys
         // TODO: tests for userids
         // TODO: some invalid tests for key/keyring

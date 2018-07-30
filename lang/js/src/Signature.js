@@ -66,7 +66,7 @@ export function createSignature(sigObject){
             }
         }
     }
-    return new GPGME_Signature(sigObject);
+    return Object.freeze(new GPGME_Signature(sigObject));
 }
 
 

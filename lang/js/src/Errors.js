@@ -119,7 +119,7 @@ const err_list = {
 export function gpgme_error(code = 'GENERIC_ERROR', info){
     if (err_list.hasOwnProperty(code)){
         if (err_list[code].type === 'error'){
-            return new GPGME_Error(code);
+            return Object.freeze(new GPGME_Error(code));
         }
         if (err_list[code].type === 'warning'){
             // eslint-disable-next-line no-console
@@ -127,10 +127,10 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
         }
         return null;
     } else if (code === 'GNUPG_ERROR'){
-        return new GPGME_Error(code, info);
+        return Object.freeze(new GPGME_Error(code, info));
     }
     else {
-        return new GPGME_Error('GENERIC_ERROR');
+        return Object.freeze(new GPGME_Error('GENERIC_ERROR'));
     }
 }
 

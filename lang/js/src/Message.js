@@ -36,7 +36,7 @@ export function createMessage(operation){
         return gpgme_error('PARAM_WRONG');
     }
     if (permittedOperations.hasOwnProperty(operation)){
-        return new GPGME_Message(operation);
+        return Object.freeze(new GPGME_Message(operation));
     } else {
         return gpgme_error('MSG_WRONG_OP');
     }
@@ -56,9 +56,19 @@ export class GPGME_Message {
             op: operation,
             chunksize: 1023* 1024
         };
+        let expected = null;
 
         this.getOperation = function(){
             return _msg.op;
+        };
+
+        this.setExpect = function(value){
+            if (value === 'base64'){
+                expected = value;
+            }
+        };
+        this.getExpect = function(){
+            return expected;
         };
 
         /**
@@ -204,7 +214,7 @@ export class GPGME_Message {
             return new Promise(function(resolve, reject) {
                 if (me.isComplete() === true) {
 
-                    let conn  = new Connection;
+                    let conn  = Object.freeze(new Connection);
                     conn.post(me).then(function(response) {
                         resolve(response);
                     }, function(reason) {

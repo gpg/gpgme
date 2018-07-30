@@ -37,7 +37,6 @@ describe('GPGME context', function(){
                 context.Keyring = input;
                 expect(context.Keyring).to.be.an('object');
                 expect(context.Keyring).to.not.equal(input);
-                expect(context._Keyring).to.equal(context.Keyring);
                 expect(context.Keyring.getKeys).to.be.a('function');
                 expect(context.Keyring.getDefaultKey).to.be.a('function');
                 expect(context.Keyring.importKey).to.be.a('function');
