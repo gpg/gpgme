@@ -79,9 +79,8 @@ export class GPGME_Keyring {
                             };
                         }
                         secondrequest().then(function(answer) {
-                            for (let i=0; i < answer.keys.length; i++){
+                            for (let i=0; i < result.keys.length; i++){
                                 if (prepare_sync === true){
-                                    result.keys[i].hasSecret = undefined;
                                     if (answer && answer.keys) {
                                         for (let j=0;
                                             j < answer.keys.length; j++ ){
