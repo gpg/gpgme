@@ -74,7 +74,7 @@ export class GPGME_Key {
          * @returns {Boolean} If the Key has a secret subkey.
          */
         this.hasSecret= function (){
-            return this.get('hasSecret', true);
+            return this.get('hasSecret');
         };
 
         /**

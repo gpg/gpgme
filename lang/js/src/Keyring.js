@@ -46,7 +46,7 @@ export class GPGME_Keyring {
          * resort to a refresh() first.
          * @param {Boolean} search (optional) retrieve Keys from external
          * servers with the method(s) defined in gnupg (e.g. WKD/HKP lookup)
-         * @returns {Promise.<Array<GPGME_Key>|GPGME_Error>}
+         * @returns {Promise<Array<GPGME_Key>>}
          * @static
          * @async
          */
@@ -79,9 +79,9 @@ export class GPGME_Keyring {
                             };
                         }
                         secondrequest().then(function(answer) {
-                            for (let i=0; i < result.keys.length; i++){
+                            for (let i=0; i < answer.keys.length; i++){
                                 if (prepare_sync === true){
-                                    result.keys[i].hasSecret = false;
+                                    result.keys[i].hasSecret = undefined;
                                     if (answer && answer.keys) {
                                         for (let j=0;
                                             j < answer.keys.length; j++ ){
@@ -91,7 +91,9 @@ export class GPGME_Keyring {
                                                 a.fingerprint === b.fingerprint
                                             ) {
                                                 if (a.secret === true){
-                                                    a.hasSecret = true;
+                                                    b.hasSecret = true;
+                                                } else {
+                                                    b.hasSecret = false;
                                                 }
                                                 break;
                                             }
