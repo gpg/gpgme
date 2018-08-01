@@ -248,3 +248,39 @@ const ImportablePublicKey = {// eslint-disable-line no-unused-vars
     '=9WZ7\n' +
     '-----END PGP PUBLIC KEY BLOCK-----\n'
 };
+
+/**
+ * Changes base64 encoded gpg messages
+ * @param {String} msg input message
+ * @param {Number} rate of changes as percentage of message length.
+ * @param {[Number, Number]} p begin and end of the message left untouched (to
+ * preserve) header/footer
+ */
+// eslint-disable-next-line no-unused-vars
+function sabotageMsg(msg, rate = 0.01, p= [35,35]){
+    const iterations = Math.floor(Math.random() * msg.length * rate) + 1;
+    const base64_set =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/';
+    for (let i=0; i < iterations; i++){
+        let str0, str1, str2;
+        const chosePosition = function(){
+            let position =
+                Math.floor( Math.random() * (msg.length - p[0] + p[1]))
+                + p[0];
+            str1 = msg.substring(position,position+1);
+            if (str1 === '\n'){
+                chosePosition();
+            } else {
+                str0 = msg.substring(0,position);
+                str2 = msg.substring(position +1);
+            }
+        };
+        chosePosition();
+        let new1 = function(){
+            let n = base64_set[Math.floor(Math.random() * 64)];
+            return (n === str1) ? new1() : n;
+        };
+        msg = str0.concat(new1()).concat(str2);
+    }
+    return msg;
+}

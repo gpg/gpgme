@@ -34,7 +34,7 @@ import { Connection } from './Connection';
  */
 function init(){
     return new Promise(function(resolve, reject){
-        let connection = Object.freeze(new Connection);
+        const connection = Object.freeze(new Connection);
         connection.checkConnection(false).then(
             function(result){
                 if (result === true) {
@@ -48,6 +48,5 @@ function init(){
     });
 }
 
-export default {
-    init: init
-};
+const exportvalue = Object.freeze({init:init});
+export default exportvalue;
