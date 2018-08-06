@@ -22,7 +22,8 @@
 GPG = gpg
 GPG_AGENT = gpg-agent
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) LC_ALL=C GPG_AGENT_INFO= \
+GNUPGHOME=$(abs_builddir)
+TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
                     top_srcdir=$(top_srcdir)
 
 # The keylist tests must come after the import and the edit test.

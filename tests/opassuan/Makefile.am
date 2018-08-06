@@ -17,7 +17,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO=
+GNUPGHOME=$(abs_builddir)
+TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) GPG_AGENT_INFO=
 
 noinst_HEADERS =
 TESTS =

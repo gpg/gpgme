@@ -21,7 +21,8 @@ GPG_AGENT = gpg-agent
 
 test_srcdir = $(top_srcdir)/tests/gpg
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) \
+GNUPGHOME=$(abs_builddir) \
+TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) \
 	LC_ALL=C GPG_AGENT_INFO= \
 	top_srcdir=$(top_srcdir) \
 	srcdir=$(srcdir) \

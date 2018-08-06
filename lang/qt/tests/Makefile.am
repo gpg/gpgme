@@ -21,7 +21,8 @@
 
 GPG = gpg
 
-TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir)
+GNUPGHOME=$(abs_builddir)
+TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME)
 
 EXTRA_DIST = initial.test
 
