@@ -1491,10 +1491,7 @@ encode_and_chunk (cjson_t request, cjson_t response)
     }
 
   if (!chunksize)
-    {
-      err = GPG_ERR_INV_VALUE;
-      goto leave;
-    }
+    goto leave;
 
   pending_data.buffer = data;
   /* Data should already be encoded so that it does not
