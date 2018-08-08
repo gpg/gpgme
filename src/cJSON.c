@@ -45,20 +45,42 @@
 #include <ctype.h>
 #include <errno.h>
 
+#include <gpg-error.h>
+
 #include "cJSON.h"
+
+/* Only use calloc. */
+#define CALLOC_ONLY 1
+
+/* To avoid that a compiler optimizes certain memset calls away, these
+   macros may be used instead. */
+#define wipememory2(_ptr,_set,_len) do { \
+        volatile char *_vptr=(volatile char *)(_ptr); \
+        size_t _vlen=(_len); \
+        while(_vlen) { *_vptr=(_set); _vptr++; _vlen--; } \
+    } while(0)
+#define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
 
 /* We use malloc function wrappers from gpgrt (aka libgpg-error).  */
 #if GPGRT_VERSION_NUMBER >= 0x011c00 /* 1.28 */
 # include <gpgrt.h>
-# define xtrymalloc(a)   gpgrt_malloc ((a))
 # define xtrycalloc(a,b) gpgrt_calloc ((a), (b))
 # define xtrystrdup(a)   gpgrt_strdup ((a))
 # define xfree(a)        gpgrt_free ((a))
+# if CALLOC_ONLY
+#  define xtrymalloc(a)  gpgrt_calloc (1, (a))
+# else
+#  define xtrymalloc(a)  gpgrt_malloc ((a))
+# endif
 #else /* Without gpgrt (aka libgpg-error).  */
-# define xtrymalloc(a)   malloc ((a))
 # define xtrycalloc(a,b) calloc ((a), (b))
 # define xtrystrdup(a)   strdup ((a))
 # define xfree(a)        free ((a))
+# if CALLOC_ONLY
+#  define xtrymalloc(a)  calloc (1, (a))
+# else
+#  define xtrymalloc(a)  malloc ((a))
+# endif
 #endif
 
 

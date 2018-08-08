@@ -87,13 +87,7 @@ static struct
  * Helper functions and macros
  */
 
-#define xtrymalloc(a)  gpgrt_malloc ((a))
 #define xtrystrdup(a)  gpgrt_strdup ((a))
-#define xmalloc(a) ({                           \
-      void *_r = gpgrt_malloc ((a));            \
-      if (!_r)                                  \
-        xoutofcore ("malloc");                  \
-      _r; })
 #define xcalloc(a,b) ({                         \
       void *_r = gpgrt_calloc ((a), (b));       \
       if (!_r)                                  \
@@ -110,6 +104,21 @@ static struct
         xoutofcore ("strconcat");                       \
       _r; })
 #define xfree(a) gpgrt_free ((a))
+
+/* Only use calloc. */
+#define CALLOC_ONLY 1
+
+#if CALLOC_ONLY
+#define xtrymalloc(a)  gpgrt_calloc (1, (a))
+#define xmalloc(a) xcalloc(1, (a))
+#else
+#define xtrymalloc(a)  gpgrt_malloc ((a))
+#define xmalloc(a) ({                           \
+      void *_r = gpgrt_malloc ((a));            \
+      if (!_r)                                  \
+        xoutofcore ("malloc");                  \
+      _r; })
+#endif
 
 #define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
