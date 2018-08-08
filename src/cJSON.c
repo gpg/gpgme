@@ -123,9 +123,15 @@ cJSON_Delete (cJSON * c)
       if (!(c->type & cJSON_IsReference) && c->child)
 	cJSON_Delete (c->child);
       if (!(c->type & cJSON_IsReference) && c->valuestring)
-	xfree (c->valuestring);
+        {
+          wipememory (c->valuestring, strlen (c->valuestring));
+          xfree (c->valuestring);
+        }
       if (c->string)
-	xfree (c->string);
+        {
+          wipememory (c->string, strlen (c->string));
+          xfree (c->string);
+        }
       xfree (c);
       c = next;
     }
