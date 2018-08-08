@@ -36,12 +36,11 @@ using namespace GpgME;
 class GpgGenCardKeyInteractor::Private
 {
 public:
-    Private() : keysize(2048), backup(false)
+    Private() : keysize("2048"), backup(false)
     {
 
     }
-    std::string name, email, backupFileName, expiry, serial;
-    int keysize;
+    std::string name, email, backupFileName, expiry, serial, keysize;
     bool backup;
 };
 
@@ -70,7 +69,7 @@ void GpgGenCardKeyInteractor::setDoBackup(bool value)
 
 void GpgGenCardKeyInteractor::setKeySize(int value)
 {
-    d->keysize = value;
+    d->keysize = std::to_string(value);
 }
 
 void GpgGenCardKeyInteractor::setExpiry(const std::string &timeStr)
@@ -132,7 +131,7 @@ const char *GpgGenCardKeyInteractor::action(Error &err) const
     case SIZE:
     case SIZE2:
     case SIZE3:
-        return std::to_string(d->keysize).c_str();
+        return d->keysize.c_str();
     case COMMENT:
         return "";
     case SAVE:
