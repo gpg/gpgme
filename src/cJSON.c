@@ -249,7 +249,7 @@ parse_string (cJSON * item, const char *str, const char **ep)
     }				/* not a string! */
 
   while (*ptr != '\"' && *ptr && ++len)
-    if (*ptr++ == '\\')
+    if (*ptr++ == '\\' && *ptr)
       ptr++;			/* Skip escaped quotes. */
 
   out = xtrymalloc (len + 2);	/* This is how long we need for the
@@ -268,6 +268,8 @@ parse_string (cJSON * item, const char *str, const char **ep)
       else
 	{
 	  ptr++;
+          if (!*ptr)
+            break;
 	  switch (*ptr)
 	    {
 	    case 'b':
@@ -1416,9 +1418,11 @@ cJSON_Minify (char *json)
 	    {
 	      if (*json == '\\')
 		*into++ = *json++;
-	      *into++ = *json++;
+	      if (*json)
+	        *into++ = *json++;
 	    }
-	  *into++ = *json++;
+          if (*json)
+            *into++ = *json++;
 	}			/* String literals, which are \" sensitive.  */
       else
 	*into++ = *json++;	/* All other characters.  */
