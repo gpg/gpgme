@@ -30,6 +30,7 @@ EOF = None
 util.process_constants('GPG_ERR_', globals())
 del util
 
+
 class GpgError(Exception):
     """A GPG Error
 
@@ -55,6 +56,7 @@ class GpgError(Exception):
     exception objects.
 
     """
+
     def __init__(self, error=None, context=None, results=None):
         self.error = error
         self.context = context
@@ -93,6 +95,7 @@ class GpgError(Exception):
             msgs.append(self.code_str)
         return ': '.join(msgs)
 
+
 class GPGMEError(GpgError):
     '''Generic error
 
@@ -101,23 +104,29 @@ class GPGMEError(GpgError):
     returns an error.  This is the error that was used in PyME.
 
     '''
+
     @classmethod
     def fromSyserror(cls):
         return cls(gpgme.gpgme_err_code_from_syserror())
+
     @property
     def message(self):
         return self.context
+
     def getstring(self):
         return str(self)
+
     def getcode(self):
         return self.code
+
     def getsource(self):
         return self.source
 
 
-def errorcheck(retval, extradata = None):
+def errorcheck(retval, extradata=None):
     if retval:
         raise GPGMEError(retval, extradata)
+
 
 class KeyNotFound(GPGMEError, KeyError):
     """Raised if a key was not found
@@ -127,63 +136,76 @@ class KeyNotFound(GPGMEError, KeyError):
     indicating EOF, and a KeyError.
 
     """
+
     def __init__(self, keystr):
         self.keystr = keystr
         GPGMEError.__init__(self, EOF)
+
     def __str__(self):
         return self.keystr
 
+
 # These errors are raised in the idiomatic interface code.
+
 
 class EncryptionError(GpgError):
     pass
+
 
 class InvalidRecipients(EncryptionError):
     def __init__(self, recipients, **kwargs):
         EncryptionError.__init__(self, **kwargs)
         self.recipients = recipients
+
     def __str__(self):
-        return ", ".join("{}: {}".format(r.fpr,
-                                         gpgme.gpgme_strerror(r.reason))
+        return ", ".join("{}: {}".format(r.fpr, gpgme.gpgme_strerror(r.reason))
                          for r in self.recipients)
+
 
 class DeryptionError(GpgError):
     pass
+
 
 class UnsupportedAlgorithm(DeryptionError):
     def __init__(self, algorithm, **kwargs):
         DeryptionError.__init__(self, **kwargs)
         self.algorithm = algorithm
+
     def __str__(self):
         return self.algorithm
 
+
 class SigningError(GpgError):
     pass
+
 
 class InvalidSigners(SigningError):
     def __init__(self, signers, **kwargs):
         SigningError.__init__(self, **kwargs)
         self.signers = signers
+
     def __str__(self):
-        return ", ".join("{}: {}".format(s.fpr,
-                                         gpgme.gpgme_strerror(s.reason))
+        return ", ".join("{}: {}".format(s.fpr, gpgme.gpgme_strerror(s.reason))
                          for s in self.signers)
+
 
 class VerificationError(GpgError):
     def __init__(self, result, **kwargs):
         GpgError.__init__(self, **kwargs)
         self.result = result
 
+
 class BadSignatures(VerificationError):
     def __str__(self):
-        return ", ".join("{}: {}".format(s.fpr,
-                                         gpgme.gpgme_strerror(s.status))
+        return ", ".join("{}: {}".format(s.fpr, gpgme.gpgme_strerror(s.status))
                          for s in self.result.signatures
                          if s.status != NO_ERROR)
+
 
 class MissingSignatures(VerificationError):
     def __init__(self, result, missing, **kwargs):
         VerificationError.__init__(self, result, **kwargs)
         self.missing = missing
+
     def __str__(self):
         return ", ".join(k.subkeys[0].fpr for k in self.missing)

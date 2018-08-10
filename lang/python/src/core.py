@@ -14,8 +14,8 @@ from . import constants
 from . import errors
 from . import util
 
-# Copyright (C) 2016-2017 g10 Code GmbH
-# Copyright (C) 2004,2008 Igor Belyi <belyi@users.sourceforge.net>
+# Copyright (C) 2016-2018 g10 Code GmbH
+# Copyright (C) 2004, 2008 Igor Belyi <belyi@users.sourceforge.net>
 # Copyright (C) 2002 John Goerzen <jgoerzen@complete.org>
 #
 #    This library is free software; you can redistribute it and/or
@@ -31,7 +31,6 @@ from . import util
 #    You should have received a copy of the GNU Lesser General Public
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
-
 """Core functionality
 
 Core functionality of GPGME wrapped in a object-oriented fashion.
@@ -53,8 +52,8 @@ class GpgmeWrapper(object):
         self.wrapped = wrapped
 
     def __repr__(self):
-        return '<{}/{!r}>'.format(super(GpgmeWrapper, self).__repr__(),
-                                  self.wrapped)
+        return '<{}/{!r}>'.format(
+            super(GpgmeWrapper, self).__repr__(), self.wrapped)
 
     def __str__(self):
         acc = ['{}.{}'.format(__name__, self.__class__.__name__)]
@@ -102,10 +101,8 @@ class GpgmeWrapper(object):
     _boolean_properties = set()
 
     def __wrap_boolean_property(self, key, do_set=False, value=None):
-        get_func = getattr(gpgme,
-                           "{}get_{}".format(self._cprefix, key))
-        set_func = getattr(gpgme,
-                           "{}set_{}".format(self._cprefix, key))
+        get_func = getattr(gpgme, "{}get_{}".format(self._cprefix, key))
+        set_func = getattr(gpgme, "{}set_{}".format(self._cprefix, key))
 
         def get(slf):
             return bool(get_func(slf.wrapped))
@@ -135,12 +132,14 @@ class GpgmeWrapper(object):
         func = getattr(gpgme, name)
 
         if self._errorcheck(name):
+
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     gpgme.gpg_raise_callback_exception(slf)
                 return errorcheck(result, name)
         else:
+
             def _funcwrap(slf, *args):
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
@@ -156,6 +155,7 @@ class GpgmeWrapper(object):
         # Bind the method to 'self'.
         def wrapper(*args):
             return _funcwrap(self, *args)
+
         wrapper.__doc__ = doc
 
         return wrapper
@@ -181,10 +181,15 @@ class Context(GpgmeWrapper):
 
     """
 
-    def __init__(self, armor=False, textmode=False, offline=False,
-                 signers=[], pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
+    def __init__(self,
+                 armor=False,
+                 textmode=False,
+                 offline=False,
+                 signers=[],
+                 pinentry_mode=constants.PINENTRY_MODE_DEFAULT,
                  protocol=constants.PROTOCOL_OpenPGP,
-                 wrapped=None, home_dir=None):
+                 wrapped=None,
+                 home_dir=None):
         """Construct a context object
 
         Keyword arguments:
@@ -226,16 +231,23 @@ class Context(GpgmeWrapper):
         return data.read()
 
     def __repr__(self):
-        return (
-            "Context(armor={0.armor}, "
-            "textmode={0.textmode}, offline={0.offline}, "
-            "signers={0.signers}, pinentry_mode={0.pinentry_mode}, "
-            "protocol={0.protocol}, home_dir={0.home_dir}"
-            ")").format(self)
+        return ("Context(armor={0.armor}, "
+                "textmode={0.textmode}, offline={0.offline}, "
+                "signers={0.signers}, pinentry_mode={0.pinentry_mode}, "
+                "protocol={0.protocol}, home_dir={0.home_dir}"
+                ")").format(self)
 
-    def encrypt(self, plaintext, recipients=[], sign=True, sink=None,
-                passphrase=None, always_trust=False, add_encrypt_to=False,
-                prepare=False, expect_sign=False, compress=True):
+    def encrypt(self,
+                plaintext,
+                recipients=[],
+                sign=True,
+                sink=None,
+                passphrase=None,
+                always_trust=False,
+                add_encrypt_to=False,
+                prepare=False,
+                expect_sign=False,
+                compress=True):
         """Encrypt data
 
         Encrypt the given plaintext for the given recipients.  If the
@@ -282,6 +294,7 @@ class Context(GpgmeWrapper):
 
             def passphrase_cb(hint, desc, prev_bad, hook=None):
                 return passphrase
+
             self.set_passphrase_cb(passphrase_cb)
 
         try:
@@ -292,19 +305,20 @@ class Context(GpgmeWrapper):
         except errors.GPGMEError as e:
             result = self.op_encrypt_result()
             sig_result = self.op_sign_result() if sign else None
-            results = (self.__read__(sink, ciphertext),
-                       result, sig_result)
+            results = (self.__read__(sink, ciphertext), result, sig_result)
             if e.getcode() == errors.UNUSABLE_PUBKEY:
                 if result.invalid_recipients:
-                    raise errors.InvalidRecipients(result.invalid_recipients,
-                                                   error=e.error,
-                                                   results=results)
+                    raise errors.InvalidRecipients(
+                        result.invalid_recipients,
+                        error=e.error,
+                        results=results)
             if e.getcode() == errors.UNUSABLE_SECKEY:
                 sig_result = self.op_sign_result()
                 if sig_result.invalid_signers:
-                    raise errors.InvalidSigners(sig_result.invalid_signers,
-                                                error=e.error,
-                                                results=results)
+                    raise errors.InvalidSigners(
+                        sig_result.invalid_signers,
+                        error=e.error,
+                        results=results)
             # Otherwise, just raise the error, but attach the results
             # first.
             e.results = results
@@ -360,6 +374,7 @@ class Context(GpgmeWrapper):
 
             def passphrase_cb(hint, desc, prev_bad, hook=None):
                 return passphrase
+
             self.set_passphrase_cb(passphrase_cb)
 
         try:
@@ -371,8 +386,7 @@ class Context(GpgmeWrapper):
             result = self.op_decrypt_result()
             verify_result = self.op_verify_result() if verify else None
             # Just raise the error, but attach the results first.
-            e.results = (self.__read__(sink, plaintext),
-                         result, verify_result)
+            e.results = (self.__read__(sink, plaintext), result, verify_result)
             raise e
         finally:
             if passphrase is not None:
@@ -384,8 +398,8 @@ class Context(GpgmeWrapper):
         verify_result = self.op_verify_result() if verify else None
         results = (self.__read__(sink, plaintext), result, verify_result)
         if result.unsupported_algorithm:
-            raise errors.UnsupportedAlgorithm(result.unsupported_algorithm,
-                                              results=results)
+            raise errors.UnsupportedAlgorithm(
+                result.unsupported_algorithm, results=results)
 
         if verify:
             if any(s.status != errors.NO_ERROR
@@ -408,8 +422,8 @@ class Context(GpgmeWrapper):
                 if not ok:
                     missing.append(key)
             if missing:
-                raise errors.MissingSignatures(verify_result, missing,
-                                               results=results)
+                raise errors.MissingSignatures(
+                    verify_result, missing, results=results)
 
         return results
 
@@ -441,13 +455,13 @@ class Context(GpgmeWrapper):
         try:
             self.op_sign(data, signeddata, mode)
         except errors.GPGMEError as e:
-            results = (self.__read__(sink, signeddata),
-                       self.op_sign_result())
+            results = (self.__read__(sink, signeddata), self.op_sign_result())
             if e.getcode() == errors.UNUSABLE_SECKEY:
                 if results[1].invalid_signers:
-                    raise errors.InvalidSigners(results[1].invalid_signers,
-                                                error=e.error,
-                                                results=results)
+                    raise errors.InvalidSigners(
+                        results[1].invalid_signers,
+                        error=e.error,
+                        results=results)
             e.results = results
             raise e
 
@@ -491,8 +505,7 @@ class Context(GpgmeWrapper):
                 self.op_verify(signed_data, None, data)
         except errors.GPGMEError as e:
             # Just raise the error, but attach the results first.
-            e.results = (self.__read__(sink, data),
-                         self.op_verify_result())
+            e.results = (self.__read__(sink, data), self.op_verify_result())
             raise e
 
         results = (self.__read__(sink, data), self.op_verify_result())
@@ -514,8 +527,8 @@ class Context(GpgmeWrapper):
             if not ok:
                 missing.append(key)
         if missing:
-            raise errors.MissingSignatures(results[1], missing,
-                                           results=results)
+            raise errors.MissingSignatures(
+                results[1], missing, results=results)
 
         return results
 
@@ -676,7 +689,9 @@ class Context(GpgmeWrapper):
 
         return result
 
-    def keylist(self, pattern=None, secret=False,
+    def keylist(self,
+                pattern=None,
+                secret=False,
                 mode=constants.keylist.mode.LOCAL,
                 source=None):
         """List keys
@@ -711,9 +726,17 @@ class Context(GpgmeWrapper):
             key = self.op_keylist_next()
         self.op_keylist_end()
 
-    def create_key(self, userid, algorithm=None, expires_in=0, expires=True,
-                   sign=False, encrypt=False, certify=False,
-                   authenticate=False, passphrase=None, force=False):
+    def create_key(self,
+                   userid,
+                   algorithm=None,
+                   expires_in=0,
+                   expires=True,
+                   sign=False,
+                   encrypt=False,
+                   certify=False,
+                   authenticate=False,
+                   passphrase=None,
+                   force=False):
         """Create a primary key
 
         Create a primary key for the user id USERID.
@@ -769,19 +792,23 @@ class Context(GpgmeWrapper):
 
             def passphrase_cb(hint, desc, prev_bad, hook=None):
                 return passphrase
+
             self.set_passphrase_cb(passphrase_cb)
 
         try:
-            self.op_createkey(userid, algorithm, 0,  # reserved
-                              expires_in, None,  # extrakey
-                              ((constants.create.SIGN if sign else 0)
-                               | (constants.create.ENCR if encrypt else 0)
-                               | (constants.create.CERT if certify else 0)
-                               | (constants.create.AUTH if authenticate else 0)
-                               | (constants.create.NOPASSWD
-                                  if passphrase is None else 0)
-                               | (0 if expires else constants.create.NOEXPIRE)
-                               | (constants.create.FORCE if force else 0)))
+            self.op_createkey(
+                userid,
+                algorithm,
+                0,  # reserved
+                expires_in,
+                None,  # extrakey
+                ((constants.create.SIGN if sign else 0) |
+                 (constants.create.ENCR if encrypt else 0) |
+                 (constants.create.CERT if certify else 0) |
+                 (constants.create.AUTH if authenticate else 0) |
+                 (constants.create.NOPASSWD if passphrase is None else 0) |
+                 (0 if expires else constants.create.NOEXPIRE) |
+                 (constants.create.FORCE if force else 0)))
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
@@ -790,8 +817,14 @@ class Context(GpgmeWrapper):
 
         return self.op_genkey_result()
 
-    def create_subkey(self, key, algorithm=None, expires_in=0, expires=True,
-                      sign=False, encrypt=False, authenticate=False,
+    def create_subkey(self,
+                      key,
+                      algorithm=None,
+                      expires_in=0,
+                      expires=True,
+                      sign=False,
+                      encrypt=False,
+                      authenticate=False,
                       passphrase=None):
         """Create a subkey
 
@@ -845,19 +878,20 @@ class Context(GpgmeWrapper):
 
             def passphrase_cb(hint, desc, prev_bad, hook=None):
                 return passphrase
+
             self.set_passphrase_cb(passphrase_cb)
 
         try:
-            self.op_createsubkey(key, algorithm, 0,  # reserved
-                                 expires_in,
-                                 ((constants.create.SIGN if sign else 0)
-                                  | (constants.create.ENCR if encrypt else 0)
-                                  | (constants.create.AUTH
-                                     if authenticate else 0)
-                                  | (constants.create.NOPASSWD
-                                     if passphrase is None else 0)
-                                  | (0 if expires
-                                     else constants.create.NOEXPIRE)))
+            self.op_createsubkey(
+                key,
+                algorithm,
+                0,  # reserved
+                expires_in,
+                ((constants.create.SIGN if sign else 0) |
+                 (constants.create.ENCR if encrypt else 0) |
+                 (constants.create.AUTH if authenticate else 0) |
+                 (constants.create.NOPASSWD if passphrase is None else 0) |
+                 (0 if expires else constants.create.NOEXPIRE)))
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
@@ -943,8 +977,11 @@ class Context(GpgmeWrapper):
         """
         self.op_tofu_policy(key, policy)
 
-    def assuan_transact(self, command,
-                        data_cb=None, inquire_cb=None, status_cb=None):
+    def assuan_transact(self,
+                        command,
+                        data_cb=None,
+                        inquire_cb=None,
+                        status_cb=None):
         """Issue a raw assuan command
 
         This function can be used to issue a raw assuan command to the
@@ -975,12 +1012,10 @@ class Context(GpgmeWrapper):
         errptr = gpgme.new_gpgme_error_t_p()
 
         err = gpgme.gpgme_op_assuan_transact_ext(
-            self.wrapped,
-            cmd,
-            (weakref.ref(self), data_cb) if data_cb else None,
-            (weakref.ref(self), inquire_cb) if inquire_cb else None,
-            (weakref.ref(self), status_cb) if status_cb else None,
-            errptr)
+            self.wrapped, cmd, (weakref.ref(self), data_cb)
+            if data_cb else None, (weakref.ref(self), inquire_cb)
+            if inquire_cb else None, (weakref.ref(self), status_cb)
+            if status_cb else None, errptr)
 
         if self._callback_excinfo:
             gpgme.gpg_raise_callback_exception(self)
@@ -1019,8 +1054,8 @@ class Context(GpgmeWrapper):
         else:
             opaquedata = (weakref.ref(self), func)
 
-        result = gpgme.gpgme_op_interact(self.wrapped, key, flags,
-                                         opaquedata, sink)
+        result = gpgme.gpgme_op_interact(self.wrapped, key, flags, opaquedata,
+                                         sink)
         if self._callback_excinfo:
             gpgme.gpg_raise_callback_exception(self)
         errorcheck(result)
@@ -1079,13 +1114,14 @@ class Context(GpgmeWrapper):
         # $ grep '^gpgme_error_t ' obj/lang/python/python3.5-gpg/gpgme.h \
         # | grep -v _op_ | awk "/\(gpgme_ctx/ { printf (\"'%s',\\n\", \$2) } "
         return ((name.startswith('gpgme_op_') and not
-                 name.endswith('_result')) or name in
-                {'gpgme_new', 'gpgme_set_ctx_flag', 'gpgme_set_protocol',
+                 name.endswith('_result')) or name in {
+                    'gpgme_new', 'gpgme_set_ctx_flag', 'gpgme_set_protocol',
                     'gpgme_set_sub_protocol', 'gpgme_set_keylist_mode',
                     'gpgme_set_pinentry_mode', 'gpgme_set_locale',
                     'gpgme_ctx_set_engine_info', 'gpgme_signers_add',
                     'gpgme_sig_notation_add', 'gpgme_set_sender',
-                    'gpgme_cancel', 'gpgme_cancel_async', 'gpgme_get_key'})
+                    'gpgme_cancel', 'gpgme_cancel_async', 'gpgme_get_key'
+                })
 
     _boolean_properties = {'armor', 'textmode', 'offline'}
 
@@ -1319,8 +1355,8 @@ class Context(GpgmeWrapper):
         magic numbers will break as a result.
 
         """
-        warnings.warn("Call to deprecated method op_edit.",
-                      category=DeprecationWarning)
+        warnings.warn(
+            "Call to deprecated method op_edit.", category=DeprecationWarning)
         return self.interact(key, func, sink=out, fnc_value=fnc_value)
 
 
@@ -1362,8 +1398,13 @@ class Data(GpgmeWrapper):
             'gpgme_data_identify',
         }
 
-    def __init__(self, string=None, file=None, offset=None,
-                 length=None, cbs=None, copy=True):
+    def __init__(self,
+                 string=None,
+                 file=None,
+                 offset=None,
+                 length=None,
+                 cbs=None,
+                 copy=True):
         """Initialize a new gpgme_data_t object.
 
         If no args are specified, make it an empty object.
@@ -1451,8 +1492,8 @@ class Data(GpgmeWrapper):
 
     def new_from_mem(self, string, copy=True):
         tmp = gpgme.new_gpgme_data_t_p()
-        errorcheck(gpgme.gpgme_data_new_from_mem(tmp, string, len(string),
-                                                 copy))
+        errorcheck(
+            gpgme.gpgme_data_new_from_mem(tmp, string, len(string), copy))
         self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
         gpgme.delete_gpgme_data_t_p(tmp)
 
@@ -1471,11 +1512,11 @@ class Data(GpgmeWrapper):
     def new_from_cbs(self, read_cb, write_cb, seek_cb, release_cb, hook=None):
         tmp = gpgme.new_gpgme_data_t_p()
         if hook is not None:
-            hookdata = (weakref.ref(self),
-                        read_cb, write_cb, seek_cb, release_cb, hook)
+            hookdata = (weakref.ref(self), read_cb, write_cb, seek_cb,
+                        release_cb, hook)
         else:
-            hookdata = (weakref.ref(self),
-                        read_cb, write_cb, seek_cb, release_cb)
+            hookdata = (weakref.ref(self), read_cb, write_cb, seek_cb,
+                        release_cb)
         gpgme.gpg_data_new_from_cbs(self, hookdata, tmp)
         self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
         gpgme.delete_gpgme_data_t_p(tmp)
@@ -1498,11 +1539,12 @@ class Data(GpgmeWrapper):
         else:
             fp = gpgme.fdopen(file.fileno(), file.mode)
             if fp is None:
-                raise ValueError("Failed to open file from %s arg %s" %
-                                 (str(type(file)), str(file)))
+                raise ValueError("Failed to open file from %s arg %s" % (str(
+                    type(file)), str(file)))
 
-        errorcheck(gpgme.gpgme_data_new_from_filepart(tmp, filename, fp,
-                                                      offset, length))
+        errorcheck(
+            gpgme.gpgme_data_new_from_filepart(tmp, filename, fp, offset,
+                                               length))
         self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
         gpgme.delete_gpgme_data_t_p(tmp)
 
@@ -1636,6 +1678,7 @@ def addrspec_from_uid(uid):
 
 def check_version(version=None):
     return gpgme.gpgme_check_version(version)
+
 
 # check_version also makes sure that several subsystems are properly
 # initialized, and it must be run at least once before invoking any

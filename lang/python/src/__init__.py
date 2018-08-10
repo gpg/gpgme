@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
-
 """gpg: GnuPG Interface for Python (GPGME bindings)
 
 Welcome to gpg, the GnuPG Interface for Python.
@@ -117,5 +116,7 @@ del gpgme
 _ = [Context, Data, core, errors, constants, util, callbacks, version]
 del _
 
-__all__ = ["Context", "Data",
-           "core", "errors", "constants", "util", "callbacks", "version"]
+__all__ = [
+    "Context", "Data", "core", "errors", "constants", "util", "callbacks",
+    "version"
+]

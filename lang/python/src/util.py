@@ -21,6 +21,7 @@ del absolute_import, print_function, unicode_literals
 
 import sys
 
+
 def process_constants(prefix, scope):
     """Called by the constant modules to load up the constants from the C
     library starting with PREFIX.  Matching constants will be inserted
@@ -30,17 +31,19 @@ def process_constants(prefix, scope):
     """
     from . import gpgme
     index = len(prefix)
-    constants = {identifier[index:]: getattr(gpgme, identifier)
-                 for identifier in dir(gpgme)
-                 if identifier.startswith(prefix)}
+    constants = {
+        identifier[index:]: getattr(gpgme, identifier)
+        for identifier in dir(gpgme) if identifier.startswith(prefix)
+    }
     scope.update(constants)
     return list(constants.keys())
 
+
 def percent_escape(s):
-    return ''.join(
-        '%{0:2x}'.format(ord(c))
-        if c == '+' or c == '"' or c == '%' or ord(c) <= 0x20 else c
-        for c in s)
+    return ''.join('%{0:2x}'.format(ord(c))
+                   if c == '+' or c == '"' or c == '%' or ord(c) <= 0x20 else c
+                   for c in s)
+
 
 # Python2/3 compatibility
 if sys.version_info[0] == 3:

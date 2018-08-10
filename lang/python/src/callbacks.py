@@ -20,6 +20,7 @@ del absolute_import, print_function, unicode_literals
 
 from getpass import getpass
 
+
 def passphrase_stdin(hint, desc, prev_bad, hook=None):
     """This is a sample callback that will read a passphrase from
     the terminal.  The hook here, if present, will be used to describe
@@ -32,9 +33,11 @@ def passphrase_stdin(hint, desc, prev_bad, hook=None):
     print("Please supply %s' password%s:" % (hint, why))
     return getpass()
 
+
 def progress_stdout(what, type, current, total, hook=None):
     print("PROGRESS UPDATE: what = %s, type = %d, current = %d, total = %d" %\
           (what, type, current, total))
+
 
 def readcb_fh(count, hook):
     """A callback for data.  hook should be a Python file-like object."""
