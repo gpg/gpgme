@@ -46,18 +46,18 @@ with open(filename, "rb") as f:
 
 with gpg.Context(armor=True) as ca:
     try:
-        ciphertext, result, sign_result = ca.encrypt(text, passphrase=None,
+        ciphertext, result, sign_result = ca.encrypt(text, passphrase=True,
                                                      sign=False)
         with open("{0}.asc".format(filename), "wb") as fa:
             fa.write(ciphertext)
-    except gpg.errors.InvalidRecipients as e:
+    except gpg.errors.GPGMEError as e:
         print(e)
 
 with gpg.Context() as cg:
     try:
-        ciphertext, result, sign_result = cg.encrypt(text, passphrase=None,
+        ciphertext, result, sign_result = cg.encrypt(text, passphrase=True,
                                                      sign=False)
         with open("{0}.gpg".format(filename), "wb") as fg:
             fg.write(ciphertext)
-    except gpg.errors.InvalidRecipients as e:
+    except gpg.errors.GPGMEError as e:
         print(e)
