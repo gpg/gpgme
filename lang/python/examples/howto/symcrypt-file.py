@@ -46,7 +46,7 @@ with open(filename, "rb") as f:
 
 with gpg.Context(armor=True) as ca:
     try:
-        ciphertext, result, sign_result = ca.encrypt(text, passphrase=True,
+        ciphertext, result, sign_result = ca.encrypt(text, passphrase=None,
                                                      sign=False)
         with open("{0}.asc".format(filename), "wb") as fa:
             fa.write(ciphertext)
@@ -55,7 +55,7 @@ with gpg.Context(armor=True) as ca:
 
 with gpg.Context() as cg:
     try:
-        ciphertext, result, sign_result = cg.encrypt(text, passphrase=True,
+        ciphertext, result, sign_result = cg.encrypt(text, passphrase=None,
                                                      sign=False)
         with open("{0}.gpg".format(filename), "wb") as fg:
             fg.write(ciphertext)
