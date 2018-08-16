@@ -327,7 +327,15 @@ export class GPGME_Keyring {
                                 status: infos[fprs[i]].status
                             });
                         }
-                        resolve(resultset);
+                        let summary = {};
+                        for (let i=0; i < feedbackValues.length; i++ ){
+                            summary[feedbackValues[i]] =
+                                response[feedbackValues[i]];
+                        }
+                        resolve({
+                            Keys:resultset,
+                            summary:summary
+                        });
                     }
 
                 }, function(error){
