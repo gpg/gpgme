@@ -274,6 +274,17 @@ export class GPGME_Keyring {
                 msg.post().then(function(response){
                     let infos = {};
                     let fprs = [];
+                    let summary = {};
+                    for (let i=0; i < feedbackValues.length; i++ ){
+                        summary[feedbackValues[i]] =
+                            response.result[feedbackValues[i]];
+                    }
+                    if (!response.result.hasOwnProperty('imports') ||
+                        response.result.imports.length === 0
+                    ){
+                        resolve({Keys:[],summary: summary});
+                        return;
+                    }
                     for (let res=0; res<response.result.imports.length; res++){
                         let result = response.result.imports[res];
                         let status = '';
@@ -307,15 +318,7 @@ export class GPGME_Keyring {
                                     status: infos[result[i].fingerprint].status
                                 });
                             }
-                            let summary = {};
-                            for (let i=0; i < feedbackValues.length; i++ ){
-                                summary[feedbackValues[i]] =
-                                    response[feedbackValues[i]];
-                            }
-                            resolve({
-                                Keys:resultset,
-                                summary: summary
-                            });
+                            resolve({Keys:resultset,summary: summary});
                         }, function(error){
                             reject(error);
                         });
@@ -327,15 +330,7 @@ export class GPGME_Keyring {
                                 status: infos[fprs[i]].status
                             });
                         }
-                        let summary = {};
-                        for (let i=0; i < feedbackValues.length; i++ ){
-                            summary[feedbackValues[i]] =
-                                response[feedbackValues[i]];
-                        }
-                        resolve({
-                            Keys:resultset,
-                            summary:summary
-                        });
+                        resolve({Keys:resultset,summary:summary});
                     }
 
                 }, function(error){

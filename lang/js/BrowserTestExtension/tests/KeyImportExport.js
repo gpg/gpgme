@@ -71,10 +71,13 @@ describe('Key importing', function () {
             expect(result).to.be.an('array');
             expect(result.length).to.equal(0);
             context.Keyring.importKey(pubKey).then(function(result){
-                expect(result[0]).to.not.be.undefined;
-                expect(result[0].key).to.be.an('object');
-                expect(result[0].key.fingerprint).to.equal(fpr);
-                expect(result[0].status).to.equal('newkey');
+                expect(result.Keys).to.be.an('array');
+                expect(result.Keys[0]).to.not.be.undefined;
+                expect(result.Keys[0].key).to.be.an('object');
+                expect(result.Keys[0].key.fingerprint).to.equal(fpr);
+                expect(result.Keys[0].status).to.equal('newkey');
+                expect(result.summary.considered).to.equal(1);
+                expect(result.summary.imported).to.equal(1);
                 done();
             });
         });
@@ -83,15 +86,16 @@ describe('Key importing', function () {
     it('Updating Key', function(done){
         context.Keyring.importKey(pubKey)
             .then(function(result){
-                expect(result[0].key).to.not.be.undefined;
-                expect(result[0].status).to.equal('newkey');
+                expect(result.Keys[0].key).to.not.be.undefined;
+                expect(result.Keys[0].status).to.equal('newkey');
                 context.Keyring.importKey(changedKey).then(function(res){
-                    expect(res[0].key).to.be.an('object');
-                    expect(res[0].key.fingerprint).to.equal(fpr);
-                    expect(res[0].status).to.equal('change');
-                    expect(res[0].changes.userId).to.be.true;
-                    expect(res[0].changes.subkey).to.be.false;
-                    expect(res[0].changes.signature).to.be.true;
+                    expect(res.Keys[0].key).to.be.an('object');
+                    expect(res.Keys[0].key.fingerprint).to.equal(fpr);
+                    expect(res.Keys[0].status).to.equal('change');
+                    expect(res.Keys[0].changes.userId).to.be.true;
+                    expect(res.Keys[0].changes.subkey).to.be.false;
+                    expect(res.Keys[0].changes.signature).to.be.true;
+                    expect(res.summary.considered).to.equal(1);
                     done();
                 });
             });
@@ -99,9 +103,9 @@ describe('Key importing', function () {
 
     it('Deleting Key', function(done) {
         context.Keyring.importKey(pubKey).then(function(result){
-            expect(result[0].key).to.be.an('object');
-            expect(result[0].key.fingerprint).to.equal(fpr);
-            result[0].key.delete().then(function(result){
+            expect(result.Keys[0].key).to.be.an('object');
+            expect(result.Keys[0].key.fingerprint).to.equal(fpr);
+            result.Keys[0].key.delete().then(function(result){
                 expect(result).to.be.true;
                 done();
             });
