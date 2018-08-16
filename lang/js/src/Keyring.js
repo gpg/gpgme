@@ -200,8 +200,11 @@ export class GPGME_Keyring {
                                 reject(gpgme_error('KEY_NO_DEFAULT'));
                             } else {
                                 for (let i=0; i< result.keys.length; i++ ) {
-                                    if (result.keys[i].get('invalid') === false) {
-                                        resolve(result.keys[i]);
+                                    if (result.keys[i].invalid === false) {
+                                        let k = createKey(
+                                            result.keys[i].fingerprint);
+                                        k.setKeyData(result.keys[i]);
+                                        resolve(k);
                                         break;
                                     } else if (i === result.keys.length - 1){
                                         reject(gpgme_error('KEY_NO_DEFAULT'));
