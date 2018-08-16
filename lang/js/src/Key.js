@@ -303,7 +303,11 @@ export class GPGME_Key {
      * @returns {String|GPGME_Error} The armored public Key block.
      */
     get armored(){
-        return this.get('armored', true);
+        if (this.isAsync === true){
+            return gpgme_error('KEY_NO_INIT');
+        } else {
+            return this.get('armored');
+        }
     }
 }
 
@@ -387,15 +391,6 @@ class GPGME_UserId {
         for (let i=0; i< keys.length; i++) {
             setProperty(keys[i], data[keys[i]]);
         }
-
-        /**
-         * Validates a subkey property against {@link validUserIdProperties} and
-         * sets it if validation is successful
-         * @param {String} property
-         * @param {*} value
-         * @param private
-         */
-
 
         /**
          * Fetches information about the user
