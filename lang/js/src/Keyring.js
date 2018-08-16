@@ -192,17 +192,13 @@ export class GPGME_Keyring {
                                 reject(error);
                             });
                     } else {
-                        // TODO: this is overly 'expensive' in communication
-                        // and probably performance, too
-                        me.getKeys(null,true).then(function(keys){
-                            for (let i=0; i < keys.length; i++){
-                                if (keys[i].get('hasSecret') === true){
-                                    resolve(keys[i]);
-                                    break;
-                                }
-                                if (i === keys.length -1){
-                                    reject(gpgme_error('KEY_NO_DEFAULT'));
-                                }
+                        let msg = createMessage('keylist');
+                        msg.setParameter('secret', true);
+                        msg.post().then(function(result){
+                            if (result.keys.length === 0){
+                                reject(gpgme_error('KEY_NO_DEFAULT'));
+                            } else {
+                                resolve(result.keys[0]);
                             }
                         }, function(error){
                             reject(error);
