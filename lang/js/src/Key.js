@@ -58,7 +58,7 @@ export class GPGME_Key {
          */
         this.isAsync = async;
 
-        let _data = {fingerprint: fingerprint};
+        let _data = {fingerprint: fingerprint.toUpperCase()};
         this.getFingerprint = function(){
             if (!_data.fingerprint || !isFingerprint(_data.fingerprint)){
                 return gpgme_error('KEY_INVALID');
@@ -88,7 +88,8 @@ export class GPGME_Key {
             if (typeof(data) !== 'object') {
                 return gpgme_error('KEY_INVALID');
             }
-            if (!data.fingerprint || data.fingerprint !== _data.fingerprint){
+            if (!data.fingerprint ||
+                data.fingerprint.toUpperCase() !== _data.fingerprint){
                 return gpgme_error('KEY_INVALID');
             }
             let keys = Object.keys(data);

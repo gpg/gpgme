@@ -28,6 +28,7 @@ const inputvalues = {// eslint-disable-line no-unused-vars
             // Fingerprint of a key that has been imported to gnupg
             // (i.e. see testkey.pub; testkey.sec)
             fingerprint : 'D41735B91236FDB882048C5A2301635EEFF0CB05',
+            fingerprint_mixedcase: 'D41735B91236fdb882048C5A2301635eeFF0Cb05',
             data_nonascii: '¡Äußerste µ€ før ñoquis@hóme! Добрый день',
 
             // used for checking encoding consistency in > 2MB messages.
