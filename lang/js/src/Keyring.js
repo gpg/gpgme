@@ -176,12 +176,13 @@ export class GPGME_Keyring {
                 let msg = createMessage('config_opt');
                 msg.setParameter('component', 'gpg');
                 msg.setParameter('option', 'default-key');
-                msg.post().then(function(response){
-                    if (response.value !== undefined
-                        && response.value.hasOwnProperty('string')
-                        && typeof(response.value.string) === 'string'
-                    ){
-                        me.getKeys(response.value.string,true).then(
+                msg.post().then(function(resp){
+                    if (resp.option !== undefined
+                        && resp.option.hasOwnProperty('value')
+                        && resp.option.value.length === 1
+                        && resp.option.value[0].hasOwnProperty('string')
+                        && typeof(resp.option.value[0].string) === 'string'){
+                        me.getKeys(resp.option.value[0].string, true).then(
                             function(keys){
                                 if(keys.length === 1){
                                     resolve(keys[0]);
@@ -198,7 +199,14 @@ export class GPGME_Keyring {
                             if (result.keys.length === 0){
                                 reject(gpgme_error('KEY_NO_DEFAULT'));
                             } else {
-                                resolve(result.keys[0]);
+                                for (let i=0; i< result.keys.length; i++ ) {
+                                    if (result.keys[i].get('invalid') === false) {
+                                        resolve(result.keys[i]);
+                                        break;
+                                    } else if (i === result.keys.length - 1){
+                                        reject(gpgme_error('KEY_NO_DEFAULT'));
+                                    }
+                                }
                             }
                         }, function(error){
                             reject(error);
