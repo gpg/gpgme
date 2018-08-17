@@ -193,9 +193,11 @@ export class GpgME {
                 msg.post().then(function(result){
                     let _result = {data: result.data};
                     _result.base64 = result.base64 ? true: false;
-                    _result.is_mime = result.mime ? true: false;
+                    _result.is_mime = result.is_mime ? true: false;
                     if (result.file_name){
                         _result.file_name = result.file_name;
+                    } else {
+                        _result.file_name = null;
                     }
                     if (
                         result.hasOwnProperty('signatures') &&
