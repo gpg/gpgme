@@ -179,12 +179,13 @@ class GPGME_Key {
         };
 
         /**
-         * Find out if the Key includes a secret part. Note that this is a
-         * rather nonperformant operation.
-         * If you want this inforrmation about more than a few Keys, it may be
-         * advisable to run {@link Keyring.getKeys} instead.
-         * @returns {Promise<Boolean|GPGME_Error>} True if a secret/private Key
-         * is available in the gnupg Keyring
+         * Find out if the Key is part of a Key pair including public and
+         * private key(s). If you want this information about more than a few
+         * Keys in synchronous mode, it may be advisable to run
+         * {@link Keyring.getKeys} instead, as it performs faster in bulk
+         * querying this state.
+         * @returns {Promise<Boolean|GPGME_Error>} True if a private Key is
+         * available in the gnupg Keyring.
          * @async
          */
         this.getGnupgSecretState = function (){
