@@ -127,7 +127,8 @@ export const permittedOperations = {
                 'data': 'string',
                 'base64': 'boolean',
                 'mime': 'boolean',
-                'signatures': 'object'
+                'signatures': 'object',
+                'info': 'object'
             }
         }
     },
@@ -166,8 +167,7 @@ export const permittedOperations = {
             type: ['signature', 'ciphertext'],
             data: {
                 'data': 'string',
-                'base64':'boolean',
-                'info': 'object'
+                'base64':'boolean'
             }
 
         }
