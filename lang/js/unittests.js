@@ -304,10 +304,6 @@ function unittests (){
                         expect(result).to.be.an('array');
                         expect(result[0]).to.be.an.instanceof(GPGME_Key);
                         expect(result[0].get('hasSecret')).to.be.a('boolean');
-                        // TODO: preparing sync for armored is still in discussion
-                        // expect(result[0].get('armored')).to.be.a('string');
-                        // expect(result[0].get('armored')).to.include(
-                        //     '-----END PGP PUBLIC KEY BLOCK-----');
                         done();
                     }
                 );

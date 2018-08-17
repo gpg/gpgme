@@ -38,12 +38,11 @@ export class GPGME_Keyring {
          *
          * @param {String | Array<String>} pattern (optional) A pattern to
          * search for in userIds or KeyIds.
-         * @param {Boolean} prepare_sync (optional) if set to true, the
-         * 'hasSecret' and 'armored' properties will be fetched for the Keys as
-         * well. These require additional calls to gnupg, resulting in a
-         * performance hungry operation. Calling them here enables direct,
-         * synchronous use of these properties for all keys, without having to
-         * resort to a refresh() first.
+         * @param {Boolean} prepare_sync (optional) if set to true, most data
+         * (with the exception of armored Key blocks) will be cached for the
+         * Keys. This enables direct, synchronous use of these properties for
+         * all keys. It does not check for changes on the backend. The cached
+         * information can be updated with the {@link Key.refresh} method.
          * @param {Boolean} search (optional) retrieve Keys from external
          * servers with the method(s) defined in gnupg (e.g. WKD/HKP lookup)
          * @returns {Promise<Array<GPGME_Key>>}
@@ -97,7 +96,6 @@ export class GPGME_Keyring {
                                                 break;
                                             }
                                         }
-                                        // TODO getArmor() to be used in sync
                                     }
                                 }
                                 let k = createKey(result.keys[i].fingerprint,

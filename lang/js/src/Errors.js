@@ -81,6 +81,10 @@ const err_list = {
         msg:'This property has not been retrieved yet from GPG',
         type: 'error'
     },
+    'KEY_ASYNC_ONLY': {
+        msg: 'This property cannot be used in synchronous calls',
+        type: 'error'
+    },
     'KEY_NO_DEFAULT': {
         msg:'A default key could not be established. Please check yout gpg ' +
             'configuration',
