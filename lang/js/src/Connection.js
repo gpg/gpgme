@@ -26,6 +26,7 @@
 import { permittedOperations } from './permittedOperations';
 import { gpgme_error } from './Errors';
 import { GPGME_Message, createMessage } from './Message';
+import { decode } from './Helpers';
 
 /**
  * A Connection handles the nativeMessaging interaction via a port. As the
@@ -239,7 +240,7 @@ class Answer{
                 case 'type':
                     if (_decodedResponse.type === 'error'){
                         return (gpgme_error('GNUPG_ERROR',
-                            decodeURIComponent(escape(_decodedResponse.msg))));
+                            decode(_decodedResponse.msg)));
                     } else if (poa.type.indexOf(_decodedResponse.type) < 0){
                         return gpgme_error('CONN_UNEXPECTED_ANSWER');
                     }
@@ -270,7 +271,7 @@ class Answer{
                                 ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                                 }).join(''));
                     } else {
-                        _response[key] = _decodedResponse[key];
+                        _response[key] = decode(_decodedResponse[key]);
                     }
                     break;
                 }

@@ -22,7 +22,7 @@
  */
 
 /* global describe, it, expect, before, Gpgmejs */
-/* global inputvalues, fixedLengthString */
+/* global inputvalues*/
 
 describe('Key information', function () {
     let context = null;
@@ -42,5 +42,16 @@ describe('Key information', function () {
             expect(result[0].fingerprint).to.equal(mixedCase.toUpperCase());
             done();
         });
+    });
+
+    it('A userId keeps their encoding', function(done){
+        context.Keyring.importKey(inputvalues.publicKeyNonAscii.key, true)
+            .then(function(result){
+                expect(result.Keys[0]).to.be.an('object');
+                const user = result.Keys[0].key.get('userids')[0];
+                expect(user.get('name')).to.equal(
+                    inputvalues.publicKeyNonAscii.userid);
+                done();
+            });
     });
 });

@@ -89,7 +89,40 @@ const inputvalues = {// eslint-disable-line no-unused-vars
         '-----END PGP SIGNATURE-----\n',
     },
 
-    someInputParameter: 'bad string'
+    someInputParameter: 'bad string',
+
+    publicKeyNonAscii: {
+        userid: 'Müller €uro',
+        key: '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' + '\n' +
+          'mQENBFt2/VIBCADIWBIMxExZlHda4XIVnM9nsIfUYLebJSC/krEriyWgzytU8/fQ\n' +
+          'S05cfnYx7RXvOOq4k8aa7mu80ovg3q77idXauLreAUwng4Njw0nMxWq/vtoMiZ60\n' +
+          '9f8EmfthZophhkQF2HIPHyqXMDZzMLWv4oTr2UJ9BKudL1XtbK51y9TbiyfQygBl\n' +
+          '8bl+zrOo70/dN6aunvuo6Hlu5cEzkj2QrzZlqTdfG5qv6KVEMut1eAbxZAmvSnna\n' +
+          'R4wqiRCT3/eRXGJbDL/8GaCEYkwi9FBrimjOTV0MpcLNwAU4aGfDxMUsxML9xJ+/\n' +
+          '/6GFxzYf7Lmk5UhvoewR58uQkHkTVPjZ9hXZABEBAAG0KE3DvGxsZXIg4oKsdXJv\n' +
+          'IDxtdWVsbGVyZXVyb0BleGFtcGxlLm9yZz6JAVQEEwEIAD4WIQQVNixp3XT/DuGT\n' +
+          'F4MFmkL4L5UZdAUCW3b9UgIbAwUJA8JnAAULCQgHAgYVCgkICwIEFgIDAQIeAQIX\n' +
+          'gAAKCRAFmkL4L5UZdAhiCACowW1aC8DYGtJyAaBO2MqWhyw1wVCbQN9uFsQZPydY\n' +
+          'v3BEbCDrRc0HyfV1PVoRQsgkiNMes1S2tz2IMJoEOTMaz3WjPM8yK0dDbo5sfx/o\n' +
+          '/XaXeKhyYNqRkz2dPzorg1sHyHe0ki/HoQiANEJ8mByMtlwnPWlhnINAX+27eL17\n' +
+          'JC8juhBYUchqoIBAl+ajYKSThdLzrUkcL7QfJjZb3pPytJSTTdFc0rD6ERDbfXXc\n' +
+          '/vnE2SDYme+XXn7H5tNe67tPM8M96vbp+uM+n2t/z96C+Pqb6GJFMBa35PM+/qQO\n' +
+          'yr0I2oaQnTecx2AfBXGZvd81wMYikAJ9rAOWyMQZHJWouQENBFt2/VIBCADXCvKD\n' +
+          '3wRWCOzRWtLTs7hpAjCDxp6niPkwxKuUf9r/sUPmn0pWdZHYlbPDev9psN9bnJ+C\n' +
+          '+wzzPZ1zgSYKIAN0IMoh0L7BRAoau7VWQ3Q7hP6HIbdzOTEGyklSoh9pIh6IlwZZ\n' +
+          'XfPlFlnn7FeH1UeA711E174SUpDRKYSfT+mFObQUuQewGi9QC3gBsz5MPLQQLzML\n' +
+          'yimIOT+8i64fHHSKChw5ZDckBffej31/YHPQ7+JsWFV+G/6xDfbwnaFZFAUwo+1L\n' +
+          '4w9UiMyCNkIWCkulzJ2Hbz66xzFMi/8zMYxr08Af+PpsXaWTQHAa5V4GNJSInDEB\n' +
+          '7gy/CGLcY90EozoDABEBAAGJATwEGAEIACYWIQQVNixp3XT/DuGTF4MFmkL4L5UZ\n' +
+          'dAUCW3b9UgIbDAUJA8JnAAAKCRAFmkL4L5UZdPqoB/9kpqxqa82k7JMcq7UiwQY7\n' +
+          'CdqCUPKF88ciOWKBpZmpl8V7zgM7kEXwmM6ocHcznXi8xM7eOfDIJcBeqFVIE4OT\n' +
+          '63OCMuvZICM9Kiu48wLNAw5W/YGAOBH7ySQzZM2XrtvwfFtJ3lR00t5f4FVtriA5\n' +
+          '47BjYYG5tTdJc8HwEHs045S99xKCWqwuDgO9qskIi6iPePUkuhpaVBLuEj2Goku6\n' +
+          'i8aql/vKYQS67L7UHJiEbjLe+wP9k3FvWUFTx39lAubsDzb4Abhe+qRqs2TKD7Go\n' +
+          'k35ZriRIYllmx4c9KyWL7Mvzcp+84Sq9LeMfsN4JstBDJ7jn6g19SjO5dmtxSuP0\n' +
+          '=zZSJ\n' +
+          '-----END PGP PUBLIC KEY BLOCK-----\n'
+    }
 };
 
 // (Pseudo-)Random String covering all of utf8.

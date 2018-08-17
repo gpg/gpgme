@@ -108,3 +108,30 @@ export function isFingerprint(value){
 export function isLongId(value){
     return hextest(value, 16);
 }
+
+/**
+ * Recursively decodes input (utf8) to output (utf-16; javascript) strings
+ * @param {Object | Array | String} property
+ */
+export function decode(property){
+    if (typeof property === 'string'){
+        return decodeURIComponent(escape(property));
+    } else if (Array.isArray(property)){
+        let res = [];
+        for (let arr=0; arr < property.length; arr++){
+            res.push(decode(property[arr]));
+        }
+        return res;
+    } else if (typeof property === 'object'){
+        const keys = Object.keys(property);
+        if (keys.length){
+            let res = {};
+            for (let k=0; k < keys.length; k++ ){
+                res[keys[k]] = decode(property[keys[k]]);
+            }
+            return res;
+        }
+        return property;
+    }
+    return property;
+}
