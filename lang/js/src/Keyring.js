@@ -390,6 +390,8 @@ export class GPGME_Keyring {
                 if (expires){
                     msg.setParameter('expires',
                         Math.floor(expires.valueOf()/1000));
+                } else {
+                    msg.setParameter('expires', 0);
                 }
                 msg.post().then(function(response){
                     me.getKeys(response.fingerprint, true).then(
