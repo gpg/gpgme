@@ -22,7 +22,6 @@
  */
 
 import { gpgme_error } from './Errors';
-import { GPGME_Key } from './Key';
 
 /**
  * Tries to return an array of fingerprints, either from input fingerprints or
@@ -50,7 +49,7 @@ export function toKeyIdArray(input){
             }
         } else if (typeof(input[i]) === 'object'){
             let fpr = '';
-            if (input[i] instanceof GPGME_Key){
+            if (input[i].hasOwnProperty('fingerprint')){
                 fpr = input[i].fingerprint;
             } else if (input[i].hasOwnProperty('primaryKey') &&
                 input[i].primaryKey.hasOwnProperty('getFingerprint')){

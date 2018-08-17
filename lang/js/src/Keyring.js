@@ -100,8 +100,8 @@ export class GPGME_Keyring {
                                         // TODO getArmor() to be used in sync
                                     }
                                 }
-                                let k = createKey(result.keys[i].fingerprint);
-                                k.setKeyData(result.keys[i]);
+                                let k = createKey(result.keys[i].fingerprint,
+                                    !prepare_sync, result.keys[i]);
                                 resultset.push(k);
                             }
                             resolve(resultset);
@@ -170,7 +170,7 @@ export class GPGME_Keyring {
          * @async
          * @static
          */
-        this.getDefaultKey = function() {
+        this.getDefaultKey = function(prepare_sync = false) {
             let me = this;
             return new Promise(function(resolve, reject){
                 let msg = createMessage('config_opt');
@@ -202,8 +202,9 @@ export class GPGME_Keyring {
                                 for (let i=0; i< result.keys.length; i++ ) {
                                     if (result.keys[i].invalid === false) {
                                         let k = createKey(
-                                            result.keys[i].fingerprint);
-                                        k.setKeyData(result.keys[i]);
+                                            result.keys[i].fingerprint,
+                                            !prepare_sync,
+                                            result.keys[i]);
                                         resolve(k);
                                         break;
                                     } else if (i === result.keys.length - 1){

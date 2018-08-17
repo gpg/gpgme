@@ -31,13 +31,22 @@ import { createMessage } from './Message';
  * @param {Boolean} async If True, Key properties (except fingerprint) will be
  * queried from gnupg on each call, making the operation up-to-date, the
  * answers will be Promises, and the performance will likely suffer
- * @returns {GPGME_Key|GPGME_Error}
+ * @param {Object} data additional initial properties this Key will have. Needs
+ * a full object as delivered by gpgme-json
+ * @returns {Object|GPGME_Error} The verified and updated data
  */
-export function createKey(fingerprint, async = false){
+export function createKey(fingerprint, async = false, data){
     if (!isFingerprint(fingerprint) || typeof(async) !== 'boolean'){
         return gpgme_error('PARAM_WRONG');
     }
-    else return Object.freeze(new GPGME_Key(fingerprint, async));
+    if (data !== undefined){
+        data = validateKeyData(data);
+    }
+    if (data instanceof Error){
+        return gpgme_error('KEY_INVALID');
+    } else {
+        return Object.freeze(new GPGME_Key(fingerprint, async, data));
+    }
 }
 
 /**
@@ -49,9 +58,9 @@ export function createKey(fingerprint, async = false){
  *
  * @class
  */
-export class GPGME_Key {
+class GPGME_Key {
 
-    constructor(fingerprint, async){
+    constructor(fingerprint, async, data){
 
         /**
          * @property {Boolean} If true, most answers will be asynchronous
@@ -59,6 +68,11 @@ export class GPGME_Key {
         this.isAsync = async;
 
         let _data = {fingerprint: fingerprint.toUpperCase()};
+        if (data !== undefined
+            && data.fingerprint.toUpperCase() === _data.fingerprint
+        ) {
+            _data = data;
+        }
         this.getFingerprint = function(){
             if (!_data.fingerprint || !isFingerprint(_data.fingerprint)){
                 return gpgme_error('KEY_INVALID');
@@ -77,54 +91,6 @@ export class GPGME_Key {
             return this.get('hasSecret');
         };
 
-        /**
-         * @param {Object} data Bulk set the data for this key, with an Object
-         * sent by gpgme-json.
-         * @returns {GPGME_Key|GPGME_Error} Itself after values have been set,
-         * an error if something went wrong.
-         * @private
-         */
-        this.setKeyData = function (data){
-            if (typeof(data) !== 'object') {
-                return gpgme_error('KEY_INVALID');
-            }
-            if (!data.fingerprint ||
-                data.fingerprint.toUpperCase() !== _data.fingerprint){
-                return gpgme_error('KEY_INVALID');
-            }
-            let keys = Object.keys(data);
-            for (let i=0; i< keys.length; i++){
-                if (!validKeyProperties.hasOwnProperty(keys[i])){
-                    return gpgme_error('KEY_INVALID');
-                }
-                //running the defined validation function
-                if (validKeyProperties[keys[i]](data[keys[i]]) !== true ){
-                    return gpgme_error('KEY_INVALID');
-                }
-                switch (keys[i]){
-                case 'subkeys':
-                    _data.subkeys = [];
-                    for (let i=0; i< data.subkeys.length; i++) {
-                        _data.subkeys.push(Object.freeze(
-                            new GPGME_Subkey(data.subkeys[i])));
-                    }
-                    break;
-                case 'userids':
-                    _data.userids = [];
-                    for (let i=0; i< data.userids.length; i++) {
-                        _data.userids.push(Object.freeze(
-                            new GPGME_UserId(data.userids[i])));
-                    }
-                    break;
-                case 'last_update':
-                    _data[keys[i]] = new Date( data[keys[i]] * 1000 );
-                    break;
-                default:
-                    _data[keys[i]] = data[keys[i]];
-                }
-            }
-            return this;
-        };
 
         /**
          * Query any property of the Key listed in {@link validKeyProperties}
@@ -188,16 +154,22 @@ export class GPGME_Key {
                 msg.setParameter('keys', _data.fingerprint);
                 msg.post().then(function(result){
                     if (result.keys.length === 1){
-                        me.setKeyData(result.keys[0]);
-                        me.getHasSecret().then(function(){
-                            me.getArmor().then(function(){
-                                resolve(me);
+                        const newdata = validateKeyData(
+                            _data.fingerprint, result.keys[0]);
+                        if (newdata instanceof Error){
+                            reject(gpgme_error('KEY_INVALID'));
+                        } else {
+                            _data = newdata;
+                            me.getHasSecret().then(function(){
+                                me.getArmor().then(function(){
+                                    resolve(me);
+                                }, function(error){
+                                    reject(error);
+                                });
                             }, function(error){
                                 reject(error);
                             });
-                        }, function(error){
-                            reject(error);
-                        });
+                        }
                     } else {
                         reject(gpgme_error('KEY_NOKEY'));
                     }
@@ -602,3 +574,53 @@ const validKeyProperties = {
     }
 
 };
+
+/**
+* sets the Key data in bulk. It can only be used from inside a Key, either
+* during construction or on a refresh callback.
+* @param {Object} key the original internal key data.
+* @param {Object} data Bulk set the data for this key, with an Object structure
+* as sent by gpgme-json.
+* @returns {Object|GPGME_Error} the changed data after values have been set,
+* an error if something went wrong.
+* @private
+*/
+function validateKeyData(data){
+    const key = {};
+    if ( typeof(data) !== 'object'
+    || !data.fingerprint){
+        return gpgme_error('KEY_INVALID');
+    }
+    let props = Object.keys(data);
+    for (let i=0; i< props.length; i++){
+        if (!validKeyProperties.hasOwnProperty(props[i])){
+            return gpgme_error('KEY_INVALID');
+        }
+        // running the defined validation function
+        if (validKeyProperties[props[i]](data[props[i]]) !== true ){
+            return gpgme_error('KEY_INVALID');
+        }
+        switch (props[i]){
+        case 'subkeys':
+            key.subkeys = [];
+            for (let i=0; i< data.subkeys.length; i++) {
+                key.subkeys.push(Object.freeze(
+                    new GPGME_Subkey(data.subkeys[i])));
+            }
+            break;
+        case 'userids':
+            key.userids = [];
+            for (let i=0; i< data.userids.length; i++) {
+                key.userids.push(Object.freeze(
+                    new GPGME_UserId(data.userids[i])));
+            }
+            break;
+        case 'last_update':
+            key[props[i]] = new Date( data[props[i]] * 1000 );
+            break;
+        default:
+            key[props[i]] = data[props[i]];
+        }
+    }
+    return key;
+}
