@@ -166,7 +166,8 @@ export const permittedOperations = {
             type: ['signature', 'ciphertext'],
             data: {
                 'data': 'string',
-                'base64':'boolean'
+                'base64':'boolean',
+                'info': 'object'
             }
 
         }
