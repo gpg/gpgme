@@ -18,10 +18,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
+
 
 def print_engine_infos():
     print("gpgme version:", gpg.core.check_version(None))
@@ -31,8 +33,9 @@ def print_engine_infos():
         print(engine.file_name, engine.version)
 
     for proto in [gpg.constants.protocol.OpenPGP, gpg.constants.protocol.CMS]:
-        print("Have {}? {}".format(gpg.core.get_protocol_name(proto),
-                                   gpg.core.engine_check_version(proto)))
+        print("Have {}? {}".format(
+            gpg.core.get_protocol_name(proto),
+            gpg.core.engine_check_version(proto)))
 
 
 def verifyprintdetails(filename, detached_sig_filename=None):
@@ -40,9 +43,9 @@ def verifyprintdetails(filename, detached_sig_filename=None):
     with gpg.Context() as c:
 
         # Verify.
-        data, result = c.verify(open(filename),
-                                open(detached_sig_filename)
-                                if detached_sig_filename else None)
+        data, result = c.verify(
+            open(filename),
+            open(detached_sig_filename) if detached_sig_filename else None)
 
         # List results for all signatures. Status equal 0 means "Ok".
         for index, sign in enumerate(result.signatures):
@@ -57,15 +60,15 @@ def verifyprintdetails(filename, detached_sig_filename=None):
     if data:
         sys.stdout.buffer.write(data)
 
+
 def main():
     print_engine_infos()
     print()
 
     argc = len(sys.argv)
     if argc < 2 or argc > 3:
-        sys.exit(
-            "Usage: {} <filename>[ <detached_signature_filename>]".format(
-                sys.argv[0]))
+        sys.exit("Usage: {} <filename>[ <detached_signature_filename>]".format(
+            sys.argv[0]))
 
     if argc == 2:
         print("trying to verify file {}.".format(sys.argv[1]))
@@ -73,6 +76,7 @@ def main():
     if argc == 3:
         print("trying to verify signature {1} for file {0}.".format(*sys.argv))
         verifyprintdetails(sys.argv[1], sys.argv[2])
+
 
 if __name__ == "__main__":
     main()

@@ -15,14 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 """A test applicaton for the CMS protocol."""
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
 
 if len(sys.argv) != 2:
     sys.exit("fingerprint or unique key ID for gpgme_get_key()")

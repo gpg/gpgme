@@ -16,17 +16,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 """
 This program will try to encrypt a simple message to each key on your
 keyring.  If your keyring has any invalid keys on it, those keys will
 be skipped and it will re-try the encryption."""
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
 
 with gpg.Context(armor=True) as c:
     recipients = list()
@@ -40,14 +40,15 @@ with gpg.Context(armor=True) as c:
     while not ciphertext:
         print("Encrypting to %d recipients" % len(recipients))
         try:
-            ciphertext, _, _ = c.encrypt(b'This is my message.',
-                                         recipients=recipients)
+            ciphertext, _, _ = c.encrypt(
+                b'This is my message.', recipients=recipients)
         except gpg.errors.InvalidRecipients as e:
             print("Encryption failed for these keys:\n{0!s}".format(e))
 
             # filter out the bad keys
             bad_keys = {bad.fpr for bad in e.recipients}
-            recipients = [r for r in recipients
-                          if not r.subkeys[0].fpr in bad_keys]
+            recipients = [
+                r for r in recipients if not r.subkeys[0].fpr in bad_keys
+            ]
 
     sys.stdout.buffer.write(ciphertext)

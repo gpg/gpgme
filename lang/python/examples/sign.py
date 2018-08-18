@@ -17,11 +17,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
 from gpg.constants.sig import mode
+
+del absolute_import, print_function, unicode_literals
 
 with gpg.Context() as c:
     signed, _ = c.sign(b"Test message", mode=mode.CLEAR)

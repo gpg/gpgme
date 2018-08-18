@@ -14,13 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 """Demonstrate the use of the Assuan protocol engine"""
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
+
+del absolute_import, print_function, unicode_literals
 
 with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # Invoke the pinentry to get a confirmation.

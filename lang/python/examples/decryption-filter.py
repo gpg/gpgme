@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2016 g10 Code GmbH
+# Copyright (C) 2016, 2018 g10 Code GmbH
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 """A decryption filter
 
 This demonstrates decryption using gpg3 in three lines of code.  To
@@ -25,8 +24,10 @@ be used like this:
 """
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
+
 gpg.Context().decrypt(sys.stdin, sink=sys.stdout)

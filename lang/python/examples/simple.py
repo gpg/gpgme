@@ -18,10 +18,11 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
 
 with gpg.Context(armor=True) as c:
     recipients = []
@@ -40,8 +41,8 @@ with gpg.Context(armor=True) as c:
     if not recipients:
         sys.exit("No recipients.")
 
-    print("Encrypting for {}.".format(", ".join(k.uids[0].name
-                                                for k in recipients)))
+    print("Encrypting for {}.".format(", ".join(
+        k.uids[0].name for k in recipients)))
 
     ciphertext, _, _ = c.encrypt(b"This is my message,", recipients)
     sys.stdout.buffer.write(ciphertext)

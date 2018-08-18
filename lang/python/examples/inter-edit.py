@@ -15,14 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 """Simple interactive editor to test editor scripts"""
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import gpg
+
+del absolute_import, print_function, unicode_literals
 
 if len(sys.argv) != 2:
     sys.exit("Usage: %s <Gpg key pattern>\n" % sys.argv[0])
@@ -40,10 +40,12 @@ with gpg.Context() as c:
     print("Editing key {} ({}):".format(key.uids[0].uid, key.subkeys[0].fpr))
 
     def edit_fnc(keyword, args):
-        print("Status: {}, args: {} > ".format(
-            keyword, args), end='', flush=True)
+        print(
+            "Status: {}, args: {} > ".format(keyword, args),
+            end='',
+            flush=True)
 
-        if not 'GET' in keyword:
+        if 'GET' not in keyword:
             # no prompt
             print()
             return None
