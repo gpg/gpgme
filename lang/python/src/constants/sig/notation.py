@@ -18,8 +18,7 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 from gpg import util
 util.process_constants('GPGME_SIG_NOTATION_', globals())
-del util
+del absolute_import, print_function, unicode_literals, util

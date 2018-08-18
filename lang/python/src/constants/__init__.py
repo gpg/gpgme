@@ -18,15 +18,19 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 from gpg import util
+# Globals may need to be set prior to module import, if so this prevents PEP8
+# compliance, but better that than code breakage.
 util.process_constants('GPGME_', globals())
-del util
 
 # For convenience, we import the modules here.
 from . import data, keylist, sig, tofu  # The subdirs.
-from . import create, event, keysign, md, pk, protocol, sigsum, status, validity
+# The remaining modules can no longer fit on one line.
+from . import create, event, keysign, md, pk, protocol, sigsum, status
+from . import validity
+
+del absolute_import, print_function, unicode_literals, util
 
 # A complication arises because 'import' is a reserved keyword.
 # Import it as 'Import' instead.
