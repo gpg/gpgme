@@ -18,12 +18,13 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
@@ -33,6 +34,7 @@ sink = gpg.Data()
 
 # Valid passphrases, both as string and bytes.
 for passphrase in ('foo', b'foo'):
+
     def passphrase_cb(hint, desc, prev_bad, hook=None):
         assert hook == passphrase
         return hook
@@ -40,9 +42,11 @@ for passphrase in ('foo', b'foo'):
     c.set_passphrase_cb(passphrase_cb, passphrase)
     c.op_encrypt([], 0, source, sink)
 
+
 # Returning an invalid type.
 def passphrase_cb(hint, desc, prev_bad, hook=None):
     return 0
+
 
 c.set_passphrase_cb(passphrase_cb, None)
 try:
@@ -55,8 +59,11 @@ else:
 
 # Raising an exception inside callback.
 myException = Exception()
+
+
 def passphrase_cb(hint, desc, prev_bad, hook=None):
     raise myException
+
 
 c.set_passphrase_cb(passphrase_cb, None)
 try:
@@ -66,9 +73,11 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
+
 # Wrong kind of callback function.
 def bad_passphrase_cb():
     pass
+
 
 c.set_passphrase_cb(bad_passphrase_cb, None)
 try:
@@ -77,8 +86,6 @@ except Exception as e:
     assert type(e) == TypeError
 else:
     assert False, "Expected an error, got none"
-
-
 
 # Test the progress callback.
 parms = """<GnupgKeyParms format="internal">
@@ -93,20 +100,25 @@ Expire-Date: 2099-12-31
 """
 
 messages = []
+
+
 def progress_cb(what, typ, current, total, hook=None):
     assert hook == messages
     messages.append(
         "PROGRESS UPDATE: what = {}, type = {}, current = {}, total = {}"
         .format(what, typ, current, total))
 
+
 c = gpg.Context()
 c.set_progress_cb(progress_cb, messages)
 c.op_genkey(parms, None, None)
 assert len(messages) > 0
 
+
 # Test exception handling.
 def progress_cb(what, typ, current, total, hook=None):
     raise myException
+
 
 c = gpg.Context()
 c.set_progress_cb(progress_cb, None)
@@ -117,7 +129,6 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
-
 # Test the edit callback.
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
@@ -127,11 +138,15 @@ alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
 
 cookie = object()
 edit_cb_called = False
+
+
 def edit_cb(status, args, hook):
     global edit_cb_called
     edit_cb_called = True
     assert hook == cookie
     return "quit" if args == "keyedit.prompt" else None
+
+
 c.op_edit(alpha, edit_cb, cookie, sink)
 assert edit_cb_called
 
@@ -141,8 +156,11 @@ c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 c.set_passphrase_cb(lambda *args: "abc")
 sink = gpg.Data()
 
+
 def edit_cb(status, args):
     raise myException
+
+
 try:
     c.op_edit(alpha, edit_cb, None, sink)
 except Exception as e:
@@ -150,17 +168,18 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
-
-
 # Test the status callback.
 source = gpg.Data("Hallo Leute\n")
 sink = gpg.Data()
 
 status_cb_called = False
+
+
 def status_cb(keyword, args, hook=None):
     global status_cb_called
     status_cb_called = True
     assert hook == cookie
+
 
 c = gpg.Context()
 c.set_status_cb(status_cb, cookie)
@@ -172,8 +191,10 @@ assert status_cb_called
 source = gpg.Data("Hallo Leute\n")
 sink = gpg.Data()
 
+
 def status_cb(keyword, args):
     raise myException
+
 
 c = gpg.Context()
 c.set_status_cb(status_cb, None)
@@ -186,13 +207,16 @@ else:
     assert False, "Expected an error, got none"
 
 
-
 # Test the data callbacks.
 def read_cb(amount, hook=None):
     assert hook == cookie
     return 0
+
+
 def release_cb(hook=None):
     assert hook == cookie
+
+
 data = gpg.Data(cbs=(read_cb, None, None, release_cb, cookie))
 try:
     data.read()
@@ -201,8 +225,11 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
+
 def read_cb(amount):
     raise myException
+
+
 data = gpg.Data(cbs=(read_cb, None, None, lambda: None))
 try:
     data.read()
@@ -215,6 +242,8 @@ else:
 def write_cb(what, hook=None):
     assert hook == cookie
     return "wrong type"
+
+
 data = gpg.Data(cbs=(None, write_cb, None, release_cb, cookie))
 try:
     data.write(b'stuff')
@@ -223,8 +252,11 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
+
 def write_cb(what):
     raise myException
+
+
 data = gpg.Data(cbs=(None, write_cb, None, lambda: None))
 try:
     data.write(b'stuff')
@@ -237,6 +269,8 @@ else:
 def seek_cb(offset, whence, hook=None):
     assert hook == cookie
     return "wrong type"
+
+
 data = gpg.Data(cbs=(None, None, seek_cb, release_cb, cookie))
 try:
     data.seek(0, os.SEEK_SET)
@@ -245,8 +279,11 @@ except Exception as e:
 else:
     assert False, "Expected an error, got none"
 
+
 def seek_cb(offset, whence):
     raise myException
+
+
 data = gpg.Data(cbs=(None, None, seek_cb, lambda: None))
 try:
     data.seek(0, os.SEEK_SET)

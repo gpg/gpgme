@@ -18,29 +18,30 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 expected_notations = {
-    "laughing@me": ("Just Squeeze Me", gpg.constants.sig.notation.HUMAN_READABLE),
-    "preferred-email-encoding@pgp.com": ("pgpmime",
-                                         gpg.constants.sig.notation.HUMAN_READABLE
-                                         | gpg.constants.sig.notation.CRITICAL),
+    "laughing@me": ("Just Squeeze Me",
+                    gpg.constants.sig.notation.HUMAN_READABLE),
+    "preferred-email-encoding@pgp.com":
+    ("pgpmime", gpg.constants.sig.notation.HUMAN_READABLE |
+     gpg.constants.sig.notation.CRITICAL),
     None: ("http://www.gnu.org/policy/", 0),
 }
 
 # GnuPG prior to 2.1.13 did not report the critical flag correctly.
 with gpg.Context() as c:
     version = c.engine_info.version
-    have_correct_sig_data = not (version.startswith("1.")
-                                 or version.startswith("2.0.")
-                                 or version == "2.1.1"
-                                 or (version.startswith("2.1.1")
-                                     and version[5] < '3'))
+    have_correct_sig_data = not (
+        version.startswith("1.") or version.startswith("2.0.") or
+        (version.startswith("2.1.") and int(version[4:]) < 13))
+
 
 def check_result(result):
     assert len(result.signatures) == 1, "Unexpected number of signatures"
@@ -48,8 +49,8 @@ def check_result(result):
     assert len(sig.notations) == len(expected_notations)
 
     for r in sig.notations:
-        assert not 'name_len' in dir(r)
-        assert not 'value_len' in dir(r)
+        assert 'name_len' not in dir(r)
+        assert 'value_len' not in dir(r)
         assert r.name in expected_notations
         value, flags = expected_notations.pop(r.name)
 
@@ -62,6 +63,7 @@ def check_result(result):
                 if have_correct_sig_data else False)
 
     assert len(expected_notations) == 0
+
 
 source = gpg.Data("Hallo Leute\n")
 signed = gpg.Data()

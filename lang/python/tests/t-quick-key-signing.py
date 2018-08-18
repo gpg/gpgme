@@ -18,7 +18,6 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import itertools
@@ -27,8 +26,11 @@ import time
 import support
 support.assert_gpg_version((2, 1, 1))
 
+del absolute_import, print_function, unicode_literals
+
 with support.EphemeralContext() as ctx:
     uid_counter = 0
+
     def make_uid():
         global uid_counter
         uid_counter += 1
@@ -43,10 +45,16 @@ with support.EphemeralContext() as ctx:
         return key, uids
 
     def check_sigs(key, expected_sigs):
-        keys = list(ctx.keylist(key.fpr, mode=(gpg.constants.keylist.mode.LOCAL
-                                               |gpg.constants.keylist.mode.SIGS)))
+        keys = list(
+            ctx.keylist(
+                key.fpr,
+                mode=(gpg.constants.keylist.mode.LOCAL |
+                      gpg.constants.keylist.mode.SIGS)))
         assert len(keys) == 1
-        key_uids = {uid.uid: [s for s in uid.signatures] for uid in keys[0].uids}
+        key_uids = {
+            uid.uid: [s for s in uid.signatures]
+            for uid in keys[0].uids
+        }
         expected = list(expected_sigs)
 
         while key_uids and expected:
@@ -76,9 +84,12 @@ with support.EphemeralContext() as ctx:
         assert s.exportable
         assert s.expires == 0
 
-    check_sigs(key_b, itertools.product(uids_b, [key_b], [exportable_non_expiring]))
+    check_sigs(key_b,
+               itertools.product(uids_b, [key_b], [exportable_non_expiring]))
     ctx.key_sign(key_b)
-    check_sigs(key_b, itertools.product(uids_b, [key_b, key_a], [exportable_non_expiring]))
+    check_sigs(
+        key_b,
+        itertools.product(uids_b, [key_b, key_a], [exportable_non_expiring]))
 
     # Create a non-exportable signature, and explicitly name all uids.
     key_c, uids_c = make_key()
@@ -89,11 +100,12 @@ with support.EphemeralContext() as ctx:
         assert s.expires == 0
 
     ctx.key_sign(key_c, local=True, uids=uids_c)
-    check_sigs(key_c,
-               list(itertools.product(uids_c, [key_c],
-                                      [exportable_non_expiring]))
-               + list(itertools.product(uids_c, [key_b, key_a],
-                                        [non_exportable_non_expiring])))
+    check_sigs(
+        key_c,
+        list(itertools.product(uids_c, [key_c], [exportable_non_expiring])) +
+        list(
+            itertools.product(uids_c, [key_b, key_a],
+                              [non_exportable_non_expiring])))
 
     # Create a non-exportable, expiring signature for a single uid.
     key_d, uids_d = make_key()
@@ -106,16 +118,16 @@ with support.EphemeralContext() as ctx:
         assert abs(time.time() + expires_in - s.expires) < slack
 
     ctx.key_sign(key_d, local=True, expires_in=expires_in, uids=uids_d[0])
-    check_sigs(key_d,
-               list(itertools.product(uids_d, [key_d],
-                                      [exportable_non_expiring]))
-               + list(itertools.product(uids_d[:1], [key_c],
-                                        [non_exportable_expiring])))
+    check_sigs(
+        key_d,
+        list(itertools.product(uids_d, [key_d], [exportable_non_expiring])) +
+        list(
+            itertools.product(uids_d[:1], [key_c], [non_exportable_expiring])))
 
     # Now sign the second in the same fashion, but use a singleton list.
     ctx.key_sign(key_d, local=True, expires_in=expires_in, uids=uids_d[1:2])
-    check_sigs(key_d,
-               list(itertools.product(uids_d, [key_d],
-                                      [exportable_non_expiring]))
-               + list(itertools.product(uids_d[:2], [key_c],
-                                        [non_exportable_expiring])))
+    check_sigs(
+        key_d,
+        list(itertools.product(uids_d, [key_d], [exportable_non_expiring])) +
+        list(
+            itertools.product(uids_d[:2], [key_c], [non_exportable_expiring])))

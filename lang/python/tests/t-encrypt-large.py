@@ -18,12 +18,13 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import random
 import gpg
 import support
+
+del absolute_import, print_function, unicode_literals
 
 if len(sys.argv) == 2:
     nbytes = int(sys.argv[1])
@@ -33,6 +34,8 @@ else:
 c = gpg.Context()
 
 ntoread = nbytes
+
+
 def read_cb(amount):
     global ntoread
     chunk = ntoread if ntoread < amount else amount
@@ -41,11 +44,15 @@ def read_cb(amount):
     assert chunk >= 0
     return bytes(bytearray(random.randrange(256) for i in range(chunk)))
 
+
 nwritten = 0
+
+
 def write_cb(data):
     global nwritten
     nwritten += len(data)
     return len(data)
+
 
 source = gpg.Data(cbs=(read_cb, None, None, lambda: None))
 sink = gpg.Data(cbs=(None, write_cb, None, lambda: None))
@@ -61,5 +68,5 @@ assert not result.invalid_recipients, \
 assert ntoread == 0
 
 if support.verbose:
-    sys.stderr.write(
-        "plaintext={} bytes, ciphertext={} bytes\n".format(nbytes, nwritten))
+    sys.stderr.write("plaintext={} bytes, ciphertext={} bytes\n".format(
+        nbytes, nwritten))

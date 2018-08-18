@@ -18,45 +18,47 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
 
+del absolute_import, print_function, unicode_literals
+
+
 def check_result(result, fpr, secret):
     assert result.considered == 1 or (secret and result.considered == 3)
     assert result.no_user_id == 0
-    assert not ((secret and result.imported != 0)
-                or (not secret and (result.imported != 0
-                                    and result.imported != 1)))
+    assert not ((secret and result.imported != 0) or
+                (not secret and
+                 (result.imported != 0 and result.imported != 1)))
     assert result.imported_rsa == 0
-    assert not ((secret and (result.unchanged != 0 and result.unchanged != 1))
-                or (not secret and ((result.imported == 0
-                                     and result.unchanged != 1)
-                                 or (result.imported == 1
-                                     and result.unchanged != 0))))
+    assert not ((secret and
+                 (result.unchanged != 0 and result.unchanged != 1)) or
+                (not secret and
+                 ((result.imported == 0 and result.unchanged != 1) or
+                  (result.imported == 1 and result.unchanged != 0))))
     assert result.new_user_ids == 0
     assert result.new_sub_keys == 0
-    assert not ((secret
-                 and ((result.secret_imported == 0
-                       and result.new_signatures != 0)
-                      or (result.secret_imported == 1
-                          and result.new_signatures > 1)))
-                or (not secret and result.new_signatures != 0))
+    assert not ((secret and (
+        (result.secret_imported == 0 and result.new_signatures != 0) or
+        (result.secret_imported == 1 and result.new_signatures > 1))) or
+                (not secret and result.new_signatures != 0))
     assert result.new_revocations == 0
-    assert not ((secret and result.secret_read != 1 and result.secret_read != 3)
-                or (not secret and result.secret_read != 0))
-    assert not ((secret and result.secret_imported != 0
-                 and result.secret_imported != 1
-                 and result.secret_imported != 2)
-                or (not secret and result.secret_imported != 0))
-    assert not ((secret
-                 and ((result.secret_imported == 0
-                       and result.secret_unchanged != 1
-                       and result.secret_unchanged != 2)
-                      or (result.secret_imported == 1
-                          and result.secret_unchanged != 0)))
-                or (not secret and result.secret_unchanged != 0))
+    assert not (
+        (secret and result.secret_read != 1 and result.secret_read != 3) or
+        (not secret and result.secret_read != 0))
+    assert not (
+        (secret and result.secret_imported != 0 and result.
+            secret_imported != 1 and result.
+            secret_imported != 2) or (not secret and result.
+                                      secret_imported != 0))
+    assert not ((secret and
+                 ((result.secret_imported == 0 and result.
+                   secret_unchanged != 1 and result.
+                   secret_unchanged != 2) or (result.
+                                              secret_imported == 1 and result.
+                                              secret_unchanged != 0))) or
+                (not secret and result.secret_unchanged != 0))
     assert result.not_imported == 0
     if secret:
         assert not (len(result.imports) in (0, 3))
@@ -66,6 +68,7 @@ def check_result(result, fpr, secret):
     assert fpr == result.imports[0].fpr
     assert len(result.imports) == 1 or fpr == result.imports[1].fpr
     assert result.imports[0].result == 0
+
 
 c = gpg.Context()
 

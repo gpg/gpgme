@@ -18,10 +18,11 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
+
+del absolute_import, print_function, unicode_literals
 
 c = gpg.Context()
 

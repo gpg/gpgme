@@ -18,14 +18,17 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
 import support
 
+del absolute_import, print_function, unicode_literals
+
+
 def fail(msg):
     raise RuntimeError(msg)
+
 
 def check_result(r, typ):
     if r.invalid_signers:
@@ -43,15 +46,14 @@ def check_result(r, typ):
             signature.pubkey_algo))
 
     if signature.hash_algo != gpg.constants.md.SHA1:
-        fail("Wrong hash algorithm reported: {}".format(
-            signature.hash_algo))
+        fail("Wrong hash algorithm reported: {}".format(signature.hash_algo))
 
     if signature.sig_class != 1:
-        fail("Wrong signature class reported: {}".format(
-            signature.sig_class))
+        fail("Wrong signature class reported: {}".format(signature.sig_class))
 
     if signature.fpr != "A0FF4590BB6122EDEF6E3C542D727CC768697734":
         fail("Wrong fingerprint reported: {}".format(signature.fpr))
+
 
 c = gpg.Context()
 c.set_textmode(True)

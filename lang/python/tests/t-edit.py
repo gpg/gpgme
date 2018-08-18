@@ -19,13 +19,15 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import os
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
+
 
 class KeyEditor(object):
     def __init__(self):
@@ -47,10 +49,11 @@ class KeyEditor(object):
             result = None
 
         if self.verbose:
-            sys.stderr.write("Code: {}, args: {!r}, Returning: {!r}\n"
-                             .format(status, args, result))
+            sys.stderr.write("Code: {}, args: {!r}, Returning: {!r}\n".format(
+                status, args, result))
 
         return result
+
 
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
@@ -59,13 +62,15 @@ c.set_armor(True)
 
 # The deprecated interface.
 editor = KeyEditor()
-c.interact(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
-           editor.edit_fnc)
+c.interact(
+    c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
+    editor.edit_fnc)
 assert editor.done
 
 # The deprecated interface.
 sink = gpg.Data()
 editor = KeyEditor()
-c.op_edit(c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
-          editor.edit_fnc, sink, sink)
+c.op_edit(
+    c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False),
+    editor.edit_fnc, sink, sink)
 assert editor.done

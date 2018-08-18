@@ -18,20 +18,21 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # Do nothing.
     err = c.assuan_transact('nop')
-    assert err == None
+    assert err is None
     err = c.assuan_transact(b'NOP')
-    assert err == None
+    assert err is None
     err = c.assuan_transact(['NOP'])
-    assert err == None
+    assert err is None
 
     err = c.assuan_transact('idontexist')
     assert err.getsource() == gpg.errors.SOURCE_GPGAGENT
@@ -41,6 +42,7 @@ with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     c.assuan_transact(['GET_CONFIRMATION', 'Hello there'])
 
     data = []
+
     def data_cb(line):
         data.append(line)
 
@@ -57,6 +59,7 @@ with gpg.Context(protocol=gpg.constants.protocol.ASSUAN) as c:
     # XXX HELP sends status lines if we could use ASSUAN_CONVEY_COMMENTS.
 
     status = []
+
     def status_cb(line, args):
         status.append((line, args))
 

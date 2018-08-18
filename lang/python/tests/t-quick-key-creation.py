@@ -18,7 +18,6 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import itertools
@@ -26,6 +25,8 @@ import time
 
 import support
 support.assert_gpg_version((2, 1, 2))
+
+del absolute_import, print_function, unicode_literals
 
 alpha = "Alpha <alpha@invalid.example.net>"
 
@@ -51,13 +52,15 @@ with support.EphemeralContext() as ctx:
     res2 = ctx.create_key(alpha, force=True)
     assert res.fpr != res2.fpr
 
-
 # From here on, we use one context, and create unique UIDs
 uid_counter = 0
+
+
 def make_uid():
     global uid_counter
     uid_counter += 1
     return "user{0}@invalid.example.org".format(uid_counter)
+
 
 with support.EphemeralContext() as ctx:
     # Check gpg.constants.create.NOEXPIRE...
@@ -77,10 +80,8 @@ with support.EphemeralContext() as ctx:
         "Primary keys expiration time is off"
 
     # Check capabilities
-    for sign, encrypt, certify, authenticate in itertools.product([False, True],
-                                                                  [False, True],
-                                                                  [False, True],
-                                                                  [False, True]):
+    for sign, encrypt, certify, authenticate in itertools.
+    product([False, True], [False, True], [False, True], [False, True]):
         # Filter some out
         if not (sign or encrypt or certify or authenticate):
             # This triggers the default capabilities tested before.
@@ -89,9 +90,13 @@ with support.EphemeralContext() as ctx:
             # The primary key always certifies.
             continue
 
-        res = ctx.create_key(make_uid(), algorithm="rsa",
-                             sign=sign, encrypt=encrypt, certify=certify,
-                             authenticate=authenticate)
+        res = ctx.create_key(
+            make_uid(),
+            algorithm="rsa",
+            sign=sign,
+            encrypt=encrypt,
+            certify=certify,
+            authenticate=authenticate)
         key = ctx.get_key(res.fpr, secret=True)
         assert key.fpr == res.fpr
         assert len(key.subkeys) == 1, \
@@ -125,13 +130,16 @@ with support.EphemeralContext() as ctx:
     recipient = make_uid()
     passphrase = "streng geheim"
     res = ctx.create_key(recipient, passphrase=passphrase)
-    ciphertext, _, _ = ctx.encrypt(b"hello there", recipients=[ctx.get_key(res.fpr)])
+    ciphertext, _, _ = ctx.encrypt(
+        b"hello there", recipients=[ctx.get_key(res.fpr)])
 
     cb_called = False
+
     def cb(*args):
         global cb_called
         cb_called = True
         return passphrase
+
     ctx.pinentry_mode = gpg.constants.PINENTRY_MODE_LOOPBACK
     ctx.set_passphrase_cb(cb)
 

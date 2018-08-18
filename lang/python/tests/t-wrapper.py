@@ -19,9 +19,9 @@
 
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
 
 d0 = gpg.Data()
-d0.seek # trigger on-demand-wrapping
+d0.seek  # trigger on-demand-wrapping
 assert d0.seek == d0.seek, "Generated wrapper functions are not cached"
 assert hasattr(gpg.Data, 'seek'), "Generated wrapper functions are not shared"

@@ -18,12 +18,13 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 for passphrase in ("abc", b"abc"):
     c = gpg.Context()
@@ -34,6 +35,7 @@ for passphrase in ("abc", b"abc"):
     cipher = gpg.Data()
 
     passphrase_cb_called = 0
+
     def passphrase_cb(hint, desc, prev_bad, hook=None):
         global passphrase_cb_called
         passphrase_cb_called += 1
@@ -55,7 +57,7 @@ for passphrase in ("abc", b"abc"):
 
     c.op_decrypt(cipher, plain)
     # Seems like the passphrase is cached.
-    #assert passphrase_cb_called == 2, \
+    # assert passphrase_cb_called == 2, \
     #    "Callback called {} times".format(passphrase_cb_called)
     support.print_data(plain)
 
@@ -70,12 +72,12 @@ for passphrase in ("abc", b"abc"):
         # Check that the passphrase callback is not altered.
         def f(*args):
             assert False
+
         c.set_passphrase_cb(f)
 
         message = "Hallo Leute\n".encode()
-        ciphertext, _, _ = c.encrypt(message,
-                                     passphrase=passphrase,
-                                     sign=False)
+        ciphertext, _, _ = c.encrypt(
+            message, passphrase=passphrase, sign=False)
         assert ciphertext.find(b'BEGIN PGP MESSAGE') > 0, 'Marker not found'
 
         plaintext, _, _ = c.decrypt(ciphertext, passphrase=passphrase)

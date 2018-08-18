@@ -18,16 +18,17 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import os
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 test_text1 = b"Just GNU it!\n"
-test_text1f= b"Just GNU it?\n"
+test_text1f = b"Just GNU it?\n"
 test_sig1 = b"""-----BEGIN PGP SIGNATURE-----
 
 iN0EABECAJ0FAjoS+i9FFIAAAAAAAwA5YmFyw7bDpMO8w58gZGFzIHdhcmVuIFVt
@@ -60,6 +61,7 @@ UqVooWlGXHwNw/xg/fVzt9VNbtjtJ/fhUqYo0/LyCGEA
 -----END PGP MESSAGE-----
 """
 
+
 def check_result(result, summary, validity, fpr, status, notation):
     assert len(result.signatures) == 1, "Unexpected number of signatures"
     sig = result.signatures[0]
@@ -76,14 +78,16 @@ def check_result(result, summary, validity, fpr, status, notation):
                     if sys.version_info[0] < 3 else
                     b"\xc3\xb6\xc3\xa4\xc3\xbc\xc3\x9f".decode() +
                     " das waren Umlaute und jetzt ein prozent%-Zeichen"),
-            "foobar.1":  "this is a notation data with 2 lines",
-            None: "http://www.gu.org/policy/",
+            "foobar.1":
+            "this is a notation data with 2 lines",
+            None:
+            "http://www.gu.org/policy/",
         }
         assert len(sig.notations) == len(expected_notations)
 
         for r in sig.notations:
-            assert not 'name_len' in dir(r)
-            assert not 'value_len' in dir(r)
+            assert 'name_len' not in dir(r)
+            assert 'value_len' not in dir(r)
             assert r.name in expected_notations
             assert r.value == expected_notations[r.name], \
                 "Expected {!r}, got {!r}".format(expected_notations[r.name],
@@ -96,7 +100,9 @@ def check_result(result, summary, validity, fpr, status, notation):
     assert sig.validity == validity, \
         "Unexpected signature validity: {}, want: {}".format(
             sig.validity, validity)
-    assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
+    assert gpg.errors.GPGMEError(
+        sig.validity_reason).getcode() == gpg.errors.NO_ERROR
+
 
 c = gpg.Context()
 c.set_armor(True)
@@ -108,9 +114,8 @@ c.op_verify(sig, text, None)
 result = c.op_verify_result()
 check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
              gpg.constants.validity.FULL,
-             "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-             gpg.errors.NO_ERROR, True)
-
+             "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR,
+             True)
 
 # Checking a manipulated message.
 text = gpg.Data(test_text1f)
@@ -127,8 +132,8 @@ c.op_verify(sig, None, text)
 result = c.op_verify_result()
 check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
              gpg.constants.validity.FULL,
-             "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-             gpg.errors.NO_ERROR, False)
+             "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR,
+             False)
 
 # Checking an invalid message.
 text = gpg.Data()
@@ -141,33 +146,32 @@ except Exception as e:
 else:
     assert False, "Expected an error but got none."
 
-
 # Idiomatic interface.
 with gpg.Context(armor=True) as c:
     # Checking a valid message.
     _, result = c.verify(test_text1, test_sig1)
-    check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
-                 gpg.constants.validity.FULL,
-                 "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                 gpg.errors.NO_ERROR, True)
+    check_result(
+        result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+        gpg.constants.validity.FULL,
+        "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR, True)
 
     # Checking a manipulated message.
     try:
         c.verify(test_text1f, test_sig1)
     except gpg.errors.BadSignatures as e:
         check_result(e.result, gpg.constants.sigsum.RED,
-                     gpg.constants.validity.UNKNOWN,
-                     "2D727CC768697734", gpg.errors.BAD_SIGNATURE, False)
+                     gpg.constants.validity.UNKNOWN, "2D727CC768697734",
+                     gpg.errors.BAD_SIGNATURE, False)
     else:
         assert False, "Expected an error but got none."
 
     # Checking a normal signature.
     sig = gpg.Data(test_sig2)
     data, result = c.verify(test_sig2)
-    check_result(result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
-                 gpg.constants.validity.FULL,
-                 "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                 gpg.errors.NO_ERROR, False)
+    check_result(
+        result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+        gpg.constants.validity.FULL,
+        "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR, False)
     assert data == test_text1
 
     # Checking an invalid message.

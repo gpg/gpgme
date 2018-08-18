@@ -18,10 +18,11 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
+
+del absolute_import, print_function, unicode_literals
 
 c = gpg.Context()
 c.set_armor(True)
@@ -32,8 +33,8 @@ support.print_data(sink)
 
 # Again. Now using a key array.
 keys = []
-keys.append(c.get_key("0x68697734", False)) # Alpha
-keys.append(c.get_key("0xA9E3B0B2", False)) # Bob
+keys.append(c.get_key("0x68697734", False))  # Alpha
+keys.append(c.get_key("0xA9E3B0B2", False))  # Bob
 sink = gpg.Data()
 c.op_export_keys(keys, 0, sink)
 support.print_data(sink)

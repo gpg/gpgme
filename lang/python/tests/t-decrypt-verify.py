@@ -18,10 +18,12 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
+
+del absolute_import, print_function, unicode_literals
+
 
 def check_verify_result(result, summary, fpr, status):
     assert len(result.signatures) == 1, "Unexpected number of signatures"
@@ -32,7 +34,9 @@ def check_verify_result(result, summary, fpr, status):
     assert len(sig.notations) == 0
     assert not sig.wrong_key_usage
     assert sig.validity == gpg.constants.validity.FULL
-    assert gpg.errors.GPGMEError(sig.validity_reason).getcode() == gpg.errors.NO_ERROR
+    assert gpg.errors.GPGMEError(
+        sig.validity_reason).getcode() == gpg.errors.NO_ERROR
+
 
 c = gpg.Context()
 
@@ -47,10 +51,9 @@ assert not result.unsupported_algorithm, \
 support.print_data(sink)
 
 verify_result = c.op_verify_result()
-check_verify_result(verify_result,
-                    gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
-                    "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                    gpg.errors.NO_ERROR)
+check_verify_result(
+    verify_result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+    "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR)
 
 # Idiomatic interface.
 with gpg.Context() as c:
@@ -60,14 +63,13 @@ with gpg.Context() as c:
         c.decrypt(open(support.make_filename("cipher-2.asc")), verify=[alpha])
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
         'Plaintext not found'
-    check_verify_result(verify_result,
-                        gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
-                        "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-                        gpg.errors.NO_ERROR)
+    check_verify_result(
+        verify_result, gpg.constants.sigsum.VALID | gpg.constants.sigsum.GREEN,
+        "A0FF4590BB6122EDEF6E3C542D727CC768697734", gpg.errors.NO_ERROR)
 
     try:
-        c.decrypt(open(support.make_filename("cipher-2.asc")),
-                  verify=[alpha, bob])
+        c.decrypt(
+            open(support.make_filename("cipher-2.asc")), verify=[alpha, bob])
     except gpg.errors.MissingSignatures as e:
         assert len(e.missing) == 1
         assert e.missing[0] == bob

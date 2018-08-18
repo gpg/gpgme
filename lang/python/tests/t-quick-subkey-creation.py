@@ -18,13 +18,14 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import itertools
 import time
 
 import support
+
+del absolute_import, print_function, unicode_literals
 
 alpha = "Alpha <alpha@invalid.example.net>"
 bravo = "Bravo <bravo@invalid.example.net>"
@@ -59,16 +60,15 @@ with support.EphemeralContext() as ctx:
         "subkeys expiration time is off"
 
     # Check capabilities
-    for sign, encrypt, authenticate in itertools.product([False, True],
-                                                         [False, True],
-                                                         [False, True]):
+    for sign, encrypt, authenticate in itertools.
+    product([False, True], [False, True], [False, True]):
         # Filter some out
         if not (sign or encrypt or authenticate):
             # This triggers the default capabilities tested before.
             continue
 
-        res = ctx.create_subkey(key, sign=sign, encrypt=encrypt,
-                                authenticate=authenticate)
+        res = ctx.create_subkey(
+            key, sign=sign, encrypt=encrypt, authenticate=authenticate)
         subkey = get_subkey(res.fpr)
         assert sign == subkey.can_sign
         assert encrypt == subkey.can_encrypt
@@ -92,18 +92,21 @@ with support.EphemeralContext() as ctx:
     # so that we have a key with just one encryption subkey.
     bravo_res = ctx.create_key(bravo, certify=True)
     bravo_key = ctx.get_key(bravo_res.fpr)
-    assert len(bravo_key.subkeys) == 1, "Expected one primary key and no subkeys"
+    assert len(
+        bravo_key.subkeys) == 1, "Expected one primary key and no subkeys"
 
     passphrase = "streng geheim"
     res = ctx.create_subkey(bravo_key, passphrase=passphrase)
-    ciphertext, _, _ = ctx.encrypt(b"hello there",
-                                   recipients=[ctx.get_key(bravo_res.fpr)])
+    ciphertext, _, _ = ctx.encrypt(
+        b"hello there", recipients=[ctx.get_key(bravo_res.fpr)])
 
     cb_called = False
+
     def cb(*args):
         global cb_called
         cb_called = True
         return passphrase
+
     ctx.pinentry_mode = gpg.constants.PINENTRY_MODE_LOOPBACK
     ctx.set_passphrase_cb(cb)
 

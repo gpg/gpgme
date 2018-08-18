@@ -18,7 +18,6 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
 import io
@@ -26,7 +25,9 @@ import os
 import tempfile
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 # Both Context and Data can be used as context manager:
 with gpg.Context() as c, gpg.Data() as d:
@@ -34,8 +35,9 @@ with gpg.Context() as c, gpg.Data() as d:
     d.write(b"Halloechen")
     leak_c = c
     leak_d = d
-assert leak_c.wrapped == None
-assert leak_d.wrapped == None
+assert leak_c.wrapped is None
+assert leak_d.wrapped is None
+
 
 def sign_and_verify(source, signed, sink):
     with gpg.Context() as c:
@@ -52,6 +54,7 @@ def sign_and_verify(source, signed, sink):
 
     sink.seek(0, os.SEEK_SET)
     assert sink.read() == b"Hallo Leute\n"
+
 
 # Demonstrate automatic wrapping of file-like objects with 'fileno'
 # method.
@@ -73,7 +76,7 @@ if sys.version_info[0] == 3:
     bio.truncate(1)
     if len(bio.getvalue()) != 1:
         # This version of Python is affected, preallocate buffer.
-        preallocate = 128*b'\x00'
+        preallocate = 128 * b'\x00'
     else:
         preallocate = b''
 

@@ -18,17 +18,20 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import subprocess
 import gpg
 import support
 
+del absolute_import, print_function, unicode_literals
+
 print("Using gpg module from {0!r}.".format(os.path.dirname(gpg.__file__)))
 
-subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
-                                    "tests", "start-stop-agent"), "--start"])
+subprocess.check_call([
+    os.path.join(os.getenv('top_srcdir'), "tests", "start-stop-agent"),
+    "--start"
+])
 
 with gpg.Context() as c:
     alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)

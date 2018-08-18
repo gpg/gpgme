@@ -18,14 +18,15 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import io
 import os
 import tempfile
 import gpg
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
+
+del absolute_import, print_function, unicode_literals
 
 data = gpg.Data('Hello world!')
 assert data.read() == b'Hello world!'
@@ -94,7 +95,8 @@ with tempfile.NamedTemporaryFile() as tmp:
 
     # Open using name, offset, and length.
     data = gpg.Data(file=tmp.name, offset=23, length=42)
-    assert data.read() == binjunk[23:23+42]
+    assert data.read() == binjunk[23:23 + 42]
+
 
 # Test callbacks.
 class DataObject(object):
@@ -117,6 +119,7 @@ class DataObject(object):
     def release(self, hook=None):
         assert not self.released
         self.released = True
+
 
 do = DataObject()
 cookie = object()

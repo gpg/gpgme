@@ -18,13 +18,16 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import gpg
 import support
 
+del absolute_import, print_function, unicode_literals
+
+
 def fail(msg):
     raise RuntimeError(msg)
+
 
 def check_result(r, typ):
     if r.invalid_signers:
@@ -52,6 +55,7 @@ def check_result(r, typ):
         if signature.fpr not in ("A0FF4590BB6122EDEF6E3C542D727CC768697734",
                                  "23FD347A419429BACCD5E72D6BC4778054ACD246"):
             fail("Wrong fingerprint reported: {}".format(signature.fpr))
+
 
 c = gpg.Context()
 c.set_textmode(True)

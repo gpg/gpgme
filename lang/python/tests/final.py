@@ -18,12 +18,15 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import subprocess
 import support
-_ = support # to appease pyflakes.
+_ = support  # to appease pyflakes.
 
-subprocess.check_call([os.path.join(os.getenv('top_srcdir'),
-                                    "tests", "start-stop-agent"), "--stop"])
+del absolute_import, print_function, unicode_literals
+
+subprocess.check_call([
+    os.path.join(os.getenv('top_srcdir'), "tests", "start-stop-agent"),
+    "--stop"
+])

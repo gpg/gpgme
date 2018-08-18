@@ -18,7 +18,6 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import os
 import gpg
@@ -26,6 +25,8 @@ import sys
 
 import support
 support.assert_gpg_version((2, 1, 14))
+
+del absolute_import, print_function, unicode_literals
 
 alpha = "Alpha <alpha@invalid.example.net>"
 bravo = "Bravo <bravo@invalid.example.net>"
@@ -111,9 +112,11 @@ with support.EphemeralContext() as ctx:
 
         ctx.key_tofu_policy(key, policy)
 
-        keys = list(ctx.keylist(key.uids[0].uid,
-                                mode=(gpg.constants.keylist.mode.LOCAL
-                                      |gpg.constants.keylist.mode.WITH_TOFU)))
+        keys = list(
+            ctx.keylist(
+                key.uids[0].uid,
+                mode=(gpg.constants.keylist.mode.LOCAL |
+                      gpg.constants.keylist.mode.WITH_TOFU)))
         assert len(keys) == 1
 
         if policy == gpg.constants.tofu.policy.AUTO:

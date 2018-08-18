@@ -16,7 +16,6 @@
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import contextlib
 import shutil
@@ -27,19 +26,27 @@ import tempfile
 import time
 import gpg
 
+del absolute_import, print_function, unicode_literals
+
+
 def assert_gpg_version(version=(2, 1, 0)):
     with gpg.Context() as c:
-        clean_version = re.match(r'\d+\.\d+\.\d+', c.engine_info.version).group(0)
+        clean_version = re.match(r'\d+\.\d+\.\d+',
+                                 c.engine_info.version).group(0)
         if tuple(map(int, clean_version.split('.'))) < version:
             print("GnuPG too old: have {0}, need {1}.".format(
                 c.engine_info.version, '.'.join(map(str, version))))
             sys.exit(77)
 
+
 def have_tofu_support(ctx, some_uid):
-    keys = list(ctx.keylist(some_uid,
-                            mode=(gpg.constants.keylist.mode.LOCAL
-                                  |gpg.constants.keylist.mode.WITH_TOFU)))
+    keys = list(
+        ctx.keylist(
+            some_uid,
+            mode=(gpg.constants.keylist.mode.LOCAL |
+                  gpg.constants.keylist.mode.WITH_TOFU)))
     return len(keys) > 0
+
 
 # Skip the Python tests for GnuPG < 2.1.12.  Prior versions do not
 # understand the command line flags that we assume exist.  C.f. issue
@@ -53,13 +60,18 @@ encrypt_only = "F52770D5C4DB41408D918C9F920572769B9FE19C"
 sign_only = "7CCA20CCDE5394CEE71C9F0BFED153F12F18F45D"
 no_such_key = "A" * 40
 
+
 def make_filename(name):
     return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)
+
 
 def in_srcdir(name):
     return os.path.join(os.environ['srcdir'], name)
 
+
 verbose = int(os.environ.get('verbose', 0)) > 1
+
+
 def print_data(data):
     if verbose:
         try:
@@ -75,10 +87,12 @@ def print_data(data):
         else:
             sys.stdout.write(data)
 
+
 def mark_key_trusted(ctx, key):
     class Editor(object):
         def __init__(self):
             self.steps = ["trust", "save"]
+
         def edit(self, status, args, out):
             if args == "keyedit.prompt":
                 result = self.steps.pop(0)
@@ -91,6 +105,7 @@ def mark_key_trusted(ctx, key):
             else:
                 result = None
             return result
+
     with gpg.Data() as sink:
         ctx.op_edit(key, Editor().edit, sink, sink)
 
@@ -103,8 +118,10 @@ class TemporaryDirectory(object):
     def __enter__(self):
         self.path = tempfile.mkdtemp()
         return self.path
+
     def __exit__(self, *args):
         shutil.rmtree(self.path, ignore_errors=True)
+
 
 @contextlib.contextmanager
 def EphemeralContext():
@@ -124,7 +141,7 @@ def EphemeralContext():
                 ctx.assuan_transact(["KILLAGENT"])
             except gpg.errors.GPGMEError as e:
                 if e.getcode() == gpg.errors.ASS_CONNECT_FAILED:
-                    pass # the agent was not running
+                    pass  # the agent was not running
                 else:
                     raise
 
