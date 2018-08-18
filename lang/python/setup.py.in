@@ -19,6 +19,7 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from distutils.core import setup, Extension
+from distutils.command.build import build
 
 import glob
 import os
@@ -146,8 +147,16 @@ def up_to_date(source, target):
 #       https://bugs.python.org/issue2624
 # Workaround:
 # https://stackoverflow.com/questions/12491328/python-distutils-not-include-the-swig-generated-module
-from distutils.command.build import build
-
+#
+# To install to multiple Python installations or to alternate ones run the
+# following three commands (yes, run the build one twice):
+#
+# /path/to/pythonX.Y setup.py build
+# /path/to/pythonX.Y setup.py build
+# /path/to/pythonX.Y setup.py install
+#
+# It is highly likely that this will need to be run as root or with sudo (or
+# sudo -H).  It may or may not work with venv. and outside a virtualenv
 
 class BuildExtFirstHack(build):
     def _read_header(self, header, cflags):
