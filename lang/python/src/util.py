@@ -17,9 +17,10 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import sys
+
+del absolute_import, print_function, unicode_literals
 
 
 def process_constants(prefix, scope):

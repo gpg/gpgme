@@ -95,7 +95,6 @@ GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
 """
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 from . import core
 from . import errors
@@ -105,6 +104,8 @@ from . import callbacks
 from . import version
 from .core import Context
 from .core import Data
+
+del absolute_import, print_function, unicode_literals
 
 # Interface hygiene.
 

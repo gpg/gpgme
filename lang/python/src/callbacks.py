@@ -16,9 +16,10 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 from getpass import getpass
+
+del absolute_import, print_function, unicode_literals
 
 
 def passphrase_stdin(hint, desc, prev_bad, hook=None):
@@ -26,7 +27,7 @@ def passphrase_stdin(hint, desc, prev_bad, hook=None):
     the terminal.  The hook here, if present, will be used to describe
     why the passphrase is needed."""
     why = ''
-    if hook != None:
+    if hook is not None:
         why = ' ' + hook
     if prev_bad:
         why += ' (again)'
@@ -35,7 +36,7 @@ def passphrase_stdin(hint, desc, prev_bad, hook=None):
 
 
 def progress_stdout(what, type, current, total, hook=None):
-    print("PROGRESS UPDATE: what = %s, type = %d, current = %d, total = %d" %\
+    print("PROGRESS UPDATE: what = %s, type = %d, current = %d, total = %d" %
           (what, type, current, total))
 
 

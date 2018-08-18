@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 import re
 import os
@@ -13,6 +12,8 @@ from .errors import errorcheck, GPGMEError
 from . import constants
 from . import errors
 from . import util
+
+del absolute_import, print_function, unicode_literals
 
 # Copyright (C) 2016-2018 g10 Code GmbH
 # Copyright (C) 2004, 2008 Igor Belyi <belyi@users.sourceforge.net>

@@ -17,10 +17,11 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
 from __future__ import absolute_import, print_function, unicode_literals
-del absolute_import, print_function, unicode_literals
 
 from . import gpgme
 from . import util
+
+del absolute_import, print_function, unicode_literals
 
 # To appease static analysis tools, we define some constants here.
 # They are overwritten with the proper values by process_constants.
@@ -64,33 +65,33 @@ class GpgError(Exception):
 
     @property
     def code(self):
-        if self.error == None:
+        if self.error is None:
             return None
         return gpgme.gpgme_err_code(self.error)
 
     @property
     def code_str(self):
-        if self.error == None:
+        if self.error is None:
             return None
         return gpgme.gpgme_strerror(self.error)
 
     @property
     def source(self):
-        if self.error == None:
+        if self.error is None:
             return None
         return gpgme.gpgme_err_source(self.error)
 
     @property
     def source_str(self):
-        if self.error == None:
+        if self.error is None:
             return None
         return gpgme.gpgme_strsource(self.error)
 
     def __str__(self):
         msgs = []
-        if self.context != None:
+        if self.context is not None:
             msgs.append(self.context)
-        if self.error != None:
+        if self.error is not None:
             msgs.append(self.source_str)
             msgs.append(self.code_str)
         return ': '.join(msgs)
