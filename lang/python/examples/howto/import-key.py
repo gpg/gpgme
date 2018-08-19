@@ -7,6 +7,8 @@ import gpg
 import os.path
 import sys
 
+del absolute_import, division, unicode_literals
+
 # Copyright (C) 2018 Ben McGinnes <ben@gnupg.org>
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -29,7 +31,7 @@ import sys
 # <http://www.gnu.org/licenses/>.
 
 print("""
-This script exports one or more public keys.
+This script imports one or more public keys from a single file.
 """)
 
 c = gpg.Context(armor=True)
