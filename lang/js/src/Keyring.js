@@ -366,14 +366,16 @@ export class GPGME_Keyring {
      * @param {String} userId The user Id, e.g. 'Foo Bar <foo@bar.baz>'
      * @param {String} algo (optional) algorithm (and optionally key size)
      * to be used. See {@link supportedKeyAlgos} below for supported
-     * values.
+     * values. If ommitted, 'default' is used.
      * @param {Date} expires (optional) Expiration date. If not set,
      * expiration will be set to 'never'
+     * @param {String} subkey_algo (optional) algorithm of the encryption
+     * subkey. If ommited the same as algo is used.
      *
      * @return {Promise<Key|GPGME_Error>}
      * @async
      */
-    generateKey (userId, algo = 'default', expires){
+    generateKey (userId, algo = 'default', expires, subkey_algo){
         if (
             typeof (userId) !== 'string' ||
             // eslint-disable-next-line no-use-before-define
@@ -382,11 +384,18 @@ export class GPGME_Keyring {
         ){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
+        // eslint-disable-next-line no-use-before-define
+        if (subkey_algo && supportedKeyAlgos.indexOf(subkey_algo) < 0 ){
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         let me = this;
         return new Promise(function (resolve, reject){
             let msg = createMessage('createkey');
             msg.setParameter('userid', userId);
             msg.setParameter('algo', algo );
+            if (subkey_algo) {
+                msg.setParameter('subkey-algo', subkey_algo );
+            }
             if (expires){
                 const now = new Date();
                 msg.setParameter('expires',
