@@ -34,11 +34,11 @@ import { Connection } from './Connection';
  */
 function init(){
     return new Promise(function(resolve, reject){
-        const connection = Object.freeze(new Connection);
+        const connection = new Connection;
         connection.checkConnection(false).then(
             function(result){
                 if (result === true) {
-                    resolve(Object.freeze(new GpgME()));
+                    resolve(new GpgME());
                 } else {
                     reject(gpgme_error('CONN_NO_CONNECT'));
                 }
@@ -48,5 +48,5 @@ function init(){
     });
 }
 
-const exportvalue = Object.freeze({init:init});
+const exportvalue = {init:init};
 export default exportvalue;

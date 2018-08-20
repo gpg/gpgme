@@ -27,7 +27,7 @@ import { key_params as kp } from './unittest_inputvalues';
 import { Connection } from './src/Connection';
 import { gpgme_error } from './src/Errors';
 import { toKeyIdArray , isFingerprint } from './src/Helpers';
-import { GPGME_Key , createKey } from './src/Key';
+import { createKey } from './src/Key';
 import { GPGME_Keyring } from './src/Keyring';
 import {GPGME_Message, createMessage} from './src/Message';
 
@@ -116,14 +116,6 @@ function unittests (){
             expect(test0).to.include(hp.validFingerprint);
         });
 
-        it('correct GPGME_Key', function(){
-            expect(hp.validGPGME_Key).to.be.an.instanceof(GPGME_Key);
-            let test0 = toKeyIdArray(hp.validGPGME_Key);
-
-            expect(test0).to.be.an('array');
-            expect(test0).to.include(hp.validGPGME_Key.fingerprint);
-        });
-
         it('openpgpjs-like object', function(){
             let test0 = toKeyIdArray(hp.valid_openpgplike);
 
@@ -169,15 +161,9 @@ function unittests (){
     });
 
     describe('GPGME_Key', function(){
-
-        it('correct Key initialization', function(){
-            let key = createKey(kp.validKeyFingerprint);
-            expect(key).to.be.an.instanceof(GPGME_Key);
-        });
         it('Key has data after a first refresh', function(done) {
             let key = createKey(kp.validKeyFingerprint);
             key.refreshKey().then(function(key2){
-                expect(key2).to.be.an.instanceof(GPGME_Key);
                 expect(key2.get).to.be.a('function');
                 for (let i=0; i < kp.validKeyProperties.length; i++) {
                     let prop = key2.get(kp.validKeyProperties[i]);
@@ -220,7 +206,6 @@ function unittests (){
 
         it('Non-cached key async hasSecret (no secret in Key)', function (done){
             let key = createKey(kp.validFingerprintNoSecret, true);
-            expect(key).to.be.an.instanceof(GPGME_Key);
             key.get('hasSecret').then(function(result){
                 expect(result).to.be.a('boolean');
                 expect(result).to.equal(false);
@@ -246,32 +231,21 @@ function unittests (){
             }
         });
 
-        it('malformed GPGME_Key cannot be used', function(){
-            for (let i=0; i < 4; i++){
-                let key = new GPGME_Key(wp.four_invalid_params[i]);
-                expect(key.fingerprint).to.be.an.instanceof(Error);
-                expect(key.fingerprint.code).to.equal('KEY_INVALID');
-            }
-        });
-
-        it('Overwriting getFingerprint does not work', function(){
-            const evilFunction = function(){
-                return 'bad Data';
-            };
-            let key = createKey(kp.validKeyFingerprint, true);
-            expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
-            try {
-                key.getFingerprint = evilFunction;
-            }
-            catch(e) {
-                expect(e).to.be.an.instanceof(TypeError);
-            }
-            expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
-            expect(key.getFingerprint).to.not.equal(evilFunction);
-        });
-        // TODO: tests for subkeys
-        // TODO: tests for userids
-        // TODO: some invalid tests for key/keyring
+    //     it('Overwriting getFingerprint does not work', function(){
+    //         const evilFunction = function(){
+    //             return 'bad Data';
+    //         };
+    //         let key = createKey(kp.validKeyFingerprint, true);
+    //         expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
+    //         try {
+    //             key.getFingerprint = evilFunction;
+    //         }
+    //         catch(e) {
+    //             expect(e).to.be.an.instanceof(TypeError);
+    //         }
+    //         expect(key.fingerprint).to.equal(kp.validKeyFingerprint);
+    //         expect(key.getFingerprint).to.not.equal(evilFunction);
+    //     });
     });
 
     describe('GPGME_Keyring', function(){
@@ -287,10 +261,7 @@ function unittests (){
                 let keyring = new GPGME_Keyring;
                 keyring.getKeys(null, true).then(function(result){
                     expect(result).to.be.an('array');
-                    expect(result[0]).to.be.an.instanceof(GPGME_Key);
                     expect(result[0].get('hasSecret')).to.be.a('boolean');
-                    // expect(result[0].get('armored')).to.include(
-                    //     '-----END PGP PUBLIC KEY BLOCK-----');
                     done();
                 });
             }
@@ -302,7 +273,6 @@ function unittests (){
                 keyring.getKeys(kp.validKeyFingerprint, true).then(
                     function(result){
                         expect(result).to.be.an('array');
-                        expect(result[0]).to.be.an.instanceof(GPGME_Key);
                         expect(result[0].get('hasSecret')).to.be.a('boolean');
                         done();
                     }

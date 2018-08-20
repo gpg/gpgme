@@ -66,7 +66,7 @@ export function createSignature(sigObject){
             }
         }
     }
-    return Object.freeze(new GPGME_Signature(sigObject));
+    return new GPGME_Signature(sigObject);
 }
 
 
@@ -82,101 +82,65 @@ export function createSignature(sigObject){
 class GPGME_Signature {
 
     constructor(sigObject){
-        let _rawSigObject = sigObject;
-
-        this.getFingerprint = function(){
-            if (!_rawSigObject.fingerprint){
-                return gpgme_error('SIG_WRONG');
-            } else {
-                return _rawSigObject.fingerprint;
-            }
-        };
-
-        /**
-         * The expiration of this Signature as Javascript date, or null if
-         * signature does not expire
-         * @returns {Date | null}
-         */
-        this.getExpiration = function(){
-            if (!_rawSigObject.exp_timestamp){
-                return null;
-            }
-            return new Date(_rawSigObject.exp_timestamp* 1000);
-        };
-
-        /**
-         * The creation date of this Signature in Javascript Date
-         * @returns {Date}
-         */
-        this.getTimestamp= function (){
-            return new Date(_rawSigObject.timestamp * 1000);
-        };
-
-        /**
-         * The overall validity of the key. If false, errorDetails may contain
-         * additional information.
-         */
-        this.getValid= function() {
-            if (_rawSigObject.summary.valid === true){
-                return true;
-            } else {
-                return false;
-            }
-        };
-
-        /**
-         * gives more information on non-valid signatures. Refer to the gpgme
-         * docs https://www.gnupg.org/documentation/manuals/gpgme/Verify.html
-         * for details on the values.
-         * @returns {Object} Object with boolean properties
-         */
-        this.getErrorDetails = function (){
-            let properties = ['revoked', 'key-expired', 'sig-expired',
-                'key-missing', 'crl-missing', 'crl-too-old', 'bad-policy',
-                'sys-error'];
-            let result = {};
-            for (let i=0; i< properties.length; i++){
-                if ( _rawSigObject.hasOwnProperty(properties[i]) ){
-                    result[properties[i]] = _rawSigObject[properties[i]];
-                }
-            }
-            return result;
-        };
+        this._rawSigObject = sigObject;
     }
-
-    /**
-     * Convenience getter for {@link getFingerprint}
-     */
     get fingerprint(){
-        return this.getFingerprint();
+        if (!this._rawSigObject.fingerprint){
+            return gpgme_error('SIG_WRONG');
+        } else {
+            return this._rawSigObject.fingerprint;
+        }
     }
 
     /**
-     * Convenience getter for {@link getExpiration}
+     * The expiration of this Signature as Javascript date, or null if
+     * signature does not expire
+     * @returns {Date | null}
      */
     get expiration(){
-        return this.getExpiration();
+        if (!this._rawSigObject.exp_timestamp){
+            return null;
+        }
+        return new Date(this._rawSigObject.exp_timestamp* 1000);
     }
 
     /**
-     * Convenience getter for {@link getTimeStamp}
+     * The creation date of this Signature in Javascript Date
+     * @returns {Date}
      */
-    get timestamp(){
-        return this.getTimestamp();
+    get timestamp (){
+        return new Date(this._rawSigObject.timestamp * 1000);
     }
 
     /**
-     * Convenience getter for {@link getValid}
+     * The overall validity of the key. If false, errorDetails may contain
+     * additional information.
      */
-    get valid(){
-        return this.getValid();
+    get valid () {
+        if (this._rawSigObject.summary.valid === true){
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Convenience getter for {@link getErrorDetails}
+     * gives more information on non-valid signatures. Refer to the gpgme
+     * docs https://www.gnupg.org/documentation/manuals/gpgme/Verify.html
+     * for details on the values.
+     * @returns {Object} Object with boolean properties
      */
     get errorDetails(){
-        return this.getErrorDetails();
+        let properties = ['revoked', 'key-expired', 'sig-expired',
+            'key-missing', 'crl-missing', 'crl-too-old', 'bad-policy',
+            'sys-error'];
+        let result = {};
+        for (let i=0; i< properties.length; i++){
+            if ( this._rawSigObject.hasOwnProperty(properties[i]) ){
+                result[properties[i]] = this._rawSigObject[properties[i]];
+            }
+        }
+        return result;
     }
 }
 
