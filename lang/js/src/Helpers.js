@@ -30,7 +30,7 @@ import { gpgme_error } from './Errors';
  * @param {Object | Array<Object> | String | Array<String>} input
  * @returns {Array<String>} Array of fingerprints, or an empty array
  */
-export function toKeyIdArray(input){
+export function toKeyIdArray (input){
     if (!input){
         return [];
     }
@@ -39,7 +39,7 @@ export function toKeyIdArray(input){
     }
     let result = [];
     for (let i=0; i < input.length; i++){
-        if (typeof(input[i]) === 'string'){
+        if (typeof (input[i]) === 'string'){
             if (isFingerprint(input[i]) === true){
                 result.push(input[i]);
             } else {
@@ -47,7 +47,7 @@ export function toKeyIdArray(input){
                 // in src/Errors.js
                 gpgme_error('MSG_NOT_A_FPR');
             }
-        } else if (typeof(input[i]) === 'object'){
+        } else if (typeof (input[i]) === 'object'){
             let fpr = '';
             if (input[i].hasOwnProperty('fingerprint')){
                 fpr = input[i].fingerprint;
@@ -78,8 +78,8 @@ export function toKeyIdArray(input){
  * @returns {Boolean} true if value passes test
  * @private
  */
-function hextest(key, len){
-    if (!key || typeof(key) !== 'string'){
+function hextest (key, len){
+    if (!key || typeof (key) !== 'string'){
         return false;
     }
     if (key.length !== len){
@@ -95,7 +95,7 @@ function hextest(key, len){
  * @param {String} value to check
  * @returns {Boolean} true if value passes test
  */
-export function isFingerprint(value){
+export function isFingerprint (value){
     return hextest(value, 40);
 }
 
@@ -105,7 +105,7 @@ export function isFingerprint(value){
  * @param {String} value to check
  * @returns {Boolean} true if value passes test
  */
-export function isLongId(value){
+export function isLongId (value){
     return hextest(value, 16);
 }
 
@@ -113,7 +113,7 @@ export function isLongId(value){
  * Recursively decodes input (utf8) to output (utf-16; javascript) strings
  * @param {Object | Array | String} property
  */
-export function decode(property){
+export function decode (property){
     if (typeof property === 'string'){
         return decodeURIComponent(escape(property));
     } else if (Array.isArray(property)){

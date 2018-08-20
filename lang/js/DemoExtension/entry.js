@@ -23,7 +23,7 @@
 
 /* global chrome */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     chrome.tabs.create({
         url: './mainui.html'
     });

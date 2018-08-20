@@ -27,9 +27,9 @@
 describe('Encryption', function () {
     let context = null;
     const good_fpr = inputvalues.encrypt.good.fingerprint;
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             done();
         });
@@ -64,7 +64,7 @@ describe('Encryption', function () {
         const data = inputvalues.encrypt.good.data;
         context.encrypt(data,null).then(function (answer) {
             expect(answer).to.be.undefined;
-        }, function(error){
+        }, function (error){
             expect(error).to.be.an('Error');
             expect(error.code).to.equal('MSG_INCOMPLETE');
             done();
@@ -86,7 +86,7 @@ describe('Encryption', function () {
         const bad_fpr = inputvalues.encrypt.bad.fingerprint;
         context.encrypt(data, bad_fpr).then(function (answer) {
             expect(answer).to.be.undefined;
-        }, function(error){
+        }, function (error){
             expect(error).to.be.an('Error');
             expect(error.code).to.not.be.undefined;
             expect(error.code).to.equal('GNUPG_ERROR');
@@ -98,7 +98,7 @@ describe('Encryption', function () {
         const data = fixedLengthString(65);
         context.encrypt(data, good_fpr).then(function (answer) {
             expect(answer).to.be.undefined;
-        }, function(error){
+        }, function (error){
             expect(error).to.be.an.instanceof(Error);
             // TODO: there is a 64 MB hard limit at least in chrome at:
             // chromium//extensions/renderer/messaging_util.cc:

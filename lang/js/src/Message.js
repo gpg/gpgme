@@ -31,8 +31,8 @@ import { Connection } from './Connection';
  * @param {String} operation
  * @returns {GPGME_Message|GPGME_Error} The Message object
  */
-export function createMessage(operation){
-    if (typeof(operation) !== 'string'){
+export function createMessage (operation){
+    if (typeof (operation) !== 'string'){
         return gpgme_error('PARAM_WRONG');
     }
     if (permittedOperations.hasOwnProperty(operation)){
@@ -51,7 +51,7 @@ export function createMessage(operation){
  */
 export class GPGME_Message {
 
-    constructor(operation){
+    constructor (operation){
         this._msg = {
             op: operation,
             chunksize: 1023* 1024
@@ -59,7 +59,7 @@ export class GPGME_Message {
         this._expected = null;
     }
 
-    get operation(){
+    get operation (){
         return this._msg.op;
     }
 
@@ -69,7 +69,7 @@ export class GPGME_Message {
         }
     }
 
-    get expected() {
+    get expected () {
         return this._expected;
     }
     /**
@@ -81,7 +81,7 @@ export class GPGME_Message {
      * will not encounter problems, larger messages will be received in
      * chunks. If the value is not explicitly specified, 1023 KB is used.
      */
-    set chunksize(value){
+    set chunksize (value){
         if (
             Number.isInteger(value) &&
             value > 10 * 1024 &&
@@ -91,7 +91,7 @@ export class GPGME_Message {
         }
     }
 
-    get chunksize(){
+    get chunksize (){
         return this._msg.chunksize;
     }
 
@@ -100,7 +100,7 @@ export class GPGME_Message {
      * @returns {Object|null} Object to be posted to gnupg, or null if
      * incomplete
      */
-    get message() {
+    get message () {
         if (this.isComplete() === true){
             return this._msg;
         } else {
@@ -116,7 +116,7 @@ export class GPGME_Message {
      * @returns {Boolean} If the parameter was set successfully
      */
     setParameter ( param,value ){
-        if (!param || typeof(param) !== 'string'){
+        if (!param || typeof (param) !== 'string'){
             return gpgme_error('PARAM_WRONG');
         }
         let po = permittedOperations[this._msg.op];
@@ -132,10 +132,10 @@ export class GPGME_Message {
             return gpgme_error('PARAM_WRONG');
         }
         // check incoming value for correctness
-        let checktype = function(val){
-            switch(typeof(val)){
+        let checktype = function (val){
+            switch (typeof (val)){
             case 'string':
-                if (poparam.allowed.indexOf(typeof(val)) >= 0
+                if (poparam.allowed.indexOf(typeof (val)) >= 0
                         && val.length > 0) {
                     return true;
                 }
@@ -199,7 +199,7 @@ export class GPGME_Message {
      * all 'required' parameters according to {@link permittedOperations}.
      * @returns {Boolean} true if message is complete.
      */
-    isComplete(){
+    isComplete (){
         if (!this._msg.op){
             return false;
         }
@@ -220,13 +220,13 @@ export class GPGME_Message {
      */
     post (){
         let me = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (me.isComplete() === true) {
 
                 let conn  = new Connection;
-                conn.post(me).then(function(response) {
+                conn.post(me).then(function (response) {
                     resolve(response);
-                }, function(reason) {
+                }, function (reason) {
                     reject(reason);
                 });
             }

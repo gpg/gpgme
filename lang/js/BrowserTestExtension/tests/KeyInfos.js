@@ -26,17 +26,17 @@
 
 describe('Key information', function () {
     let context = null;
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             done();
         });
     });
 
-    it('A fingerprint is consistently returned upper case hex', function(done){
+    it('A fingerprint is consistently returned upper case hex', function (done){
         const mixedCase = inputvalues.encrypt.good.fingerprint_mixedcase;
-        context.Keyring.getKeys(mixedCase).then(function(result){
+        context.Keyring.getKeys(mixedCase).then(function (result){
             expect(result).to.be.an('array');
             expect(result.length).to.equal(1);
             expect(result[0].fingerprint).to.equal(mixedCase.toUpperCase());
@@ -44,9 +44,9 @@ describe('Key information', function () {
         });
     });
 
-    it('A userId keeps their encoding', function(done){
+    it('A userId keeps their encoding', function (done){
         context.Keyring.importKey(inputvalues.publicKeyNonAscii.key, true)
-            .then(function(result){
+            .then(function (result){
                 expect(result.Keys[0]).to.be.an('object');
                 const user = result.Keys[0].key.get('userids')[0];
                 expect(user.get('name')).to.equal(

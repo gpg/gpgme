@@ -27,16 +27,16 @@
 
 describe('Verifying data', function () {
     let context = null;
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             done();
         });
     });
     it('Successful verify message', function (done) {
         const message = inputvalues.signedMessage.good;
-        context.verify(message).then(function(result){
+        context.verify(message).then(function (result){
             expect(result.data).to.be.a('string');
             expect(result.all_valid).to.be.true;
             expect(result.count).to.equal(1);
@@ -50,7 +50,7 @@ describe('Verifying data', function () {
 
     it('Successfully recognize changed cleartext', function (done) {
         const message = inputvalues.signedMessage.bad;
-        context.verify(message).then(function(result){
+        context.verify(message).then(function (result){
             expect(result.data).to.be.a('string');
             expect(result.all_valid).to.be.false;
             expect(result.count).to.equal(1);
@@ -65,9 +65,9 @@ describe('Verifying data', function () {
     it('Encrypt-Sign-Verify random message', function (done) {
         const message = bigString(2000);
         let fpr = inputvalues.encrypt.good.fingerprint;
-        context.encrypt(message, fpr).then(function(message_enc){
-            context.sign(message_enc.data, fpr).then(function(message_encsign){
-                context.verify(message_encsign.data).then(function(result){
+        context.encrypt(message, fpr).then(function (message_enc){
+            context.sign(message_enc.data, fpr).then(function (message_encsign){
+                context.verify(message_encsign.data).then(function (result){
                     expect(result.data).to.equal(message_enc.data);
                     expect(result.data).to.be.a('string');
                     expect(result.all_valid).to.be.true;

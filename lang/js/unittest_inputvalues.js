@@ -1,4 +1,4 @@
-import {createKey} from './src/Key';
+import { createKey } from './src/Key';
 
 export const helper_params = {
     validLongId: '0A0A0A0A0A0A0A0A',
@@ -9,8 +9,8 @@ export const helper_params = {
     validFingerprints: ['9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A9A9A7A7A8A',
         '9AAE7A338A9A9A7A7A8A9A9A7A7A8A9A9A7A7DDA'],
     invalidLongId: '9A9A7A7A8A9A9A7A7A8A',
-    invalidFingerprints: [{hello:'World'}, ['kekekeke'], new Uint32Array(40)],
-    invalidKeyArray: {curiosity:'uncat'},
+    invalidFingerprints: [{ hello:'World' }, ['kekekeke'], new Uint32Array(40)],
+    invalidKeyArray: { curiosity:'uncat' },
     invalidKeyArray_OneBad: [
         createKey('D41735B91236FDB882048C5A2301635EEFF0CB05'),
         'E1D18E6E994FA9FE9360Bx0E687B940FEFEB095A',
@@ -18,7 +18,7 @@ export const helper_params = {
     invalidErrorCode: 'Please type in all your passwords.',
     validGPGME_Key: createKey('D41735B91236FDB882048C5A2301635EEFF0CB05', true),
     valid_openpgplike: { primaryKey: {
-        getFingerprint: function(){
+        getFingerprint: function (){
             return '85DE2A8BA5A5AB3A8A7BE2000B8AED24D7534BC2';}
     }
     }

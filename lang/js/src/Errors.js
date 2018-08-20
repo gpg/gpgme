@@ -120,7 +120,7 @@ const err_list = {
  * @param {*} info Error message passed through if code is 'GNUPG_ERROR'
  * @returns {GPGME_Error}
  */
-export function gpgme_error(code = 'GENERIC_ERROR', info){
+export function gpgme_error (code = 'GENERIC_ERROR', info){
     if (err_list.hasOwnProperty(code)){
         if (err_list[code].type === 'error'){
             return new GPGME_Error(code);
@@ -147,9 +147,9 @@ export function gpgme_error(code = 'GENERIC_ERROR', info){
  * @extends Error
  */
 class GPGME_Error extends Error{
-    constructor(code = 'GENERIC_ERROR', msg=''){
+    constructor (code = 'GENERIC_ERROR', msg=''){
 
-        if (code === 'GNUPG_ERROR' && typeof(msg) === 'string'){
+        if (code === 'GNUPG_ERROR' && typeof (msg) === 'string'){
             super(msg);
         } else if (err_list.hasOwnProperty(code)){
             if (msg){
@@ -163,7 +163,7 @@ class GPGME_Error extends Error{
         this._code = code;
     }
 
-    get code(){
+    get code (){
         return this._code;
     }
 }

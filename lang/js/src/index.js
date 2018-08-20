@@ -32,21 +32,21 @@ import { Connection } from './Connection';
  *
  * @async
  */
-function init(){
-    return new Promise(function(resolve, reject){
+function init (){
+    return new Promise(function (resolve, reject){
         const connection = new Connection;
         connection.checkConnection(false).then(
-            function(result){
+            function (result){
                 if (result === true) {
                     resolve(new GpgME());
                 } else {
                     reject(gpgme_error('CONN_NO_CONNECT'));
                 }
-            }, function(){ //unspecific connection error. Should not happen
+            }, function (){ // unspecific connection error. Should not happen
                 reject(gpgme_error('CONN_NO_CONNECT'));
             });
     });
 }
 
-const exportvalue = {init:init};
+const exportvalue = { init:init };
 export default exportvalue;

@@ -31,16 +31,16 @@ describe('Key importing', function () {
     const changedKey = ImportablePublicKey.keyChangedUserId;
 
     let context = null;
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             context.Keyring.getKeys(fpr).then(
-                function(result){
+                function (result){
                     if (result.length === 1) {
-                        result[0].delete().then(function(){
+                        result[0].delete().then(function (){
                             done();
-                        },function(){
+                        },function (){
                             done();
                         });
                     } else {
@@ -50,14 +50,14 @@ describe('Key importing', function () {
         });
     });
 
-    afterEach(function(done){
+    afterEach(function (done){
         // delete the test key if still present
         context.Keyring.getKeys(fpr).then(
-            function(result){
+            function (result){
                 if (result.length === 1) {
-                    result[0].delete().then(function(){
+                    result[0].delete().then(function (){
                         done();
-                    },function(){
+                    },function (){
                         done();
                     });
                 } else {
@@ -67,10 +67,10 @@ describe('Key importing', function () {
     });
 
     it('Importing Key', function (done) {
-        context.Keyring.getKeys(fpr).then(function(result){
+        context.Keyring.getKeys(fpr).then(function (result){
             expect(result).to.be.an('array');
             expect(result.length).to.equal(0);
-            context.Keyring.importKey(pubKey).then(function(result){
+            context.Keyring.importKey(pubKey).then(function (result){
                 expect(result.Keys).to.be.an('array');
                 expect(result.Keys[0]).to.not.be.undefined;
                 expect(result.Keys[0].key).to.be.an('object');
@@ -83,12 +83,12 @@ describe('Key importing', function () {
         });
     });
 
-    it('Updating Key', function(done){
+    it('Updating Key', function (done){
         context.Keyring.importKey(pubKey)
-            .then(function(result){
+            .then(function (result){
                 expect(result.Keys[0].key).to.not.be.undefined;
                 expect(result.Keys[0].status).to.equal('newkey');
-                context.Keyring.importKey(changedKey).then(function(res){
+                context.Keyring.importKey(changedKey).then(function (res){
                     expect(res.Keys[0].key).to.be.an('object');
                     expect(res.Keys[0].key.fingerprint).to.equal(fpr);
                     expect(res.Keys[0].status).to.equal('change');
@@ -101,24 +101,24 @@ describe('Key importing', function () {
             });
     });
 
-    it('Deleting Key', function(done) {
-        context.Keyring.importKey(pubKey).then(function(result){
+    it('Deleting Key', function (done) {
+        context.Keyring.importKey(pubKey).then(function (result){
             expect(result.Keys[0].key).to.be.an('object');
             expect(result.Keys[0].key.fingerprint).to.equal(fpr);
-            result.Keys[0].key.delete().then(function(result){
+            result.Keys[0].key.delete().then(function (result){
                 expect(result).to.be.true;
                 done();
             });
         });
     });
 
-    it('Import result feedback', function(done){
-        context.Keyring.importKey(pubKey, true).then(function(result){
+    it('Import result feedback', function (done){
+        context.Keyring.importKey(pubKey, true).then(function (result){
             expect(result).to.be.an('object');
             expect(result.Keys[0]).to.be.an('object');
             expect(result.Keys[0].key.fingerprint).to.equal(fpr);
             expect(result.Keys[0].status).to.equal('newkey');
-            result.Keys[0].key.getArmor().then(function(armor){
+            result.Keys[0].key.getArmor().then(function (armor){
                 expect(armor).to.be.a('string');
                 done();
             });
@@ -126,8 +126,8 @@ describe('Key importing', function () {
     });
 
     it('exporting armored Key with getKeysArmored', function (done) {
-        context.Keyring.importKey(pubKey).then(function(){
-            context.Keyring.getKeysArmored(fpr).then(function(result){
+        context.Keyring.importKey(pubKey).then(function (){
+            context.Keyring.getKeysArmored(fpr).then(function (result){
                 expect(result).to.be.an('object');
                 expect(result.armored).to.be.a('string');
                 expect(result.secret_fprs).to.be.undefined;
@@ -138,7 +138,7 @@ describe('Key importing', function () {
 
     it('Exporting Key (including secret fingerprints)', function (done) {
         const key_secret = inputvalues.encrypt.good.fingerprint;
-        context.Keyring.getKeysArmored(key_secret, true).then(function(result){
+        context.Keyring.getKeysArmored(key_secret, true).then(function (result){
             expect(result).to.be.an('object');
             expect(result.armored).to.be.a('string');
             expect(result.secret_fprs).to.be.an('array');

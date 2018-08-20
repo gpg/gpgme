@@ -35,8 +35,8 @@ import { createMessage } from './Message';
  * a full object as delivered by gpgme-json
  * @returns {Object|GPGME_Error} The verified and updated data
  */
-export function createKey(fingerprint, async = false, data){
-    if (!isFingerprint(fingerprint) || typeof(async) !== 'boolean'){
+export function createKey (fingerprint, async = false, data){
+    if (!isFingerprint(fingerprint) || typeof (async) !== 'boolean'){
         return gpgme_error('PARAM_WRONG');
     }
     if (data !== undefined){
@@ -60,14 +60,14 @@ export function createKey(fingerprint, async = false, data){
  */
 class GPGME_Key {
 
-    constructor(fingerprint, async, data){
+    constructor (fingerprint, async, data){
 
         /**
          * @property {Boolean} If true, most answers will be asynchronous
          */
         this._async = async;
 
-        this._data = {fingerprint: fingerprint.toUpperCase()};
+        this._data = { fingerprint: fingerprint.toUpperCase() };
         if (data !== undefined
             && data.fingerprint.toUpperCase() === this._data.fingerprint
         ) {
@@ -84,7 +84,7 @@ class GPGME_Key {
      * async, the armored property is not available (it can still be
      * retrieved asynchronously by {@link Key.getArmor})
      */
-    get(property) {
+    get (property) {
         if (this._async === true) {
             switch (property){
             case 'armored':
@@ -98,6 +98,7 @@ class GPGME_Key {
             if (property === 'armored') {
                 return gpgme_error('KEY_ASYNC_ONLY');
             }
+            // eslint-disable-next-line no-use-before-define
             if (!validKeyProperties.hasOwnProperty(property)){
                 return gpgme_error('PARAM_WRONG');
             } else {
@@ -114,16 +115,16 @@ class GPGME_Key {
      * @returns {Promise<GPGME_Key|GPGME_Error>}
      * @async
      */
-    refreshKey() {
+    refreshKey () {
         let me = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (!me._data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('keylist');
             msg.setParameter('sigs', true);
             msg.setParameter('keys', me._data.fingerprint);
-            msg.post().then(function(result){
+            msg.post().then(function (result){
                 if (result.keys.length === 1){
                     const newdata = validateKeyData(
                         me._data.fingerprint, result.keys[0]);
@@ -131,13 +132,13 @@ class GPGME_Key {
                         reject(gpgme_error('KEY_INVALID'));
                     } else {
                         me._data = newdata;
-                        me.getGnupgSecretState().then(function(){
-                            me.getArmor().then(function(){
+                        me.getGnupgSecretState().then(function (){
+                            me.getArmor().then(function (){
                                 resolve(me);
-                            }, function(error){
+                            }, function (error){
                                 reject(error);
                             });
-                        }, function(error){
+                        }, function (error){
                             reject(error);
                         });
                     }
@@ -157,18 +158,18 @@ class GPGME_Key {
      * @returns {Promise<String|GPGME_Error>}
      * @async
      */
-    getArmor() {
+    getArmor () {
         const me = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (!me._data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('export');
             msg.setParameter('armor', true);
             msg.setParameter('keys', me._data.fingerprint);
-            msg.post().then(function(result){
+            msg.post().then(function (result){
                 resolve(result.data);
-            }, function(error){
+            }, function (error){
                 reject(error);
             });
         });
@@ -186,14 +187,14 @@ class GPGME_Key {
      */
     getGnupgSecretState (){
         const me = this;
-        return new Promise(function(resolve, reject) {
+        return new Promise(function (resolve, reject) {
             if (!me._data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             } else {
                 let msg = createMessage('keylist');
                 msg.setParameter('keys', me._data.fingerprint);
                 msg.setParameter('secret', true);
-                msg.post().then(function(result){
+                msg.post().then(function (result){
                     me._data.hasSecret = null;
                     if (
                         result.keys &&
@@ -206,7 +207,7 @@ class GPGME_Key {
                         me._data.hasSecret = false;
                         resolve(false);
                     }
-                }, function(error){
+                }, function (error){
                     reject(error);
                 });
             }
@@ -219,17 +220,17 @@ class GPGME_Key {
      * @returns {Promise<Boolean|GPGME_Error>} Success if key was deleted,
      * rejects with a GPG error otherwise.
      */
-    delete(){
+    delete (){
         const me = this;
-        return new Promise(function(resolve, reject){
+        return new Promise(function (resolve, reject){
             if (!me._data.fingerprint){
                 reject(gpgme_error('KEY_INVALID'));
             }
             let msg = createMessage('delete');
             msg.setParameter('key', me._data.fingerprint);
-            msg.post().then(function(result){
+            msg.post().then(function (result){
                 resolve(result.success);
-            }, function(error){
+            }, function (error){
                 reject(error);
             });
         });
@@ -238,7 +239,7 @@ class GPGME_Key {
     /**
      * @returns {String} The fingerprint defining this Key. Convenience getter
      */
-    get fingerprint(){
+    get fingerprint (){
         return this._data.fingerprint;
     }
 }
@@ -255,7 +256,7 @@ class GPGME_Subkey {
      * @param {Object} data
      * @private
      */
-    constructor(data){
+    constructor (data){
         this._data = {};
         let keys = Object.keys(data);
         const me = this;
@@ -268,7 +269,9 @@ class GPGME_Subkey {
          * @param private
          */
         const setProperty = function (property, value){
+            // eslint-disable-next-line no-use-before-define
             if (validSubKeyProperties.hasOwnProperty(property)){
+                // eslint-disable-next-line no-use-before-define
                 if (validSubKeyProperties[property](value) === true) {
                     if (property === 'timestamp' || property === 'expires'){
                         me._data[property] = new Date(value * 1000);
@@ -288,7 +291,7 @@ class GPGME_Subkey {
      * @param {String} property Information to request
      * @returns {String | Number | Date}
      */
-    get(property) {
+    get (property) {
         if (this._data.hasOwnProperty(property)){
             return (this._data[property]);
         }
@@ -308,12 +311,14 @@ class GPGME_UserId {
      * @param {Object} data
      * @private
      */
-    constructor(data){
+    constructor (data){
         this._data = {};
         const me = this;
         let keys = Object.keys(data);
-        const setProperty = function(property, value){
+        const setProperty = function (property, value){
+            // eslint-disable-next-line no-use-before-define
             if (validUserIdProperties.hasOwnProperty(property)){
+                // eslint-disable-next-line no-use-before-define
                 if (validUserIdProperties[property](value) === true) {
                     if (property === 'last_update'){
                         me._data[property] = new Date(value*1000);
@@ -333,7 +338,7 @@ class GPGME_UserId {
      * @param {String} property Information to request
      * @returns {String | Number}
      */
-    get(property) {
+    get (property) {
         if (this._data.hasOwnProperty(property)){
             return (this._data[property]);
         }
@@ -349,52 +354,52 @@ class GPGME_UserId {
  * @const
  */
 const validUserIdProperties = {
-    'revoked': function(value){
-        return typeof(value) === 'boolean';
+    'revoked': function (value){
+        return typeof (value) === 'boolean';
     },
-    'invalid':  function(value){
-        return typeof(value) === 'boolean';
+    'invalid':  function (value){
+        return typeof (value) === 'boolean';
     },
-    'uid': function(value){
-        if (typeof(value) === 'string' || value === ''){
+    'uid': function (value){
+        if (typeof (value) === 'string' || value === ''){
             return true;
         }
         return false;
     },
-    'validity': function(value){
-        if (typeof(value) === 'string'){
+    'validity': function (value){
+        if (typeof (value) === 'string'){
             return true;
         }
         return false;
     },
-    'name': function(value){
-        if (typeof(value) === 'string' || value === ''){
+    'name': function (value){
+        if (typeof (value) === 'string' || value === ''){
             return true;
         }
         return false;
     },
-    'email': function(value){
-        if (typeof(value) === 'string' || value === ''){
+    'email': function (value){
+        if (typeof (value) === 'string' || value === ''){
             return true;
         }
         return false;
     },
-    'address': function(value){
-        if (typeof(value) === 'string' || value === ''){
+    'address': function (value){
+        if (typeof (value) === 'string' || value === ''){
             return true;
         }
         return false;
     },
-    'comment': function(value){
-        if (typeof(value) === 'string' || value === ''){
+    'comment': function (value){
+        if (typeof (value) === 'string' || value === ''){
             return true;
         }
         return false;
     },
-    'origin':  function(value){
+    'origin':  function (value){
         return Number.isInteger(value);
     },
-    'last_update':  function(value){
+    'last_update':  function (value){
         return Number.isInteger(value);
     }
 };
@@ -406,54 +411,54 @@ const validUserIdProperties = {
  * @const
  */
 const validSubKeyProperties = {
-    'invalid': function(value){
-        return typeof(value) === 'boolean';
+    'invalid': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_encrypt': function(value){
-        return typeof(value) === 'boolean';
+    'can_encrypt': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_sign': function(value){
-        return typeof(value) === 'boolean';
+    'can_sign': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_certify':  function(value){
-        return typeof(value) === 'boolean';
+    'can_certify':  function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_authenticate':  function(value){
-        return typeof(value) === 'boolean';
+    'can_authenticate':  function (value){
+        return typeof (value) === 'boolean';
     },
-    'secret': function(value){
-        return typeof(value) === 'boolean';
+    'secret': function (value){
+        return typeof (value) === 'boolean';
     },
-    'is_qualified': function(value){
-        return typeof(value) === 'boolean';
+    'is_qualified': function (value){
+        return typeof (value) === 'boolean';
     },
-    'is_cardkey':  function(value){
-        return typeof(value) === 'boolean';
+    'is_cardkey':  function (value){
+        return typeof (value) === 'boolean';
     },
-    'is_de_vs':  function(value){
-        return typeof(value) === 'boolean';
+    'is_de_vs':  function (value){
+        return typeof (value) === 'boolean';
     },
-    'pubkey_algo_name': function(value){
-        return typeof(value) === 'string';
+    'pubkey_algo_name': function (value){
+        return typeof (value) === 'string';
         // TODO: check against list of known?['']
     },
-    'pubkey_algo_string': function(value){
-        return typeof(value) === 'string';
+    'pubkey_algo_string': function (value){
+        return typeof (value) === 'string';
         // TODO: check against list of known?['']
     },
-    'keyid': function(value){
+    'keyid': function (value){
         return isLongId(value);
     },
-    'pubkey_algo': function(value) {
+    'pubkey_algo': function (value) {
         return (Number.isInteger(value) && value >= 0);
     },
-    'length': function(value){
+    'length': function (value){
         return (Number.isInteger(value) && value > 0);
     },
-    'timestamp': function(value){
+    'timestamp': function (value){
         return (Number.isInteger(value) && value > 0);
     },
-    'expires': function(value){
+    'expires': function (value){
         return (Number.isInteger(value) && value > 0);
     }
 };
@@ -489,73 +494,73 @@ const validSubKeyProperties = {
  * @const
  */
 const validKeyProperties = {
-    'fingerprint': function(value){
+    'fingerprint': function (value){
         return isFingerprint(value);
     },
-    'revoked': function(value){
-        return typeof(value) === 'boolean';
+    'revoked': function (value){
+        return typeof (value) === 'boolean';
     },
-    'expired': function(value){
-        return typeof(value) === 'boolean';
+    'expired': function (value){
+        return typeof (value) === 'boolean';
     },
-    'disabled': function(value){
-        return typeof(value) === 'boolean';
+    'disabled': function (value){
+        return typeof (value) === 'boolean';
     },
-    'invalid': function(value){
-        return typeof(value) === 'boolean';
+    'invalid': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_encrypt': function(value){
-        return typeof(value) === 'boolean';
+    'can_encrypt': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_sign': function(value){
-        return typeof(value) === 'boolean';
+    'can_sign': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_certify': function(value){
-        return typeof(value) === 'boolean';
+    'can_certify': function (value){
+        return typeof (value) === 'boolean';
     },
-    'can_authenticate': function(value){
-        return typeof(value) === 'boolean';
+    'can_authenticate': function (value){
+        return typeof (value) === 'boolean';
     },
-    'secret': function(value){
-        return typeof(value) === 'boolean';
+    'secret': function (value){
+        return typeof (value) === 'boolean';
     },
-    'is_qualified': function(value){
-        return typeof(value) === 'boolean';
+    'is_qualified': function (value){
+        return typeof (value) === 'boolean';
     },
-    'protocol': function(value){
-        return typeof(value) === 'string';
-        //TODO check for implemented ones
+    'protocol': function (value){
+        return typeof (value) === 'string';
+        // TODO check for implemented ones
     },
-    'issuer_serial': function(value){
-        return typeof(value) === 'string';
+    'issuer_serial': function (value){
+        return typeof (value) === 'string';
     },
-    'issuer_name': function(value){
-        return typeof(value) === 'string';
+    'issuer_name': function (value){
+        return typeof (value) === 'string';
     },
-    'chain_id': function(value){
-        return typeof(value) === 'string';
+    'chain_id': function (value){
+        return typeof (value) === 'string';
     },
-    'owner_trust': function(value){
-        return typeof(value) === 'string';
+    'owner_trust': function (value){
+        return typeof (value) === 'string';
     },
-    'last_update': function(value){
+    'last_update': function (value){
         return (Number.isInteger(value));
-        //TODO undefined/null possible?
+        // TODO undefined/null possible?
     },
-    'origin': function(value){
+    'origin': function (value){
         return (Number.isInteger(value));
     },
-    'subkeys': function(value){
+    'subkeys': function (value){
         return (Array.isArray(value));
     },
-    'userids': function(value){
+    'userids': function (value){
         return (Array.isArray(value));
     },
-    'tofu': function(value){
+    'tofu': function (value){
         return (Array.isArray(value));
     },
-    'hasSecret': function(value){
-        return typeof(value) === 'boolean';
+    'hasSecret': function (value){
+        return typeof (value) === 'boolean';
     }
 
 };
@@ -570,9 +575,9 @@ const validKeyProperties = {
 * an error if something went wrong.
 * @private
 */
-function validateKeyData(fingerprint, data){
+function validateKeyData (fingerprint, data){
     const key = {};
-    if (!fingerprint || typeof(data) !== 'object' || !data.fingerprint
+    if (!fingerprint || typeof (data) !== 'object' || !data.fingerprint
      || fingerprint !== data.fingerprint.toUpperCase()
     ){
         return gpgme_error('KEY_INVALID');
@@ -619,13 +624,13 @@ function validateKeyData(fingerprint, data){
  * @async
  */
 function getGnupgState (fingerprint, property){
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         if (!isFingerprint(fingerprint)) {
             reject(gpgme_error('KEY_INVALID'));
         } else {
             let msg = createMessage('keylist');
             msg.setParameter('keys', fingerprint);
-            msg.post().then(function(res){
+            msg.post().then(function (res){
                 if (!res.keys || res.keys.length !== 1){
                     reject(gpgme_error('KEY_INVALID'));
                 } else {
@@ -675,7 +680,7 @@ function getGnupgState (fingerprint, property){
                         break;
                     }
                 }
-            }, function(error){
+            }, function (error){
                 reject(gpgme_error(error));
             });
         }

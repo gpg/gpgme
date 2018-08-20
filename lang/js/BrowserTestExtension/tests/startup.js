@@ -23,12 +23,12 @@
 
 /* global describe, it, expect, Gpgmejs, inputvalues */
 
-describe('GPGME context', function(){
-    it('Starting a GpgME instance', function(done){
+describe('GPGME context', function (){
+    it('Starting a GpgME instance', function (done){
         let prm = Gpgmejs.init();
         const input = inputvalues.someInputParameter;
         prm.then(
-            function(context){
+            function (context){
                 expect(context).to.be.an('object');
                 expect(context.encrypt).to.be.a('function');
                 expect(context.decrypt).to.be.a('function');

@@ -26,9 +26,9 @@
 describe('Long running Encryption/Decryption', function () {
     let context = null;
     const good_fpr = inputvalues.encrypt.good.fingerprint;
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             done();
         });
@@ -43,7 +43,7 @@ describe('Long running Encryption/Decryption', function () {
                 expect(answer.data).to.be.a('string');
                 expect(answer.data).to.include('BEGIN PGP MESSAGE');
                 expect(answer.data).to.include('END PGP MESSAGE');
-                context.decrypt(answer.data).then(function(result){
+                context.decrypt(answer.data).then(function (result){
                     expect(result).to.not.be.empty;
                     expect(result.data).to.be.a('string');
                     expect(result.data).to.equal(data);

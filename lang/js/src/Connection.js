@@ -38,14 +38,14 @@ import { decode } from './Helpers';
  */
 export class Connection{
 
-    constructor(){
+    constructor (){
         this._connection = chrome.runtime.connectNative('gpgmejson');
     }
 
     /**
      * Immediately closes an open port.
      */
-    disconnect() {
+    disconnect () {
         if (this._connection){
             this._connection.disconnect();
             this._connection = null;
@@ -81,17 +81,17 @@ export class Connection{
             return this.post(msg);
         } else {
             let me = this;
-            return new Promise(function(resolve) {
+            return new Promise(function (resolve) {
                 Promise.race([
                     me.post(msg),
-                    new Promise(function(resolve, reject){
-                        setTimeout(function(){
+                    new Promise(function (resolve, reject){
+                        setTimeout(function (){
                             reject(gpgme_error('CONN_TIMEOUT'));
                         }, 500);
                     })
-                ]).then(function(){ // success
+                ]).then(function (){ // success
                     resolve(true);
-                }, function(){ // failure
+                }, function (){ // failure
                     resolve(false);
                 });
             });
@@ -107,7 +107,7 @@ export class Connection{
      * @returns {Promise<Object>} The collected answer
      * @async
      */
-    post(message){
+    post (message){
         if (!message || !(message instanceof GPGME_Message)){
             this.disconnect();
             return Promise.reject(gpgme_error(
@@ -119,9 +119,9 @@ export class Connection{
         }
         let chunksize = message.chunksize;
         const me = this;
-        return new Promise(function(resolve, reject){
+        return new Promise(function (resolve, reject){
             let answer = new Answer(message);
-            let listener = function(msg) {
+            let listener = function (msg) {
                 if (!msg){
                     me._connection.onMessage.removeListener(listener);
                     me._connection.disconnect();
@@ -157,16 +157,16 @@ export class Connection{
             } else {
                 return Promise.race([
                     me._connection.postMessage(message.message),
-                    function(resolve, reject){
-                        setTimeout(function(){
+                    function (resolve, reject){
+                        setTimeout(function (){
                             me._connection.disconnect();
                             reject(gpgme_error('CONN_TIMEOUT'));
                         }, 5000);
                     }
-                ]).then(function(result){
+                ]).then(function (result){
                     return result;
-                }, function(reject){
-                    if(!(reject instanceof Error)) {
+                }, function (reject){
+                    if (!(reject instanceof Error)) {
                         me._connection.disconnect();
                         return gpgme_error('GNUPG_ERROR', reject);
                     } else {
@@ -189,7 +189,7 @@ class Answer{
     /**
      * @param {GPGME_Message} message
      */
-    constructor(message){
+    constructor (message){
         this._operation = message.operation;
         this._expected = message.expected;
         this._response_b64 = null;
@@ -211,7 +211,7 @@ class Answer{
      * @private
      */
     collect (msg){
-        if (typeof(msg) !== 'object' || !msg.hasOwnProperty('response')) {
+        if (typeof (msg) !== 'object' || !msg.hasOwnProperty('response')) {
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
         }
         if (!this._response_b64){
@@ -226,7 +226,7 @@ class Answer{
      * Returns the base64 encoded answer data with the content verified
      * against {@link permittedOperations}.
      */
-    getMessage(){
+    getMessage (){
         if (this._response_b64 === null){
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
         }
@@ -259,7 +259,7 @@ class Answer{
                 if (!poa.data.hasOwnProperty(key)){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
-                if( typeof(_decodedResponse[key]) !== poa.data[key] ){
+                if ( typeof (_decodedResponse[key]) !== poa.data[key] ){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
                 if (_decodedResponse.base64 === true
@@ -268,7 +268,7 @@ class Answer{
                 ){
                     _response[key] = decodeURIComponent(
                         atob(_decodedResponse[key]).split('').map(
-                            function(c) {
+                            function (c) {
                                 return '%' +
                             ('00' + c.charCodeAt(0).toString(16)).slice(-2);
                             }).join(''));

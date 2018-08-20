@@ -126,7 +126,7 @@ const inputvalues = {// eslint-disable-line no-unused-vars
 };
 
 // (Pseudo-)Random String covering all of utf8.
-function bigString(length){// eslint-disable-line no-unused-vars
+function bigString (length){// eslint-disable-line no-unused-vars
     let arr = [];
     for (let i= 0; i < length; i++){
         arr.push(String.fromCharCode(
@@ -136,7 +136,7 @@ function bigString(length){// eslint-disable-line no-unused-vars
     return arr.join('');
 }
 
-function fixedLengthString(megabytes){// eslint-disable-line no-unused-vars
+function fixedLengthString (megabytes){// eslint-disable-line no-unused-vars
     let maxlength = 1024 * 1024 * megabytes / 2;
     let uint = new Uint8Array(maxlength);
     for (let i = 0; i < maxlength; i++){
@@ -148,7 +148,7 @@ function fixedLengthString(megabytes){// eslint-disable-line no-unused-vars
 }
 
 // (Pseudo-)Random Uint8Array, given size in Megabytes
-function bigUint8(megabytes){// eslint-disable-line no-unused-vars
+function bigUint8 (megabytes){// eslint-disable-line no-unused-vars
     let maxlength = 1024 * 1024 * megabytes;
     let uint = new Uint8Array(maxlength);
     for (let i= 0; i < maxlength; i++){
@@ -159,7 +159,7 @@ function bigUint8(megabytes){// eslint-disable-line no-unused-vars
 
 // (Pseudo-)Random string with very limited charset
 // (ascii only, no control chars)
-function bigBoringString(megabytes){// eslint-disable-line no-unused-vars
+function bigBoringString (megabytes){// eslint-disable-line no-unused-vars
     let maxlength = 1024 * 1024 * megabytes;
     let string = [];
     let chars =
@@ -173,7 +173,7 @@ function bigBoringString(megabytes){// eslint-disable-line no-unused-vars
 // Some String with simple chars, with different characteristics, but still
 // expected to occur in an averag message
 // eslint-disable-next-line no-unused-vars
-function slightlyLessBoringString(megabytes, set){
+function slightlyLessBoringString (megabytes, set){
     let maxlength = 1024 * 1024 * megabytes;
     let string = [];
     let chars = '';
@@ -291,13 +291,13 @@ const ImportablePublicKey = {// eslint-disable-line no-unused-vars
  * preserve) header/footer
  */
 // eslint-disable-next-line no-unused-vars
-function sabotageMsg(msg, rate = 0.01, p= [35,35]){
+function sabotageMsg (msg, rate = 0.01, p= [35,35]){
     const iterations = Math.floor(Math.random() * msg.length * rate) + 1;
     const base64_set =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/';
     for (let i=0; i < iterations; i++){
         let str0, str1, str2;
-        const chosePosition = function(){
+        const chosePosition = function (){
             let position =
                 Math.floor( Math.random() * (msg.length - p[0] + p[1]))
                 + p[0];
@@ -310,7 +310,7 @@ function sabotageMsg(msg, rate = 0.01, p= [35,35]){
             }
         };
         chosePosition();
-        let new1 = function(){
+        let new1 = function (){
             let n = base64_set[Math.floor(Math.random() * 64)];
             return (n === str1) ? new1() : n;
         };

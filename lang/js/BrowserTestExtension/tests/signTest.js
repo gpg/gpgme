@@ -28,9 +28,9 @@ describe('Signing', function () {
     let context = null;
     const good_fpr = inputvalues.encrypt.good.fingerprint;
 
-    before(function(done){
+    before(function (done){
         const prm = Gpgmejs.init();
-        prm.then(function(gpgmejs){
+        prm.then(function (gpgmejs){
             context = gpgmejs;
             done();
         });

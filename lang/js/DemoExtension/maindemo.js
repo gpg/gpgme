@@ -23,67 +23,67 @@
 
 /* global document, Gpgmejs */
 
-document.addEventListener('DOMContentLoaded', function() {
-    Gpgmejs.init().then(function(gpgmejs){
+document.addEventListener('DOMContentLoaded', function () {
+    Gpgmejs.init().then(function (gpgmejs){
         document.getElementById('buttonencrypt').addEventListener('click',
-            function(){
+            function (){
                 let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
                 gpgmejs.encrypt(data, keyId).then(
-                    function(answer){
+                    function (answer){
                         if (answer.data){
                             document.getElementById(
                                 'answer').value = answer.data;
                         }
-                    }, function(errormsg){
+                    }, function (errormsg){
                         alert( errormsg.message);
                     });
             });
 
         document.getElementById('buttondecrypt').addEventListener('click',
-            function(){
+            function (){
                 let data = document.getElementById('inputtext').value;
                 gpgmejs.decrypt(data).then(
-                    function(answer){
+                    function (answer){
                         if (answer.data){
                             document.getElementById(
                                 'answer').value = answer.data;
                         }
-                    }, function(errormsg){
+                    }, function (errormsg){
                         alert(errormsg.message);
                     });
             });
 
         document.getElementById('getdefaultkey').addEventListener('click',
-            function(){
-                gpgmejs.Keyring.getDefaultKey().then(function(answer){
+            function (){
+                gpgmejs.Keyring.getDefaultKey().then(function (answer){
                     document.getElementById('pubkey').value =
                         answer.fingerprint;
-                }, function(errormsg){
+                }, function (errormsg){
                     alert(errormsg.message);
                 });
             });
 
         document.getElementById('signtext').addEventListener('click',
-            function(){
+            function (){
                 let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
                 gpgmejs.sign(data, keyId).then(
-                    function(answer){
+                    function (answer){
                         if (answer.data){
                             document.getElementById(
                                 'answer').value = answer.data;
                         }
-                    }, function(errormsg){
+                    }, function (errormsg){
                         alert( errormsg.message);
                     });
             });
 
         document.getElementById('verifytext').addEventListener('click',
-            function(){
+            function (){
                 let data = document.getElementById('inputtext').value;
                 gpgmejs.verify(data).then(
-                    function(answer){
+                    function (answer){
                         let vals = '';
                         if (answer.all_valid === true){
                             vals = 'Success! ';
@@ -94,14 +94,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             + answer.count + ' signature(s) were successfully '
                             + 'verified.\n\n' + answer.data;
                         document.getElementById('answer').value = vals;
-                    }, function(errormsg){
+                    }, function (errormsg){
                         alert( errormsg.message);
                     });
             });
         document.getElementById('searchkey').addEventListener('click',
-            function(){
+            function (){
                 let data = document.getElementById('inputtext').value;
-                gpgmejs.Keyring.getKeys(data, true, true).then(function(keys){
+                gpgmejs.Keyring.getKeys(data, true, true).then(function (keys){
                     if (keys.length === 1){
                         document.getElementById(
                             'pubkey').value = keys[0].fingerprint;
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         alert('No keys found');
                     }
-                }, function(errormsg){
+                }, function (errormsg){
                     alert( errormsg.message);
                 });
             });

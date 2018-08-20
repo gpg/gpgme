@@ -84,7 +84,7 @@ import { createSignature } from './Signature';
  */
 export class GpgME {
 
-    constructor(){
+    constructor (){
         this._Keyring = null;
     }
 
@@ -92,7 +92,7 @@ export class GpgME {
      * setter for {@link setKeyring}.
      * @param {GPGME_Keyring} keyring A Keyring to use
      */
-    set Keyring(keyring){
+    set Keyring (keyring){
         if (keyring && keyring instanceof GPGME_Keyring){
             this._Keyring = keyring;
         }
@@ -100,7 +100,7 @@ export class GpgME {
     /**
      * Accesses the {@link GPGME_Keyring}.
      */
-    get Keyring(){
+    get Keyring (){
         if (!this._Keyring){
             this._Keyring = new GPGME_Keyring;
         }
@@ -188,9 +188,9 @@ export class GpgME {
         if (base64 === true){
             msg.setParameter('base64', true);
         }
-        return new Promise(function(resolve, reject){
-            msg.post().then(function(result){
-                let _result = {data: result.data};
+        return new Promise(function (resolve, reject){
+            msg.post().then(function (result){
+                let _result = { data: result.data };
                 _result.base64 = result.base64 ? true: false;
                 _result.is_mime = result.is_mime ? true: false;
                 if (result.file_name){
@@ -206,7 +206,7 @@ export class GpgME {
                         result.signatures);
                 }
                 resolve(_result);
-            }, function(error){
+            }, function (error){
                 reject(error);
             });
         });
@@ -240,14 +240,14 @@ export class GpgME {
         }
         msg.setParameter('mode', mode);
         putData(msg, data);
-        return new Promise(function(resolve,reject) {
+        return new Promise(function (resolve,reject) {
             if (mode ==='detached'){
                 msg.expected ='base64';
             }
-            msg.post().then( function(message) {
+            msg.post().then( function (message) {
                 if (mode === 'clearsign'){
                     resolve({
-                        data: message.data}
+                        data: message.data }
                     );
                 } else if (mode === 'detached') {
                     resolve({
@@ -255,7 +255,7 @@ export class GpgME {
                         signature: message.data
                     });
                 }
-            }, function(error){
+            }, function (error){
                 reject(error);
             });
         });
@@ -278,7 +278,7 @@ export class GpgME {
             return Promise.reject(dt);
         }
         if (signature){
-            if (typeof(signature)!== 'string'){
+            if (typeof (signature)!== 'string'){
                 return Promise.reject(gpgme_error('PARAM_WRONG'));
             } else {
                 msg.setParameter('signature', signature);
@@ -287,7 +287,7 @@ export class GpgME {
         if (base64 === true){
             msg.setParameter('base64', true);
         }
-        return new Promise(function(resolve, reject){
+        return new Promise(function (resolve, reject){
             msg.post().then(function (message){
                 if (!message.info || !message.info.signatures){
                     reject(gpgme_error('SIG_NO_SIGS'));
@@ -301,7 +301,7 @@ export class GpgME {
                     _result.data = message.data;
                     resolve(_result);
                 }
-            }, function(error){
+            }, function (error){
                 reject(error);
             });
         });
@@ -316,20 +316,20 @@ export class GpgME {
  * @returns {undefined| GPGME_Error} Error if not successful, nothing otherwise
  * @private
  */
-function putData(message, data){
+function putData (message, data){
     if (!message || !(message instanceof GPGME_Message)) {
         return gpgme_error('PARAM_WRONG');
     }
     if (!data){
         return gpgme_error('PARAM_WRONG');
-    } else if (typeof(data) === 'string') {
+    } else if (typeof (data) === 'string') {
         message.setParameter('data', data);
     } else if (
-        typeof(data) === 'object' &&
-        typeof(data.getText) === 'function'
+        typeof (data) === 'object' &&
+        typeof (data.getText) === 'function'
     ){
         let txt = data.getText();
-        if (typeof(txt) === 'string'){
+        if (typeof (txt) === 'string'){
             message.setParameter('data', txt);
         } else {
             return gpgme_error('PARAM_WRONG');
@@ -345,7 +345,7 @@ function putData(message, data){
  * @param {Array<Object>} sigs
  * @returns {signatureDetails} Details about the signatures
  */
-function collectSignatures(sigs){
+function collectSignatures (sigs){
     if (!Array.isArray(sigs)){
         return gpgme_error('SIG_NO_SIGS');
     }
