@@ -388,8 +388,9 @@ export class GPGME_Keyring {
             msg.setParameter('userid', userId);
             msg.setParameter('algo', algo );
             if (expires){
+                const now = new Date();
                 msg.setParameter('expires',
-                    Math.floor(expires.valueOf()/1000));
+                    Math.floor((expires - now) /1000));
             } else {
                 msg.setParameter('expires', 0);
             }
