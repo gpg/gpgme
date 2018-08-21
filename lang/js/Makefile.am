@@ -21,8 +21,6 @@
 SUBDIRS = src BrowserTestExtension DemoExtension
 
 EXTRA_DIST = build_extensions.sh \
-             CHECKLIST \
-             CHECKLIST_build \
              jsdoc.conf \
              .eslintrc.json \
              package.json \
