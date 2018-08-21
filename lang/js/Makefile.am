@@ -23,11 +23,10 @@ SUBDIRS = src BrowserTestExtension DemoExtension
 EXTRA_DIST = build_extensions.sh \
              CHECKLIST \
              CHECKLIST_build \
+             jsdoc.conf \
              .eslintrc.json \
-             Makefile.am \
              package.json \
              README \
-             README_testing \
              unittest_inputvalues.js \
              unittests.js \
              webpack.conf.js \

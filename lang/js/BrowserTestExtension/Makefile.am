@@ -32,11 +32,14 @@ EXTRA_DIST = browsertest.html \
              testkey2.pub \
              testkey.pub \
              testkey.sec \
+             tests/decryptTest.js \
              tests/encryptDecryptTest.js \
              tests/encryptTest.js \
              tests/inputvalues.js \
              tests/KeyImportExport.js \
+             tests/KeyInfos.js \
              tests/longRunningTests.js \
              tests/signTest.js \
              tests/startup.js \
+             tests/verifyTest.js \
              unittests.html
