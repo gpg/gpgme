@@ -1,14 +1,14 @@
-# Makefile.am for GPGME-JS.
+# Makefile.am for gpgme.js.
 # Copyright (C) 2018 Intevation GmbH
 #
 # This file is part of GPGME.
 #
-# GPGME-CL is free software; you can redistribute it and/or modify it
+# gpgme.js is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
 #
-# GPGME-CL is distributed in the hope that it will be useful,
+# gpgme.js is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
