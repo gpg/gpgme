@@ -59,4 +59,20 @@ describe('Decryption', function () {
                 });
         });
     }).timeout(5000);
+
+
+    it('decrypt/verify operations return proper information', function (done){
+        const data = inputvalues.encryptSignedMessage;
+        context.decrypt(data).then(function (result){
+            expect(result).to.be.an('object');
+            expect(result.signatures).to.be.an('object');
+            expect(result.signatures.all_valid).to.be.true;
+            expect(result.signatures.count).to.equal(1);
+            expect(result.signatures.signatures.good).to.be.an('array');
+            expect(
+                result.signatures.signatures.good[0].fingerprint).to.equal(
+                good_fpr);
+            done();
+        });
+    });
 });

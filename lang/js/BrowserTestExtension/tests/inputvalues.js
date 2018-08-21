@@ -86,9 +86,27 @@ const inputvalues = {// eslint-disable-line no-unused-vars
         'CfhY40nMXSYdfl8mDOhvnKcCvy8qxetFv9uCX06OqepAamu/bvxslrzocRyJ/eq0\n' +
         'T2JfzEN+E7Y3PB8UwLgp/ZRmG8zRrQ==\n' +
         '=ioB6\n' +
-        '-----END PGP SIGNATURE-----\n',
+        '-----END PGP SIGNATURE-----\n'
     },
-
+    encryptSignedMessage: '-----BEGIN PGP MESSAGE-----\n'+
+        '\n'+
+        'hQEMA6B8jfIUScGEAQf/bmQ+xNMGTjPvQCktkxR4Svt2dVNVdSzKsCmvSv24QOQF\n'+
+        'yBMK5w51S/6DTdiZI12IYD7hjvkr9NqxXXupjrVKwqEVpg4Pkwckac0OcElJIBsL\n'+
+        '3htr4iYsr8dhSgSS4BO0azcu4wZQTXy5v2P7yYPECMEagNEXnW+tE7sHLCq8Ysqz\n'+
+        'LVxG0R0IUijKeEd3xQC2Tt20e1Z1j5tnqaPhE/9Smqf5OjSUDqpXxvRnSNRk/zEs\n'+
+        'cGVgCF+cv68nUJM9lwEAbBQChplwL6ebnhunC6DsRCxnjLHVyKm127hmhSiMGC0e\n'+
+        'Ns31mGeP1dxpDv6Gi2/oKmq67vG3i4fKeckj7bt30tLA1wH0Qn5Mn6Tzxzve0W0q\n'+
+        'Ghqn9PY9qNK8EkrkzqaFk9dzu5tfSbaJBLS/uIhX2Wj70EMEBbFSkN0qlgOfLgGw\n'+
+        '5mwRvCgj4nvV1ByFhnx7uwgQixvOwLH4JLKvwCQpJm+O2R0eC7M6CzR/b9iL/oaO\n'+
+        'JTkoD9hcLhxF7j+3ZYg7rbNwofuHST097vFjzItsucb0jHOzjlkCqbhdczICILTa\n'+
+        'H76Q6YGdMLyG9a3s4yZUMruaeQyWGeXlryzLDvdEoSgoD5YrolsFOM+Z2apbzVs2\n'+
+        'k5CltwtanjjWGnpAqSyr49C6CSU8G1QHpNygx5frtAS8bojR2ovB9OJp2wUklDvC\n'+
+        'LtU7dLpTY/BIvfB1vzwcW/aNgmPadNHX8mAzlqTQJjeLoo69Wp804t+u36sgfd/J\n'+
+        'ser7vdJJUm+86Q9csefItvFmHhqjMg5XXHoa8WZWJOHIQMxZkaIwKAzcEt/oEOdJ\n'+
+        'rbVNVabhTdbmS5I1ok16wg5jMF07ZDM7nXWMcQNjwT646XKP+pp2N6YQROVidNXj\n'+
+        'COyRyiXE/csr\n'+
+        '=Ik7G\n'+
+        '-----END PGP MESSAGE-----\n',
     someInputParameter: 'bad string',
 
     publicKeyNonAscii: {

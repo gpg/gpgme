@@ -192,18 +192,21 @@ export class GpgME {
             msg.post().then(function (result){
                 let _result = { data: result.data };
                 _result.base64 = result.base64 ? true: false;
-                _result.is_mime = result.is_mime ? true: false;
-                if (result.file_name){
-                    _result.file_name = result.file_name;
-                } else {
+                if (result.hasOwnProperty('dec_info')){
+                    _result.is_mime = result.dec_info.is_mime ? true: false;
+                    if (result.dec_info.file_name) {
+                        _result.file_name = result.dec_info.file_name;
+                    }
+                }
+                if (!result.file_name) {
                     _result.file_name = null;
                 }
-                if (
-                    result.hasOwnProperty('signatures') &&
-                    Array.isArray(result.signatures)
+                if (result.hasOwnProperty('info')
+                    && result.info.hasOwnProperty('signatures')
+                    && Array.isArray(result.info.signatures)
                 ) {
                     _result.signatures = collectSignatures(
-                        result.signatures);
+                        result.info.signatures);
                 }
                 resolve(_result);
             }, function (error){
