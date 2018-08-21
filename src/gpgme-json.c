@@ -1154,6 +1154,55 @@ verify_result_to_json (gpgme_verify_result_t verify_result)
   return result;
 }
 
+/* Create a recipient json object */
+static cjson_t
+recipient_to_json (gpgme_recipient_t recp)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "keyid", recp->keyid);
+  xjson_AddStringToObject0 (result, "pubkey_algo_name",
+                            gpgme_pubkey_algo_name (recp->pubkey_algo));
+  xjson_AddStringToObject0 (result, "status_string",
+                            gpgme_strerror (recp->status));
+
+  xjson_AddNumberToObject (result, "status_code", recp->status);
+
+  return result;
+}
+
+
+/* Create a JSON object from a gpgme_decrypt result */
+static cjson_t
+decrypt_result_to_json (gpgme_decrypt_result_t decrypt_result)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddStringToObject0 (result, "file_name", decrypt_result->file_name);
+  xjson_AddStringToObject0 (result, "symkey_algo",
+                            decrypt_result->symkey_algo);
+
+  xjson_AddBoolToObject (result, "wrong_key_usage",
+                         decrypt_result->wrong_key_usage);
+  xjson_AddBoolToObject (result, "is_de_vs",
+                         decrypt_result->is_de_vs);
+  xjson_AddBoolToObject (result, "is_mime", decrypt_result->is_mime);
+  xjson_AddBoolToObject (result, "legacy_cipher_nomdc",
+                         decrypt_result->legacy_cipher_nomdc);
+
+  if (decrypt_result->recipients)
+    {
+      cjson_t array = xjson_CreateArray ();
+      gpgme_recipient_t recp;
+
+      for (recp = decrypt_result->recipients; recp; recp = recp->next)
+        cJSON_AddItemToArray (array, recipient_to_json (recp));
+      xjson_AddItemToObject (result, "recipients", array);
+    }
+
+  return result;
+}
+
 
 /* Create a JSON object from an engine_info */
 static cjson_t
@@ -1737,13 +1786,34 @@ static const char hlp_decrypt[] =
   "base64:        Input data is base64 encoded.\n"
   "\n"
   "Response on success:\n"
-  "type:   \"plaintext\"\n"
-  "data:   The decrypted data.  This may be base64 encoded.\n"
-  "base64: Boolean indicating whether data is base64 encoded.\n"
-  "mime:   A Boolean indicating whether the data is a MIME object.\n"
-  "info:   An object with verification information. (gpgme_verify_result_t)\n"
-  " file_name: Optional string of the plaintext file name.\n"
-  " is_mime:    Boolean that is true if the messages claims it is MIME.\n"
+  "type:     \"plaintext\"\n"
+  "data:     The decrypted data.  This may be base64 encoded.\n"
+  "base64:   Boolean indicating whether data is base64 encoded.\n"
+  "mime:     deprecated - use dec_info is_mime instead\n"
+  "dec_info: An object with decryption information. (gpgme_decrypt_result_t)\n"
+  " Boolean values:\n"
+  "  wrong_key_usage:     Key should not have been used for encryption.\n"
+  "  is_de_vs:            Message was encrypted in compliance to the de-vs\n"
+  "                       mode.\n"
+  "  is_mime:             Message claims that the content is a MIME Message.\n"
+  "  legacy_cipher_nomdc: The message was made by a legacy algorithm\n"
+  "                       without integrity protection.\n"
+  " String values:\n"
+  "  file_name:   The filename contained in the decrypt result.\n"
+  "  symkey_algo: A string with the symmetric encryption algorithm and\n"
+  "               mode using the format \"<algo>.<mode>\".\n"
+  " Array values:\n"
+  "  recipients:  The list of recipients (gpgme_recipient_t).\n"
+  "   String values:\n"
+  "    keyid:            The keyid of the recipient.\n"
+  "    pubkey_algo_name: gpgme_pubkey_algo_name of used algo.\n"
+  "    status_string:    The status code as localized gpg-error string\n"
+  "   Number values:\n"
+  "    status_code:      The status as a number. (gpg_error_t)\n"
+  "info:     Optional an object with verification information.\n"
+  "          (gpgme_verify_result_t)\n"
+  " file_name: The filename contained in the verify result.\n"
+  " is_mime:   The is_mime info contained in the verify result.\n"
   " signatures: Array of signatures\n"
   "  summary: Object containing summary information.\n"
   "   Boolean values: (Check gpgme_sigsum_t doc for meaning)\n"
@@ -1830,6 +1900,9 @@ op_decrypt (cjson_t request, cjson_t result)
 
   if (decrypt_result->is_mime)
     xjson_AddBoolToObject (result, "mime", 1);
+
+  xjson_AddItemToObject (result, "dec_info",
+                         decrypt_result_to_json (decrypt_result));
 
   verify_result = gpgme_op_verify_result (ctx);
   if (verify_result && verify_result->signatures)
