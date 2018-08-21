@@ -1,0 +1,9 @@
+{
+    "name": "gpgmejson",
+    "description": "Integration with GnuPG",
+    "path": "/usr/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_extensions": [
+        "jid1-AQqSMBYb0a8ADg@jetpack"
+    ]
+}
