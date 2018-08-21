@@ -187,7 +187,7 @@ have_w64_system=no
 have_macos_system=no
 build_w32_glib=no
 build_w32_qt=no
-available_languages="cl cpp python python2 python3 qt js"
+available_languages="cl cpp python python2 python3 qt"
 default_languages="cl cpp python qt"
 case "${host}" in
     x86_64-*mingw32*)
@@ -478,28 +478,6 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 fi
 
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
-
-# The javascript bindings
-LIST_MEMBER("js", $enabled_languages)
-if test "$found" = "1"; then
-    AC_CHECK_PROGS([NPX], [npx])
-    if test -z "$NPX"; then
-        if test "$explicit_languages" = "1"; then
-            AC_MSG_ERROR([[
-***
-*** Node.js (npx) is required for the JavaScript binding.
-***]])
-        else
-            AC_MSG_WARN([
-***
-*** Node.js (npx) not found - JavaScript binding will not be built.
-***])
-            enabled_languages=$(echo $enabled_languages | sed 's/js//')
-        fi
-    fi
-fi
-AM_CONDITIONAL([BUILD_JS_BINDINGS],
-               [test -n "$NPX"])
 
 #
 # Provide information about the build.
