@@ -367,8 +367,8 @@ export class GPGME_Keyring {
      * @param {String} algo (optional) algorithm (and optionally key size)
      * to be used. See {@link supportedKeyAlgos} below for supported
      * values. If ommitted, 'default' is used.
-     * @param {Date} expires (optional) Expiration date. If not set,
-     * expiration will be set to 'never'
+     * @param {Number} expires (optional) Expiration time in seconds from now.
+     * If not set or set to 0, expiration will be 'never'
      * @param {String} subkey_algo (optional) algorithm of the encryption
      * subkey. If ommited the same as algo is used.
      *
@@ -380,7 +380,7 @@ export class GPGME_Keyring {
             typeof (userId) !== 'string' ||
             // eslint-disable-next-line no-use-before-define
             supportedKeyAlgos.indexOf(algo) < 0 ||
-            (expires && !(expires instanceof Date))
+            (expires && !( Number.isInteger(expires) || expires < 0 ))
         ){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
@@ -397,9 +397,7 @@ export class GPGME_Keyring {
                 msg.setParameter('subkey-algo', subkey_algo );
             }
             if (expires){
-                const now = new Date();
-                msg.setParameter('expires',
-                    Math.floor((expires - now) /1000));
+                msg.setParameter('expires', expires);
             } else {
                 msg.setParameter('expires', 0);
             }
