@@ -1,0 +1,116 @@
+gpgme.js - JavaScript for GPGME
+-------------------------------
+Initially developed for integration with the Mailvelope Web Extension.
+
+Overview
+--------
+
+gpgme.js is a javascript library for direct use of GnuPG in browsers.
+It interacts with GPGME through nativeMessaging and gpgme-json.
+
+It is meant to be distributed directly by its downstream users in
+their extension package. As such it is not integrated in the
+autotools build system. See build instructions below.
+
+
+gpgme-json
+----------
+
+gpgme-json (see core src/gpgme-json.c) the json to GPGME bridge is
+required as native messaging backend for gpgme.js to work.
+It needs to be installed and registered as native messaging
+backend with the browser.
+
+See gpgme-mozilla.json and gpgme-chrome.json examples in
+the top level doc/examples as example manifests.
+
+Any web extension using gpgme.js will need to be whitelisted in the manifest
+file by its id.
+
+Distributors are encouraged to create manifest packages for their
+distributions.
+
+
+Building gpgme.js
+-----------------
+
+gpgme.js uses webpack, and thus depends on Node.js for building.
+All dependencies will be installed (in a local subdirectory) with the command
+`npm install`.
+
+To create a current version of the package, the command is
+`npx webpack --config webpack.conf.js`.
+If you want a more debuggable (i.e. not minified) build, just change the mode
+in webpack.conf.js.
+
+
+Demo and Test WebExtension:
+---------------------------
+
+The Demo Extension shows simple examples of the usage of gpgme.js.
+
+The BrowsertestExtension runs more intensive tests (using the mocha and chai
+frameworks). Tests from BrowserTestExtension/tests will be run against the
+gpgmejs.bundle.js itself. They aim to test the outward facing functionality
+and API.
+
+Unittests as defined in ./unittests.js will be bundled in
+gpgmejs_unittests.bundle.js, and test the separate components of gpgme.js,
+which mostly are not exported.
+
+The file `build_extension.sh` may serve as a pointer on how to build and
+assemble these two Extensions and their dependencies. It can directly
+be used in most linux systems.
+
+The resulting folders can just be included in the extensions tab of the browser
+in questions (extension debug mode needs to be active). For chrome, selecting
+the folder is sufficient, for firefox, the manifest.json needs to be selected.
+Please note that it is just for demonstration/debug purposes!
+
+For the Extensions to successfully communicate with gpgme-json, a manifest file
+is needed.
+
+- `~/.config/chromium/NativeMessagingHosts/gpgmejson.json`
+
+In the browsers' nativeMessaging configuration folder a file 'gpgmejs.json'
+is needed, with the following content:
+
+- For Chrome/Chromium:
+  ```
+  {
+    "name": "gpgmejson",
+    "description": "This is a test application for gpgme.js",
+    "path": "/usr/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_origins": ["chrome-extension://ExtensionIdentifier/"]
+  }
+  ```
+  The usual path for Linux is similar to:
+  `~/.config/chromium/NativeMessagingHosts/gpgmejson.json` for
+  For Windows, the path to the manifest needs to be placed in
+  `HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\gpgmejson`
+
+  - For firefox:
+  ```
+  {
+    "name": "gpgmejson",
+    "description": "This is a test application for gpgme.js",
+    "path": "/usr/bin/gpgme-json",
+    "type": "stdio",
+    "allowed_extensions": ["ExtensionIdentifier@temporary-addon"]
+  }
+  ```
+
+  The ExtensionIdentifier can be seen as Extension ID on the about:addons page
+  if addon-debugging is active. In firefox, the temporary addon is removed once
+  firefox exits, and the identifier will need to be changed more often.
+
+  The manifest for linux is usually placed at:
+    `~/.mozilla/native-messaging-hosts/gpgmejson.json`
+
+
+Documentation
+-------------
+
+The documentation can be built by jsdoc. It currently uses the command
+`./node_modules/.bin/jsdoc -c jsdoc.conf`.

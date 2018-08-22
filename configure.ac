@@ -908,6 +908,9 @@ AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES(lang/qt/src/qgpgme_version.h)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lang/qt/doc/Doxyfile])])
+AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
+                 lang/js/BrowserTestExtension/Makefile
+                 lang/js/DemoExtension/Makefile])
 AC_CONFIG_FILES(lang/qt/doc/Makefile)
 AC_CONFIG_FILES([lang/python/Makefile
 		 lang/python/version.py

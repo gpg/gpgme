@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link href="libs/mocha.css" rel="stylesheet" />
+    </head>
+<body>
+    <h3>Browsertest</h3>
+    <div id="mocha"></div>
+    <!-- load unit tests -->
+    <script src="libs/mocha.js"></script>
+    <script src="libs/chai.js"></script>
+    <script src="setup_testing.js"></script>
+    <script src="libs/gpgmejs.bundle.js"></script>
+    <script src="tests/inputvalues.js"></script>
+<!-- insert tests here-->
+    <script src="tests/startup.js"></script>
+    <script src="tests/longRunningTests.js"></script>
+<!-- run tests -->
+    <script src="runbrowsertest.js"></script>
+    </body>
+</html>

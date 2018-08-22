@@ -23,7 +23,8 @@ DISTCLEANFILES = gpgme.tmp
 CLEANFILES = mkdefsinc defs.inc
 
 EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011 \
-             mkdefsinc.c defsincdate
+             mkdefsinc.c defsincdate \
+             examples/gpgme-mozilla.json examples/gpgme-chrome.json
 
 BUILT_SOURCES = defsincdate defs.inc
 

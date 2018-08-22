@@ -1,0 +1,33 @@
+ul {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+ul li span {
+    float: left;
+    width: 120px;
+    margin-top: 6px;
+}
+
+div .left {
+    float: left;
+    align-items: stretch;
+    width: 40%;
+}
+div .center {
+    width: 50%;
+    align-content: space-between;
+}
+
+div .center button {
+    align-self: stretch;
+}
+div .right {
+    float: right;
+    align-items: stretch;
+    width: 40%;
+}
+
+div .bottom {
+    clear:both;
+}

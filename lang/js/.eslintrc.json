@@ -1,0 +1,49 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "sourceType": "module"
+    },
+    "rules": {
+        "indent": [
+            "warn",
+            4
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-var": [
+            "warn"
+        ],
+        "max-len": 1,
+        "default-case": 2,
+        "no-invalid-this": 2,
+        "no-lone-blocks": 1,
+        "no-self-compare": 2,
+        "radix": 2,
+        "no-use-before-define": ["error", {
+            "functions": false,
+            "classes": false,
+            "variables": true
+        }],
+        "no-useless-constructor": 1,
+        "space-before-function-paren": ["error", "always"],
+        "keyword-spacing": 2,
+        "spaced-comment": 1,
+        "space-unary-ops": 2,
+        "object-curly-spacing": ["error", "always"],
+        "array-bracket-spacing": ["error", "never"]
+    }
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="ui.css"/>
+        <script src="libs/gpgmejs.bundle.js"></script>
+        <script src="maindemo.js"></script>
+    </head>
+    <body>
+    <div>
+
+        <div class="left">
+            <ul>
+                <li>
+                    <span class="label">Input</span>
+                    <textarea rows="5" cols="65" id="inputtext" wrap="hard"></textarea>
+                </li>
+                <li>
+                    <span class="label">Fingerprint of Key to use: </span>
+                    <input type="text" id="pubkey" value="" />
+                        <button id="getdefaultkey">
+                            Set to default signing key
+                        </button>&nbsp;
+                        <button id="searchkey">
+                            Look up Key
+                        </button>
+                </li>
+            </ul>
+        </div>
+        <div class="right">
+            <ul>
+                    <li>
+                        <span class="label">Result</span>
+                        <textarea id="answer" rows="5" cols="65" wrap="hard"></textarea>
+                    </li>
+                </ul>
+        </div>
+    </div>
+    <div class="center">
+            <button id="buttonencrypt">Encrypt input text</button><br>
+            <button id="buttondecrypt">Decrypt input text</button><br>
+            <button id="signtext">Sign input text</button> <br>
+            <button id="verifytext">Verify input text</button><br>
+
+        </div>
+</body>
+</html>

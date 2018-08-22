@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+
+  "name": "gpgme-json with native Messaging",
+  "description": "A simple demo application",
+  "version": "0.1",
+  "content_security_policy": "default-src 'self' filesystem:",
+  "browser_action": {
+    "default_icon": "testicon.png",
+    "default_title": "gpgme.js",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["nativeMessaging", "activeTab"]
+}

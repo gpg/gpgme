@@ -1,0 +1,17 @@
+{
+  "name": "gpgmejs",
+  "version": "0.0.1-dev",
+  "description": "Javascript part of the GPGME nativeMessaging integration",
+  "main": "src/index.js",
+  "private": true,
+  "keywords": [],
+  "author": "",
+  "license": "LGPL-2.1+",
+  "devDependencies": {
+    "webpack": "^4.5.0",
+    "webpack-cli": "^3.0.8",
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1",
+    "jsdoc": "^3.5.5"
+  }
+}
