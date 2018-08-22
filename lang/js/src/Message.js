@@ -29,16 +29,16 @@ import { Connection } from './Connection';
  * Initializes a message for gnupg, validating the message's purpose with
  *   {@link permittedOperations} first
  * @param {String} operation
- * @returns {GPGME_Message|GPGME_Error} The Message object
+ * @returns {GPGME_Message} The Message object
  */
 export function createMessage (operation){
     if (typeof (operation) !== 'string'){
-        return gpgme_error('PARAM_WRONG');
+        throw gpgme_error('PARAM_WRONG');
     }
     if (permittedOperations.hasOwnProperty(operation)){
         return new GPGME_Message(operation);
     } else {
-        return gpgme_error('MSG_WRONG_OP');
+        throw gpgme_error('MSG_WRONG_OP');
     }
 }
 
@@ -117,11 +117,11 @@ export class GPGME_Message {
      */
     setParameter ( param,value ){
         if (!param || typeof (param) !== 'string'){
-            return gpgme_error('PARAM_WRONG');
+            throw gpgme_error('PARAM_WRONG');
         }
         let po = permittedOperations[this._msg.op];
         if (!po){
-            return gpgme_error('MSG_WRONG_OP');
+            throw gpgme_error('MSG_WRONG_OP');
         }
         let poparam = null;
         if (po.required.hasOwnProperty(param)){
@@ -129,7 +129,7 @@ export class GPGME_Message {
         } else if (po.optional.hasOwnProperty(param)){
             poparam = po.optional[param];
         } else {
-            return gpgme_error('PARAM_WRONG');
+            throw gpgme_error('PARAM_WRONG');
         }
         // check incoming value for correctness
         let checktype = function (val){
@@ -139,24 +139,24 @@ export class GPGME_Message {
                         && val.length > 0) {
                     return true;
                 }
-                return gpgme_error('PARAM_WRONG');
+                throw gpgme_error('PARAM_WRONG');
             case 'number':
                 if (
                     poparam.allowed.indexOf('number') >= 0
                         && isNaN(value) === false){
                     return true;
                 }
-                return gpgme_error('PARAM_WRONG');
+                throw gpgme_error('PARAM_WRONG');
 
             case 'boolean':
                 if (poparam.allowed.indexOf('boolean') >= 0){
                     return true;
                 }
-                return gpgme_error('PARAM_WRONG');
+                throw gpgme_error('PARAM_WRONG');
             case 'object':
                 if (Array.isArray(val)){
                     if (poparam.array_allowed !== true){
-                        return gpgme_error('PARAM_WRONG');
+                        throw gpgme_error('PARAM_WRONG');
                     }
                     for (let i=0; i < val.length; i++){
                         let res = checktype(val[i]);
@@ -171,13 +171,13 @@ export class GPGME_Message {
                     if (poparam.allowed.indexOf('Uint8Array') >= 0){
                         return true;
                     }
-                    return gpgme_error('PARAM_WRONG');
+                    throw gpgme_error('PARAM_WRONG');
                 } else {
-                    return gpgme_error('PARAM_WRONG');
+                    throw gpgme_error('PARAM_WRONG');
                 }
                 break;
             default:
-                return gpgme_error('PARAM_WRONG');
+                throw gpgme_error('PARAM_WRONG');
             }
         };
         let typechecked = checktype(value);

@@ -33,17 +33,17 @@ import { createMessage } from './Message';
  * answers will be Promises, and the performance will likely suffer
  * @param {Object} data additional initial properties this Key will have. Needs
  * a full object as delivered by gpgme-json
- * @returns {Object|GPGME_Error} The verified and updated data
+ * @returns {Object} The verified and updated data
  */
 export function createKey (fingerprint, async = false, data){
     if (!isFingerprint(fingerprint) || typeof (async) !== 'boolean'){
-        return gpgme_error('PARAM_WRONG');
+        throw gpgme_error('PARAM_WRONG');
     }
     if (data !== undefined){
         data = validateKeyData(fingerprint, data);
     }
     if (data instanceof Error){
-        return gpgme_error('KEY_INVALID');
+        throw gpgme_error('KEY_INVALID');
     } else {
         return new GPGME_Key(fingerprint, async, data);
     }
@@ -78,7 +78,7 @@ class GPGME_Key {
     /**
      * Query any property of the Key listed in {@link validKeyProperties}
      * @param {String} property property to be retreived
-     * @returns {Boolean| String | Date | Array | Object |GPGME_Error}
+     * @returns {Boolean| String | Date | Array | Object}
      * the value of the property. If the Key is set to Async, the value
      * will be fetched from gnupg and resolved as a Promise. If Key is not
      * async, the armored property is not available (it can still be
@@ -96,11 +96,11 @@ class GPGME_Key {
             }
         } else {
             if (property === 'armored') {
-                return gpgme_error('KEY_ASYNC_ONLY');
+                throw gpgme_error('KEY_ASYNC_ONLY');
             }
             // eslint-disable-next-line no-use-before-define
             if (!validKeyProperties.hasOwnProperty(property)){
-                return gpgme_error('PARAM_WRONG');
+                throw gpgme_error('PARAM_WRONG');
             } else {
                 return (this._data[property]);
             }

@@ -152,8 +152,13 @@ export class GpgME {
         if (additional){
             let additional_Keys = Object.keys(additional);
             for (let k = 0; k < additional_Keys.length; k++) {
-                msg.setParameter(additional_Keys[k],
-                    additional[additional_Keys[k]]);
+                try {
+                    msg.setParameter(additional_Keys[k],
+                        additional[additional_Keys[k]]);
+                }
+                catch (error){
+                    return Promise.reject(error);
+                }
             }
         }
         if (msg.isComplete() === true){
@@ -185,9 +190,6 @@ export class GpgME {
             msg.setParameter('base64', true);
         }
         putData(msg, data);
-        if (base64 === true){
-            msg.setParameter('base64', true);
-        }
         return new Promise(function (resolve, reject){
             msg.post().then(function (result){
                 let _result = { data: result.data };
@@ -208,7 +210,11 @@ export class GpgME {
                     _result.signatures = collectSignatures(
                         result.info.signatures);
                 }
-                resolve(_result);
+                if (_result.signatures instanceof Error){
+                    reject(_result.signatures);
+                } else {
+                    resolve(_result);
+                }
             }, function (error){
                 reject(error);
             });
@@ -295,14 +301,17 @@ export class GpgME {
                 if (!message.info || !message.info.signatures){
                     reject(gpgme_error('SIG_NO_SIGS'));
                 } else {
-                    let _result = collectSignatures(
-                        message.info.signatures);
-                    _result.is_mime = message.info.is_mime? true: false;
-                    if (message.info.filename){
-                        _result.file_name = message.info.filename;
+                    let _result = collectSignatures(message.info.signatures);
+                    if (_result instanceof Error){
+                        reject(_result.signatures);
+                    } else {
+                        _result.is_mime = message.info.is_mime? true: false;
+                        if (message.info.filename){
+                            _result.file_name = message.info.filename;
+                        }
+                        _result.data = message.data;
+                        resolve(_result);
                     }
-                    _result.data = message.data;
-                    resolve(_result);
                 }
             }, function (error){
                 reject(error);
@@ -363,8 +372,8 @@ function collectSignatures (sigs){
     };
     for (let i=0; i< sigs.length; i++){
         let sigObj = createSignature(sigs[i]);
-        if (sigObj instanceof Error){
-            return gpgme_error(sigObj);
+        if (sigObj instanceof Error) {
+            return gpgme_error('SIG_WRONG');
         }
         if (sigObj.valid !== true){
             summary.failures += 1;

@@ -67,7 +67,9 @@ export class GPGME_Keyring {
                     if (prepare_sync === true) {
                         secondrequest = function () {
                             let msg2 = createMessage('keylist');
-                            msg2.setParameter('keys', pattern);
+                            if (pattern){
+                                msg2.setParameter('keys', pattern);
+                            }
                             msg2.setParameter('secret', true);
                             return msg2.post();
                         };

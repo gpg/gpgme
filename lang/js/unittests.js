@@ -25,7 +25,7 @@ import { message_params as mp } from './unittest_inputvalues';
 import { whatever_params as wp } from './unittest_inputvalues';
 import { key_params as kp } from './unittest_inputvalues';
 import { Connection } from './src/Connection';
-import { gpgme_error } from './src/Errors';
+import { gpgme_error, err_list } from './src/Errors';
 import { toKeyIdArray , isFingerprint } from './src/Helpers';
 import { createKey } from './src/Key';
 import { GPGME_Keyring } from './src/Keyring';
@@ -225,9 +225,12 @@ function unittests (){
 
         it('createKey returns error if parameters are wrong', function (){
             for (let i=0; i< 4; i++){
-                let key0 = createKey(wp.four_invalid_params[i]);
-                expect(key0).to.be.an.instanceof(Error);
-                expect(key0.code).to.equal('PARAM_WRONG');
+                expect(function (){
+                    createKey(wp.four_invalid_params[i]);
+                }).to.throw(
+                    err_list.PARAM_WRONG.msg
+                );
+
             }
         });
 
@@ -312,9 +315,12 @@ function unittests (){
 
         it('Message is not complete after mandatory data is empty', function (){
             let test0 = createMessage('encrypt');
-            test0.setParameter('data', '');
             test0.setParameter('keys', hp.validFingerprints);
             expect(test0.isComplete()).to.be.false;
+            expect(function (){
+                test0.setParameter('data', '');
+            }).to.throw(
+                err_list.PARAM_WRONG.msg);
         });
 
         it('Complete Message contains the data that was set', function (){
@@ -331,28 +337,27 @@ function unittests (){
         });
 
         it ('Not accepting non-allowed operation', function (){
-            let test0 = createMessage(mp.invalid_op_action);
-
-            expect(test0).to.be.an.instanceof(Error);
-            expect(test0.code).to.equal('MSG_WRONG_OP');
+            expect(function () {
+                createMessage(mp.invalid_op_action);
+            }).to.throw(
+                err_list.MSG_WRONG_OP.msg);
         });
         it('Not accepting wrong parameter type', function (){
-            let test0 = createMessage(mp.invalid_op_type);
-
-            expect(test0).to.be.an.instanceof(Error);
-            expect(test0.code).to.equal('PARAM_WRONG');
+            expect(function () {
+                createMessage(mp.invalid_op_type);
+            }).to.throw(
+                err_list.PARAM_WRONG.msg);
         });
 
         it('Not accepting wrong parameter name', function (){
             let test0 = createMessage(mp.invalid_param_test.valid_op);
             for (let i=0;
                 i < mp.invalid_param_test.invalid_param_names.length; i++){
-                let ret = test0.setParameter(
-                    mp.invalid_param_test.invalid_param_names[i],
-                    'Somevalue');
-
-                expect(ret).to.be.an.instanceof(Error);
-                expect(ret.code).to.equal('PARAM_WRONG');
+                expect(function (){
+                    test0.setParameter(
+                        mp.invalid_param_test.invalid_param_names[i],
+                        'Somevalue');}
+                ).to.throw(err_list.PARAM_WRONG.msg);
             }
         });
 
@@ -360,12 +365,11 @@ function unittests (){
             let test0 = createMessage(mp.invalid_param_test.valid_op);
             for (let j=0;
                 j < mp.invalid_param_test.invalid_values_0.length; j++){
-                let ret = test0.setParameter(
-                    mp.invalid_param_test.validparam_name_0,
-                    mp.invalid_param_test.invalid_values_0[j]);
-
-                expect(ret).to.be.an.instanceof(Error);
-                expect(ret.code).to.equal('PARAM_WRONG');
+                expect(function (){
+                    test0.setParameter(
+                        mp.invalid_param_test.validparam_name_0,
+                        mp.invalid_param_test.invalid_values_0[j]);
+                }).to.throw(err_list.PARAM_WRONG.msg);
             }
         });
     });

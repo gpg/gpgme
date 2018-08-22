@@ -24,7 +24,7 @@
 /**
  * Listing of all possible error codes and messages of a {@link GPGME_Error}.
  */
-const err_list = {
+export const err_list = {
     // Connection
     'CONN_NO_CONNECT': {
         msg:'Connection with the nativeMessaging host could not be'
