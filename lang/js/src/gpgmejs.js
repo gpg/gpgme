@@ -301,8 +301,10 @@ export class GpgME {
                 if (!message.info || !message.info.signatures){
                     reject(gpgme_error('SIG_NO_SIGS'));
                 } else {
-                    let _result = collectSignatures(message.info.signatures);
-                    if (_result instanceof Error){
+                    let _result = {
+                        signatures: collectSignatures(message.info.signatures)
+                    };
+                    if (_result.signatures instanceof Error){
                         reject(_result.signatures);
                     } else {
                         _result.is_mime = message.info.is_mime? true: false;

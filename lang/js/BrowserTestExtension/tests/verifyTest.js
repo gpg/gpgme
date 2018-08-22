@@ -38,12 +38,12 @@ describe('Verifying data', function () {
         const message = inputvalues.signedMessage.good;
         context.verify(message).then(function (result){
             expect(result.data).to.be.a('string');
-            expect(result.all_valid).to.be.true;
-            expect(result.count).to.equal(1);
-            expect(result.signatures.good).to.be.an('array');
-            expect(result.signatures.good.length).to.equal(1);
-            expect(result.signatures.good[0].fingerprint).to.be.a('string');
-            expect(result.signatures.good[0].valid).to.be.true;
+            expect(result.signatures.all_valid).to.be.true;
+            expect(result.signatures.count).to.equal(1);
+            expect(result.signatures.signatures.good).to.be.an('array');
+            expect(result.signatures.signatures.good.length).to.equal(1);
+            expect(result.signatures.signatures.good[0].fingerprint).to.be.a('string');
+            expect(result.signatures.signatures.good[0].valid).to.be.true;
             done();
         });
     });
@@ -52,12 +52,14 @@ describe('Verifying data', function () {
         const message = inputvalues.signedMessage.bad;
         context.verify(message).then(function (result){
             expect(result.data).to.be.a('string');
-            expect(result.all_valid).to.be.false;
-            expect(result.count).to.equal(1);
-            expect(result.signatures.bad).to.be.an('array');
-            expect(result.signatures.bad.length).to.equal(1);
-            expect(result.signatures.bad[0].fingerprint).to.be.a('string');
-            expect(result.signatures.bad[0].valid).to.be.false;
+            expect(result.signatures.all_valid).to.be.false;
+            expect(result.signatures.count).to.equal(1);
+            expect(result.signatures.signatures.bad).to.be.an('array');
+            expect(result.signatures.signatures.bad.length).to.equal(1);
+            expect(result.signatures.signatures.bad[0].fingerprint)
+                .to.be.a('string');
+            expect(result.signatures.signatures.bad[0].valid)
+                .to.be.false;
             done();
         });
     });
@@ -70,13 +72,16 @@ describe('Verifying data', function () {
                 context.verify(message_encsign.data).then(function (result){
                     expect(result.data).to.equal(message_enc.data);
                     expect(result.data).to.be.a('string');
-                    expect(result.all_valid).to.be.true;
-                    expect(result.count).to.equal(1);
-                    expect(result.signatures.good).to.be.an('array');
-                    expect(result.signatures.good.length).to.equal(1);
-                    expect(
-                        result.signatures.good[0].fingerprint).to.equal(fpr);
-                    expect(result.signatures.good[0].valid).to.be.true;
+                    expect(result.signatures.all_valid).to.be.true;
+                    expect(result.signatures.count).to.equal(1);
+                    expect(result.signatures.signatures.good)
+                        .to.be.an('array');
+                    expect(result.signatures.signatures.good.length)
+                        .to.equal(1);
+                    expect(result.signatures.signatures.good[0].fingerprint)
+                        .to.equal(fpr);
+                    expect(result.signatures.signatures.good[0].valid)
+                        .to.be.true;
                     done();
                 });
             });
