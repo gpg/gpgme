@@ -103,6 +103,10 @@ export const err_list = {
         msg: 'Invalid parameter was found',
         type: 'error'
     },
+    'DECODE_FAIL': {
+        msg: 'Decoding failed due to unexpected data',
+        type: 'error'
+    },
     'PARAM_IGNORED': {
         msg: 'An parameter was set that has no effect in gpgmejs',
         type: 'warning'

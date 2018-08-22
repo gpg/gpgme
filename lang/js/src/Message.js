@@ -64,7 +64,7 @@ export class GPGME_Message {
     }
 
     set expected (value){
-        if (value === 'base64'){
+        if (value === 'binary'){
             this._expected = value;
         }
     }

@@ -135,3 +135,72 @@ export function decode (property){
     }
     return property;
 }
+
+/**
+ * Turns a base64 encoded string into an uint8 array
+ * @param {String} base64 encoded String
+ * @returns {Uint8Array}
+ * adapted from https://gist.github.com/borismus/1032746
+ */
+export function atobArray (base64) {
+    if (typeof (base64) !== 'string'){
+        throw gpgme_error('DECODE_FAIL');
+    }
+    const raw = window.atob(base64);
+    const rawLength = raw.length;
+    let array = new Uint8Array(new ArrayBuffer(rawLength));
+    for (let i = 0; i < rawLength; i++) {
+        array[i] = raw.charCodeAt(i);
+    }
+    return array;
+}
+
+/**
+ * Turns a Uint8Array into an utf8-String
+ * @param {*} array Uint8Array
+ * @returns {String}
+ * Taken and slightly adapted from
+ *  http://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
+ * (original header:
+ *   utf.js - UTF-8 <=> UTF-16 convertion
+ *
+ *   Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
+ *   Version: 1.0
+ *   LastModified: Dec 25 1999
+ *   This library is free.  You can redistribute it and/or modify it.
+ *  )
+ */
+export function Utf8ArrayToStr (array) {
+    let out, i, len, c, char2, char3;
+    out = '';
+    len = array.length;
+    i = 0;
+    if (array instanceof Uint8Array === false){
+        throw gpgme_error('DECODE_FAIL');
+    }
+    while (i < len) {
+        c = array[i++];
+        switch (c >> 4) {
+        case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+            // 0xxxxxxx
+            out += String.fromCharCode(c);
+            break;
+        case 12: case 13:
+            // 110x xxxx   10xx xxxx
+            char2 = array[i++];
+            out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+            break;
+        case 14:
+            // 1110 xxxx  10xx xxxx  10xx xxxx
+            char2 = array[i++];
+            char3 = array[i++];
+            out += String.fromCharCode(((c & 0x0F) << 12) |
+                            ((char2 & 0x3F) << 6) |
+                            ((char3 & 0x3F) << 0));
+            break;
+        default:
+            break;
+        }
+    }
+    return out;
+}

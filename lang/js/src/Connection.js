@@ -26,7 +26,7 @@
 import { permittedOperations } from './permittedOperations';
 import { gpgme_error } from './Errors';
 import { GPGME_Message, createMessage } from './Message';
-import { decode } from './Helpers';
+import { decode, atobArray, Utf8ArrayToStr } from './Helpers';
 
 /**
  * A Connection handles the nativeMessaging interaction via a port. As the
@@ -223,8 +223,9 @@ class Answer{
         }
     }
     /**
-     * Returns the base64 encoded answer data with the content verified
-     * against {@link permittedOperations}.
+     * Decodes and verifies the base64 encoded answer data. Verified against
+     * {@link permittedOperations}.
+     * @returns {Object} The readable gpnupg answer
      */
     getMessage (){
         if (this._response_b64 === null){
@@ -264,14 +265,15 @@ class Answer{
                 }
                 if (_decodedResponse.base64 === true
                     && poa.data[key] === 'string'
-                    && this.expected !== 'base64'
-                ){
-                    _response[key] = decodeURIComponent(
-                        atob(_decodedResponse[key]).split('').map(
-                            function (c) {
-                                return '%' +
-                            ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                            }).join(''));
+                ) {
+                    if (this.expected === 'binary'){
+                        _response[key] = atobArray(_decodedResponse[key]);
+                        _response.binary = true;
+                    } else {
+                        _response[key] = Utf8ArrayToStr(
+                            atobArray(_decodedResponse[key]));
+                        _response.binary = false;
+                    }
                 } else {
                     _response[key] = decode(_decodedResponse[key]);
                 }

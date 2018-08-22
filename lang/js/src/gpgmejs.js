@@ -30,8 +30,8 @@ import { createSignature } from './Signature';
 
 /**
  * @typedef {Object} decrypt_result
- * @property {String} data The decrypted data
- * @property {Boolean} base64 indicating whether data is base64 encoded.
+ * @property {String|Uint8Array} data The decrypted data
+ * @property {Boolean} binary indicating whether data is an Uint8Array.
  * @property {Boolean} is_mime (optional) the data claims to be a MIME
  * object.
  * @property {String} file_name (optional) the original file name
@@ -51,7 +51,8 @@ import { createSignature } from './Signature';
 /**
  * @typedef {Object} encrypt_result The result of an encrypt operation
  * @property {String} data The encrypted message
- * @property {Boolean} base64 Indicating whether data is base64 encoded.
+ * @property {Boolean} binary Indicating whether returning payload data is an
+ * Uint8Array.
  */
 
 /**
@@ -174,10 +175,12 @@ export class GpgME {
     * Strings and Objects with a getText method
     * @param {Boolean} base64 (optional) false if the data is an armored
     * block, true if it is base64 encoded binary data
+    * @param {Boolean} binary (optional) if true, treat the decoded data as
+    * binary, and return the data as Uint8Array
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
-    decrypt (data, base64=false){
+    decrypt (data, base64=false, binary){
         if (data === undefined){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -189,11 +192,14 @@ export class GpgME {
         if (base64 === true){
             msg.setParameter('base64', true);
         }
+        if (binary === true){
+            msg.expected = 'binary';
+        }
         putData(msg, data);
         return new Promise(function (resolve, reject){
             msg.post().then(function (result){
                 let _result = { data: result.data };
-                _result.base64 = result.base64 ? true: false;
+                _result.binary = result.binary ? true: false;
                 if (result.hasOwnProperty('dec_info')){
                     _result.is_mime = result.dec_info.is_mime ? true: false;
                     if (result.dec_info.file_name) {
@@ -251,7 +257,7 @@ export class GpgME {
         putData(msg, data);
         return new Promise(function (resolve,reject) {
             if (mode ==='detached'){
-                msg.expected ='base64';
+                msg.expected ='binary';
             }
             msg.post().then( function (message) {
                 if (mode === 'clearsign'){
