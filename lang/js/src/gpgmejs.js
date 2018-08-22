@@ -31,7 +31,11 @@ import { createSignature } from './Signature';
 /**
  * @typedef {Object} decrypt_result
  * @property {String|Uint8Array} data The decrypted data
- * @property {Boolean} binary indicating whether data is an Uint8Array.
+ * @property {String} format Indicating how the data was converted after being
+ * received from gpgme.
+ *      'string': Data was decoded into an utf-8 string,
+ *      'base64': Data was not processed and is a base64 string
+ *      'uint8': data was turned into a Uint8Array
  * @property {Boolean} is_mime (optional) the data claims to be a MIME
  * object.
  * @property {String} file_name (optional) the original file name
@@ -51,8 +55,8 @@ import { createSignature } from './Signature';
 /**
  * @typedef {Object} encrypt_result The result of an encrypt operation
  * @property {String} data The encrypted message
- * @property {Boolean} binary Indicating whether returning payload data is an
- * Uint8Array.
+ * @property {Boolean} base64 Indicating whether returning payload data is
+ * base64 encoded
  */
 
 /**
@@ -187,8 +191,9 @@ export class GpgME {
     * Strings and Objects with a getText method
     * @param {Boolean} options.base64 (optional) false if the data is an
     * armored block, true if it is base64 encoded binary data
-    * @param {Boolean} options.binary (optional) if true, treat the decoded
-    * data as binary, and return the data as Uint8Array
+    * @param {String} options.expect (optional) can be set to 'uint8' or
+    * 'base64'. Does no extra decoding on the data, and returns the decoded
+    * data as either Uint8Array or unprocessed(base64 encoded) string.
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
@@ -207,14 +212,14 @@ export class GpgME {
         if (options.base64 === true){
             msg.setParameter('base64', true);
         }
-        if (options.binary === true){
-            msg.expected = 'binary';
+        if (options.expect === 'base64' || options.expect === 'uint8'){
+            msg.expected = options.expect;
         }
         putData(msg, options.data);
         return new Promise(function (resolve, reject){
             msg.post().then(function (result){
                 let _result = { data: result.data };
-                _result.binary = result.binary ? true: false;
+                _result.format = result.format ? result.format : null;
                 if (result.hasOwnProperty('dec_info')){
                     _result.is_mime = result.dec_info.is_mime ? true: false;
                     if (result.dec_info.file_name) {

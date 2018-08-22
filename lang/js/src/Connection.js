@@ -266,13 +266,16 @@ class Answer{
                 if (_decodedResponse.base64 === true
                     && poa.data[key] === 'string'
                 ) {
-                    if (this.expected === 'binary'){
+                    if (this.expected === 'uint8'){
                         _response[key] = atobArray(_decodedResponse[key]);
-                        _response.binary = true;
+                        _response.format = 'uint8';
+                    } else if (this.expected === 'base64'){
+                        _response[key] = _decodedResponse[key];
+                        _response.format = 'base64';
                     } else {
                         _response[key] = Utf8ArrayToStr(
                             atobArray(_decodedResponse[key]));
-                        _response.binary = false;
+                        _response.format = 'string';
                     }
                 } else {
                     _response[key] = decode(_decodedResponse[key]);

@@ -144,6 +144,30 @@ describe('Encryption and Decryption', function (){
             });
     }).timeout(3000);
 
+    it('Random data, original data is and should stay base64 encoded',
+        function (done) {
+            let data = bigBoringString(0.001);
+            let b64data = btoa(data);
+            context.encrypt(
+                { data: b64data, publicKeys: good_fpr })
+                .then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a('string');
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt({
+                        data:answer.data, expect: 'base64' })
+                        .then(function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(b64data);
+                            done();
+                        });
+                });
+    }).timeout(3000);
+
     for (let j = 0; j < inputvalues.encrypt.good.data_nonascii_32.length; j++){
         it('Roundtrip with >1MB non-ascii input meeting default chunksize (' +
             (j + 1) + '/'
