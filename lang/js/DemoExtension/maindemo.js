@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function (){
                 let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
-                gpgmejs.encrypt(data, keyId).then(
+                gpgmejs.encrypt({ data: data, privateKeys: keyId }).then(
                     function (answer){
                         if (answer.data){
                             document.getElementById(
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('buttondecrypt').addEventListener('click',
             function (){
                 let data = document.getElementById('inputtext').value;
-                gpgmejs.decrypt(data).then(
+                gpgmejs.decrypt({ data: data }).then(
                     function (answer){
                         if (answer.data){
                             document.getElementById(
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function (){
                 let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
-                gpgmejs.sign(data, keyId).then(
+                gpgmejs.sign({ data: data, keys: keyId }).then(
                     function (answer){
                         if (answer.data){
                             document.getElementById(
@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('verifytext').addEventListener('click',
             function (){
                 let data = document.getElementById('inputtext').value;
-                gpgmejs.verify(data).then(
+                gpgmejs.verify({ data: data }).then(
                     function (answer){
                         let vals = '';
                         if (answer.all_valid === true){
@@ -101,7 +101,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('searchkey').addEventListener('click',
             function (){
                 let data = document.getElementById('inputtext').value;
-                gpgmejs.Keyring.getKeys(data, true, true).then(function (keys){
+                gpgmejs.Keyring.getKeys({
+                    pattern: data,
+                    prepare_sync: true,
+                    search: true }
+                ).then(function (keys){
                     if (keys.length === 1){
                         document.getElementById(
                             'pubkey').value = keys[0].fingerprint;

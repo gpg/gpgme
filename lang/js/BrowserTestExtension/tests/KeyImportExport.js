@@ -35,7 +35,7 @@ describe('Key importing', function () {
         const prm = Gpgmejs.init();
         prm.then(function (gpgmejs){
             context = gpgmejs;
-            context.Keyring.getKeys(fpr).then(
+            context.Keyring.getKeys({ pattern: fpr }).then(
                 function (result){
                     if (result.length === 1) {
                         result[0].delete().then(function (){
@@ -52,7 +52,7 @@ describe('Key importing', function () {
 
     afterEach(function (done){
         // delete the test key if still present
-        context.Keyring.getKeys(fpr).then(
+        context.Keyring.getKeys({ pattern: fpr }).then(
             function (result){
                 if (result.length === 1) {
                     result[0].delete().then(function (){
@@ -67,7 +67,7 @@ describe('Key importing', function () {
     });
 
     it('Importing Key', function (done) {
-        context.Keyring.getKeys(fpr).then(function (result){
+        context.Keyring.getKeys({ pattern: fpr }).then(function (result){
             expect(result).to.be.an('array');
             expect(result.length).to.equal(0);
             context.Keyring.importKey(pubKey).then(function (result){
@@ -127,23 +127,26 @@ describe('Key importing', function () {
 
     it('exporting armored Key with getKeysArmored', function (done) {
         context.Keyring.importKey(pubKey).then(function (){
-            context.Keyring.getKeysArmored(fpr).then(function (result){
-                expect(result).to.be.an('object');
-                expect(result.armored).to.be.a('string');
-                expect(result.secret_fprs).to.be.undefined;
-                done();
-            });
+            context.Keyring.getKeysArmored({ pattern: fpr })
+                .then(function (result){
+                    expect(result).to.be.an('object');
+                    expect(result.armored).to.be.a('string');
+                    expect(result.secret_fprs).to.be.undefined;
+                    done();
+                });
         });
     });
 
     it('Exporting Key (including secret fingerprints)', function (done) {
         const key_secret = inputvalues.encrypt.good.fingerprint;
-        context.Keyring.getKeysArmored(key_secret, true).then(function (result){
-            expect(result).to.be.an('object');
-            expect(result.armored).to.be.a('string');
-            expect(result.secret_fprs).to.be.an('array');
-            expect(result.secret_fprs[0]).to.equal(key_secret);
-            done();
-        });
+        context.Keyring.getKeysArmored({
+            pattern: key_secret, with_secret_fpr: true })
+            .then(function (result){
+                expect(result).to.be.an('object');
+                expect(result.armored).to.be.a('string');
+                expect(result.secret_fprs).to.be.an('array');
+                expect(result.secret_fprs[0]).to.equal(key_secret);
+                done();
+            });
     });
 });

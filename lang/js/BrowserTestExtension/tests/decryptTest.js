@@ -38,7 +38,7 @@ describe('Decryption', function () {
 
     it('Decryption of random string fails', function (done) {
         let data = bigString(20 * 1024);
-        context.decrypt(data).then(
+        context.decrypt({ data: data }).then(
             function (){},
             function (error){
                 expect(error).to.be.an('error');
@@ -49,21 +49,22 @@ describe('Decryption', function () {
 
     it('Decryption of slightly corrupted message fails', function (done) {
         const data = bigString(10000);
-        context.encrypt(data, good_fpr).then(function (enc){
-            context.decrypt(sabotageMsg(enc.data)).then(
-                function (){},
-                function (error){
-                    expect(error).to.be.an('error');
-                    expect(error.code).to.equal('GNUPG_ERROR');
-                    done();
-                });
-        });
+        context.encrypt({ data: data, publicKeys:good_fpr }).then(
+            function (enc){
+                context.decrypt({ data: sabotageMsg(enc.data) }).then(
+                    function (){},
+                    function (error){
+                        expect(error).to.be.an('error');
+                        expect(error.code).to.equal('GNUPG_ERROR');
+                        done();
+                    });
+            });
     }).timeout(5000);
 
 
     it('decrypt/verify operations return proper information', function (done){
         const data = inputvalues.encryptSignedMessage;
-        context.decrypt(data).then(function (result){
+        context.decrypt({ data: data }).then(function (result){
             expect(result).to.be.an('object');
             expect(result.signatures).to.be.an('object');
             expect(result.signatures.all_valid).to.be.true;

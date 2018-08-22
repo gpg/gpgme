@@ -37,32 +37,34 @@ describe('Encryption', function () {
 
     it('Successful encrypt', function (done) {
         const data = inputvalues.encrypt.good.data;
-        context.encrypt(data, good_fpr).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include('BEGIN PGP MESSAGE');
-            expect(answer.data).to.include('END PGP MESSAGE');
-            done();
-        });
-    });
-
-    const sizes = [5,20,50];
-    for (let i=0; i < sizes.length; i++) {
-        it('Successful encrypt a ' + sizes[i] + 'MB message', function (done) {
-            const data = fixedLengthString(sizes[i]);
-            context.encrypt(data, good_fpr).then(function (answer) {
+        context.encrypt({ data: data, publicKeys: good_fpr })
+            .then(function (answer) {
                 expect(answer).to.not.be.empty;
                 expect(answer.data).to.be.a('string');
                 expect(answer.data).to.include('BEGIN PGP MESSAGE');
                 expect(answer.data).to.include('END PGP MESSAGE');
                 done();
             });
+    });
+
+    const sizes = [5,20,50];
+    for (let i=0; i < sizes.length; i++) {
+        it('Successful encrypt a ' + sizes[i] + 'MB message', function (done) {
+            const data = fixedLengthString(sizes[i]);
+            context.encrypt({ data: data, publicKeys: good_fpr })
+                .then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a('string');
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    done();
+                });
         }).timeout(20000);
     }
 
     it('Sending encryption without keys fails', function (done) {
         const data = inputvalues.encrypt.good.data;
-        context.encrypt(data,null).then(function (answer) {
+        context.encrypt({ data: data }).then(function (answer) {
             expect(answer).to.be.undefined;
         }, function (error){
             expect(error).to.be.an('Error');
@@ -72,41 +74,44 @@ describe('Encryption', function () {
     });
 
     it('Sending encryption without data fails', function (done) {
-        context.encrypt(null, good_fpr).then(function (answer) {
-            expect(answer).to.be.undefined;
-        }, function (error) {
-            expect(error).to.be.an.instanceof(Error);
-            expect(error.code).to.equal('MSG_INCOMPLETE');
-            done();
-        });
+        context.encrypt({ data: null, publicKeys: good_fpr })
+            .then(function (answer) {
+                expect(answer).to.be.undefined;
+            }, function (error) {
+                expect(error).to.be.an.instanceof(Error);
+                expect(error.code).to.equal('MSG_INCOMPLETE');
+                done();
+            });
     });
 
     it('Sending encryption with non existing keys fails', function (done) {
         const data = inputvalues.encrypt.good.data;
         const bad_fpr = inputvalues.encrypt.bad.fingerprint;
-        context.encrypt(data, bad_fpr).then(function (answer) {
-            expect(answer).to.be.undefined;
-        }, function (error){
-            expect(error).to.be.an('Error');
-            expect(error.code).to.not.be.undefined;
-            expect(error.code).to.equal('GNUPG_ERROR');
-            done();
-        });
+        context.encrypt({ data:data, publicKeys: bad_fpr })
+            .then(function (answer) {
+                expect(answer).to.be.undefined;
+            }, function (error){
+                expect(error).to.be.an('Error');
+                expect(error.code).to.not.be.undefined;
+                expect(error.code).to.equal('GNUPG_ERROR');
+                done();
+            });
     }).timeout(5000);
 
     it('Overly large message ( > 64MB) is rejected', function (done) {
         const data = fixedLengthString(65);
-        context.encrypt(data, good_fpr).then(function (answer) {
-            expect(answer).to.be.undefined;
-        }, function (error){
-            expect(error).to.be.an.instanceof(Error);
-            // TODO: there is a 64 MB hard limit at least in chrome at:
-            // chromium//extensions/renderer/messaging_util.cc:
-            // kMaxMessageLength
-            // The error will be a browser error, not from gnupg or from
-            // this library
-            done();
-        });
+        context.encrypt({ data: data, publicKeys: good_fpr })
+            .then(function (answer) {
+                expect(answer).to.be.undefined;
+            }, function (error){
+                expect(error).to.be.an.instanceof(Error);
+                // TODO: there is a 64 MB hard limit at least in chrome at:
+                // chromium//extensions/renderer/messaging_util.cc:
+                // kMaxMessageLength
+                // The error will be a browser error, not from gnupg or from
+                // this library
+                done();
+            });
     }).timeout(8000);
 
     // TODO check different valid parameter

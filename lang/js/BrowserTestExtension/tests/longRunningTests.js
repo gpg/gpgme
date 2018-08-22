@@ -38,18 +38,20 @@ describe('Long running Encryption/Decryption', function () {
         it('Successful encrypt/decrypt completely random data '
             + (i+1) + '/100', function (done) {
             const data = bigString(2*1024*1024);
-            context.encrypt(data,good_fpr).then(function (answer){
-                expect(answer).to.not.be.empty;
-                expect(answer.data).to.be.a('string');
-                expect(answer.data).to.include('BEGIN PGP MESSAGE');
-                expect(answer.data).to.include('END PGP MESSAGE');
-                context.decrypt(answer.data).then(function (result){
-                    expect(result).to.not.be.empty;
-                    expect(result.data).to.be.a('string');
-                    expect(result.data).to.equal(data);
-                    done();
+            context.encrypt({ data: data, publicKeys: good_fpr })
+                .then(function (answer){
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a('string');
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    context.decrypt({ data: answer.data })
+                        .then(function (result){
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(data);
+                            done();
+                        });
                 });
-            });
         }).timeout(15000);
     }
 

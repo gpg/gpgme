@@ -38,7 +38,7 @@ describe('Signing', function () {
 
     it('Sign a message', function (done) {
         const data = bigString(100);
-        context.sign(data, good_fpr).then(function (answer) {
+        context.sign({ data: data, keys: good_fpr }).then(function (answer) {
             expect(answer).to.not.be.empty;
             expect(answer.data).to.be.a('string');
             expect(answer.data).to.include('BEGIN PGP SIGNATURE');
@@ -50,14 +50,15 @@ describe('Signing', function () {
 
     it('Detached sign a message', function (done) {
         const data = bigString(100);
-        context.sign(data,good_fpr, 'detached').then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include(data);
-            expect(answer.signature).to.be.a('string');
-            expect(answer.signature).to.be.a('string');
-            done();
-        });
+        context.sign({ data: data, keys: good_fpr, mode: 'detached' })
+            .then(function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include(data);
+                expect(answer.signature).to.be.a('string');
+                expect(answer.signature).to.be.a('string');
+                done();
+            });
     });
 
 });

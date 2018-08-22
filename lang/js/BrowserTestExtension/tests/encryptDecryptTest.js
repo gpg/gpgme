@@ -38,25 +38,25 @@ describe('Encryption and Decryption', function (){
 
     it('Successful encrypt and decrypt simple string', function (done) {
         let data = inputvalues.encrypt.good.data;
-        context.encrypt(data, good_fpr).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include('BEGIN PGP MESSAGE');
-            expect(answer.data).to.include('END PGP MESSAGE');
-
-            context.decrypt(answer.data).then(function (result) {
-                expect(result).to.not.be.empty;
-                expect(result.data).to.be.a('string');
-                expect(result.data).to.equal(
-                    inputvalues.encrypt.good.data);
-                done();
+        context.encrypt({ data: data, publicKeys: good_fpr }).then(
+            function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                expect(answer.data).to.include('END PGP MESSAGE');
+                context.decrypt({ data: answer.data }).then(function (result) {
+                    expect(result).to.not.be.empty;
+                    expect(result.data).to.be.a('string');
+                    expect(result.data).to.equal(
+                        inputvalues.encrypt.good.data);
+                    done();
+                });
             });
-        });
     });
 
     it('Decrypt simple non-ascii', function (done) {
         let data = encryptedData;
-        context.decrypt(data).then(function (result) {
+        context.decrypt({ data: data }).then(function (result) {
             expect(result).to.not.be.empty;
             expect(result.data).to.be.a('string');
             expect(result.data).to.equal(
@@ -67,77 +67,81 @@ describe('Encryption and Decryption', function (){
 
     it('Trailing whitespace and different line endings', function (done) {
         const data = 'Keks. \rKeks \n Keks \r\n';
-        context.encrypt(data, good_fpr).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include('BEGIN PGP MESSAGE');
-            expect(answer.data).to.include('END PGP MESSAGE');
+        context.encrypt({ data: data, publicKeys: good_fpr }).then(
+            function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                expect(answer.data).to.include('END PGP MESSAGE');
 
-            context.decrypt(answer.data).then(function (result) {
-                expect(result).to.not.be.empty;
-                expect(result.data).to.be.a('string');
-                expect(result.data).to.equal(data);
-                done();
+                context.decrypt({ data: answer.data }).then(function (result) {
+                    expect(result).to.not.be.empty;
+                    expect(result.data).to.be.a('string');
+                    expect(result.data).to.equal(data);
+                    done();
+                });
             });
-        });
     }).timeout(5000);
 
     it('Random data, as string', function (done) {
         let data = bigString(1000);
-        context.encrypt(data, good_fpr).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include(
-                'BEGIN PGP MESSAGE');
-            expect(answer.data).to.include(
-                'END PGP MESSAGE');
-            context.decrypt(answer.data).then(function (result) {
-                expect(result).to.not.be.empty;
-                expect(result.data).to.be.a('string');
-                expect(result.data).to.equal(data);
-                done();
+        context.encrypt({ data:data, publicKeys: good_fpr }).then(
+            function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include(
+                    'BEGIN PGP MESSAGE');
+                expect(answer.data).to.include(
+                    'END PGP MESSAGE');
+                context.decrypt({ data: answer.data }).then(function (result) {
+                    expect(result).to.not.be.empty;
+                    expect(result.data).to.be.a('string');
+                    expect(result.data).to.equal(data);
+                    done();
+                });
             });
-        });
     }).timeout(3000);
 
     it('Data, input as base64', function (done) {
         let data = inputvalues.encrypt.good.data;
         let b64data = btoa(data);
-        context.encrypt(b64data, good_fpr, true).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include(
-                'BEGIN PGP MESSAGE');
-            expect(answer.data).to.include(
-                'END PGP MESSAGE');
-            context.decrypt(answer.data).then(
-                function (result) {
+        context.encrypt({ data: b64data, publicKeys: good_fpr, base64: true })
+            .then(function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include(
+                    'BEGIN PGP MESSAGE');
+                expect(answer.data).to.include(
+                    'END PGP MESSAGE');
+                context.decrypt({ data: answer.data }).then(function (result) {
                     expect(result).to.not.be.empty;
                     expect(result.data).to.be.a('string');
-                    expect(data).to.equal(data);
+                    expect(result.data).to.equal(data);
                     done();
                 });
-        });
+            });
     }).timeout(3000);
 
     it('Random data, input as base64', function (done) {
         let data = bigBoringString(0.001);
         let b64data = btoa(data);
-        context.encrypt(b64data, good_fpr, true).then(function (answer) {
-            expect(answer).to.not.be.empty;
-            expect(answer.data).to.be.a('string');
-            expect(answer.data).to.include(
-                'BEGIN PGP MESSAGE');
-            expect(answer.data).to.include(
-                'END PGP MESSAGE');
-            context.decrypt(answer.data).then(
-                function (result) {
-                    expect(result).to.not.be.empty;
-                    expect(result.data).to.be.a('string');
-                    expect(result.data).to.equal(b64data);
-                    done();
-                });
-        });
+        context.encrypt(
+            { data: b64data, publicKeys: good_fpr, base64: true })
+            .then(function (answer) {
+                expect(answer).to.not.be.empty;
+                expect(answer.data).to.be.a('string');
+                expect(answer.data).to.include(
+                    'BEGIN PGP MESSAGE');
+                expect(answer.data).to.include(
+                    'END PGP MESSAGE');
+                context.decrypt({ data:answer.data }).then(
+                    function (result) {
+                        expect(result).to.not.be.empty;
+                        expect(result.data).to.be.a('string');
+                        expect(result.data).to.equal(data);
+                        done();
+                    });
+            });
     }).timeout(3000);
 
     for (let j = 0; j < inputvalues.encrypt.good.data_nonascii_32.length; j++){
@@ -151,20 +155,22 @@ describe('Encryption and Decryption', function (){
             for (let i=0; i < 34 * 1024; i++){
                 data += input;
             }
-            context.encrypt(data,good_fpr).then(function (answer) {
-                expect(answer).to.not.be.empty;
-                expect(answer.data).to.be.a('string');
-                expect(answer.data).to.include(
-                    'BEGIN PGP MESSAGE');
-                expect(answer.data).to.include(
-                    'END PGP MESSAGE');
-                context.decrypt(answer.data).then(function (result) {
-                    expect(result).to.not.be.empty;
-                    expect(result.data).to.be.a('string');
-                    expect(result.data).to.equal(data);
-                    done();
+            context.encrypt({ data: data, publicKeys: good_fpr })
+                .then(function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a('string');
+                    expect(answer.data).to.include(
+                        'BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include(
+                        'END PGP MESSAGE');
+                    context.decrypt({ data: answer.data })
+                        .then(function (result) {
+                            expect(result).to.not.be.empty;
+                            expect(result.data).to.be.a('string');
+                            expect(result.data).to.equal(data);
+                            done();
+                        });
                 });
-            });
         }).timeout(5000);
     }
 });

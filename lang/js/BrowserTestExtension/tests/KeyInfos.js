@@ -36,7 +36,7 @@ describe('Key information', function () {
 
     it('A fingerprint is consistently returned upper case hex', function (done){
         const mixedCase = inputvalues.encrypt.good.fingerprint_mixedcase;
-        context.Keyring.getKeys(mixedCase).then(function (result){
+        context.Keyring.getKeys({ pattern: mixedCase }).then(function (result){
             expect(result).to.be.an('array');
             expect(result.length).to.equal(1);
             expect(result[0].fingerprint).to.equal(mixedCase.toUpperCase());
