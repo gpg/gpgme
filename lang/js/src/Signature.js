@@ -87,9 +87,12 @@ class GPGME_Signature {
     constructor (sigObject){
         this._rawSigObject = sigObject;
     }
+    /**
+     * @returns {String} the fingerprint of this signature
+     */
     get fingerprint (){
         if (!this._rawSigObject.fingerprint){
-            return gpgme_error('SIG_WRONG');
+            throw gpgme_error('SIG_WRONG');
         } else {
             return this._rawSigObject.fingerprint;
         }
