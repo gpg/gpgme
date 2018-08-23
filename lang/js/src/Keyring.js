@@ -221,7 +221,12 @@ export class GPGME_Keyring {
                             reject(gpgme_error('KEY_NO_DEFAULT'));
                         } else {
                             for (let i=0; i< result.keys.length; i++ ) {
-                                if (result.keys[i].invalid === false) {
+                                if (
+                                    result.keys[i].invalid === false &&
+                                    result.keys[i].expired === false &&
+                                    result.keys[i].revoked === false &&
+                                    result.keys[i].can_sign === true
+                                ) {
                                     let k = createKey(
                                         result.keys[i].fingerprint,
                                         !prepare_sync,
