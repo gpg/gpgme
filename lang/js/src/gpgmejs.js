@@ -134,43 +134,39 @@ export class GpgME {
      * message and additional info.
      * @async
      */
-    encrypt (options){
-        if (!options || (typeof options !== 'object')){
-            return Promise.reject(gpgme_error('PARAM_WRONG'));
-        }
-        if (!options.hasOwnProperty('data')
-            || !options.hasOwnProperty('publicKeys')
-        ){
+    encrypt ({ data, publicKeys, secretKeys, base64 = false, armor = true,
+        wildcard, additional = {} }){
+        if (!data || !publicKeys){
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
         let msg = createMessage('encrypt');
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
-        if (!options.hasOwnProperty('armor')){
-            options.armor = true;
-        }
-        msg.setParameter('armor', options.armor);
+        msg.setParameter('armor', armor);
 
-        if (options.base64 === true) {
+        if (base64 === true) {
             msg.setParameter('base64', true);
         }
-        let pubkeys = toKeyIdArray(options.publicKeys);
+        let pubkeys = toKeyIdArray(publicKeys);
+        if (!pubkeys.length) {
+            return Promise.reject(gpgme_error('MSG_NO_KEYS'));
+        }
         msg.setParameter('keys', pubkeys);
-        let sigkeys = toKeyIdArray(options.secretKeys);
+        let sigkeys = toKeyIdArray(secretKeys);
         if (sigkeys.length > 0) {
             msg.setParameter('signing_keys', sigkeys);
         }
-        putData(msg, options.data);
-        if (options.wildcard === true){
+        putData(msg, data);
+        if (wildcard === true){
             msg.setParameter('throw-keyids', true);
         }
-        if (options.additional){
-            let additional_Keys = Object.keys(options.additional);
+        if (additional){
+            let additional_Keys = Object.keys(additional);
             for (let k = 0; k < additional_Keys.length; k++) {
                 try {
                     msg.setParameter(additional_Keys[k],
-                        options.additional[additional_Keys[k]]);
+                        additional[additional_Keys[k]]);
                 }
                 catch (error){
                     return Promise.reject(error);
@@ -197,11 +193,8 @@ export class GpgME {
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
-    decrypt (options){
-        if (!options || (typeof options !== 'object')){
-            return Promise.reject('PARAM_WRONG');
-        }
-        if (!options.data){
+    decrypt ({ data, base64, expect }){
+        if (!data){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
         let msg = createMessage('decrypt');
@@ -209,13 +202,13 @@ export class GpgME {
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
-        if (options.base64 === true){
+        if (base64 === true){
             msg.setParameter('base64', true);
         }
-        if (options.expect === 'base64' || options.expect === 'uint8'){
-            msg.expected = options.expect;
+        if (expect === 'base64' || expect === 'uint8'){
+            msg.expected = expect;
         }
-        putData(msg, options.data);
+        putData(msg, data);
         return new Promise(function (resolve, reject){
             msg.post().then(function (result){
                 let _result = { data: result.data };
@@ -260,38 +253,32 @@ export class GpgME {
      * @returns {Promise<signResult>}
      * @async
      */
-    sign (options){
-        if (
-            !options || (typeof options !== 'object')){
-            return Promise.reject(gpgme_error('PARAM_WRONG'));
-        }
-        if (!options.data){
+    sign ({ data, keys, mode = 'clearsign', base64 }){
+        if (!data){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
-        if (!options.mode) {
-            options.mode = 'clearsign';
-        }
-        let key_arr = toKeyIdArray(options.keys);
+        let key_arr = toKeyIdArray(keys);
         if (key_arr.length === 0){
             return Promise.reject(gpgme_error('MSG_NO_KEYS'));
         }
-        let msg = createMessage('sign');
 
+        let msg = createMessage('sign');
         msg.setParameter('keys', key_arr);
-        if (options.base64 === true){
+        if (base64 === true){
             msg.setParameter('base64', true);
         }
-        msg.setParameter('mode', options.mode);
-        putData(msg, options.data);
+        msg.setParameter('mode', mode);
+        putData(msg, data);
+
         return new Promise(function (resolve,reject) {
             msg.post().then( function (message) {
-                if (options.mode === 'clearsign'){
+                if (mode === 'clearsign'){
                     resolve({
                         data: message.data }
                     );
-                } else if (options.mode === 'detached') {
+                } else if (mode === 'detached') {
                     resolve({
-                        data: options.data,
+                        data: data,
                         signature: message.data
                     });
                 }
@@ -313,23 +300,23 @@ export class GpgME {
      * @returns {Promise<verifyResult>}
      *@async
     */
-    verify (options){
-        if (!options || (typeof options !== 'object') || !options.data){
+    verify ({ data, signature, base64 }){
+        if (!data){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
         let msg = createMessage('verify');
-        let dt = putData(msg, options.data);
+        let dt = putData(msg, data);
         if (dt instanceof Error){
             return Promise.reject(dt);
         }
-        if (options.signature){
+        if (signature){
             if (typeof signature !== 'string'){
                 return Promise.reject(gpgme_error('PARAM_WRONG'));
             } else {
                 msg.setParameter('signature', signature);
             }
         }
-        if (options.base64 === true){
+        if (base64 === true){
             msg.setParameter('base64', true);
         }
         return new Promise(function (resolve, reject){

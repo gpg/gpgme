@@ -262,7 +262,7 @@ function unittests (){
         it('Loading Keys from Keyring, to be used synchronously',
             function (done){
                 let keyring = new GPGME_Keyring;
-                keyring.getKeys(null, true).then(function (result){
+                keyring.getKeys({ prepare_sync: true }).then(function (result){
                     expect(result).to.be.an('array');
                     expect(result[0].get('hasSecret')).to.be.a('boolean');
                     done();
@@ -273,7 +273,9 @@ function unittests (){
         it('Loading specific Key from Keyring, to be used synchronously',
             function (done){
                 let keyring = new GPGME_Keyring;
-                keyring.getKeys(kp.validKeyFingerprint, true).then(
+                keyring.getKeys({
+                    pattern: kp.validKeyFingerprint,
+                    prepare_sync: true }).then(
                     function (result){
                         expect(result).to.be.an('array');
                         expect(result[0].get('hasSecret')).to.be.a('boolean');

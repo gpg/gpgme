@@ -35,7 +35,7 @@ export class GPGME_Keyring {
     /**
      * Queries Keys (all Keys or a subset) from gnupg.
      *
-     * @param {Object} options
+     * @param {Object} options:
      * @param {String | Array<String>} options.pattern (optional) A pattern to
      * search for in userIds or KeyIds.
      * @param {Boolean} options.prepare_sync (optional) if set to true, most
@@ -49,24 +49,14 @@ export class GPGME_Keyring {
      * @static
      * @async
      */
-    getKeys (options){
-        if (options && typeof options !== 'object'){
-            return Promise.reject(gpgme_error('PARAM_WRONG'));
-        }
+    getKeys ({ pattern, prepare_sync = false, search = false }){
         return new Promise(function (resolve, reject) {
             let msg = createMessage('keylist');
-            if (options && options.pattern) {
-                if (
-                    typeof options.pattern === 'string'
-                    || Array.isArray(options.pattern)
-                ){
-                    msg.setParameter('keys', options.pattern);
-                } else {
-                    reject(gpgme_error('PARAM_WRONG'));
-                }
+            if (pattern) {
+                msg.setParameter('keys', pattern);
             }
             msg.setParameter('sigs', true);
-            if (options && options.search === true){
+            if (search === true){
                 msg.setParameter('locate', true);
             }
             msg.post().then(function (result){
@@ -75,11 +65,11 @@ export class GPGME_Keyring {
                     resolve([]);
                 } else {
                     let secondrequest;
-                    if (options && options.prepare_sync === true) {
+                    if (prepare_sync === true) {
                         secondrequest = function () {
                             let msg2 = createMessage('keylist');
-                            if (options.pattern){
-                                msg2.setParameter('keys', options.pattern);
+                            if (pattern){
+                                msg2.setParameter('keys', pattern);
                             }
                             msg2.setParameter('secret', true);
                             return msg2.post();
@@ -91,7 +81,7 @@ export class GPGME_Keyring {
                     }
                     secondrequest().then(function (answer) {
                         for (let i=0; i < result.keys.length; i++){
-                            if (options.prepare_sync === true){
+                            if (prepare_sync === true){
                                 if (answer && answer.keys) {
                                     for (let j=0;
                                         j < answer.keys.length; j++ ){
@@ -111,7 +101,7 @@ export class GPGME_Keyring {
                                 }
                             }
                             let k = createKey(result.keys[i].fingerprint,
-                                !options.prepare_sync, result.keys[i]);
+                                !prepare_sync, result.keys[i]);
                             resultset.push(k);
                         }
                         resolve(resultset);
@@ -147,27 +137,19 @@ export class GPGME_Keyring {
      * @static
      * @async
      */
-    getKeysArmored (options) {
-        if (options && typeof options !== 'object'){
-            return Promise.reject(gpgme_error('PARAM_WRONG'));
-        }
+    getKeysArmored ({ pattern, with_secret_fpr }) {
         return new Promise(function (resolve, reject) {
             let msg = createMessage('export');
             msg.setParameter('armor', true);
-            if (options.with_secret_fpr === true) {
+            if (with_secret_fpr === true) {
                 msg.setParameter('with-sec-fprs', true);
             }
-            if (options.pattern){
-                if (
-                    typeof options.pattern === 'string'
-                    || Array.isArray(options.pattern)
-                ){
-                    msg.setParameter('keys', options.pattern);
-                }
+            if (pattern){
+                msg.setParameter('keys', pattern);
             }
             msg.post().then(function (answer){
                 const result = { armored: answer.data };
-                if (options.with_secret_fpr === true){
+                if (with_secret_fpr === true){
                     if (answer.hasOwnProperty('sec-fprs')){
                         result.secret_fprs = answer['sec-fprs'];
                     } else {
@@ -404,39 +386,27 @@ export class GPGME_Keyring {
      * @return {Promise<Key|GPGME_Error>}
      * @async
      */
-    generateKey (options){
-        if (!options
-            || typeof options !== 'object'
-            || typeof options.userId !== 'string'
+    generateKey ({ userId, algo = 'default', expires= 0, subkey_algo }){
+        if (typeof userId !== 'string'
             // eslint-disable-next-line no-use-before-define
-            || ( options.algo && supportedKeyAlgos.indexOf(options.algo) < 0 )
-            || ( options.expires && !(
-                Number.isInteger(options.expires) || options.expires < 0 ) )
+            || (algo && supportedKeyAlgos.indexOf(algo) < 0 )
+            || (!Number.isInteger(expires) || expires < 0 )
         ){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
         // eslint-disable-next-line no-use-before-define
-        if (options.subkey_algo && supportedKeyAlgos.indexOf(
-            options.subkey_algo) < 0
-        ){
+        if (subkey_algo && supportedKeyAlgos.indexOf(subkey_algo) < 0){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
         let me = this;
         return new Promise(function (resolve, reject){
             let msg = createMessage('createkey');
-            msg.setParameter('userid', options.userId);
-            if (!options.algo){
-                options.algo === 'default';
+            msg.setParameter('userid', userId);
+            msg.setParameter('algo', algo);
+            if (subkey_algo) {
+                msg.setParameter('subkey-algo',subkey_algo );
             }
-            msg.setParameter('algo', options.algo);
-            if (options.subkey_algo) {
-                msg.setParameter('subkey-algo', options.subkey_algo );
-            }
-            if (options.expires){
-                msg.setParameter('expires', options.expires);
-            } else {
-                msg.setParameter('expires', 0);
-            }
+            msg.setParameter('expires', expires);
             msg.post().then(function (response){
                 me.getKeys(response.fingerprint, true).then(
                     // TODO prepare_sync?
