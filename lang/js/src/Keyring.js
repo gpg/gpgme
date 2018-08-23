@@ -185,7 +185,8 @@ export class GPGME_Keyring {
                     && resp.option.value.length === 1
                     && resp.option.value[0].hasOwnProperty('string')
                     && typeof (resp.option.value[0].string) === 'string'){
-                    me.getKeys(resp.option.value[0].string, true).then(
+                    me.getKeys({ pattern: resp.option.value[0].string,
+                        prepare_sync: true }).then(
                         function (keys){
                             if (keys.length === 1){
                                 resolve(keys[0]);
