@@ -1607,6 +1607,8 @@ static const char hlp_encrypt[] =
   "protocol:      Either \"openpgp\" (default) or \"cms\".\n"
   "signing_keys:  Similar to the keys parameter for added signing.\n"
   "               (openpgp only)"
+  "file_name:     The file name associated with the data.\n"
+  "sender:        Sender info to embed in a signature.\n"
   "\n"
   "Optional boolean flags (default is false):\n"
   "base64:        Input data is base64 encoded.\n"
@@ -1634,12 +1636,14 @@ op_encrypt (cjson_t request, cjson_t result)
   char **signing_patterns = NULL;
   int opt_mime;
   char *keystring = NULL;
+  char *file_name = NULL;
   gpgme_data_t input = NULL;
   gpgme_data_t output = NULL;
   int abool;
   gpgme_encrypt_flags_t encrypt_flags = 0;
   gpgme_ctx_t keylist_ctx = NULL;
   gpgme_key_t key = NULL;
+  cjson_t j_tmp = NULL;
 
   if ((err = get_protocol (request, &protocol)))
     goto leave;
@@ -1676,6 +1680,17 @@ op_encrypt (cjson_t request, cjson_t result)
   if (abool)
     encrypt_flags |= GPGME_ENCRYPT_WANT_ADDRESS;
 
+  j_tmp = cJSON_GetObjectItem (request, "file_name");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      file_name = j_tmp->valuestring;
+    }
+
+  j_tmp = cJSON_GetObjectItem (request, "sender");
+  if (j_tmp && cjson_is_string (j_tmp))
+    {
+      gpgme_set_sender (ctx, j_tmp->valuestring);
+    }
 
   /* Get the keys.  */
   err = get_keys (request, "keys", &keystring);
@@ -1724,6 +1739,10 @@ op_encrypt (cjson_t request, cjson_t result)
   if (opt_mime)
     gpgme_data_set_encoding (input, GPGME_DATA_ENCODING_MIME);
 
+  if (file_name)
+    {
+      gpgme_data_set_file_name (input, file_name);
+    }
 
   /* Create an output data object.  */
   err = gpgme_data_new (&output);
@@ -1765,6 +1784,8 @@ op_encrypt (cjson_t request, cjson_t result)
   xfree_array (signing_patterns);
   xfree (keystring);
   release_onetime_context (keylist_ctx);
+  /* Reset sender in case the context is reused */
+  gpgme_set_sender (ctx, NULL);
   gpgme_key_unref (key);
   gpgme_signers_clear (ctx);
   release_context (ctx);
