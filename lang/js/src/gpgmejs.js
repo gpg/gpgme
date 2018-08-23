@@ -128,6 +128,9 @@ export class GpgME {
      * block.
      * @param {Boolean} options.wildcard (optional) If true, recipient
      * information will not be added to the message.
+     * @param {Boolean} always_trust (optional, default true) This assumes that
+     * used keys are fully trusted. If set to false, encryption to a key not
+     * fully trusted in gnupg will fail
      * @param {Object} additional use additional valid gpg options as
      * defined in {@link permittedOperations}
      * @returns {Promise<encrypt_result>} Object containing the encrypted
@@ -135,7 +138,7 @@ export class GpgME {
      * @async
      */
     encrypt ({ data, publicKeys, secretKeys, base64 = false, armor = true,
-        wildcard, additional = {} }){
+        wildcard, always_trust = true, additional = {} }){
         if (!data || !publicKeys){
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
@@ -147,6 +150,9 @@ export class GpgME {
 
         if (base64 === true) {
             msg.setParameter('base64', true);
+        }
+        if (always_trust === true) {
+            msg.setParameter('always-trust', true);
         }
         let pubkeys = toKeyIdArray(publicKeys);
         if (!pubkeys.length) {
