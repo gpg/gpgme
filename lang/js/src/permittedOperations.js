@@ -94,6 +94,12 @@ export const permittedOperations = {
             },
             'wrap': {
                 allowed: ['boolean']
+            },
+            'sender': {
+                allowed: ['string']
+            },
+            'file_name': {
+                allowed: ['string']
             }
         },
         answer: {
