@@ -5845,7 +5845,15 @@ verification was attempted.
 
 @item char *file_name
 This is the filename of the original plaintext message file if it is
-known, otherwise this is a null pointer.
+known, otherwise this is a null pointer.  Warning: The filename is
+not covered by the signature.
+
+@item unsigned int is_mime : 1;
+@since{1.11.0}
+
+The message claims that the content is a MIME object.  Warning: This
+flag is not covered by the signature.
+
 @end table
 @end deftp
 
