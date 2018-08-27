@@ -217,7 +217,7 @@ The GPGME Python bindings only have three requirements:
 
 1. A suitable version of Python 2 or Python 3.  With Python 2 that
    means Python 2.7 and with Python 3 that means Python 3.4 or higher.
-2. SWIG.
+2. [[https://www.swig.org][SWIG]]..
 3. GPGME itself.  Which also means that all of GPGME's dependencies
    must be installed too.
 
@@ -253,6 +253,154 @@ For Python 3 it checks for these executables in this order: =python3=,
 
 See the GPGME =README= file for details of how to install GPGME from
 source.
+
+
+** Known Issues
+   :PROPERTIES:
+   :CUSTOM_ID: snafu
+   :END:
+
+There are a few known issues with the current build process and the
+Python bindings.  For the most part these are easily addressed should
+they be encountered.
+
+
+*** Breaking Builds
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-a-swig-of-this-builds-character
+    :END:
+
+Occasionally when installing GPGME with the Python bindings included
+it may be observed that the =make= portion of that process induces a
+large very number of warnings and, eventually errors which end that
+part of the build process.  Yet following that with =make check= and
+=make install= appears to work seamlessly.
+
+The cause of this is related to the way SWIG needs to be called to
+dynamically generate the C bindings for GPGME in the first place.  So
+the entire process will always produce =lang/python/python2-gpg/= and
+=lang/python/python3-gpg/= directories.  These should contain the
+build output generated during compilation, including the complete
+bindings and module installed into =site-packages=.
+
+Occasionally the errors in the early part or some other conflict
+(e.g. not installing as */root/* or */su/*) may result in nothing
+being installed to the relevant =site-packages= directory and the
+build directory missing a lot of expected files.  Even when this
+occurs, the solution is actually quite simple and will always work.
+
+That solution is simply to run the following commands as either the
+*root* user or prepended with =sudo -H=[fn:5] in the =lang/python/=
+directory:
+
+#+BEGIN_SRC shell
+  /path/to/pythonX.Y setup.py build
+  /path/to/pythonX.Y setup.py build
+  /path/to/pythonX.Y setup.py install
+#+END_SRC
+
+Yes, the build command does need to be run twice.  Yes, you still need
+to run the potentially failing or incomplete steps during the
+=configure=, =make= and =make install= steps with installing GPGME.
+This is because those steps generate a lot of essential files needed,
+both by and in order to create, the bindings (including both the
+=setup.py= and =gpgme.h= files).
+
+
+**** IMPORTANT Note
+     :PROPERTIES:
+     :CUSTOM_ID: snafu-swig-build-note
+     :END:
+
+If specifying a selected number of languages to create bindings for,
+always leave Python last.  Currently the other languages are also
+preceding Python of either version when listed alphabetically and so
+that just happens by default currently.  If Python is set to precede
+one of the other languages then it is possible that the errors
+described here may interrupt the build process before generating
+bindings for those other languages.
+
+
+*** Multiple installations
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-the-full-monty
+    :END:
+
+For a veriety of reasons it may be either necessary or just preferable
+to install the bindings to alternative installed Python versions which
+meet the requirements of these bindings.
+
+On POSIX systens this will generally be most simply achieved by
+running the manual installation commands (build, build, install) as
+described in the previous section for each Python installation the
+bindings need to be installed to.
+
+As per the SWIG documentation: the compilers, libraries and runtime
+used to build GPGME and the Python Bindings *must* match those used to
+compile Python itself, including the version number(s) (at least going
+by major version numbers and probably minor numbers too).
+
+On most POSIX systems, including OS X, this will very likely be the
+case in most, if not all, cases.
+
+
+*** Won't Work With Windows
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-runtime-not-funtime
+    :END:
+
+There are semi-regular reports of Windows users having considerable
+difficulty in installing and using the Python bindings at all.  Very
+often, possibly even always, these reports come from Cygwin users
+and/or MinGW users and/or Msys2 users.  Though not all of them have
+been confirmed, it appears that these reports have also come from
+people who installed Python using the Windows installer files from the
+[[https://python.org][Python website]] (i.e. mostly MSI installers, sometimes self-extracting
+=.exe= files).
+
+The Windows versions of Python are not built using Cygwin, MinGW or
+Msys2; they're built using Microsoft Visual Studio.  Furthermore the
+version used is /considerably/ more advanced than the version which
+MinGWobtained a small number of files from many years ago in order to
+be able to compile anything at all.  Not only that, but there are
+changes to the version of Visual Studio between some micro releases,
+though that is is particularly the case with Python 2.7, since it has
+been kept around far longer than it should have been.
+
+There are two theoretical solutions to this issue:
+
+ 1. Compile and install the GnuPG stack, including GPGME and the
+    Python bibdings using the same version of Microsoft Visual Studio
+    used by the Python Foundation to compile the version of Python
+    installed.
+
+    If there are multiple versions of Python then this will need to be
+    done with each different version of Visual Studio used.
+
+ 2. Compile and install Python using the same tools used by choice,
+    such as MinGW or Msys2.
+
+Do *NOT* use the official Windows installer for Python unless
+following the first method.
+
+In this type of situation it may even be for the best to accept that
+there are less limitations on permissive software than free software
+and simply opt to use a recent version of the Community Edition of
+Microsoft Visual Studio to compile and build all of it, no matter
+what.
+
+Investigations into the extent or the limitations of this issue are
+ongoing.
+
+
+*** I don't like SWIG, Use CFFI instead
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-foad
+    :END:
+
+Obscenis, peream, CFFI_lover, si non uti me pudet improbisque verbis
+sed cum tu posito degenerem pudore ostendas mihi coleos patentes cum
+cunno mihi mentula est vocanda.
 
 
 * Fundamentals
@@ -1764,3 +1912,11 @@ comment regarding the project in their key somewhere.
 [fn:4] As Python 3.7 is a very recent release, it is not given
 priority over 3.6 yet, but will probably be prioritised by the release
 of Python 3.7.2.
+
+[fn:5] Yes, even if you use virtualenv with everything you do in
+Python.  If you want to install this module as just your user account
+then you will need to manually configure, compile and install the
+/entire/ GnuPG stack as that user as well.  This includes libraries
+which are not often installed that way.  It can be done and there are
+circumstances under which it is worthwhile, but generally only on
+POSIX systems which utilise single user mode (some even require it).
