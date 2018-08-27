@@ -232,7 +232,9 @@ class Answer{
             return gpgme_error('CONN_UNEXPECTED_ANSWER');
         }
         let _decodedResponse = JSON.parse(atob(this._response_b64));
-        let _response = {};
+        let _response = {
+            format: 'ascii'
+        };
         let messageKeys = Object.keys(_decodedResponse);
         let poa = permittedOperations[this.operation].answer;
         if (messageKeys.length === 0){

@@ -55,8 +55,12 @@ import { createSignature } from './Signature';
 /**
  * @typedef {Object} encrypt_result The result of an encrypt operation
  * @property {String} data The encrypted message
- * @property {Boolean} base64 Indicating whether returning payload data is
- * base64 encoded
+ * @property {String} format Indicating how the data was converted after being
+ *  received from gpgme.
+ *      'ascii': Data was ascii-encoded and no further processed
+ *      'string': Data was decoded into an utf-8 string,
+ *      'base64': Data was not processed and is a base64 string
+ *      'uint8': Data was turned into a Uint8Array
  */
 
 /**
