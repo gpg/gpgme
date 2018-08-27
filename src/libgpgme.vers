@@ -133,6 +133,9 @@ GPGME_1.1 {
 
     gpgme_op_decrypt_ext;
     gpgme_op_decrypt_ext_start;
+
+    gpgme_data_new_from_estream;
+
 };
 
 

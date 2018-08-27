@@ -272,5 +272,7 @@ EXPORTS
     gpgme_op_encrypt_sign_ext             @202
     gpgme_op_encrypt_sign_ext_start       @203
 
+    gpgme_data_new_from_estream           @204
+
 ; END
 
