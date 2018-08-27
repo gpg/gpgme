@@ -115,7 +115,14 @@ export function isLongId (value){
  */
 export function decode (property){
     if (typeof property === 'string'){
-        return decodeURIComponent(escape(property));
+        try {
+            return decodeURIComponent(escape(property));
+        }
+        catch (error){
+            if (error instanceof URIError) {
+                return property;
+            }
+        }
     } else if (Array.isArray(property)){
         let res = [];
         for (let arr=0; arr < property.length; arr++){
