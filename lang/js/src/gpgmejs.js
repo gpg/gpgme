@@ -217,28 +217,28 @@ export class GpgME {
         putData(msg, data);
         return new Promise(function (resolve, reject){
             msg.post().then(function (result){
-                let _result = { data: result.data };
-                _result.format = result.format ? result.format : null;
+                let returnValue = { data: result.data };
+                returnValue.format = result.format ? result.format : null;
                 if (result.hasOwnProperty('dec_info')){
-                    _result.is_mime = result.dec_info.is_mime ? true: false;
+                    returnValue.is_mime = result.dec_info.is_mime ? true: false;
                     if (result.dec_info.file_name) {
-                        _result.file_name = result.dec_info.file_name;
+                        returnValue.file_name = result.dec_info.file_name;
                     }
                 }
-                if (!result.file_name) {
-                    _result.file_name = null;
+                if (!returnValue.file_name) {
+                    returnValue.file_name = null;
                 }
                 if (result.hasOwnProperty('info')
                     && result.info.hasOwnProperty('signatures')
                     && Array.isArray(result.info.signatures)
                 ) {
-                    _result.signatures = collectSignatures(
+                    returnValue.signatures = collectSignatures(
                         result.info.signatures);
                 }
-                if (_result.signatures instanceof Error){
-                    reject(_result.signatures);
+                if (returnValue.signatures instanceof Error){
+                    reject(returnValue.signatures);
                 } else {
-                    resolve(_result);
+                    resolve(returnValue);
                 }
             }, function (error){
                 reject(error);
@@ -330,18 +330,18 @@ export class GpgME {
                 if (!message.info || !message.info.signatures){
                     reject(gpgme_error('SIG_NO_SIGS'));
                 } else {
-                    let _result = {
+                    let returnValue = {
                         signatures: collectSignatures(message.info.signatures)
                     };
-                    if (_result.signatures instanceof Error){
-                        reject(_result.signatures);
+                    if (returnValue.signatures instanceof Error){
+                        reject(returnValue.signatures);
                     } else {
-                        _result.is_mime = message.info.is_mime? true: false;
+                        returnValue.is_mime = message.info.is_mime? true: false;
                         if (message.info.filename){
-                            _result.file_name = message.info.filename;
+                            returnValue.file_name = message.info.filename;
                         }
-                        _result.data = message.data;
-                        resolve(_result);
+                        returnValue.data = message.data;
+                        resolve(returnValue);
                     }
                 }
             }, function (error){
