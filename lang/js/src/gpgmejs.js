@@ -33,9 +33,11 @@ import { createSignature } from './Signature';
  * @property {String|Uint8Array} data The decrypted data
  * @property {String} format Indicating how the data was converted after being
  * received from gpgme.
+ *      'ascii': Data was ascii-encoded and no further processed
  *      'string': Data was decoded into an utf-8 string,
  *      'base64': Data was not processed and is a base64 string
  *      'uint8': data was turned into a Uint8Array
+ *
  * @property {Boolean} is_mime (optional) the data claims to be a MIME
  * object.
  * @property {String} file_name (optional) the original file name
@@ -82,7 +84,6 @@ import { createSignature } from './Signature';
  * @property {Boolean} data: The verified data
  * @property {Boolean} is_mime (optional) the data claims to be a MIME
  * object.
- * @property {String} file_name (optional) the original file name
  * @property {signatureDetails} signatures Verification details for
  * signatures
  */
