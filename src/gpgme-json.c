@@ -1138,7 +1138,6 @@ verify_result_to_json (gpgme_verify_result_t verify_result)
 {
   cjson_t result = xjson_CreateObject ();
 
-  xjson_AddStringToObject0 (result, "file_name", verify_result->file_name);
   xjson_AddBoolToObject (result, "is_mime", verify_result->is_mime);
 
   if (verify_result->signatures)
@@ -2107,8 +2106,8 @@ static const char hlp_verify[] =
   "data:   The verified data.  This may be base64 encoded.\n"
   "base64: Boolean indicating whether data is base64 encoded.\n"
   "info:   An object with verification information (gpgme_verify_result_t).\n"
-  " file_name: Optional string of the plaintext file name.\n"
   " is_mime:    Boolean that is true if the messages claims it is MIME.\n"
+  "             Note that this flag is not covered by the signature.)\n"
   " signatures: Array of signatures\n"
   "  summary: Object containing summary information.\n"
   "   Boolean values: (Check gpgme_sigsum_t doc for meaning)\n"
