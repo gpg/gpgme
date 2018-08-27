@@ -287,13 +287,14 @@ function unittests (){
 
         it('Querying non-existing Key from Keyring', function (done){
             let keyring = new GPGME_Keyring;
-            keyring.getKeys(kp.invalidKeyFingerprint, true).then(
-                function (result){
-                    expect(result).to.be.an('array');
-                    expect(result.length).to.equal(0);
-                    done();
-                }
-            );
+            keyring.getKeys({
+                pattern: kp.invalidKeyFingerprint,
+                prepare_sync: true
+            }).then(function (result){
+                expect(result).to.be.an('array');
+                expect(result.length).to.equal(0);
+                done();
+            });
         });
 
     });

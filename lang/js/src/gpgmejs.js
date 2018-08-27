@@ -142,7 +142,10 @@ export class GpgME {
      * @async
      */
     encrypt ({ data, publicKeys, secretKeys, base64 = false, armor = true,
-        wildcard, always_trust = true, additional = {} }){
+        wildcard, always_trust = true, additional = {} } = {}){
+        if (typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         if (!data || !publicKeys){
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
@@ -203,7 +206,10 @@ export class GpgME {
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
-    decrypt ({ data, base64, expect }){
+    decrypt ({ data, base64, expect } = {}){
+        if (typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         if (!data){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -263,7 +269,10 @@ export class GpgME {
      * @returns {Promise<signResult>}
      * @async
      */
-    sign ({ data, keys, mode = 'clearsign', base64 }){
+    sign ({ data, keys, mode = 'clearsign', base64 } = {}){
+        if (typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         if (!data){
             return Promise.reject(gpgme_error('MSG_EMPTY'));
         }
@@ -310,7 +319,10 @@ export class GpgME {
      * @returns {Promise<verifyResult>}
      *@async
     */
-    verify ({ data, signature, base64 }){
+    verify ({ data, signature, base64 } = {}){
+        if (typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         if (!data){
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }

@@ -49,7 +49,13 @@ export class GPGME_Keyring {
      * @static
      * @async
      */
-    getKeys ({ pattern, prepare_sync = false, search = false }){
+    getKeys ({ pattern, prepare_sync = false, search = false } = {}){
+        if (typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
+        if (arguments.length && typeof arguments[0] !== 'object') {
+            return Promise.reject(gpgme_error('PARAM_WRONG'));
+        }
         return new Promise(function (resolve, reject) {
             let msg = createMessage('keylist');
             if (pattern) {
@@ -387,7 +393,7 @@ export class GPGME_Keyring {
      * @return {Promise<Key|GPGME_Error>}
      * @async
      */
-    generateKey ({ userId, algo = 'default', expires= 0, subkey_algo }){
+    generateKey ({ userId, algo = 'default', expires= 0, subkey_algo } = {}){
         if (typeof userId !== 'string'
             // eslint-disable-next-line no-use-before-define
             || (algo && supportedKeyAlgos.indexOf(algo) < 0 )
@@ -409,13 +415,14 @@ export class GPGME_Keyring {
             }
             msg.setParameter('expires', expires);
             msg.post().then(function (response){
-                me.getKeys(response.fingerprint, true).then(
-                    // TODO prepare_sync?
-                    function (result){
-                        resolve(result);
-                    }, function (error){
-                        reject(error);
-                    });
+                me.getKeys({
+                    pattern: response.fingerprint,
+                    prepare_sync: true
+                }).then(function (result){
+                    resolve(result);
+                }, function (error){
+                    reject(error);
+                });
             }, function (error) {
                 reject(error);
             });
