@@ -1521,7 +1521,7 @@ encode_and_chunk (cjson_t request, cjson_t response)
 {
   char *data;
   gpg_error_t err = 0;
-  size_t chunksize;
+  size_t chunksize = 0;
   char *getmore_request = NULL;
 
   if (opt_interactive)
@@ -1537,7 +1537,6 @@ encode_and_chunk (cjson_t request, cjson_t response)
 
   if (!request)
     {
-      err = GPG_ERR_INV_VALUE;
       goto leave;
     }
 
@@ -3085,7 +3084,7 @@ op_createkey (cjson_t request, cjson_t result)
 
       err = gpgme_get_key (keylistctx, new_fpr, &new_key, 1);
       release_onetime_context (keylistctx);
-      if (err)
+      if (err || !new_key)
         {
           gpg_error_object (result, err, "Error finding created key: %s",
                             gpg_strerror (err));
@@ -3097,7 +3096,27 @@ op_createkey (cjson_t request, cjson_t result)
                                    0, expires, flags |= GPGME_CREATE_ENCR);
       xfree (subkey_algo);
       if (err)
-        goto leave;
+        {
+          /* This can happen for example if the user cancels the
+           * pinentry to unlock the primary key when adding the
+           * subkey.  To avoid an artifact of a pimary key without
+           * an encryption capable subkey we delete the created
+           * key and treat the whole operation as failed. */
+          gpgme_error_t err2;
+          gpg_error_object (result, err, "Error creating subkey: %s",
+                            gpg_strerror (err));
+          log_info ("Deleting primary key after keygen failure.\n");
+          err2 = gpgme_op_delete_ext (ctx, new_key, GPGME_DELETE_FORCE |
+                                      GPGME_DELETE_ALLOW_SECRET);
+          if (err2)
+            {
+              log_error ("Error deleting primary key: %s",
+                         gpg_strerror (err));
+            }
+          gpgme_key_unref (new_key);
+          goto leave;
+        }
+      gpgme_key_unref (new_key);
     }
 
   xjson_AddStringToObject0 (result, "fingerprint", new_fpr);
