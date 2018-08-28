@@ -1521,7 +1521,7 @@ encode_and_chunk (cjson_t request, cjson_t response)
 {
   char *data;
   gpg_error_t err = 0;
-  size_t chunksize;
+  size_t chunksize = 0;
   char *getmore_request = NULL;
 
   if (opt_interactive)
@@ -1537,7 +1537,6 @@ encode_and_chunk (cjson_t request, cjson_t response)
 
   if (!request)
     {
-      err = GPG_ERR_INV_VALUE;
       goto leave;
     }
 
