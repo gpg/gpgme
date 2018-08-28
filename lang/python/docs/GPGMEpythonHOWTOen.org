@@ -398,9 +398,28 @@ ongoing.
     :CUSTOM_ID: snafu-foad
     :END:
 
-Obscenis, peream, CFFI_lover, si non uti me pudet improbisque verbis
-sed cum tu posito degenerem pudore ostendas mihi coleos patentes cum
-cunno mihi mentula est vocanda.
+There are many reasons for favouring CFFI and proponents of it are
+quite happy to repeat these things as if all it would take to switch
+from SWIG to CFFI is repeating that list as if it were a new concept.
+
+The fact is that there are things which Python's CFFI implementation
+cannot handle in the GPGME C code.  Beyond that there are features of
+SWIG which are simply not available with CFFI at all.  SWIG generates
+the bindings to Python using the =gpgme.h= file, but that file is not
+a single version shipped with each release, it too is generated when
+GPGME is compiled.
+
+CFFI is currently unable to adapt to such a potentially mutable
+codebase.  If there were some means of applying SWIG's dynamic code
+generation to produce CFFI API modes of accessing the GPGME libraries
+(or the source source code directly), but such a thing does not exist
+yet either and it currently appears that work is needed in at least
+one of CFFI's dependencies before any of this can be addressed.
+
+So if you're a massive fan of CFFI; that's great, but if you want this
+project to switch to CFFI then rather than just insisting that it
+should, I'd suggest you volunteer to bring CFFI up to the level this
+project needs.
 
 
 * Fundamentals
