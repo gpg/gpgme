@@ -1396,6 +1396,7 @@ class Data(GpgmeWrapper):
             'gpgme_data_release_and_get_mem',
             'gpgme_data_get_encoding',
             'gpgme_data_get_file_name',
+            'gpgme_data_set_flag',
             'gpgme_data_identify',
         }
 
