@@ -1116,12 +1116,13 @@ class Context(GpgmeWrapper):
         # | grep -v _op_ | awk "/\(gpgme_ctx/ { printf (\"'%s',\\n\", \$2) } "
         return ((name.startswith('gpgme_op_') and not
                  name.endswith('_result')) or name in {
-                    'gpgme_new', 'gpgme_set_ctx_flag', 'gpgme_set_protocol',
-                    'gpgme_set_sub_protocol', 'gpgme_set_keylist_mode',
-                    'gpgme_set_pinentry_mode', 'gpgme_set_locale',
-                    'gpgme_ctx_set_engine_info', 'gpgme_signers_add',
-                    'gpgme_sig_notation_add', 'gpgme_set_sender',
-                    'gpgme_cancel', 'gpgme_cancel_async', 'gpgme_get_key'
+                     'gpgme_new', 'gpgme_set_ctx_flag', 'gpgme_set_protocol',
+                     'gpgme_set_sub_protocol', 'gpgme_set_keylist_mode',
+                     'gpgme_set_pinentry_mode', 'gpgme_set_locale',
+                     'gpgme_ctx_set_engine_info', 'gpgme_signers_add',
+                     'gpgme_sig_notation_add', 'gpgme_set_sender',
+                     'gpgme_cancel', 'gpgme_cancel_async', 'gpgme_get_key',
+                     'gpgme_get_sig_key',
                 })
 
     _boolean_properties = {'armor', 'textmode', 'offline'}
