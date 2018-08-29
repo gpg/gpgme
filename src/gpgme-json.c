@@ -2173,24 +2173,24 @@ op_verify (cjson_t request, cjson_t result)
   if (err && err != gpg_error (GPG_ERR_NO_DATA))
     goto leave;
 
-  /* Create an output data object.  */
-  err = gpgme_data_new (&output);
-  if (err)
+  if (!signature)
     {
-      gpg_error_object (result, err, "Error creating output data object: %s",
-                        gpg_strerror (err));
-      goto leave;
-    }
-
-  /* Verify.  */
-  if (signature)
-    {
-      err = gpgme_op_verify (ctx, signature, input, output);
+      /* Verify opaque or clearsigned we need an output data object.  */
+      err = gpgme_data_new (&output);
+      if (err)
+        {
+          gpg_error_object (result, err,
+                            "Error creating output data object: %s",
+                            gpg_strerror (err));
+          goto leave;
+        }
+      err = gpgme_op_verify (ctx, input, 0, output);
     }
   else
     {
-      err = gpgme_op_verify (ctx, input, 0, output);
+      err = gpgme_op_verify (ctx, signature, input, NULL);
     }
+
   if (err)
     {
       gpg_error_object (result, err, "Verify failed: %s", gpg_strerror (err));
@@ -2208,14 +2208,17 @@ op_verify (cjson_t request, cjson_t result)
                              verify_result_to_json (verify_result));
     }
 
-  err = make_data_object (result, output, "plaintext", -1);
-  output = NULL;
-
-  if (err)
+  if (output)
     {
-      gpg_error_object (result, err, "Plaintext output failed: %s",
-                        gpg_strerror (err));
-      goto leave;
+      err = make_data_object (result, output, "plaintext", -1);
+      output = NULL;
+
+      if (err)
+        {
+          gpg_error_object (result, err, "Plaintext output failed: %s",
+                            gpg_strerror (err));
+          goto leave;
+        }
     }
 
  leave:
