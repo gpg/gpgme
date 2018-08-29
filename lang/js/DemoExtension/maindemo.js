@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
             function (){
                 let data = document.getElementById('inputtext').value;
                 let keyId = document.getElementById('pubkey').value;
-                gpgmejs.encrypt({ data: data, privateKeys: keyId }).then(
+                gpgmejs.encrypt({ data: data, publicKeys: keyId, armor:false }).then(
                     function (answer){
                         if (answer.data){
                             document.getElementById(

@@ -154,8 +154,12 @@ export class GpgME {
         if (msg instanceof Error){
             return Promise.reject(msg);
         }
-        msg.setParameter('armor', armor);
-
+        if (armor === false){
+            msg.setParameter('armor', false);
+            msg.expected = 'base64';
+        } else if (armor === true) {
+            msg.setParameter('armor', true);
+        }
         if (base64 === true) {
             msg.setParameter('base64', true);
         }
