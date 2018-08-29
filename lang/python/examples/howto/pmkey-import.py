@@ -33,6 +33,8 @@ del absolute_import, division, unicode_literals
 print("""
 This script searches the ProtonMail key server for the specified key and
 imports it.
+
+Usage:  pmkey-import.py [search string]
 """)
 
 c = gpg.Context(armor=True)

@@ -34,6 +34,8 @@ del absolute_import, division, unicode_literals
 print("""
 This script searches the ProtonMail key server for the specified key and
 imports it.  Optionally enables specifying a different GnuPG home directory.
+
+Usage:  pmkey-import-alt.py [search string] [homedir]
 """)
 
 c = gpg.Context(armor=True)

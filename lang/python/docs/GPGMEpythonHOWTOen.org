@@ -383,7 +383,7 @@ There are two theoretical solutions to this issue:
  2. Compile and install Python using the same tools used by choice,
     such as MinGW or Msys2.
 
-Do *NOT* use the official Windows installer for Python unless
+Do *not* use the official Windows installer for Python unless
 following the first method.
 
 In this type of situation it may even be for the best to accept that
@@ -784,6 +784,18 @@ The key IDs for all considered keys were:
     elif result is None:
         print(e)
 #+END_SRC
+
+Both the above example, [[../examples/howto/pmkey-import.py][pmkey-import.py]], and a version which prompts
+for an alternative GnuPG home directory, [[../examples/howto/pmkey-import-alt.py][pmkey-import-alt.py]], are
+available with the other examples and are executable scripts.
+
+Note that while the ProtonMail servers are based on the SKS servers,
+their server is related more to their API and is not feature complete
+by comparison to the servers in the SKS pool.  One notable difference
+being that the ProtonMail server does not permit non ProtonMail users
+to update their own keys, which could be a vector for attacking
+ProtonMail users who may not receive a key's revocation if it had been
+compromised.
 
 
 ** Exporting keys
