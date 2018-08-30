@@ -116,7 +116,7 @@ export function isLongId (value){
 export function decode (property){
     if (typeof property === 'string'){
         try {
-            return decodeURIComponent(escape(property));
+            return decodeURIComponent(escape(unescape(property)));
         }
         catch (error){
             if (error instanceof URIError) {
