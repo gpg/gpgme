@@ -243,7 +243,7 @@ class Answer{
         for (let i= 0; i < messageKeys.length; i++){
             let key = messageKeys[i];
             switch (key) {
-            case 'type':
+            case 'type': {
                 if (_decodedResponse.type === 'error'){
                     return (gpgme_error('GNUPG_ERROR',
                         decode(_decodedResponse.msg)));
@@ -251,39 +251,60 @@ class Answer{
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
                 break;
-            case 'base64':
+            }
+            case 'base64': {
                 break;
-            case 'msg':
+            }
+            case 'msg': {
                 if (_decodedResponse.type === 'error'){
                     return (gpgme_error('GNUPG_ERROR', _decodedResponse.msg));
                 }
                 break;
-            default:
-                if (!poa.data.hasOwnProperty(key)){
+            }
+            default: {
+                let answerType = null;
+                if (poa.payload && poa.payload.hasOwnProperty(key)){
+                    answerType = 'p';
+                } else if (poa.info && poa.info.hasOwnProperty(key)){
+                    answerType = 'i';
+                }
+                if (answerType !== 'p' && answerType !== 'i'){
                     return gpgme_error('CONN_UNEXPECTED_ANSWER');
                 }
-                if ( typeof (_decodedResponse[key]) !== poa.data[key] ){
-                    return gpgme_error('CONN_UNEXPECTED_ANSWER');
-                }
-                if (_decodedResponse.base64 === true
-                    && poa.data[key] === 'string'
-                ) {
-                    if (this.expected === 'uint8'){
-                        _response[key] = atobArray(_decodedResponse[key]);
-                        _response.format = 'uint8';
-                    } else if (this.expected === 'base64'){
-                        _response[key] = _decodedResponse[key];
-                        _response.format = 'base64';
-                    } else {
-                        _response[key] = Utf8ArrayToStr(
-                            atobArray(_decodedResponse[key]));
-                        _response.format = 'string';
+
+                if (answerType === 'i') {
+                    if ( typeof (_decodedResponse[key]) !== poa.info[key] ){
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
                     }
-                } else {
                     _response[key] = decode(_decodedResponse[key]);
+
+                } else if (answerType === 'p') {
+                    if (_decodedResponse.base64 === true
+                        && poa.payload[key] === 'string'
+                    ) {
+                        if (this.expected === 'uint8'){
+                            _response[key] = atobArray(_decodedResponse[key]);
+                            _response.format = 'uint8';
+
+                        } else if (this.expected === 'base64'){
+                            _response[key] = _decodedResponse[key];
+                            _response.format = 'base64';
+
+                        } else { // no 'expected'
+                            _response[key] = Utf8ArrayToStr(
+                                atobArray(_decodedResponse[key]));
+                            _response.format = 'string';
+                        }
+                    } else if (poa.payload[key] === 'string') {
+                        _response[key] = _decodedResponse[key];
+                    } else {
+                        // fallthrough, should not be reached
+                        // (payload is always string)
+                        return gpgme_error('CONN_UNEXPECTED_ANSWER');
+                    }
                 }
                 break;
-            }
+            } }
         }
         return _response;
     }

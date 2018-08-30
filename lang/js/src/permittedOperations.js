@@ -42,8 +42,12 @@
  * @property {Object} answer The definition on what to expect as answer, if the
  *      answer is not an error
  * @property {Array<String>} answer.type the type(s) as reported by gpgme-json.
- * @property {Object} answer.data key-value combinations of expected properties
- * of an answer and their type ('boolean', 'string', object)
+ * @property {Object} answer.payload key-value combinations of expected
+ * properties of an answer and their type ('boolean', 'string', object), which
+ * may need further decoding from base64
+ * @property {Object} answer.info key-value combinations of expected
+ * properties of an answer and their type ('boolean', 'string', object), which
+ * are meant to be data directly sent by gpgme (i.e. user ids)
   @const
 */
 export const permittedOperations = {
@@ -104,8 +108,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['ciphertext'],
-            data: {
-                'data': 'string',
+            payload: {
+                'data': 'string'
+            },
+            info: {
                 'base64':'boolean'
             }
         }
@@ -129,8 +135,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['plaintext'],
-            data: {
+            payload: {
                 'data': 'string',
+            },
+            info: {
                 'base64': 'boolean',
                 'mime': 'boolean',
                 'info': 'object',
@@ -171,11 +179,12 @@ export const permittedOperations = {
         },
         answer: {
             type: ['signature', 'ciphertext'],
-            data: {
+            payload: {
                 'data': 'string',
+            },
+            info: {
                 'base64':'boolean'
             }
-
         }
     },
 
@@ -223,9 +232,9 @@ export const permittedOperations = {
         },
         answer: {
             type: ['keys'],
-            data: {
+            info: {
+                'keys': 'object',
                 'base64': 'boolean',
-                'keys': 'object'
             }
         }
     },
@@ -263,8 +272,10 @@ export const permittedOperations = {
         },
         answer: {
             type: ['keys'],
-            data: {
+            payload: {
                 'data': 'string',
+            },
+            info: {
                 'base64': 'boolean',
                 'sec-fprs': 'object'
             }
@@ -288,7 +299,7 @@ export const permittedOperations = {
         },
         answer: {
             type: [],
-            data: {
+            info: {
                 'result': 'object'
             }
         }
@@ -308,7 +319,7 @@ export const permittedOperations = {
             },
         },
         answer: {
-            data: {
+            info: {
                 'success': 'boolean'
             }
         }
@@ -319,7 +330,7 @@ export const permittedOperations = {
         optional: {},
         answer: {
             type:  [''],
-            data: {
+            info: {
                 'gpgme': 'string',
                 'info': 'object'
             }
@@ -346,7 +357,7 @@ export const permittedOperations = {
         },
         answer: {
             type: [''],
-            data: { 'fingerprint': 'string' }
+            info: { 'fingerprint': 'string' }
         }
     },
 
@@ -370,10 +381,12 @@ export const permittedOperations = {
         },
         answer: {
             type: ['plaintext'],
-            data:{
-                data: 'string',
-                base64:'boolean',
-                info: 'object'
+            payload:{
+                'data': 'string'
+            },
+            info: {
+                'base64':'boolean',
+                'info': 'object'
                 // info.file_name: Optional string of the plaintext file name.
                 // info.is_mime: Boolean if the messages claims it is MIME.
                 // info.signatures: Array of signatures
@@ -395,15 +408,9 @@ export const permittedOperations = {
         optional: {},
         answer: {
             type: [],
-            data: {
-                option: 'object'
+            info: {
+                'option': 'object'
             }
         }
     }
-
-    /**
-     * TBD handling of secrets
-     * TBD key modification?
-     */
-
 };
