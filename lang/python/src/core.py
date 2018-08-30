@@ -1562,17 +1562,17 @@ class Data(GpgmeWrapper):
         self.wrapped = gpgme.gpgme_data_t_p_value(tmp)
         gpgme.delete_gpgme_data_t_p(tmp)
 
-    def new_from_estream(self, file):
-        """This wrap around gpgme_data_new_from_estream is an alias for
-        new_from_fd() method since in python there's no difference
-        between file stream and file descriptor"""
-        self.new_from_fd(file)
-
     def new_from_stream(self, file):
         """This wrap around gpgme_data_new_from_stream is an alias for
         new_from_fd() method since in python there's no difference
-        between file stream and file descriptor"""
+        between file stream and file descriptor."""
         self.new_from_fd(file)
+
+    def new_from_estream(self, file):
+        """This wrap around gpgme_data_new_from_estream is an alias for
+        new_from_fd() method since in python there's no difference
+        between file stream and file descriptor, but using fd broke."""
+        self.new_from_stream(file)
 
     def write(self, buffer):
         """Write buffer given as string or bytes.
