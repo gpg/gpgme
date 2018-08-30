@@ -22,7 +22,7 @@
  */
 
 /* global describe, it, before, expect, Gpgmejs */
-/* global bigString, inputvalues, sabotageMsg*/
+/* global bigString, inputvalues, sabotageMsg, binaryData */
 
 describe('Decryption', function () {
     let context = null;
@@ -76,4 +76,26 @@ describe('Decryption', function () {
             done();
         });
     });
+
+    it('decrypt of a png, result as base64', function (done){
+        const data = binaryData.encryptedArmored;
+        context.decrypt({ data: data, expect: 'base64' })
+            .then(function (result){
+                expect(result.data).to.be.a('String');
+                expect(result.data).to.equal(binaryData.base64);
+                expect(result.format).to.equal('base64');
+                done();
+            });
+    });
+
+    it('decrypt of a png, result as Uint8Array', function (done){
+        const data = binaryData.encryptedArmored;
+        context.decrypt({ data: data, expect: 'uint8' })
+            .then(function (result){
+                expect(result.data).to.be.an('Uint8Array');
+                expect(result.format).to.equal('uint8');
+                done();
+            });
+    });
+
 });

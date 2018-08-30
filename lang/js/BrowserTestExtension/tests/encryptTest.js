@@ -22,7 +22,7 @@
  */
 
 /* global describe, it, expect, before, Gpgmejs */
-/* global inputvalues, fixedLengthString */
+/* global inputvalues, fixedLengthString, bigString */
 
 describe('Encryption', function () {
     let context = null;
@@ -45,6 +45,47 @@ describe('Encryption', function () {
                 expect(answer.data).to.include('END PGP MESSAGE');
                 done();
             });
+    });
+
+
+    it( 'encrypt with \'armor\': true should returned an armored block',
+        function (done){
+            const data = bigString(1000);
+            context.encrypt({ data: data, publicKeys: good_fpr, armor: true })
+                .then(function (answer){
+                    expect(answer).to.not.be.empty;
+                    expect(answer.data).to.be.a('string');
+                    expect(answer.data).to.include('BEGIN PGP MESSAGE');
+                    expect(answer.data).to.include('END PGP MESSAGE');
+                    expect(answer.format).to.equal('ascii');
+                    done();
+                });
+        });
+
+    it( 'encrypt with \'armor\': false and \'expected\': \'uint8\' returns ' +
+    'an Uint8Array', function (done) {
+        const data = bigString(1000);
+        context.encrypt({
+            data: data, publicKeys: good_fpr, armor: false, expect: 'uint8'
+        }).then(function (answer){
+            expect(answer).to.not.be.empty;
+            expect(answer.data).to.be.a('Uint8Array');
+            expect(answer.format).to.equal('uint8');
+            done();
+        });
+    });
+
+    it( 'encrypt with \'armor\': false and \'expected\': \'base64\' returns ' +
+        'a base64 string', function (done) {
+        const data = bigString(1000);
+        context.encrypt({
+            data: data, publicKeys: good_fpr, armor: false, expect: 'base64'
+        }).then(function (answer){
+            expect(answer).to.not.be.empty;
+            expect(answer.data).to.be.a('string');
+            expect(answer.format).to.equal('base64');
+            done();
+        });
     });
 
     const sizes = [5,20,50];
@@ -114,5 +155,5 @@ describe('Encryption', function () {
             });
     }).timeout(8000);
 
-    // TODO check different valid parameter
+
 });
