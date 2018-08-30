@@ -136,6 +136,8 @@ export class GpgME {
      * @param {Boolean} always_trust (optional, default true) This assumes that
      * used keys are fully trusted. If set to false, encryption to a key not
      * fully trusted in gnupg will fail
+     * @param {String} expect in case of armored:false, request how to return
+     * the  binary result. Accepts 'base64' or 'uint8', defaults to 'base64'.
      * @param {Object} additional use additional valid gpg options as
      * defined in {@link permittedOperations}
      * @returns {Promise<encrypt_result>} Object containing the encrypted
@@ -143,7 +145,8 @@ export class GpgME {
      * @async
      */
     encrypt ({ data, publicKeys, secretKeys, base64 = false, armor = true,
-        wildcard, always_trust = true, additional = {} } = {}){
+        wildcard, always_trust = true, expect = 'base64',
+        additional = {} } = {}){
         if (typeof arguments[0] !== 'object') {
             return Promise.reject(gpgme_error('PARAM_WRONG'));
         }
@@ -156,7 +159,11 @@ export class GpgME {
         }
         if (armor === false){
             msg.setParameter('armor', false);
-            msg.expected = 'base64';
+            if (expect === 'uint8' || expect === 'base64') {
+                msg.expected = expect;
+            } else {
+                return Promise.reject(gpgme_error('PARAM_WRONG'));
+            }
         } else if (armor === true) {
             msg.setParameter('armor', true);
         }
