@@ -406,3 +406,48 @@ const binaryData = {
         '=AkaP\n' +
         '-----END PGP MESSAGE-----\n'
 };
+
+// eslint-disable-next-line no-unused-vars
+const filename_files = [{
+    name: 'Example-1234.txt',
+    data: '-----BEGIN PGP MESSAGE-----\n' +
+        '\n' +
+        'hQEMA6B8jfIUScGEAQf/Ylt9GDcv/PGjX8v8CBWIeetzD7DpB8c5dZu57rPOhF7a\n' +
+        'gZ5wUCNwuZ5jSnPh/MAH1amr9AEHhW28JlHq+Lpoohl50iNFQy01M+Kxh1LmSKup\n' +
+        'hFQl3Lu+NewdShq/RwNc9+qdTAnCdwjGJ+SxODfo73cflLl9SSPJ7k29bdUUL1mp\n' +
+        'aGlYdecTB6lcz4pCNOyyGryDBJQcS5ObulpN4zvhSfFzT27GQFmQPElm7CTdGOf0\n' +
+        '5VUxFe0TqRmdJ9LzVuOVZB7x8E0BpuQYpPd88emS+KOozx4KWu0IakdQ4QBY0av5\n' +
+        'ZID2rgM640Z4T8kXgGZq2qFN1Ap5X3iwfjkEHaJIP9JXAb86F8IP7nLrxzN2V0eM\n' +
+        '3v0+1o0HJd/E4LPeXHXCaNDaJOr8rviOCLwoFvCJ9E10ZASLyqOXzhlW9Tkvxrjl\n' +
+        'ldeXQI8Fp6oWPfvW8qGQ917mzxuoQYGn\n' +
+        '=993W\n' +
+        '-----END PGP MESSAGE-----\n'
+}, {
+    name: 'Example-@€µ2äüß.txt',
+    data: '-----BEGIN PGP MESSAGE-----\n'+
+        '\n'+
+        'hQEMA6B8jfIUScGEAQgAiX5vBNJGPYvljleo/7nkee4mGsFL1ROXLOs7sUlBImFm\n'+
+        'axQ0PAtVsX9NvDY70Tj5EIaGmgQWr/WAnH5fuV+ctsZtPm/UsL2BhYgKz3cDcS2P\n'+
+        '1tni3WhHXVr8ldC3PePuEn0Wfy/wOS+y2FbkJOD9EqXeui06phB8ScGdF6se3AcA\n'+
+        'lNo6bFeURgK6NhIYgibKbybAr1+D/zUvksn5xnLztBarVeJFOwAj8I+lthLpoyj2\n'+
+        'vUFu2qOlSOW/98Z0ZYDvRqnB5Mqmqsgf0cWl4Lwt0+GrdfzuB+479+ouIJCFUaIA\n'+
+        'JDoU8Ct0UwgAoYZmDkxBtjZALmf3dGqH1gjSe0UbDdJhAZ9h5rlC525JNOse0v21\n'+
+        'LdrDtwtiETFZ9ras8RelYeyYyE7PfhBxtmP5EBZUk7Be6JbD2vn5s2pgsbmBTzGJ\n'+
+        'AcxxSN6MbTvInIvC3GhSTs0mLiC4sToVoPp/F8tfQIGZWg==\n'+
+        '=V6wP\n'+
+        '-----END PGP MESSAGE-----\n'
+}, {
+    name: 'Example- äüüß.txt',
+    data: '-----BEGIN PGP MESSAGE-----\n' +
+        '\n' +
+        'hQEMA6B8jfIUScGEAQf9H7CbkI952WbUqkuYIlgKri+Tr+G+9m1GN/mKh82GnwfZ\n' +
+        '8JekOOzdZ6BdCfyJohOSan959r1pOHJzj2sh+LitBbD02MDPg8BL14lUXfbUju7s\n' +
+        'eT5HuVDfnFWV2ThfEyVUNmAEaE57FwTzdO7vN1VYkkBNFC8pjCONQ6/iRWnDgUyB\n' +
+        'fJJSLkdFMDBgHSrEeSCyDP4P5rJyd/1JhqXXECLIMzIKWCUbvWNvKLfA71fhPbi3\n' +
+        'XzXLWhNKQWoMZsl2oEHJuPY7ez/KePJ07Km0gxcbBJhUGTRRNrHSjOxiaV7/TLp2\n' +
+        'O3U/GuPQ/eY4Xl3rE/cDaCjy2sdR4VyuxlbLeUVIvtJbAUzNkaibs9ydZshBj9UD\n' +
+        'x2JWCwkBa7Q1Mah9nciT8S2Co71dsVMdIc3VtsXUtlhomL1bHd8ipRhFSiqiyZM3\n' +
+        'Pih6tFUOcXuSaf0lv6FENXP+IThHiaujtjAbkA==\n' +
+        '=UxvV\n' +
+        '-----END PGP MESSAGE-----\n'
+}];

@@ -22,7 +22,7 @@
  */
 
 /* global describe, it, before, expect, Gpgmejs */
-/* global bigString, inputvalues, sabotageMsg, binaryData */
+/* global bigString, inputvalues, sabotageMsg, binaryData, filename_files */
 
 describe('Decryption', function () {
     let context = null;
@@ -97,5 +97,18 @@ describe('Decryption', function () {
                 done();
             });
     });
+
+    for (let i=0; i < filename_files.length; i++) {
+        it (
+            'decrypted file_names keep correct encoding (' + i + ')',
+            function (done){
+                context.decrypt({ data:filename_files[i].data })
+                    .then(function (answer){
+                        expect(answer.file_name).to.equal(
+                            filename_files[i].name);
+                        done();
+                    });
+            });
+    }
 
 });
