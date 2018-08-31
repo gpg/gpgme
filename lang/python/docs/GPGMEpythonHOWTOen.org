@@ -207,7 +207,7 @@ include a package in PyPI which actually built correctly would require
 either statically built libraries for every architecture bundled with
 it or a full implementation of C for each architecture.
 
-See the additional notes regarding CFFI and SWIG at the end of this
+See the additional notes regarding [[#snafu-cffi][CFFI and SWIG]] at the end of this
 section for further details.
 
 
@@ -398,7 +398,7 @@ ongoing.
 
 *** I don't like SWIG, Use CFFI instead
     :PROPERTIES:
-    :CUSTOM_ID: snafu-foad
+    :CUSTOM_ID: snafu-cffi
     :END:
 
 There are many reasons for favouring [[https://cffi.readthedocs.io/en/latest/overview.html][CFFI]] and proponents of it are
