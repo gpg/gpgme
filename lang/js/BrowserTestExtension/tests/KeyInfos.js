@@ -51,7 +51,7 @@ describe('Key information', function () {
                 const user = result.Keys[0].key.get('userids')[0];
                 expect(user.get('name')).to.equal(
                     inputvalues.publicKeyNonAscii.userid);
-                result.Keys[0].delete().then(function (){
+                result.Keys[0].key.delete().then(function (){
                     done();
                 });
             });
