@@ -29,6 +29,7 @@ import { gpgme_error } from './Errors';
  * of the expected values are to be found in {@link expKeys}, {@link expSum},
  * {@link expNote}.
  * @returns {GPGME_Signature|GPGME_Error} Signature Object
+ * @private
  */
 export function createSignature (sigObject){
     if (
@@ -131,10 +132,9 @@ class GPGME_Signature {
     }
 
     /**
-     * gives more information on non-valid signatures. Refer to the gpgme
-     * docs https://www.gnupg.org/documentation/manuals/gpgme/Verify.html
+     * Object with boolean properties giving more information on non-valid
+     * signatures. Refer to the [gpgme docs]{@link https://www.gnupg.org/documentation/manuals/gpgme/Verify.html}
      * for details on the values.
-     * @returns {Object} Object with boolean properties
      */
     get errorDetails (){
         let properties = ['revoked', 'key-expired', 'sig-expired',
@@ -151,7 +151,8 @@ class GPGME_Signature {
 }
 
 /**
- * Keys and their value's type for the signature Object
+ * Expected keys and their value's type for the signature Object
+ * @private
  */
 const expKeys = {
     'wrong_key_usage': 'boolean',
@@ -175,6 +176,7 @@ const expKeys = {
 
 /**
  * Keys and their value's type for the summary
+ * @private
  */
 const expSum = {
     'valid': 'boolean',
@@ -193,6 +195,7 @@ const expSum = {
 
 /**
  * Keys and their value's type for notations objects
+ * @private
  */
 const expNote = {
     'human_readable': 'boolean',

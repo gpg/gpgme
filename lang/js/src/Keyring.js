@@ -45,7 +45,7 @@ export class GPGME_Keyring {
      * information can be updated with the {@link Key.refresh} method.
      * @param {Boolean} options.search (optional) retrieve Keys from external
      * servers with the method(s) defined in gnupg (e.g. WKD/HKP lookup)
-     * @returns {Promise<Array<GPGME_Key>>}
+     * @returns {Promise<GPGME_Key[]>}
      * @static
      * @async
      */
@@ -138,7 +138,7 @@ export class GPGME_Keyring {
      * search for
      * @param {Boolean} options.with_secret_fpr also return a list of
      * fingerprints for the keys that have a secret key available
-     * @returns {Promise<exportResult|GPGME_Error>} Object containing the
+     * @returns {Promise<exportResult>} Object containing the
      * armored Key(s) and additional information.
      * @static
      * @async
@@ -175,7 +175,7 @@ export class GPGME_Keyring {
      * It looks up the gpg configuration if set, or the first key that
      * contains a secret key.
      *
-     * @returns {Promise<GPGME_Key|GPGME_Error>}
+     * @returns {Promise<GPGME_Key>}
      * @async
      * @static
      */
@@ -360,10 +360,10 @@ export class GPGME_Keyring {
     }
 
     /**
-     * Convenience function for deleting a Key. See {@link Key.delete} for
+     * Convenience function for deleting a Key. See {@link Key#delete} for
      * further information about the return values.
      * @param {String} fingerprint
-     * @returns {Promise<Boolean|GPGME_Error>}
+     * @returns {Promise<Boolean>}
      * @async
      * @static
      */

@@ -120,8 +120,9 @@ export const err_list = {
 /**
  * Checks the given error code and returns an {@link GPGME_Error} error object
  * with some information about meaning and origin
- * @param {*} code Error code. Should be in err_list or 'GNUPG_ERROR'
- * @param {*} info Error message passed through if code is 'GNUPG_ERROR'
+ * @param {String} code Error code as defined in {@link err_list}.
+ * @param {String} info Possible additional error message to pass through.
+ * Currently used for errors sent as answer by gnupg via a native Message port
  * @returns {GPGME_Error}
  */
 export function gpgme_error (code = 'GENERIC_ERROR', info){
@@ -144,10 +145,13 @@ export function gpgme_error (code = 'GENERIC_ERROR', info){
 
 /**
  * An error class with additional info about the origin of the error, as string
+ * It is created by {@link gpgme_error}, and its' codes are defined in
+ * {@link err_list}.
+ *
  * @property {String} code Short description of origin and type of the error
  * @property {String} msg Additional info
- * @class
  * @protected
+ * @class
  * @extends Error
  */
 class GPGME_Error extends Error{

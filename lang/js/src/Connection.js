@@ -35,6 +35,7 @@ import { decode, atobArray, Utf8ArrayToStr } from './Helpers';
  * are finished. For a new request, a new port will open, to avoid mixing
  * contexts.
  * @class
+ * @private
  */
 export class Connection{
 
@@ -58,6 +59,7 @@ export class Connection{
     * @property {String} gpgme Version number of gpgme
     * @property {Array<Object>} info Further information about the backend
     * and the used applications (Example:
+    * <pre>
     * {
     *          "protocol":     "OpenPGP",
     *          "fname":        "/usr/bin/gpg",
@@ -65,6 +67,7 @@ export class Connection{
     *          "req_version":  "1.4.0",
     *          "homedir":      "default"
     * }
+    * </pre>
     */
 
     /**
@@ -99,12 +102,14 @@ export class Connection{
     }
 
     /**
-     * Sends a {@link GPGME_Message} via tghe nativeMessaging port. It
+     * Sends a {@link GPGME_Message} via the nativeMessaging port. It
      * resolves with the completed answer after all parts have been
      * received and reassembled, or rejects with an {@link GPGME_Error}.
      *
      * @param {GPGME_Message} message
-     * @returns {Promise<Object>} The collected answer
+     * @returns {Promise<*>} The collected answer, depending on the messages'
+     * operation
+     * @private
      * @async
      */
     post (message){
@@ -182,7 +187,7 @@ export class Connection{
 /**
  * A class for answer objects, checking and processing the return messages of
  * the nativeMessaging communication.
- * @protected
+ * @private
  */
 class Answer{
 

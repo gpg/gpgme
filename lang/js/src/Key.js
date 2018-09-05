@@ -21,6 +21,7 @@
  *     Maximilian Krambach <mkrambach@intevation.de>
  */
 
+
 import { isFingerprint, isLongId } from './Helpers';
 import { gpgme_error } from './Errors';
 import { createMessage } from './Message';
@@ -50,11 +51,26 @@ export function createKey (fingerprint, async = false, data){
 }
 
 /**
- * Represents the Keys as stored in the gnupg backend
- * It allows to query almost all information defined in gpgme Key Objects
- * Refer to {@link validKeyProperties} for available information, and the gpgme
- * documentation on their meaning
- * (https://www.gnupg.org/documentation/manuals/gpgme/Key-objects.html)
+ * Represents the Keys as stored in the gnupg backend. A key is defined by a
+ * fingerprint.
+ * A key cannot be directly created via the new operator, please use
+ * {@link createKey} instead.
+ * A GPGME_Key object allows to query almost all information defined in gpgme
+ * Keys. It offers two modes, async: true/false. In async mode, Key properties
+ * with the exception of the fingerprint will be queried from gnupg on each
+ * call, making the operation up-to-date, the answers will be Promises, and
+ * the performance will likely suffer. In Sync modes, all information except
+ * for the armored Key export will be cached and can be refreshed by
+ * [refreshKey]{@link GPGME_Key#refreshKey}.
+ *
+ * <pre>
+ * see also:
+ *      {@link GPGME_UserId} user Id objects
+ *      {@link GPGME_Subkey} subKey objects
+ * </pre>
+ * For other Key properteis, refer to {@link validKeyProperties},
+ * and to the [gpgme documentation]{@link https://www.gnupg.org/documentation/manuals/gpgme/Key-objects.html}
+ * for meanings and further details.
  *
  * @class
  */
@@ -63,7 +79,8 @@ class GPGME_Key {
     constructor (fingerprint, async, data){
 
         /**
-         * @property {Boolean} If true, most answers will be asynchronous
+         * @property {Boolean} _async If true, the Key was initialized without
+         * cached data
          */
         this._async = async;
 
@@ -79,10 +96,13 @@ class GPGME_Key {
      * Query any property of the Key listed in {@link validKeyProperties}
      * @param {String} property property to be retreived
      * @returns {Boolean| String | Date | Array | Object}
-     * the value of the property. If the Key is set to Async, the value
-     * will be fetched from gnupg and resolved as a Promise. If Key is not
-     * async, the armored property is not available (it can still be
-     * retrieved asynchronously by {@link Key.getArmor})
+     * @returns {Promise<Boolean| String | Date | Array | Object>} (if in async
+     * mode)
+     * <pre>
+     * Returns the value of the property requested. If the Key is set to async,
+     * the value will be fetched from gnupg and resolved as a Promise. If Key
+     * is not  async, the armored property is not available (it can still be
+     * retrieved asynchronously by [getArmor]{@link GPGME_Key#getArmor})
      */
     get (property) {
         if (this._async === true) {
@@ -108,11 +128,11 @@ class GPGME_Key {
     }
 
     /**
-     * Reloads the Key information from gnupg. This is only useful if you
+     * Reloads the Key information from gnupg. This is only useful if the Key
      * use the GPGME_Keys cached. Note that this is a performance hungry
      * operation. If you desire more than a few refreshs, it may be
-     * advisable to run {@link Keyring.getKeys} instead.
-     * @returns {Promise<GPGME_Key|GPGME_Error>}
+     * advisable to run [Keyring.getKeys]{@link Keyring#getKeys} instead.
+     * @returns {Promise<GPGME_Key>}
      * @async
      */
     refreshKey () {
@@ -155,7 +175,7 @@ class GPGME_Key {
      * Query the armored block of the Key directly from gnupg. Please note
      * that this will not get you any export of the secret/private parts of
      * a Key
-     * @returns {Promise<String|GPGME_Error>}
+     * @returns {Promise<String>}
      * @async
      */
     getArmor () {
@@ -179,10 +199,10 @@ class GPGME_Key {
      * Find out if the Key is part of a Key pair including public and
      * private key(s). If you want this information about more than a few
      * Keys in synchronous mode, it may be advisable to run
-     * {@link Keyring.getKeys} instead, as it performs faster in bulk
-     * querying this state.
-     * @returns {Promise<Boolean|GPGME_Error>} True if a private Key is
-     * available in the gnupg Keyring.
+     * [Keyring.getKeys]{@link Keyring#getKeys} instead, as it performs faster
+     * in bulk querying.
+     * @returns {Promise<Boolean>} True if a private Key is available in the
+     * gnupg Keyring.
      * @async
      */
     getGnupgSecretState (){
@@ -216,9 +236,10 @@ class GPGME_Key {
 
     /**
      * Deletes the (public) Key from the GPG Keyring. Note that a deletion
-     * of a secret key is not supported by the native backend.
-     * @returns {Promise<Boolean|GPGME_Error>} Success if key was deleted,
-     * rejects with a GPG error otherwise.
+     * of a secret key is not supported by the native backend, and gnupg will
+     * refuse to delete a Key if there is still a secret/private Key present
+     * to that public Key
+     * @returns {Promise<Boolean>} Success if key was deleted.
      */
     delete (){
         const me = this;
@@ -245,7 +266,8 @@ class GPGME_Key {
 }
 
 /**
- * Representing a subkey of a Key.
+ * Representing a subkey of a Key. See {@link validSubKeyProperties} for
+ * possible properties.
  * @class
  * @protected
  */
@@ -300,7 +322,8 @@ class GPGME_Subkey {
 }
 
 /**
- * Representing user attributes associated with a Key or subkey
+ * Representing user attributes associated with a Key or subkey. See
+ * {@link validUserIdProperties} for possible properties.
  * @class
  * @protected
  */

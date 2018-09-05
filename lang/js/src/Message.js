@@ -45,9 +45,10 @@ export function createMessage (operation){
 /**
  * A Message collects, validates and handles all information required to
  * successfully establish a meaningful communication with gpgme-json via
- * {@link Connection.post}. The definition on which communication is available
- * can be found in {@link permittedOperations}.
+ * [Connection.post]{@link Connection#post}. The definition on which
+ * communication is available can be found in {@link permittedOperations}.
  * @class
+ * @protected
  */
 export class GPGME_Message {
 
@@ -73,7 +74,7 @@ export class GPGME_Message {
         return this._expected;
     }
     /**
-     * The maximum size of responses from gpgme in bytes. As of July 2018,
+     * The maximum size of responses from gpgme in bytes. As of September 2018,
      * most browsers will only accept answers up to 1 MB of size.
      * Everything above that threshold will not pass through
      * nativeMessaging; answers that are larger need to be sent in parts.
@@ -96,7 +97,8 @@ export class GPGME_Message {
     }
 
     /**
-     * Returns the prepared message with parameters and completeness checked
+     * Returns the prepared message after their parameters and the completion
+     * of required parameters have been checked.
      * @returns {Object|null} Object to be posted to gnupg, or null if
      * incomplete
      */
@@ -110,10 +112,11 @@ export class GPGME_Message {
 
     /**
      * Sets a parameter for the message. It validates with
-     *      {@link permittedOperations}
+     * {@link permittedOperations}
      * @param {String} param Parameter to set
      * @param {any} value Value to set
-     * @returns {Boolean} If the parameter was set successfully
+     * @returns {Boolean} True if the parameter was set successfully.
+     * Throws errors if the parameters don't match the message operation
      */
     setParameter ( param,value ){
         if (!param || typeof (param) !== 'string'){
@@ -213,9 +216,10 @@ export class GPGME_Message {
         }
         return true;
     }
+
     /**
      * Sends the Message via nativeMessaging and resolves with the answer.
-     * @returns {Promise<Object|GPGME_Error>}
+     * @returns {Promise<Object>} GPGME response
      * @async
      */
     post (){

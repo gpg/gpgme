@@ -24,11 +24,12 @@
 import { gpgme_error } from './Errors';
 
 /**
- * Tries to return an array of fingerprints, either from input fingerprints or
- * from Key objects (openpgp Keys or GPGME_Keys are both accepted).
+ * Helper function that tries to return an array of fingerprints, either from
+ * input fingerprints or from Key objects (openpgp Keys or GPGME_Keys are both
+ * accepted).
  *
- * @param {Object | Array<Object> | String | Array<String>} input
- * @returns {Array<String>} Array of fingerprints, or an empty array
+ * @param {Object | Object[] | String | String[] } input
+ * @returns {String[]} Array of fingerprints, or an empty array
  */
 export function toKeyIdArray (input){
     if (!input){
@@ -90,7 +91,7 @@ function hextest (key, len){
 }
 
 /**
- * check if the input is a valid Fingerprint
+ * Checks if the input is a valid Fingerprint
  *      (Hex string with a length of 40 characters)
  * @param {String} value to check
  * @returns {Boolean} true if value passes test
@@ -110,8 +111,9 @@ export function isLongId (value){
 }
 
 /**
- * Recursively decodes input (utf8) to output (utf-16; javascript) strings
+ * Recursively decodes input (utf8) to output (utf-16; javascript) strings.
  * @param {Object | Array | String} property
+ * @private
  */
 export function decode (property){
     if (typeof property === 'string'){
@@ -145,9 +147,10 @@ export function decode (property){
 
 /**
  * Turns a base64 encoded string into an uint8 array
+ * adapted from https://gist.github.com/borismus/1032746
  * @param {String} base64 encoded String
  * @returns {Uint8Array}
- * adapted from https://gist.github.com/borismus/1032746
+ * @private
  */
 export function atobArray (base64) {
     if (typeof (base64) !== 'string'){
@@ -164,8 +167,7 @@ export function atobArray (base64) {
 
 /**
  * Turns a Uint8Array into an utf8-String
- * @param {*} array Uint8Array
- * @returns {String}
+ * <pre>
  * Taken and slightly adapted from
  *  http://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
  * (original header:
@@ -176,6 +178,10 @@ export function atobArray (base64) {
  *   LastModified: Dec 25 1999
  *   This library is free.  You can redistribute it and/or modify it.
  *  )
+ * </pre>
+ * @param {*} array Uint8Array
+ * @returns {String}
+ * @private
  */
 export function Utf8ArrayToStr (array) {
     let out, i, len, c, char2, char3;

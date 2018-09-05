@@ -27,9 +27,11 @@ import { gpgme_error } from './Errors';
 import { Connection } from './Connection';
 
 /**
- * Initializes gpgme.js by testing the nativeMessaging connection once.
- * @returns {Promise<GpgME> | GPGME_Error}
- *
+ * Main entry point for gpgme.js. It initializes by testing the nativeMessaging
+ * connection once, and then offers the available functions as method of the
+ * response object.
+ * An unsuccessful attempt will reject as a GPGME_Error.
+ * @returns {Promise<GpgME>}
  * @async
  */
 function init (){

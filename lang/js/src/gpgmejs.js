@@ -30,16 +30,16 @@ import { createSignature } from './Signature';
 
 /**
  * @typedef {Object} decrypt_result
- * @property {String|Uint8Array} data The decrypted data
+ * @property {String|Uint8Array} data The decrypted data.
  * @property {String} format Indicating how the data was converted after being
- * received from gpgme.
+ * received from gpgme:
+ * <pre>
  *      'ascii': Data was ascii-encoded and no further processed
  *      'string': Data was decoded into an utf-8 string,
  *      'base64': Data was not processed and is a base64 string
  *      'uint8': data was turned into a Uint8Array
- *
- * @property {Boolean} is_mime (optional) the data claims to be a MIME
- * object.
+ * </pre>
+ * @property {Boolean} is_mime (optional) the data claims to be a MIME object.
  * @property {String} file_name (optional) the original file name
  * @property {signatureDetails} signatures Verification details for
  * signatures
@@ -47,22 +47,29 @@ import { createSignature } from './Signature';
 
 /**
  * @typedef {Object} signatureDetails
- * @property {Boolean} all_valid Summary if all signatures are fully valid
- * @property {Number} count Number of signatures found
- * @property {Number} failures Number of invalid signatures
- * @property {Array<GPGME_Signature>} signatures.good All valid signatures
- * @property {Array<GPGME_Signature>} signatures.bad All invalid signatures
+ * @property {Boolean} all_valid Quick summary. True if all signatures are
+ * fully valid according to gnupg.
+ * @property {Number} count Number of signatures parsed.
+ * @property {Number} failures Number of signatures not passing as valid. This
+ * may imply bad signatures, or signatures with e.g. the public Key not being
+ * available.
+ * @property {GPGME_Signature[]} signatures.good Array of all signatures
+ * considered valid.
+ * @property {GPGME_Signature[]} signatures.bad All invalid signatures.
  */
 
 /**
- * @typedef {Object} encrypt_result The result of an encrypt operation
- * @property {String} data The encrypted message
+ * @typedef {Object} encrypt_result The result of an encrypt operation,
+ * containing the encrypted data and some additional information.
+ * @property {String} data The encrypted message.
  * @property {String} format Indicating how the data was converted after being
  *  received from gpgme.
+ * <pre>
  *      'ascii': Data was ascii-encoded and no further processed
  *      'string': Data was decoded into an utf-8 string,
  *      'base64': Data was not processed and is a base64 string
  *      'uint8': Data was turned into a Uint8Array
+ * </pre>
  */
 
 /**
@@ -77,7 +84,8 @@ import { createSignature } from './Signature';
  * @typedef {Object} signResult The result of a signing operation
  * @property {String} data The resulting data. Includes the signature in
  *  clearsign mode
- * @property {String} signature The detached signature (if in detached mode)
+ * @property {String} signature The detached signature (only present in in
+ * detached mode)
  */
 
 /** @typedef {Object} verifyResult The result of a verification
@@ -98,17 +106,15 @@ export class GpgME {
         this._Keyring = null;
     }
 
-    /**
-     * setter for {@link setKeyring}.
-     * @param {GPGME_Keyring} keyring A Keyring to use
-     */
     set Keyring (keyring){
         if (keyring && keyring instanceof GPGME_Keyring){
             this._Keyring = keyring;
         }
     }
+
     /**
-     * Accesses the {@link GPGME_Keyring}.
+     * Accesses the {@link GPGME_Keyring}. From the Keyring, all Keys can be
+     * accessed.
      */
     get Keyring (){
         if (!this._Keyring){
@@ -118,27 +124,29 @@ export class GpgME {
     }
 
     /**
-     * Encrypt (and optionally sign) data
+     * Encrypt data for the recipients specified in publicKeys. If privateKeys
+     * are submitted, the data will be signed by those Keys.
      * @param {Object} options
      * @param {String|Object} options.data text/data to be encrypted as String.
-     * Also accepts Objects with a getText method
+     * Also accepts Objects with a getText method.
      * @param {inputKeys} options.publicKeys
      * Keys used to encrypt the message
-     * @param {inputKeys} opions.secretKeys (optional) Keys used to sign the
+     * @param {inputKeys} options.secretKeys (optional) Keys used to sign the
      * message. If Keys are present, the  operation requested is assumed
      * to be 'encrypt and sign'
-     * @param {Boolean} options.base64 (optional) The data will be interpreted
-     * as base64 encoded data.
-     * @param {Boolean} options.armor (optional) Request the output as armored
-     * block.
-     * @param {Boolean} options.wildcard (optional) If true, recipient
-     * information will not be added to the message.
-     * @param {Boolean} always_trust (optional, default true) This assumes that
-     * used keys are fully trusted. If set to false, encryption to a key not
-     * fully trusted in gnupg will fail
-     * @param {String} expect in case of armored:false, request how to return
-     * the  binary result. Accepts 'base64' or 'uint8', defaults to 'base64'.
-     * @param {Object} additional use additional valid gpg options as
+     * @param {Boolean} options.base64 (optional, default: false) The data will
+     * be interpreted as base64 encoded data.
+     * @param {Boolean} options.armor (optional, default: true) Request the
+     * output as armored block.
+     * @param {Boolean} options.wildcard (optional, default: false) If true,
+     * recipient information will not be added to the message.
+     * @param {Boolean} options.always_trust (optional, default true) This
+     * assumes that used keys are fully trusted. If set to false, encryption to
+     * a key not fully trusted in gnupg will fail.
+     * @param {String} options.expect (default: 'base64') In case of
+     * armored:false, request how to return the binary result.
+     * Accepts 'base64' or 'uint8'
+     * @param {Object} options.additional use additional valid gpg options as
      * defined in {@link permittedOperations}
      * @returns {Promise<encrypt_result>} Object containing the encrypted
      * message and additional info.
@@ -206,15 +214,21 @@ export class GpgME {
     }
 
     /**
-    * Decrypts a Message
+    * Decrypts (and verifies, if applicable) a message.
     * @param {Object} options
     * @param {String|Object} options.data text/data to be decrypted. Accepts
-    * Strings and Objects with a getText method
-    * @param {Boolean} options.base64 (optional) false if the data is an
-    * armored block, true if it is base64 encoded binary data
-    * @param {String} options.expect (optional) can be set to 'uint8' or
-    * 'base64'. Does no extra decoding on the data, and returns the decoded
-    * data as either Uint8Array or unprocessed(base64 encoded) string.
+    * Strings and Objects with a getText method.
+    * @param {Boolean} options.base64 (optional, default: false). Indicate that
+    * the input given is base64-encoded binary instead of an armored block in
+    * gpg armored form.
+    * @param {String} options.expect (optional). By default, the output is
+    * expected to be a string compatible with javascript. In cases of binary
+    * data the decryption may fail due to encoding problems. For data expected
+    * to return as binary data, the decroding after decryption can be bypassed:
+    * <pre>
+    *   'uint8': Return as Uint8Array
+    *   'base64': Return as unprocessed (base64 encoded) string.
+    * </pre>
     * @returns {Promise<decrypt_result>} Decrypted Message and information
     * @async
     */
@@ -269,14 +283,16 @@ export class GpgME {
     }
 
     /**
-     * Sign a Message
+     * Sign a Message.
      * @param {Object} options Signing options
      * @param {String|Object} options.data text/data to be signed. Accepts
      * Strings and Objects with a getText method.
      * @param {inputKeys} options.keys The key/keys to use for signing
      * @param {String} options.mode The signing mode. Currently supported:
-     *  'clearsign':The Message is embedded into the signature;
-     *  'detached': The signature is stored separately
+     * <pre>
+     *      'clearsign':The Message is embedded into the signature;
+     *      'detached': The signature is stored separately
+     * </pre>
      * @param {Boolean} options.base64 input is considered base64
      * @returns {Promise<signResult>}
      * @async
@@ -415,6 +431,7 @@ function putData (message, data){
  * Parses, validates and converts incoming objects into signatures.
  * @param {Array<Object>} sigs
  * @returns {signatureDetails} Details about the signatures
+ * @private
  */
 function collectSignatures (sigs){
     if (!Array.isArray(sigs)){
