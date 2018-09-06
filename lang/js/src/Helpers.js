@@ -50,7 +50,7 @@ export function toKeyIdArray (input){
             }
         } else if (typeof (input[i]) === 'object'){
             let fpr = '';
-            if (input[i].hasOwnProperty('fingerprint')){
+            if (input[i].fingerprint !== undefined){
                 fpr = input[i].fingerprint;
             } else if (input[i].hasOwnProperty('primaryKey') &&
                 input[i].primaryKey.hasOwnProperty('getFingerprint')){

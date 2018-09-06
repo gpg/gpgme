@@ -34,9 +34,9 @@ describe('Long running Encryption/Decryption', function () {
         });
     });
 
-    for (let i=0; i < 101; i++) {
+    for (let i=1; i < 101; i++) {
         it('Successful encrypt/decrypt completely random data '
-            + (i+1) + '/100', function (done) {
+            + (i) + '/100', function (done) {
             const data = bigString(2*1024*1024);
             context.encrypt({ data: data, publicKeys: good_fpr })
                 .then(function (answer){
