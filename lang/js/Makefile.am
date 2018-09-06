@@ -22,6 +22,7 @@ SUBDIRS = src BrowserTestExtension DemoExtension
 
 EXTRA_DIST = build_extensions.sh \
              jsdoc.conf \
+             jsdoc_index.md \
              .eslintrc.json \
              package.json \
              README \
