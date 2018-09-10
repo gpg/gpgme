@@ -142,8 +142,8 @@ class GPGME_Signature {
             'sys-error'];
         let result = {};
         for (let i=0; i< properties.length; i++){
-            if ( this._rawSigObject.hasOwnProperty(properties[i]) ){
-                result[properties[i]] = this._rawSigObject[properties[i]];
+            if ( this._rawSigObject.summary.hasOwnProperty(properties[i]) ){
+                result[properties[i]] = this._rawSigObject.summary[properties[i]];
             }
         }
         return result;
