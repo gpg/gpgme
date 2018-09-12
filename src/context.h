@@ -162,6 +162,9 @@ struct gpgme_context
   char *lc_ctype;
   char *lc_messages;
 
+  /* The optional trust-model override.  */
+  char *trust_model;
+
   /* The operation data hooked into the context.  */
   ctx_op_data_t op_data;
 

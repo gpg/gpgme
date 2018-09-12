@@ -60,6 +60,7 @@ show_usage (int ex)
          "  --from-file      list all keys in the given file\n"
          "  --from-wkd       list key from a web key directory\n"
          "  --require-gnupg  required at least the given GnuPG version\n"
+         "  --trust-model    use the specified trust-model\n"
          , stderr);
   exit (ex);
 }
@@ -104,6 +105,7 @@ main (int argc, char **argv)
   int from_file = 0;
   int from_wkd = 0;
   gpgme_data_t data = NULL;
+  char *trust_model = NULL;
 
 
   if (argc)
@@ -208,6 +210,14 @@ main (int argc, char **argv)
           mode |= GPGME_KEYLIST_MODE_LOCATE;
           from_wkd = 1;
         }
+      else if (!strcmp (*argv, "--trust-model"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          trust_model = strdup (*argv);
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
     }
@@ -226,6 +236,12 @@ main (int argc, char **argv)
   gpgme_set_keylist_mode (ctx, mode);
 
   gpgme_set_offline (ctx, offline);
+
+  if (trust_model)
+    {
+      err = gpgme_set_ctx_flag (ctx, "trust-model", trust_model);
+      fail_if_err (err);
+    }
 
   if (from_wkd)
     {
@@ -400,6 +416,8 @@ main (int argc, char **argv)
 
   for (keyidx=0; keyarray[keyidx]; keyidx++)
     gpgme_key_unref (keyarray[keyidx]);
+
+  free (trust_model);
 
   gpgme_release (ctx);
   return 0;

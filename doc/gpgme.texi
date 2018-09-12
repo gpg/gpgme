@@ -2444,6 +2444,7 @@ started.  In fact, these references are accessed through the
 * Passphrase Callback::           Getting the passphrase from the user.
 * Progress Meter Callback::       Being informed about the progress.
 * Status Message Callback::       Status messages received from gpg.
+* Context Flags::                 Additional flags for a context.
 * Locale::                        Setting the locale of a context.
 * Additional Logs::               Additional logs of a context.
 @end menu
@@ -3030,6 +3031,10 @@ or @var{ctx} is not a valid pointer, @code{NULL} is returned in both
 variables.
 @end deftypefun
 
+@node Context Flags
+@subsection Context Flags
+@cindex flags, of a context
+
 @deftypefun {gpgme_error_t} gpgme_set_ctx_flag  @
             (@w{gpgme_ctx_t @var{ctx}}, @
             @w{const char *@var{name}}, @
@@ -3130,6 +3135,20 @@ Requires at least GnuPG 2.1.18.
 
 Note: Keys retrieved through @code{auto-key-locate} are automatically
 imported in the keyring.
+
+@item trust-model
+@since{1.11.2}
+
+Change the trust-model for all GnuPG engine operations.  An empty
+string sets the trust-model back to the users default.  If the
+trust-model is not supported by GnuPG the behavior is undefined
+and will likely cause all operations to fail.  Example: "tofu+pgp".
+
+This options should be used carefully with a strict version
+requirement.  In some versions of GnuPG setting the
+trust-model changes the default trust-model for future operations.
+A change in the trust-model also can have unintended side effects, like
+rebuilding the trust-db.
 
 @end table
 

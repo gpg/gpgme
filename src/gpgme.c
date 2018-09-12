@@ -250,6 +250,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->override_session_key);
   free (ctx->request_origin);
   free (ctx->auto_key_locate);
+  free (ctx->trust_model);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -552,6 +553,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       free (ctx->auto_key_locate);
       ctx->auto_key_locate = strdup (value);
       if (!ctx->auto_key_locate)
+        err = gpg_error_from_syserror ();
+    }
+  else if (!strcmp (name, "trust-model"))
+    {
+      free (ctx->trust_model);
+      ctx->trust_model = strdup (value);
+      if (!ctx->trust_model)
         err = gpg_error_from_syserror ();
     }
   else
