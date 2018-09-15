@@ -316,12 +316,16 @@ both by and in order to create, the bindings (including both the
      :END:
 
 If specifying a selected number of languages to create bindings for,
-always leave Python last.  Currently the other languages are also
-preceding Python of either version when listed alphabetically and so
-that just happens by default currently.  If Python is set to precede
-one of the other languages then it is possible that the errors
-described here may interrupt the build process before generating
-bindings for those other languages.
+try to leave Python last.  Currently the majority of the other
+language bindings are also preceding Python of either version when
+listed alphabetically and so that just happens by default currently.
+
+If Python is set to precede one of the other languages then it is
+possible that the errors described here may interrupt the build
+process before generating bindings for those other languages.  In
+these cases it may be preferable to configure all preferred language
+bindings separately with alternative =configure= steps for GPGME using
+the =--enable-languages=$LANGUAGE= option.
 
 
 *** Multiple installations
@@ -333,7 +337,7 @@ For a veriety of reasons it may be either necessary or just preferable
 to install the bindings to alternative installed Python versions which
 meet the requirements of these bindings.
 
-On POSIX systens this will generally be most simply achieved by
+On POSIX systems this will generally be most simply achieved by
 running the manual installation commands (build, build, install) as
 described in the previous section for each Python installation the
 bindings need to be installed to.
@@ -364,7 +368,7 @@ people who installed Python using the Windows installer files from the
 The Windows versions of Python are not built using Cygwin, MinGW or
 Msys2; they're built using Microsoft Visual Studio.  Furthermore the
 version used is /considerably/ more advanced than the version which
-MinGWobtained a small number of files from many years ago in order to
+MinGW obtained a small number of files from many years ago in order to
 be able to compile anything at all.  Not only that, but there are
 changes to the version of Visual Studio between some micro releases,
 though that is is particularly the case with Python 2.7, since it has
@@ -414,10 +418,11 @@ GPGME is compiled.
 
 CFFI is currently unable to adapt to such a potentially mutable
 codebase.  If there were some means of applying SWIG's dynamic code
-generation to produce CFFI API modes of accessing the GPGME libraries
-(or the source source code directly), but such a thing does not exist
-yet either and it currently appears that work is needed in at least
-one of CFFI's dependencies before any of this can be addressed.
+generation to produce the Python/CFFI API modes of accessing the GPGME
+libraries (or the source source code directly), but such a thing does
+not exist yet either and it currently appears that work is needed in
+at least one of CFFI's dependencies before any of this can be
+addressed.
 
 So if you're a massive fan of CFFI; that's great, but if you want this
 project to switch to CFFI then rather than just insisting that it
@@ -463,8 +468,7 @@ retrain developers.
 This API does not do that.  It would not be able to do that and also
 provide access to the entire C API on which it's built.  It does,
 however, provide a very pythonic interface on top of the direct
-bindings and it's this pythonic layer with which this HOWTO deals
-with.
+bindings and it's this pythonic layer that this HOWTO deals with.
 
 
 ** Context
@@ -1062,7 +1066,16 @@ else:
     if os.path.exists(os.environ["GNUPGHOME"]) is True:
         hd = os.environ["GNUPGHOME"]
     else:
-        hd = subprocess.getoutput(gpgconfcmd)
+        try:
+            hd = subprocess.getoutput(gpgconfcmd)
+        except:
+            process = subprocess.Popen(gpgconfcmd.split(),
+                                       stdout=subprocess.PIPE)
+            procom = process.communicate()
+            if sys.version_info[0] == 2:
+                hd = procom[0].strip()
+            else:
+                hd = procom[0].decode().strip()
     gpgfile = "{0}/{1}.gpg".format(hd, keyfile)
     ascfile = "{0}/{1}.asc".format(hd, keyfile)
 
@@ -1967,8 +1980,17 @@ information in Python.
 
 #+BEGIN_SRC python -i
 import subprocess
+import sys
 
-lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+try:
+    lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+except:
+    process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
+    procom = process.communicate()
+    if sys.version_info[0] == 2:
+        lines = procom[0].splitlines()
+    else:
+        lines = procom[0].decode().splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:
