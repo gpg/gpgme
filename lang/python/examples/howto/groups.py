@@ -42,7 +42,10 @@ try:
 except:
     process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
     procom = process.communicate()
-    lines = procom[0].decode().splitlines()
+    if sys.version_info[0] == 2:
+        lines = procom[0].splitlines()
+    else:
+        lines = procom[0].decode().splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:

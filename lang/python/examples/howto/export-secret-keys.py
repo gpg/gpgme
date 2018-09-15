@@ -90,7 +90,10 @@ else:
             process = subprocess.Popen(gpgconfcmd.split(),
                                        stdout=subprocess.PIPE)
             procom = process.communicate()
-            hd = procom[0].decode().strip()
+            if sys.version_info[0] == 2:
+                hd = procom[0].strip()
+            else:
+                hd = procom[0].decode().strip()
     gpgfile = "{0}/{1}.gpg".format(hd, keyfile)
     ascfile = "{0}/{1}.asc".format(hd, keyfile)
 
