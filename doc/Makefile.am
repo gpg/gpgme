@@ -30,7 +30,7 @@ BUILT_SOURCES = defsincdate defs.inc
 
 
 info_TEXINFOS = gpgme.texi
-gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
+gpgme_TEXINFOS = uiserver.texi gpgme-python-howto.texi lesser.texi gpl.texi
 
 gpgme.texi : defs.inc
 
@@ -53,11 +53,14 @@ defs.inc: defsincdate Makefile mkdefsinc
 	    $(info_TEXINFOS) $(gpgme_TEXINFOS) >$@
 
 
-online: gpgme.html gpgme.pdf
+online: gpgme.html gpgme.pdf gpgme-python-howto.html gpgme-python-howto.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
         user=werner ; \
 	(cd gpgme.html && rsync -vr --exclude='.svn' .  \
 	  $${user}@ftp.gnupg.org:webspace/manuals/gpgme/ ); \
         rsync -v gpgme.pdf $${user}@ftp.gnupg.org:webspace/manuals/
+	(cd gpgme-python-howto.html && rsync -vr --exclude='.svn' .  \
+	  $${user}@ftp.gnupg.org:webspace/manuals/gpgme/ ); \
+        rsync -v gpgme-python-howto.pdf $${user}@ftp.gnupg.org:webspace/manuals/
 

@@ -1,0 +1,2145 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename gpgme-python-howto.info
+@settitle GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@finalout
+@titlepage
+@title GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
+@author Ben McGinnes
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
+@end ifnottex
+
+@menu
+* Introduction::
+* GPGME Concepts::
+* GPGME Python bindings installation::
+* Fundamentals::
+* Working with keys::
+* Basic Functions::
+* Creating keys and subkeys::
+* Miscellaneous work-arounds::
+* Copyright and Licensing::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Introduction
+
+* Python 2 versus Python 3::
+* Examples::
+
+GPGME Concepts
+
+* A C API::
+* Python bindings::
+* Difference between the Python bindings and other GnuPG Python packages::
+
+Difference between the Python bindings and other GnuPG Python packages
+
+* The python-gnupg package maintained by Vinay Sajip::
+* The gnupg package created and maintained by Isis Lovecruft::
+* The PyME package maintained by Martin Albrecht::
+
+GPGME Python bindings installation
+
+* No PyPI::
+* Requirements::
+* Installation::
+* Known Issues::
+
+Installation
+
+* Installing GPGME::
+
+Known Issues
+
+* Breaking Builds::
+* Multiple installations::
+* Won't Work With Windows::
+* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead. 
+
+Fundamentals
+
+* No REST::
+* Context::
+
+Working with keys
+
+* Key selection::
+* Get key::
+* Importing keys::
+* Exporting keys::
+
+Key selection
+
+* Counting keys::
+
+Exporting keys
+
+* Exporting public keys::
+* Exporting secret keys::
+
+Basic Functions
+
+* Encryption::
+* Decryption::
+* Signing text and files::
+* Signature verification::
+
+Encryption
+
+* Encrypting to one key::
+* Encrypting to multiple keys::
+
+Signing text and files
+
+* Signing key selection::
+* Normal or default signing messages or files::
+* Detached signing messages and files::
+* Clearsigning messages or text::
+
+Creating keys and subkeys
+
+* Primary key::
+* Subkeys::
+* User IDs::
+* Key certification::
+
+User IDs
+
+* Adding User IDs::
+* Revokinging User IDs::
+
+Miscellaneous work-arounds
+
+* Group lines::
+
+Copyright and Licensing
+
+* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018. 
+* License GPL compatible::
+
+@end detailmenu
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@item Version:
+@tab 0.1.4
+@item Author:
+@tab Ben McGinnes <ben@@gnupg.org>
+@item Author GPG Key:
+@tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+@item Language:
+@tab Australian English, British English
+@item xml:lang:
+@tab en-AU, en-GB, en
+@end multitable
+
+This document provides basic instruction in how to use the GPGME
+Python bindings to programmatically leverage the GPGME library.
+
+@menu
+* Python 2 versus Python 3::
+* Examples::
+@end menu
+
+@node Python 2 versus Python 3
+@section Python 2 versus Python 3
+
+Though the GPGME Python bindings themselves provide support for both
+Python 2 and 3, the focus is unequivocally on Python 3 and
+specifically from Python 3.4 and above.  As a consequence all the
+examples and instructions in this guide use Python 3 code.
+
+Much of it will work with Python 2, but much of it also deals with
+Python 3 byte literals, particularly when reading and writing data.
+Developers concentrating on Python 2.7, and possibly even 2.6, will
+need to make the appropriate modifications to support the older string
+and unicode types as opposed to bytes.
+
+There are multiple reasons for concentrating on Python 3; some of
+which relate to the immediate integration of these bindings, some of
+which relate to longer term plans for both GPGME and the python
+bindings and some of which relate to the impending EOL period for
+Python 2.7.  Essentially, though, there is little value in tying the
+bindings to a version of the language which is a dead end and the
+advantages offered by Python 3 over Python 2 make handling the data
+types with which GPGME deals considerably easier.
+
+@node Examples
+@section Examples
+
+All of the examples found in this document can be found as Python 3
+scripts in the @samp{lang/python/examples/howto} directory.
+
+@node GPGME Concepts
+@chapter GPGME Concepts
+
+@menu
+* A C API::
+* Python bindings::
+* Difference between the Python bindings and other GnuPG Python packages::
+@end menu
+
+@node A C API
+@section A C API
+
+Unlike many modern APIs with which programmers will be more familiar
+with these days, the GPGME API is a C API.  The API is intended for
+use by C coders who would be able to access its features by including
+the @samp{gpgme.h} header file with their own C source code and then access
+its functions just as they would any other C headers.
+
+This is a very effective method of gaining complete access to the API
+and in the most efficient manner possible.  It does, however, have the
+drawback that it cannot be directly used by other languages without
+some means of providing an interface to those languages.  This is
+where the need for bindings in various languages stems.
+
+@node Python bindings
+@section Python bindings
+
+The Python bindings for GPGME provide a higher level means of
+accessing the complete feature set of GPGME itself.  It also provides
+a more pythonic means of calling these API functions.
+
+The bindings are generated dynamically with SWIG and the copy of
+@samp{gpgme.h} generated when GPGME is compiled.
+
+This means that a version of the Python bindings is fundamentally tied
+to the exact same version of GPGME used to generate that copy of
+@samp{gpgme.h}.
+
+@node Difference between the Python bindings and other GnuPG Python packages
+@section Difference between the Python bindings and other GnuPG Python packages
+
+There have been numerous attempts to add GnuPG support to Python over
+the years.  Some of the most well known are listed here, along with
+what differentiates them.
+
+@menu
+* The python-gnupg package maintained by Vinay Sajip::
+* The gnupg package created and maintained by Isis Lovecruft::
+* The PyME package maintained by Martin Albrecht::
+@end menu
+
+@node The python-gnupg package maintained by Vinay Sajip
+@subsection The python-gnupg package maintained by Vinay Sajip
+
+This is arguably the most popular means of integrating GPG with
+Python.  The package utilises the @samp{subprocess} module to implement
+wrappers for the @samp{gpg} and @samp{gpg2} executables normally invoked on the
+command line (@samp{gpg.exe} and @samp{gpg2.exe} on Windows).
+
+The popularity of this package stemmed from its ease of use and
+capability in providing the most commonly required features.
+
+Unfortunately it has been beset by a number of security issues in the
+past; most of which stemmed from using unsafe methods of accessing the
+command line via the @samp{subprocess} calls.  While some effort has been
+made over the last two to three years (as of 2018) to mitigate this,
+particularly by no longer providing shell access through those
+subprocess calls, the wrapper is still somewhat limited in the scope
+of its GnuPG features coverage.
+
+The python-gnupg package is available under the MIT license.
+
+@node The gnupg package created and maintained by Isis Lovecruft
+@subsection The gnupg package created and maintained by Isis Lovecruft
+
+In 2015 Isis Lovecruft from the Tor Project forked and then
+re-implemented the python-gnupg package as just gnupg.  This new
+package also relied on subprocess to call the @samp{gpg} or @samp{gpg2}
+binaries, but did so somewhat more securely.
+
+The naming and version numbering selected for this package, however,
+resulted in conflicts with the original python-gnupg and since its
+functions were called in a different manner to python-gnupg, the
+release of this package also resulted in a great deal of consternation
+when people installed what they thought was an upgrade that
+subsequently broke the code relying on it.
+
+The gnupg package is available under the GNU General Public License
+version 3.0 (or any later version).
+
+@node The PyME package maintained by Martin Albrecht
+@subsection The PyME package maintained by Martin Albrecht
+
+This package is the origin of these bindings, though they are somewhat
+different now.  For details of when and how the PyME package was folded
+back into GPGME itself see the @emph{Short History}
+document@footnote{@samp{lang/python/docs/Short_History.org} and/or
+@samp{lang/python/docs/Short_History.html}.}  in the Python bindings
+@samp{docs} directory.@footnote{The @samp{lang/python/docs/} directory
+in the GPGME source.}
+
+The PyME package was first released in 2002 and was also the first
+attempt to implement a low level binding to GPGME.  In doing so it
+provided access to considerably more functionality than either the
+@samp{python-gnupg} or @samp{gnupg} packages.
+
+The PyME package is only available for Python 2.6 and 2.7.
+
+Porting the PyME package to Python 3.4 in 2015 is what resulted in it
+being folded into the GPGME project and the current bindings are the
+end result of that effort.
+
+The PyME package is available under the same dual licensing as GPGME
+itself: the GNU General Public License version 2.0 (or any later
+version) and the GNU Lesser General Public License version 2.1 (or any
+later version).
+
+@node GPGME Python bindings installation
+@chapter GPGME Python bindings installation
+
+@menu
+* No PyPI::
+* Requirements::
+* Installation::
+* Known Issues::
+@end menu
+
+@node No PyPI
+@section No PyPI
+
+Most third-party Python packages and modules are available and
+distributed through the Python Package Installer, known as PyPI.
+
+Due to the nature of what these bindings are and how they work, it is
+infeasible to install the GPGME Python bindings in the same way.
+
+This is because the bindings use SWIG to dynamically generate C
+bindings against @samp{gpgme.h} and @samp{gpgme.h} is generated from
+@samp{gpgme.h.in} at compile time when GPGME is built from source.  Thus to
+include a package in PyPI which actually built correctly would require
+either statically built libraries for every architecture bundled with
+it or a full implementation of C for each architecture.
+
+See the additional notes regarding @ref{I don't like SWIG Use CFFI instead, , CFFI and SWIG} at the end of this
+section for further details.
+
+@node Requirements
+@section Requirements
+
+The GPGME Python bindings only have three requirements:
+
+@enumerate
+@item
+A suitable version of Python 2 or Python 3.  With Python 2 that
+means Python 2.7 and with Python 3 that means Python 3.4 or higher.
+@item
+@uref{https://www.swig.org, SWIG}.
+@item
+GPGME itself.  Which also means that all of GPGME's dependencies
+must be installed too.
+@end enumerate
+
+@node Installation
+@section Installation
+
+Installing the Python bindings is effectively achieved by compiling
+and installing GPGME itself.
+
+Once SWIG is installed with Python and all the dependencies for GPGME
+are installed you only need to confirm that the version(s) of Python
+you want the bindings installed for are in your @samp{$PATH}.
+
+By default GPGME will attempt to install the bindings for the most
+recent or highest version number of Python 2 and Python 3 it detects
+in @samp{$PATH}.  It specifically checks for the @samp{python} and @samp{python3}
+executables first and then checks for specific version numbers.
+
+For Python 2 it checks for these executables in this order: @samp{python},
+@samp{python2} and @samp{python2.7}.
+
+For Python 3 it checks for these executables in this order: @samp{python3},
+@samp{python3.6}, @samp{python3.5}, @samp{python3.4} and @samp{python3.7}.@footnote{As Python 3.7 is a very recent release, it is not given
+priority over 3.6 yet, but will probably be prioritised by the release
+of Python 3.7.2.}
+
+@menu
+* Installing GPGME::
+@end menu
+
+@node Installing GPGME
+@subsection Installing GPGME
+
+See the GPGME @samp{README} file for details of how to install GPGME from
+source.
+
+@node Known Issues
+@section Known Issues
+
+There are a few known issues with the current build process and the
+Python bindings.  For the most part these are easily addressed should
+they be encountered.
+
+@menu
+* Breaking Builds::
+* Multiple installations::
+* Won't Work With Windows::
+* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead. 
+@end menu
+
+@node Breaking Builds
+@subsection Breaking Builds
+
+Occasionally when installing GPGME with the Python bindings included
+it may be observed that the @samp{make} portion of that process induces a
+large very number of warnings and, eventually errors which end that
+part of the build process.  Yet following that with @samp{make check} and
+@samp{make install} appears to work seamlessly.
+
+The cause of this is related to the way SWIG needs to be called to
+dynamically generate the C bindings for GPGME in the first place.  So
+the entire process will always produce @samp{lang/python/python2-gpg/} and
+@samp{lang/python/python3-gpg/} directories.  These should contain the
+build output generated during compilation, including the complete
+bindings and module installed into @samp{site-packages}.
+
+Occasionally the errors in the early part or some other conflict
+(e.g. not installing as @strong{@emph{root}} or @strong{@emph{su}}) may result in nothing
+being installed to the relevant @samp{site-packages} directory and the
+build directory missing a lot of expected files.  Even when this
+occurs, the solution is actually quite simple and will always work.
+
+That solution is simply to run the following commands as either the
+@strong{root} user or prepended with @samp{sudo -H}@footnote{Yes, even if you use virtualenv with everything you do in
+Python.  If you want to install this module as just your user account
+then you will need to manually configure, compile and install the
+@emph{entire} GnuPG stack as that user as well.  This includes libraries
+which are not often installed that way.  It can be done and there are
+circumstances under which it is worthwhile, but generally only on
+POSIX systems which utilise single user mode (some even require it).} in the @samp{lang/python/}
+directory:
+
+@example
+/path/to/pythonX.Y setup.py build
+/path/to/pythonX.Y setup.py build
+/path/to/pythonX.Y setup.py install
+@end example
+
+Yes, the build command does need to be run twice.  Yes, you still need
+to run the potentially failing or incomplete steps during the
+@samp{configure}, @samp{make} and @samp{make install} steps with installing GPGME.
+This is because those steps generate a lot of essential files needed,
+both by and in order to create, the bindings (including both the
+@samp{setup.py} and @samp{gpgme.h} files).
+
+@enumerate
+@item
+IMPORTANT Note
+
+
+If specifying a selected number of languages to create bindings for,
+try to leave Python last.  Currently the majority of the other
+language bindings are also preceding Python of either version when
+listed alphabetically and so that just happens by default currently.
+
+If Python is set to precede one of the other languages then it is
+possible that the errors described here may interrupt the build
+process before generating bindings for those other languages.  In
+these cases it may be preferable to configure all preferred language
+bindings separately with alternative @samp{configure} steps for GPGME using
+the @samp{--enable-languages=$LANGUAGE} option.
+@end enumerate
+
+@node Multiple installations
+@subsection Multiple installations
+
+For a veriety of reasons it may be either necessary or just preferable
+to install the bindings to alternative installed Python versions which
+meet the requirements of these bindings.
+
+On POSIX systems this will generally be most simply achieved by
+running the manual installation commands (build, build, install) as
+described in the previous section for each Python installation the
+bindings need to be installed to.
+
+As per the SWIG documentation: the compilers, libraries and runtime
+used to build GPGME and the Python Bindings @strong{must} match those used to
+compile Python itself, including the version number(s) (at least going
+by major version numbers and probably minor numbers too).
+
+On most POSIX systems, including OS X, this will very likely be the
+case in most, if not all, cases.
+
+@node Won't Work With Windows
+@subsection Won't Work With Windows
+
+There are semi-regular reports of Windows users having considerable
+difficulty in installing and using the Python bindings at all.  Very
+often, possibly even always, these reports come from Cygwin users
+and/or MinGW users and/or Msys2 users.  Though not all of them have
+been confirmed, it appears that these reports have also come from
+people who installed Python using the Windows installer files from the
+@uref{https://python.org, Python website} (i.e. mostly MSI installers, sometimes self-extracting
+@samp{.exe} files).
+
+The Windows versions of Python are not built using Cygwin, MinGW or
+Msys2; they're built using Microsoft Visual Studio.  Furthermore the
+version used is @emph{considerably} more advanced than the version which
+MinGW obtained a small number of files from many years ago in order to
+be able to compile anything at all.  Not only that, but there are
+changes to the version of Visual Studio between some micro releases,
+though that is is particularly the case with Python 2.7, since it has
+been kept around far longer than it should have been.
+
+There are two theoretical solutions to this issue:
+
+@enumerate
+@item
+Compile and install the GnuPG stack, including GPGME and the
+Python bibdings using the same version of Microsoft Visual Studio
+used by the Python Foundation to compile the version of Python
+installed.
+
+If there are multiple versions of Python then this will need to be
+done with each different version of Visual Studio used.
+
+@item
+Compile and install Python using the same tools used by choice,
+such as MinGW or Msys2.
+@end enumerate
+
+Do @strong{not} use the official Windows installer for Python unless
+following the first method.
+
+In this type of situation it may even be for the best to accept that
+there are less limitations on permissive software than free software
+and simply opt to use a recent version of the Community Edition of
+Microsoft Visual Studio to compile and build all of it, no matter
+what.
+
+Investigations into the extent or the limitations of this issue are
+ongoing.
+
+@node I don't like SWIG Use CFFI instead
+@subsection I don't like SWIG, Use CFFI instead
+
+There are many reasons for favouring @uref{https://cffi.readthedocs.io/en/latest/overview.html, CFFI} and proponents of it are
+quite happy to repeat these things as if all it would take to switch
+from SWIG to CFFI is repeating that list as if it were a new concept.
+
+The fact is that there are things which Python's CFFI implementation
+cannot handle in the GPGME C code.  Beyond that there are features of
+SWIG which are simply not available with CFFI at all.  SWIG generates
+the bindings to Python using the @samp{gpgme.h} file, but that file is not
+a single version shipped with each release, it too is generated when
+GPGME is compiled.
+
+CFFI is currently unable to adapt to such a potentially mutable
+codebase.  If there were some means of applying SWIG's dynamic code
+generation to produce the Python/CFFI API modes of accessing the GPGME
+libraries (or the source source code directly), but such a thing does
+not exist yet either and it currently appears that work is needed in
+at least one of CFFI's dependencies before any of this can be
+addressed.
+
+So if you're a massive fan of CFFI; that's great, but if you want this
+project to switch to CFFI then rather than just insisting that it
+should, I'd suggest you volunteer to bring CFFI up to the level this
+project needs.
+
+If you're actually seriously considering doing so, then I'd suggest
+taking the @samp{gpgme-tool.c} file in the GPGME @samp{src/} directory and
+getting that to work with any of the CFFI API methods (not the ABI
+methods, they'll work with pretty much anything).  When you start
+running into trouble with "ifdefs" then you'll know what sort of
+things are lacking.  That doesn't even take into account the amount of
+work saved via SWIG's code generation techniques either.
+
+@node Fundamentals
+@chapter Fundamentals
+
+Before we can get to the fun stuff, there are a few matters regarding
+GPGME's design which hold true whether you're dealing with the C code
+directly or these Python bindings.
+
+@menu
+* No REST::
+* Context::
+@end menu
+
+@node No REST
+@section No REST
+
+The first part of which is or will be fairly blatantly obvious upon
+viewing the first example, but it's worth reiterating anyway.  That
+being that this API is @emph{@strong{not}} a REST API.  Nor indeed could it ever
+be one.
+
+Most, if not all, Python programmers (and not just Python programmers)
+know how easy it is to work with a RESTful API.  In fact they've
+become so popular that many other APIs attempt to emulate REST-like
+behaviour as much as they are able.  Right down to the use of JSON
+formatted output to facilitate the use of their API without having to
+retrain developers.
+
+This API does not do that.  It would not be able to do that and also
+provide access to the entire C API on which it's built.  It does,
+however, provide a very pythonic interface on top of the direct
+bindings and it's this pythonic layer that this HOWTO deals with.
+
+@node Context
+@section Context
+
+One of the reasons which prevents this API from being RESTful is that
+most operations require more than one instruction to the API to
+perform the task.  Sure, there are certain functions which can be
+performed simultaneously, particularly if the result known or strongly
+anticipated (e.g. selecting and encrypting to a key known to be in the
+public keybox).
+
+There are many more, however, which cannot be manipulated so readily:
+they must be performed in a specific sequence and the result of one
+operation has a direct bearing on the outcome of subsequent
+operations.  Not merely by generating an error either.
+
+When dealing with this type of persistent state on the web, full of
+both the RESTful and REST-like, it's most commonly referred to as a
+session.  In GPGME, however, it is called a context and every
+operation type has one.
+
+@node Working with keys
+@chapter Working with keys
+
+@menu
+* Key selection::
+* Get key::
+* Importing keys::
+* Exporting keys::
+@end menu
+
+@node Key selection
+@section Key selection
+
+Selecting keys to encrypt to or to sign with will be a common
+occurrence when working with GPGMe and the means available for doing
+so are quite simple.
+
+They do depend on utilising a Context; however once the data is
+recorded in another variable, that Context does not need to be the
+same one which subsequent operations are performed.
+
+The easiest way to select a specific key is by searching for that
+key's key ID or fingerprint, preferably the full fingerprint without
+any spaces in it.  A long key ID will probably be okay, but is not
+advised and short key IDs are already a problem with some being
+generated to match specific patterns.  It does not matter whether the
+pattern is upper or lower case.
+
+So this is the best method:
+
+@example
+import gpg
+
+k = gpg.Context().keylist(pattern="258E88DCBD3CD44D8E7AB43F6ECB6AF0DEADBEEF")
+keys = list(k)
+@end example
+
+This is passable and very likely to be common:
+
+@example
+import gpg
+
+k = gpg.Context().keylist(pattern="0x6ECB6AF0DEADBEEF")
+keys = list(k)
+@end example
+
+And this is a really bad idea:
+
+@example
+import gpg
+
+k = gpg.Context().keylist(pattern="0xDEADBEEF")
+keys = list(k)
+@end example
+
+Alternatively it may be that the intention is to create a list of keys
+which all match a particular search string.  For instance all the
+addresses at a particular domain, like this:
+
+@example
+import gpg
+
+ncsc = gpg.Context().keylist(pattern="ncsc.mil")
+nsa = list(ncsc)
+@end example
+
+@menu
+* Counting keys::
+@end menu
+
+@node Counting keys
+@subsection Counting keys
+
+Counting the number of keys in your public keybox (@samp{pubring.kbx}), the
+format which has superseded the old keyring format (@samp{pubring.gpg} and
+@samp{secring.gpg}), or the number of secret keys is a very simple task.
+
+@example
+import gpg
+
+c = gpg.Context()
+seckeys = c.keylist(pattern=None, secret=True)
+pubkeys = c.keylist(pattern=None, secret=False)
+
+seclist = list(seckeys)
+secnum = len(seclist)
+
+publist = list(pubkeys)
+pubnum = len(publist)
+
+print("""
+  Number of secret keys:  @{0@}
+  Number of public keys:  @{1@}
+""".format(secnum, pubnum))
+@end example
+
+@node Get key
+@section Get key
+
+An alternative method of getting a single key via its fingerprint is
+available directly within a Context with @samp{Context().get_key}.  This is
+the preferred method of selecting a key in order to modify it, sign or
+certify it and for obtaining relevant data about a single key as a
+part of other functions; when verifying a signature made by that key,
+for instance.
+
+By default this method will select public keys, but it can select
+secret keys as well.
+
+This first example demonstrates selecting the current key of Werner
+Koch, which is due to expire at the end of 2018:
+
+@example
+import gpg
+
+fingerprint = "80615870F5BAD690333686D0F2AD85AC1E42B367"
+key = gpg.Context().get_key(fingerprint)
+@end example
+
+Whereas this example demonstrates selecting the author's current key
+with the @samp{secret} key word argument set to @samp{True}:
+
+@example
+import gpg
+
+fingerprint = "DB4724E6FA4286C92B4E55C4321E4E2373590E5D"
+key = gpg.Context().get_key(fingerprint, secret=True)
+@end example
+
+It is, of course, quite possible to select expired, disabled and
+revoked keys with this function, but only to effectively display
+information about those keys.
+
+It is also possible to use both unicode or string literals and byte
+literals with the fingerprint when getting a key in this way.
+
+@node Importing keys
+@section Importing keys
+
+Importing keys is possible with the @samp{key_import()} method and takes
+one argument which is a bytes literal object containing either the
+binary or ASCII armoured key data for one or more keys.
+
+The following example retrieves one or more keys from the SKS
+keyservers via the web using the requests module. Since requests
+returns the content as a bytes literal object, we can then use that
+directly to import the resulting data into our keybox.
+
+@example
+import gpg
+import os.path
+import requests
+
+c = gpg.Context()
+url = "https://sks-keyservers.net/pks/lookup"
+pattern = input("Enter the pattern to search for key or user IDs: ")
+payload = @{ "op": "get", "search": pattern @}
+
+r = requests.get(url, verify=True, params=payload)
+result = c.key_import(r.content)
+
+if result is not None and hasattr(result, "considered") is False:
+    print(result)
+elif result is not None and hasattr(result, "considered") is True:
+    num_keys = len(result.imports)
+    new_revs = result.new_revocations
+    new_sigs = result.new_signatures
+    new_subs = result.new_sub_keys
+    new_uids = result.new_user_ids
+    new_scrt = result.secret_imported
+    nochange = result.unchanged
+    print("""
+  The total number of keys considered for import was:  @{0@}
+
+     Number of keys revoked:  @{1@}
+   Number of new signatures:  @{2@}
+      Number of new subkeys:  @{3@}
+     Number of new user IDs:  @{4@}
+  Number of new secret keys:  @{5@}
+   Number of unchanged keys:  @{6@}
+
+  The key IDs for all considered keys were:
+""".format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+    for i in range(num_keys):
+        print("@{0@}\n".format(result.imports[i].fpr))
+else:
+    pass
+@end example
+
+@strong{NOTE:} When searching for a key ID of any length or a fingerprint
+(without spaces), the SKS servers require the the leading @samp{0x}
+indicative of hexadecimal be included. Also note that the old short
+key IDs (e.g. @samp{0xDEADBEEF}) should no longer be used due to the
+relative ease by which such key IDs can be reproduced, as demonstrated
+by the Evil32 Project in 2014 (which was subsequently exploited in
+2016).
+
+Here is a variation on the above which checks the constrained
+ProtonMail keyserver for ProtonMail public keys.
+
+@example
+import gpg
+import requests
+import sys
+
+print("""
+This script searches the ProtonMail key server for the specified key and
+imports it.
+""")
+
+c = gpg.Context(armor=True)
+url = "https://api.protonmail.ch/pks/lookup"
+ksearch = []
+
+if len(sys.argv) >= 2:
+    keyterm = sys.argv[1]
+else:
+    keyterm = input("Enter the key ID, UID or search string: ")
+
+if keyterm.count("@@") == 2 and keyterm.startswith("@@") is True:
+    ksearch.append(keyterm[1:])
+    ksearch.append(keyterm[1:])
+    ksearch.append(keyterm[1:])
+elif keyterm.count("@@") == 1 and keyterm.startswith("@@") is True:
+    ksearch.append("@{0@}@@protonmail.com".format(keyterm[1:]))
+    ksearch.append("@{0@}@@protonmail.ch".format(keyterm[1:]))
+    ksearch.append("@{0@}@@pm.me".format(keyterm[1:]))
+elif keyterm.count("@@") == 0:
+    ksearch.append("@{0@}@@protonmail.com".format(keyterm))
+    ksearch.append("@{0@}@@protonmail.ch".format(keyterm))
+    ksearch.append("@{0@}@@pm.me".format(keyterm))
+elif keyterm.count("@@") == 2 and keyterm.startswith("@@") is False:
+    uidlist = keyterm.split("@@")
+    for uid in uidlist:
+        ksearch.append("@{0@}@@protonmail.com".format(uid))
+        ksearch.append("@{0@}@@protonmail.ch".format(uid))
+        ksearch.append("@{0@}@@pm.me".format(uid))
+elif keyterm.count("@@") > 2:
+    uidlist = keyterm.split("@@")
+    for uid in uidlist:
+        ksearch.append("@{0@}@@protonmail.com".format(uid))
+        ksearch.append("@{0@}@@protonmail.ch".format(uid))
+        ksearch.append("@{0@}@@pm.me".format(uid))
+else:
+    ksearch.append(keyterm)
+
+for k in ksearch:
+    payload = @{"op": "get", "search": k@}
+    try:
+        r = requests.get(url, verify=True, params=payload)
+        if r.ok is True:
+            result = c.key_import(r.content)
+        elif r.ok is False:
+            result = r.content
+    except Exception as e:
+        result = None
+
+    if result is not None and hasattr(result, "considered") is False:
+        print("@{0@} for @{1@}".format(result.decode(), k))
+    elif result is not None and hasattr(result, "considered") is True:
+        num_keys = len(result.imports)
+        new_revs = result.new_revocations
+        new_sigs = result.new_signatures
+        new_subs = result.new_sub_keys
+        new_uids = result.new_user_ids
+        new_scrt = result.secret_imported
+        nochange = result.unchanged
+        print("""
+The total number of keys considered for import was:  @{0@}
+
+With UIDs wholely or partially matching the following string:
+
+        @{1@}
+
+   Number of keys revoked:  @{2@}
+ Number of new signatures:  @{3@}
+    Number of new subkeys:  @{4@}
+   Number of new user IDs:  @{5@}
+Number of new secret keys:  @{6@}
+ Number of unchanged keys:  @{7@}
+
+The key IDs for all considered keys were:
+""".format(num_keys, k, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+        for i in range(num_keys):
+            print(result.imports[i].fpr)
+        print("")
+    elif result is None:
+        print(e)
+@end example
+
+Both the above example, @uref{../examples/howto/pmkey-import.py, pmkey-import.py}, and a version which prompts
+for an alternative GnuPG home directory, @uref{../examples/howto/pmkey-import-alt.py, pmkey-import-alt.py}, are
+available with the other examples and are executable scripts.
+
+Note that while the ProtonMail servers are based on the SKS servers,
+their server is related more to their API and is not feature complete
+by comparison to the servers in the SKS pool.  One notable difference
+being that the ProtonMail server does not permit non ProtonMail users
+to update their own keys, which could be a vector for attacking
+ProtonMail users who may not receive a key's revocation if it had been
+compromised.
+
+@node Exporting keys
+@section Exporting keys
+
+Exporting keys remains a reasonably simple task, but has been
+separated into three different functions for the OpenPGP cryptographic
+engine.  Two of those functions are for exporting public keys and the
+third is for exporting secret keys.
+
+@menu
+* Exporting public keys::
+* Exporting secret keys::
+@end menu
+
+@node Exporting public keys
+@subsection Exporting public keys
+
+There are two methods of exporting public keys, both of which are very
+similar to the other.  The default method, @samp{key_export()}, will export
+a public key or keys matching a specified pattern as normal.  The
+alternative, the @samp{key_export_minimal()} method, will do the same thing
+except producing a minimised output with extra signatures and third
+party signatures or certifications removed.
+
+@example
+import gpg
+import os.path
+import sys
+
+print("""
+This script exports one or more public keys.
+""")
+
+c = gpg.Context(armor=True)
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the path and filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+try:
+    result = c.key_export(pattern=logrus)
+except:
+    result = c.key_export(pattern=None)
+
+if result is not None:
+    with open(keyfile, "wb") as f:
+        f.write(result)
+else:
+    pass
+@end example
+
+It is important to note that the result will only return @samp{None} when a
+pattern has been entered for @samp{logrus}, but it has not matched any
+keys. When the search pattern itself is set to @samp{None} this triggers
+the exporting of the entire public keybox.
+
+@example
+import gpg
+import os.path
+import sys
+
+print("""
+This script exports one or more public keys in minimised form.
+""")
+
+c = gpg.Context(armor=True)
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the path and filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+try:
+    result = c.key_export_minimal(pattern=logrus)
+except:
+    result = c.key_export_minimal(pattern=None)
+
+if result is not None:
+    with open(keyfile, "wb") as f:
+        f.write(result)
+else:
+    pass
+@end example
+
+@node Exporting secret keys
+@subsection Exporting secret keys
+
+Exporting secret keys is, functionally, very similar to exporting
+public keys; save for the invocation of @samp{pinentry} via @samp{gpg-agent} in
+order to securely enter the key's passphrase and authorise the export.
+
+The following example exports the secret key to a file which is then
+set with the same permissions as the output files created by the
+command line secret key export options.
+
+@example
+import gpg
+import os
+import os.path
+import sys
+
+print("""
+This script exports one or more secret keys.
+
+The gpg-agent and pinentry are invoked to authorise the export.
+""")
+
+c = gpg.Context(armor=True)
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the secret key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the path and filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the secret key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+try:
+    result = c.key_export_secret(pattern=logrus)
+except:
+    result = c.key_export_secret(pattern=None)
+
+if result is not None:
+    with open(keyfile, "wb") as f:
+        f.write(result)
+    os.chmod(keyfile, 0o600)
+else:
+    pass
+@end example
+
+Alternatively the approach of the following script can be used.  This
+longer example saves the exported secret key(s) in files in the GnuPG
+home directory, in addition to setting the file permissions as only
+readable and writable by the user.  It also exports the secret key(s)
+twice in order to output both GPG binary (@samp{.gpg}) and ASCII armoured
+(@samp{.asc}) files.
+
+@example
+import gpg
+import os
+import os.path
+import subprocess
+import sys
+
+print("""
+This script exports one or more secret keys as both ASCII armored and binary
+file formats, saved in files within the user's GPG home directory.
+
+The gpg-agent and pinentry are invoked to authorise the export.
+""")
+
+if sys.platform == "win32":
+    gpgconfcmd = "gpgconf.exe --list-dirs homedir"
+else:
+    gpgconfcmd = "gpgconf --list-dirs homedir"
+
+a = gpg.Context(armor=True)
+b = gpg.Context()
+c = gpg.Context()
+
+if len(sys.argv) >= 4:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = sys.argv[3]
+elif len(sys.argv) == 3:
+    keyfile = sys.argv[1]
+    logrus = sys.argv[2]
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+elif len(sys.argv) == 2:
+    keyfile = sys.argv[1]
+    logrus = input("Enter the UID matching the secret key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+else:
+    keyfile = input("Enter the filename to save the secret key to: ")
+    logrus = input("Enter the UID matching the secret key(s) to export: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+
+if homedir.startswith("~"):
+    if os.path.exists(os.path.expanduser(homedir)) is True:
+        c.home_dir = os.path.expanduser(homedir)
+    else:
+        pass
+elif os.path.exists(homedir) is True:
+    c.home_dir = homedir
+else:
+    pass
+
+if c.home_dir is not None:
+    if c.home_dir.endswith("/"):
+        gpgfile = "@{0@}@{1@}.gpg".format(c.home_dir, keyfile)
+        ascfile = "@{0@}@{1@}.asc".format(c.home_dir, keyfile)
+    else:
+        gpgfile = "@{0@}/@{1@}.gpg".format(c.home_dir, keyfile)
+        ascfile = "@{0@}/@{1@}.asc".format(c.home_dir, keyfile)
+else:
+    if os.path.exists(os.environ["GNUPGHOME"]) is True:
+        hd = os.environ["GNUPGHOME"]
+    else:
+        try:
+            hd = subprocess.getoutput(gpgconfcmd)
+        except:
+            process = subprocess.Popen(gpgconfcmd.split(),
+                                       stdout=subprocess.PIPE)
+            procom = process.communicate()
+            if sys.version_info[0] == 2:
+                hd = procom[0].strip()
+            else:
+                hd = procom[0].decode().strip()
+    gpgfile = "@{0@}/@{1@}.gpg".format(hd, keyfile)
+    ascfile = "@{0@}/@{1@}.asc".format(hd, keyfile)
+
+try:
+    a_result = a.key_export_secret(pattern=logrus)
+    b_result = b.key_export_secret(pattern=logrus)
+except:
+    a_result = a.key_export_secret(pattern=None)
+    b_result = b.key_export_secret(pattern=None)
+
+if a_result is not None:
+    with open(ascfile, "wb") as f:
+        f.write(a_result)
+    os.chmod(ascfile, 0o600)
+else:
+    pass
+
+if b_result is not None:
+    with open(gpgfile, "wb") as f:
+        f.write(b_result)
+    os.chmod(gpgfile, 0o600)
+else:
+    pass
+@end example
+
+@node Basic Functions
+@chapter Basic Functions
+
+The most frequently called features of any cryptographic library will
+be the most fundamental tasks for encryption software.  In this
+section we will look at how to programmatically encrypt data, decrypt
+it, sign it and verify signatures.
+
+@menu
+* Encryption::
+* Decryption::
+* Signing text and files::
+* Signature verification::
+@end menu
+
+@node Encryption
+@section Encryption
+
+Encrypting is very straight forward.  In the first example below the
+message, @samp{text}, is encrypted to a single recipient's key.  In the
+second example the message will be encrypted to multiple recipients.
+
+@menu
+* Encrypting to one key::
+* Encrypting to multiple keys::
+@end menu
+
+@node Encrypting to one key
+@subsection Encrypting to one key
+
+Once the the Context is set the main issues with encrypting data is
+essentially reduced to key selection and the keyword arguments
+specified in the @samp{gpg.Context().encrypt()} method.
+
+Those keyword arguments are: @samp{recipients}, a list of keys encrypted to
+(covered in greater detail in the following section); @samp{sign}, whether
+or not to sign the plaintext data, see subsequent sections on signing
+and verifying signatures below (defaults to @samp{True}); @samp{sink}, to write
+results or partial results to a secure sink instead of returning it
+(defaults to @samp{None}); @samp{passphrase}, only used when utilising symmetric
+encryption (defaults to @samp{None}); @samp{always_trust}, used to override the
+trust model settings for recipient keys (defaults to @samp{False});
+@samp{add_encrypt_to}, utilises any preconfigured @samp{encrypt-to} or
+@samp{default-key} settings in the user's @samp{gpg.conf} file (defaults to
+@samp{False}); @samp{prepare}, prepare for encryption (defaults to @samp{False});
+@samp{expect_sign}, prepare for signing (defaults to @samp{False}); @samp{compress},
+compresses the plaintext prior to encryption (defaults to @samp{True}).
+
+@example
+import gpg
+
+a_key = "0x12345678DEADBEEF"
+text = b"""Some text to test with.
+
+Since the text in this case must be bytes, it is most likely that
+the input form will be a separate file which is opened with "rb"
+as this is the simplest method of obtaining the correct data format.
+"""
+
+c = gpg.Context(armor=True)
+rkey = list(c.keylist(pattern=a_key, secret=False))
+ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=False)
+
+with open("secret_plans.txt.asc", "wb") as afile:
+    afile.write(ciphertext)
+@end example
+
+Though this is even more likely to be used like this; with the
+plaintext input read from a file, the recipient keys used for
+encryption regardless of key trust status and the encrypted output
+also encrypted to any preconfigured keys set in the @samp{gpg.conf} file:
+
+@example
+import gpg
+
+a_key = "0x12345678DEADBEEF"
+
+with open("secret_plans.txt", "rb") as afile:
+    text = afile.read()
+
+c = gpg.Context(armor=True)
+rkey = list(c.keylist(pattern=a_key, secret=False))
+ciphertext, result, sign_result = c.encrypt(text, recipients=rkey, sign=True,
+                                            always_trust=True,
+                                            add_encrypt_to=True)
+
+with open("secret_plans.txt.asc", "wb") as afile:
+    afile.write(ciphertext)
+@end example
+
+If the @samp{recipients} paramater is empty then the plaintext is encrypted
+symmetrically.  If no @samp{passphrase} is supplied as a parameter or via a
+callback registered with the @samp{Context()} then an out-of-band prompt
+for the passphrase via pinentry will be invoked.
+
+@node Encrypting to multiple keys
+@subsection Encrypting to multiple keys
+
+Encrypting to multiple keys essentially just expands upon the key
+selection process and the recipients from the previous examples.
+
+The following example encrypts a message (@samp{text}) to everyone with an
+email address on the @samp{gnupg.org} domain,@footnote{You probably don't really want to do this.  Searching the
+keyservers for "gnupg.org" produces over 400 results, the majority of
+which aren't actually at the gnupg.org domain, but just included a
+comment regarding the project in their key somewhere.} but does @emph{not} encrypt
+to a default key or other key which is configured to normally encrypt
+to.
+
+@example
+import gpg
+
+text = b"""Oh look, another test message.
+
+The same rules apply as with the previous example and more likely
+than not, the message will actually be drawn from reading the
+contents of a file or, maybe, from entering data at an input()
+prompt.
+
+Since the text in this case must be bytes, it is most likely that
+the input form will be a separate file which is opened with "rb"
+as this is the simplest method of obtaining the correct data
+format.
+"""
+
+c = gpg.Context(armor=True)
+rpattern = list(c.keylist(pattern="@@gnupg.org", secret=False))
+logrus = []
+
+for i in range(len(rpattern)):
+    if rpattern[i].can_encrypt == 1:
+        logrus.append(rpattern[i])
+
+ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                            sign=False, always_trust=True)
+
+with open("secret_plans.txt.asc", "wb") as afile:
+    afile.write(ciphertext)
+@end example
+
+All it would take to change the above example to sign the message
+and also encrypt the message to any configured default keys would
+be to change the @samp{c.encrypt} line to this:
+
+@example
+ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                            always_trust=True,
+                                            add_encrypt_to=True)
+@end example
+
+The only keyword arguments requiring modification are those for which
+the default values are changing.  The default value of @samp{sign} is
+@samp{True}, the default of @samp{always_trust} is @samp{False}, the default of
+@samp{add_encrypt_to} is @samp{False}.
+
+If @samp{always_trust} is not set to @samp{True} and any of the recipient keys
+are not trusted (e.g. not signed or locally signed) then the
+encryption will raise an error.  It is possible to mitigate this
+somewhat with something more like this:
+
+@example
+import gpg
+
+with open("secret_plans.txt.asc", "rb") as afile:
+    text = afile.read()
+
+c = gpg.Context(armor=True)
+rpattern = list(c.keylist(pattern="@@gnupg.org", secret=False))
+logrus = []
+
+for i in range(len(rpattern)):
+    if rpattern[i].can_encrypt == 1:
+        logrus.append(rpattern[i])
+
+    try:
+        ciphertext, result, sign_result = c.encrypt(text, recipients=logrus,
+                                                    add_encrypt_to=True)
+    except gpg.errors.InvalidRecipients as e:
+        for i in range(len(e.recipients)):
+            for n in range(len(logrus)):
+                if logrus[n].fpr == e.recipients[i].fpr:
+                    logrus.remove(logrus[n])
+                else:
+                    pass
+        try:
+            ciphertext, result, sign_result = c.encrypt(text,
+                                                        recipients=logrus,
+                                                        add_encrypt_to=True)
+            with open("secret_plans.txt.asc", "wb") as afile:
+                afile.write(ciphertext)
+        except:
+            pass
+@end example
+
+This will attempt to encrypt to all the keys searched for, then remove
+invalid recipients if it fails and try again.
+
+@node Decryption
+@section Decryption
+
+Decrypting something encrypted to a key in one's secret keyring is
+fairly straight forward.
+
+In this example code, however, preconfiguring either @samp{gpg.Context()}
+or @samp{gpg.core.Context()} as @samp{c} is unnecessary because there is no need
+to modify the Context prior to conducting the decryption and since the
+Context is only used once, setting it to @samp{c} simply adds lines for no
+gain.
+
+@example
+import gpg
+
+ciphertext = input("Enter path and filename of encrypted file: ")
+newfile = input("Enter path and filename of file to save decrypted data to: ")
+
+with open(ciphertext, "rb") as cfile:
+    try:
+        plaintext, result, verify_result = gpg.Context().decrypt(cfile)
+    except gpg.errors.GPGMEError as e:
+        plaintext = None
+        print(e)
+
+if plaintext is not None:
+    with open(newfile, "wb") as nfile:
+            nfile.write(plaintext)
+    else:
+        pass
+@end example
+
+The data available in @samp{plaintext} in this example is the decrypted
+content as a byte object, the recipient key IDs and algorithms in
+@samp{result} and the results of verifying any signatures of the data in
+@samp{verify_result}.
+
+@node Signing text and files
+@section Signing text and files
+
+The following sections demonstrate how to specify keys to sign with.
+
+@menu
+* Signing key selection::
+* Normal or default signing messages or files::
+* Detached signing messages and files::
+* Clearsigning messages or text::
+@end menu
+
+@node Signing key selection
+@subsection Signing key selection
+
+By default GPGME and the Python bindings will use the default key
+configured for the user invoking the GPGME API.  If there is no
+default key specified and there is more than one secret key available
+it may be necessary to specify the key or keys with which to sign
+messages and files.
+
+@example
+import gpg
+
+logrus = input("Enter the email address or string to match signing keys to: ")
+hancock = gpg.Context().keylist(pattern=logrus, secret=True)
+sig_src = list(hancock)
+@end example
+
+The signing examples in the following sections include the explicitly
+designated @samp{signers} parameter in two of the five examples; once where
+the resulting signature would be ASCII armoured and once where it
+would not be armoured.
+
+While it would be possible to enter a key ID or fingerprint here to
+match a specific key, it is not possible to enter two fingerprints and
+match two keys since the patten expects a string, bytes or None and
+not a list.  A string with two fingerprints won't match any single
+key.
+
+@node Normal or default signing messages or files
+@subsection Normal or default signing messages or files
+
+The normal or default signing process is essentially the same as is
+most often invoked when also encrypting a message or file.  So when
+the encryption component is not utilised, the result is to produce an
+encoded and signed output which may or may not be ASCII armoured and
+which may or may not also be compressed.
+
+By default compression will be used unless GnuPG detects that the
+plaintext is already compressed.  ASCII armouring will be determined
+according to the value of @samp{gpg.Context().armor}.
+
+The compression algorithm is selected in much the same way as the
+symmetric encryption algorithm or the hash digest algorithm is when
+multiple keys are involved; from the preferences saved into the key
+itself or by comparison with the preferences with all other keys
+involved.
+
+@example
+import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context(armor=True, signers=sig_src)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+@end example
+
+Though everything in this example is accurate, it is more likely that
+reading the input data from another file and writing the result to a
+new file will be performed more like the way it is done in the next
+example.  Even if the output format is ASCII armoured.
+
+@example
+import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.NORMAL)
+
+with open("/path/to/statement.txt.sig", "wb") as afile:
+    afile.write(signed_data)
+@end example
+
+@node Detached signing messages and files
+@subsection Detached signing messages and files
+
+Detached signatures will often be needed in programmatic uses of
+GPGME, either for signing files (e.g. tarballs of code releases) or as
+a component of message signing (e.g. PGP/MIME encoded email).
+
+@example
+import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context(armor=True)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+@end example
+
+As with normal signatures, detached signatures are best handled as
+byte literals, even when the output is ASCII armoured.
+
+@example
+import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context(signers=sig_src)
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.DETACH)
+
+with open("/path/to/statement.txt.sig", "wb") as afile:
+    afile.write(signed_data)
+@end example
+
+@node Clearsigning messages or text
+@subsection Clearsigning messages or text
+
+Though PGP/in-line messages are no longer encouraged in favour of
+PGP/MIME, there is still sometimes value in utilising in-line
+signatures.  This is where clear-signed messages or text is of value.
+
+@example
+import gpg
+
+text0 = """Declaration of ... something.
+
+"""
+text = text0.encode()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+
+with open("/path/to/statement.txt.asc", "w") as afile:
+    afile.write(signed_data.decode())
+@end example
+
+In spite of the appearance of a clear-signed message, the data handled
+by GPGME in signing it must still be byte literals.
+
+@example
+import gpg
+
+with open("/path/to/statement.txt", "rb") as tfile:
+    text = tfile.read()
+
+c = gpg.Context()
+signed_data, result = c.sign(text, mode=gpg.constants.sig.mode.CLEAR)
+
+with open("/path/to/statement.txt.asc", "wb") as afile:
+    afile.write(signed_data)
+@end example
+
+@node Signature verification
+@section Signature verification
+
+Essentially there are two principal methods of verification of a
+signature.  The first of these is for use with the normal or default
+signing method and for clear-signed messages.  The second is for use
+with files and data with detached signatures.
+
+The following example is intended for use with the default signing
+method where the file was not ASCII armoured:
+
+@example
+import gpg
+import time
+
+filename = "statement.txt"
+gpg_file = "statement.txt.gpg"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(gpg_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+@{0@}
+with key @{1@}
+made at @{2@}
+""".format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
+           time.ctime(sign.timestamp)))
+else:
+    pass
+@end example
+
+Whereas this next example, which is almost identical would work with
+normal ASCII armoured files and with clear-signed files:
+
+@example
+import gpg
+import time
+
+filename = "statement.txt"
+asc_file = "statement.txt.asc"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(asc_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+@{0@}
+with key @{1@}
+made at @{2@}
+""".format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
+           time.ctime(sign.timestamp)))
+else:
+    pass
+@end example
+
+In both of the previous examples it is also possible to compare the
+original data that was signed against the signed data in @samp{data} to see
+if it matches with something like this:
+
+@example
+with open(filename, "rb") as afile:
+    text = afile.read()
+
+if text == data:
+    print("Good signature.")
+else:
+    pass
+@end example
+
+The following two examples, however, deal with detached signatures.
+With his method of verification the data that was signed does not get
+returned since it is already being explicitly referenced in the first
+argument of @samp{c.verify}.  So @samp{data} is @samp{None} and only the information
+in @samp{result} is available.
+
+@example
+import gpg
+import time
+
+filename = "statement.txt"
+sig_file = "statement.txt.sig"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(filename), open(sig_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+@{0@}
+with key @{1@}
+made at @{2@}
+""".format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
+           time.ctime(sign.timestamp)))
+else:
+    pass
+@end example
+
+@example
+import gpg
+import time
+
+filename = "statement.txt"
+asc_file = "statement.txt.asc"
+
+c = gpg.Context()
+
+try:
+    data, result = c.verify(open(filename), open(asc_file))
+    verified = True
+except gpg.errors.BadSignatures as e:
+    verified = False
+    print(e)
+
+if verified is True:
+    for i in range(len(result.signatures)):
+        sign = result.signatures[i]
+        print("""Good signature from:
+@{0@}
+with key @{1@}
+made at @{2@}
+""".format(c.get_key(sign.fpr).uids[0].uid, sign.fpr,
+           time.ctime(sign.timestamp)))
+else:
+    pass
+@end example
+
+@node Creating keys and subkeys
+@chapter Creating keys and subkeys
+
+The one thing, aside from GnuPG itself, that GPGME depends on, of
+course, is the keys themselves.  So it is necessary to be able to
+generate them and modify them by adding subkeys, revoking or disabling
+them, sometimes deleting them and doing the same for user IDs.
+
+In the following examples a key will be created for the world's
+greatest secret agent, Danger Mouse.  Since Danger Mouse is a secret
+agent he needs to be able to protect information to @samp{SECRET} level
+clearance, so his keys will be 3072-bit keys.
+
+The pre-configured @samp{gpg.conf} file which sets cipher, digest and other
+preferences contains the following configuration parameters:
+
+@example
+expert
+allow-freeform-uid
+allow-secret-key-import
+trust-model tofu+pgp
+tofu-default-policy unknown
+enable-large-rsa
+enable-dsa2
+cert-digest-algo SHA512
+default-preference-list TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1 ZLIB BZIP2 ZIP Uncompressed
+personal-cipher-preferences TWOFISH CAMELLIA256 AES256 CAMELLIA192 AES192 CAMELLIA128 AES BLOWFISH IDEA CAST5 3DES
+personal-digest-preferences SHA512 SHA384 SHA256 SHA224 RIPEMD160 SHA1
+personal-compress-preferences ZLIB BZIP2 ZIP Uncompressed
+@end example
+
+@menu
+* Primary key::
+* Subkeys::
+* User IDs::
+* Key certification::
+@end menu
+
+@node Primary key
+@section Primary key
+
+Generating a primary key uses the @samp{create_key} method in a Context.
+It contains multiple arguments and keyword arguments, including:
+@samp{userid}, @samp{algorithm}, @samp{expires_in}, @samp{expires}, @samp{sign}, @samp{encrypt},
+@samp{certify}, @samp{authenticate}, @samp{passphrase} and @samp{force}.  The defaults for
+all of those except @samp{userid}, @samp{algorithm}, @samp{expires_in}, @samp{expires} and
+@samp{passphrase} is @samp{False}.  The defaults for @samp{algorithm} and
+@samp{passphrase} is @samp{None}.  The default for @samp{expires_in} is @samp{0}.  The
+default for @samp{expires} is @samp{True}.  There is no default for @samp{userid}.
+
+If @samp{passphrase} is left as @samp{None} then the key will not be generated
+with a passphrase, if @samp{passphrase} is set to a string then that will
+be the passphrase and if @samp{passphrase} is set to @samp{True} then gpg-agent
+will launch pinentry to prompt for a passphrase.  For the sake of
+convenience, these examples will keep @samp{passphrase} set to @samp{None}.
+
+@example
+import gpg
+
+c = gpg.Context()
+
+c.home_dir = "~/.gnupg-dm"
+userid = "Danger Mouse <dm@@secret.example.net>"
+
+dmkey = c.create_key(userid, algorithm="rsa3072", expires_in=31536000,
+                     sign=True, certify=True)
+@end example
+
+One thing to note here is the use of setting the @samp{c.home_dir}
+parameter.  This enables generating the key or keys in a different
+location.  In this case to keep the new key data created for this
+example in a separate location rather than adding it to existing and
+active key store data.  As with the default directory, @samp{~/.gnupg}, any
+temporary or separate directory needs the permissions set to only
+permit access by the directory owner.  On posix systems this means
+setting the directory permissions to 700.
+
+The @samp{temp-homedir-config.py} script in the HOWTO examples directory
+will create an alternative homedir with these configuration options
+already set and the correct directory and file permissions.
+
+The successful generation of the key can be confirmed via the returned
+@samp{GenkeyResult} object, which includes the following data:
+
+@example
+print("""
+ Fingerprint:  @{0@}
+ Primary Key:  @{1@}
+  Public Key:  @{2@}
+  Secret Key:  @{3@}
+ Sub Key:  @{4@}
+User IDs:  @{5@}
+""".format(dmkey.fpr, dmkey.primary, dmkey.pubkey, dmkey.seckey, dmkey.sub,
+           dmkey.uid))
+@end example
+
+Alternatively the information can be confirmed using the command line
+program:
+
+@example
+bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse <dm@@secret.example.net>
+
+bash-4.4$
+@end example
+
+As with generating keys manually, to preconfigure expanded preferences
+for the cipher, digest and compression algorithms, the @samp{gpg.conf} file
+must contain those details in the home directory in which the new key
+is being generated.  I used a cut down version of my own @samp{gpg.conf}
+file in order to be able to generate this:
+
+@example
+bash-4.4$ gpg --homedir ~/.gnupg-dm --edit-key 177B7C25DB99745EE2EE13ED026D2F19E99E63AA showpref quit
+Secret key is available.
+
+sec  rsa3072/026D2F19E99E63AA
+     created: 2018-03-15  expires: 2019-03-15  usage: SC
+     trust: ultimate      validity: ultimate
+[ultimate] (1). Danger Mouse <dm@@secret.example.net>
+
+[ultimate] (1). Danger Mouse <dm@@secret.example.net>
+     Cipher: TWOFISH, CAMELLIA256, AES256, CAMELLIA192, AES192, CAMELLIA128, AES, BLOWFISH, IDEA, CAST5, 3DES
+     Digest: SHA512, SHA384, SHA256, SHA224, RIPEMD160, SHA1
+     Compression: ZLIB, BZIP2, ZIP, Uncompressed
+     Features: MDC, Keyserver no-modify
+
+bash-4.4$
+@end example
+
+@node Subkeys
+@section Subkeys
+
+Adding subkeys to a primary key is fairly similar to creating the
+primary key with the @samp{create_subkey} method.  Most of the arguments
+are the same, but not quite all.  Instead of the @samp{userid} argument
+there is now a @samp{key} argument for selecting which primary key to add
+the subkey to.
+
+In the following example an encryption subkey will be added to the
+primary key.  Since Danger Mouse is a security conscious secret agent,
+this subkey will only be valid for about six months, half the length
+of the primary key.
+
+@example
+import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+key = c.get_key(dmkey.fpr, secret=True)
+dmsub = c.create_subkey(key, algorithm="rsa3072", expires_in=15768000,
+                        encrypt=True)
+@end example
+
+As with the primary key, the results here can be checked with:
+
+@example
+print("""
+ Fingerprint:  @{0@}
+ Primary Key:  @{1@}
+  Public Key:  @{2@}
+  Secret Key:  @{3@}
+ Sub Key:  @{4@}
+User IDs:  @{5@}
+""".format(dmsub.fpr, dmsub.primary, dmsub.pubkey, dmsub.seckey, dmsub.sub,
+           dmsub.uid))
+@end example
+
+As well as on the command line with:
+
+@example
+bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse <dm@@secret.example.net>
+ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+bash-4.4$
+@end example
+
+@node User IDs
+@section User IDs
+
+@menu
+* Adding User IDs::
+* Revokinging User IDs::
+@end menu
+
+@node Adding User IDs
+@subsection Adding User IDs
+
+By comparison to creating primary keys and subkeys, adding a new user
+ID to an existing key is much simpler.  The method used to do this is
+@samp{key_add_uid} and the only arguments it takes are for the @samp{key} and
+the new @samp{uid}.
+
+@example
+import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+uid = "Danger Mouse <danger.mouse@@secret.example.net>"
+
+c.key_add_uid(key, uid)
+@end example
+
+Unsurprisingly the result of this is:
+
+@example
+bash-4.4$ gpg --homedir ~/.gnupg-dm -K
+~/.gnupg-dm/pubring.kbx
+----------------------
+sec   rsa3072 2018-03-15 [SC] [expires: 2019-03-15]
+      177B7C25DB99745EE2EE13ED026D2F19E99E63AA
+uid           [ultimate] Danger Mouse <danger.mouse@@secret.example.net>
+uid           [ultimate] Danger Mouse <dm@@secret.example.net>
+ssb   rsa3072 2018-03-15 [E] [expires: 2018-09-13]
+
+bash-4.4$
+@end example
+
+@node Revokinging User IDs
+@subsection Revokinging User IDs
+
+Revoking a user ID is a fairly similar process, except that it uses
+the @samp{key_revoke_uid} method.
+
+@example
+import gpg
+
+c = gpg.Context()
+c.home_dir = "~/.gnupg-dm"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+uid = "Danger Mouse <danger.mouse@@secret.example.net>"
+
+c.key_revoke_uid(key, uid)
+@end example
+
+@node Key certification
+@section Key certification
+
+Since key certification is more frequently referred to as key signing,
+the method used to perform this function is @samp{key_sign}.
+
+The @samp{key_sign} method takes four arguments: @samp{key}, @samp{uids},
+@samp{expires_in} and @samp{local}.  The default value of @samp{uids} is @samp{None} and
+which results in all user IDs being selected.  The default value of
+both @samp{expires_in} and @samp{local} is @samp{False}; which results in the
+signature never expiring and being able to be exported.
+
+The @samp{key} is the key being signed rather than the key doing the
+signing.  To change the key doing the signing refer to the signing key
+selection above for signing messages and files.
+
+If the @samp{uids} value is not @samp{None} then it must either be a string to
+match a single user ID or a list of strings to match multiple user
+IDs.  In this case the matching of those strings must be precise and
+it is case sensitive.
+
+To sign Danger Mouse's key for just the initial user ID with a
+signature which will last a little over a month, do this:
+
+@example
+import gpg
+
+c = gpg.Context()
+uid = "Danger Mouse <dm@@secret.example.net>"
+
+dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+key = c.get_key(dmfpr, secret=True)
+c.key_sign(key, uids=uid, expires_in=2764800)
+@end example
+
+@node Miscellaneous work-arounds
+@chapter Miscellaneous work-arounds
+
+@menu
+* Group lines::
+@end menu
+
+@node Group lines
+@section Group lines
+
+There is not yet an easy way to access groups configured in the
+gpg.conf file from within GPGME.  As a consequence these central
+groupings of keys cannot be shared amongst multiple programs, such as
+MUAs readily.
+
+The following code, however, provides a work-around for obtaining this
+information in Python.
+
+@example
+import subprocess
+import sys
+
+try:
+    lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+except:
+    process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
+    procom = process.communicate()
+    if sys.version_info[0] == 2:
+        lines = procom[0].splitlines()
+    else:
+        lines = procom[0].decode().splitlines()
+
+for i in range(len(lines)):
+    if lines[i].startswith("group") is True:
+        line = lines[i]
+    else:
+        pass
+
+groups = line.split(":")[-1].replace('"', '').split(',')
+
+group_lines = []
+group_lists = []
+
+for i in range(len(groups)):
+    group_lines.append(groups[i].split("="))
+    group_lists.append(groups[i].split("="))
+
+for i in range(len(group_lists)):
+    group_lists[i][1] = group_lists[i][1].split()
+@end example
+
+The result of that code is that @samp{group_lines} is a list of lists where
+@samp{group_lines[i][0]} is the name of the group and @samp{group_lines[i][1]}
+is the key IDs of the group as a string.
+
+The @samp{group_lists} result is very similar in that it is a list of
+lists.  The first part, @samp{group_lists[i][0]} matches
+@samp{group_lines[i][0]} as the name of the group, but @samp{group_lists[i][1]}
+is the key IDs of the group as a string.
+
+A demonstration of using the @samp{groups.py} module is also available in
+the form of the executable @samp{mutt-groups.py} script.  This second
+script reads all the group entries in a user's @samp{gpg.conf} file and
+converts them into crypt-hooks suitable for use with the Mutt and
+Neomutt mail clients.
+
+@node Copyright and Licensing
+@chapter Copyright and Licensing
+
+@menu
+* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018. 
+* License GPL compatible::
+@end menu
+
+@node Copyright (C) The GnuPG Project 2018
+@section Copyright (C) The GnuPG Project, 2018
+
+Copyright © The GnuPG Project, 2018.
+
+@node License GPL compatible
+@section License GPL compatible
+
+This file is free software; as a special exception the author gives
+unlimited permission to copy and/or distribute it, with or without
+modifications, as long as this notice is preserved.
+
+This file is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+
+@bye
