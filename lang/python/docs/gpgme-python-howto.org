@@ -17,7 +17,7 @@
 
 | Version:        | 0.1.4                                    |
 | GPGME Version:  | 1.12.0-draft                             |
-| Author:         | Ben McGinnes <ben@gnupg.org>             |
+| Author:         | [[https://gnupg.org/people/index.html#sec-1-5][Ben McGinnes]] <ben@gnupg.org>             |
 | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
 | Language:       | Australian English, British English      |
 | xml:lang:       | en-AU, en-GB, en                         |
@@ -401,7 +401,7 @@ Investigations into the extent or the limitations of this issue are
 ongoing.
 
 
-*** I don't like SWIG, Use CFFI instead
+*** CFFI is the Best™ and GPGME should use it instead of SWIG
     :PROPERTIES:
     :CUSTOM_ID: snafu-cffi
     :END:
@@ -437,6 +437,16 @@ methods, they'll work with pretty much anything).  When you start
 running into trouble with "ifdefs" then you'll know what sort of
 things are lacking.  That doesn't even take into account the amount of
 work saved via SWIG's code generation techniques either.
+
+There's a greater likelihood of turning to Cython to add something to
+these bindings at this point than there is of turning to CFFI.  Except
+that there's little reason to do so when the C code in question either
+already exists or could be produced fairly quickly by the far more
+expedient means of asking either [[https://gnupg.org/people/index.html#sec-1-1][Werner]], [[https://gnupg.org/people/index.html#sec-1-3][Niibe]] or [[https://gnupg.org/people/index.html#sec-1-6][Andre]] to write
+whatever was missing.  Perhaps even [[https://gnupg.org/people/index.html#sec-1-4][Jussi]], but there shouldn't be any
+need for these bindings to interface directly with his work and for
+much the same reasons as we recommend people not call libgcrypt
+directly unless they know what they're doing.
 
 
 * Fundamentals
@@ -2033,18 +2043,20 @@ converts them into crypt-hooks suitable for use with the Mutt and
 Neomutt mail clients.
 
 
-* Copyright and Licensing
+* Copyright, Draft Editions and Licensing
   :PROPERTIES:
   :CUSTOM_ID: copyright-and-license
   :END:
 
 
-** Copyright (C) The GnuPG Project, 2018
+** Copyright
    :PROPERTIES:
    :CUSTOM_ID: copyright
    :END:
 
 Copyright © The GnuPG Project, 2018.
+
+Copyright (C) The GnuPG Project, 2018.
 
 
 ** Draft Editions of this HOWTO
