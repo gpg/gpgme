@@ -66,7 +66,7 @@ Known Issues
 * Breaking Builds::
 * Multiple installations::
 * Won't Work With Windows::
-* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead. 
+* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead.
 
 Fundamentals
 
@@ -126,7 +126,7 @@ Miscellaneous work-arounds
 
 Copyright and Licensing
 
-* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018. 
+* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018.
 * License GPL compatible::
 
 @end detailmenu
@@ -391,7 +391,7 @@ they be encountered.
 * Breaking Builds::
 * Multiple installations::
 * Won't Work With Windows::
-* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead. 
+* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead.
 @end menu
 
 @node Breaking Builds
@@ -2121,7 +2121,7 @@ Neomutt mail clients.
 @chapter Copyright and Licensing
 
 @menu
-* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018. 
+* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018.
 * License GPL compatible::
 @end menu
 
