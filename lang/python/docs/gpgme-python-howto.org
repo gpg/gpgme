@@ -2047,6 +2047,40 @@ Neomutt mail clients.
 Copyright © The GnuPG Project, 2018.
 
 
+** Draft Editions of this HOWTO
+   :PROPERTIES:
+   :CUSTOM_ID: draft-editions
+   :END:
+
+Draft editions of this HOWTO may be periodically available directly
+from the author at any of the following URLs:
+
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (XHTML AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (XHTML AWS S3 no SSL)]]
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.texi][GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.texi][GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 no SSL)]]
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.info][GPGME Python Bindings HOWTO draft (Info file AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.info][GPGME Python Bindings HOWTO draft (Info file AWS S3 no SSL)]]
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.xml][GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.xml][GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no SSL)]]
+
+All of these draft versions are generated from this document via Emacs
+[[https://orgmode.org/][Org mode]] and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]].
+
+In addition to these there is a significantly less frequently updated
+version as a HTML [[https://files.au.adversary.org/crypto/gpgme-python-howto/webhelp/index.html][WebHelp site]] (AWS S3 SSL); generated from DITA XML
+source files, which can be found in [[https://dev.gnupg.org/source/gpgme/browse/ben%252Fhowto-dita/][an alternative branch]] of the GPGME
+git repository.
+
+These draft editions are not official documents and the version of
+documentation in the master branch or which ships with released
+versions is the only official documentation.  Nevertheless, these
+draft editions may occasionally be of use by providing more accessible
+web versions which are updated between releases.  They are provided on
+the understanding that they may contain errors or may contain content
+subject to change prior to an official release.
+
+
 ** License GPL compatible
    :PROPERTIES:
    :CUSTOM_ID: license
