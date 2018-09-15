@@ -16,6 +16,7 @@
   :END:
 
 | Version:        | 0.1.4                                    |
+| GPGME Version:  | 1.12.0-draft                             |
 | Author:         | Ben McGinnes <ben@gnupg.org>             |
 | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
 | Language:       | Australian English, British English      |
@@ -1982,8 +1983,13 @@ information in Python.
 import subprocess
 import sys
 
+if sys.platform == "win32":
+    gpgconfcmd = "gpgconf.exe --list-options gpg"
+else:
+    gpgconfcmd = "gpgconf --list-options gpg"
+
 try:
-    lines = subprocess.getoutput("gpgconf --list-options gpg").splitlines()
+    lines = subprocess.getoutput(gpgconfcmd).splitlines()
 except:
     process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
     procom = process.communicate()
