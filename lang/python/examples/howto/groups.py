@@ -37,7 +37,12 @@ if sys.platform == "win32":
 else:
     gpgconfcmd = "gpgconf --list-options gpg"
 
-lines = subprocess.getoutput(gpgconfcmd).splitlines()
+try:
+    lines = subprocess.getoutput(gpgconfcmd).splitlines()
+except:
+    process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
+    procom = process.communicate()
+    lines = procom[0].decode().splitlines()
 
 for i in range(len(lines)):
     if lines[i].startswith("group") is True:

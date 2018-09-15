@@ -84,7 +84,13 @@ else:
     if os.path.exists(os.environ["GNUPGHOME"]) is True:
         hd = os.environ["GNUPGHOME"]
     else:
-        hd = subprocess.getoutput(gpgconfcmd)
+        try:
+            hd = subprocess.getoutput(gpgconfcmd)
+        except:
+            process = subprocess.Popen(gpgconfcmd.split(),
+                                       stdout=subprocess.PIPE)
+            procom = process.communicate()
+            hd = procom[0].decode().strip()
     gpgfile = "{0}/{1}.gpg".format(hd, keyfile)
     ascfile = "{0}/{1}.asc".format(hd, keyfile)
 
