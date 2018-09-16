@@ -2105,7 +2105,7 @@ real        11m52.945s
 user        0m0.913s
 sys        0m0.752s
 
-bash-4.4$ 
+bash-4.4$
 @end example
 
 Sometime after that I imported another key and followed it with a
@@ -2150,7 +2150,7 @@ Compile it:
 
 @example
 bash-4.4$ python setup.py build_ext --inplace
-bash-4.4$ 
+bash-4.4$
 @end example
 
 Then run it in a similar manner to @samp{keycount.py}:
@@ -2179,6 +2179,9 @@ full executable @samp{keycount.py} example script.
 On the other hand it ran in nearly half the time; taking 6 minutes and
 47.905 seconds to run.  As opposed to the 11 minutes and 52.945 seconds
 which the CPython script alone took.
+
+The @samp{keycount.pyx} and @samp{setup.py} files used to generate this example
+have been added to the @samp{examples/howto/advanced/cython/} directory.
 
 @node Miscellaneous work-arounds
 @chapter Miscellaneous work-arounds

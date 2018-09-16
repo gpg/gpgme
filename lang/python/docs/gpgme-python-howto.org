@@ -2010,7 +2010,7 @@ results:
   user	0m0.913s
   sys	0m0.752s
 
-  bash-4.4$ 
+  bash-4.4$
 #+END_SRC
 
 Sometime after that I imported another key and followed it with a
@@ -2055,7 +2055,7 @@ Compile it:
 
 #+BEGIN_SRC shell
   bash-4.4$ python setup.py build_ext --inplace
-  bash-4.4$ 
+  bash-4.4$
 #+END_SRC
 
 Then run it in a similar manner to =keycount.py=:
@@ -2084,6 +2084,9 @@ full executable =keycount.py= example script.
 On the other hand it ran in nearly half the time; taking 6 minutes and
 47.905 seconds to run.  As opposed to the 11 minutes and 52.945 seconds
 which the CPython script alone took.
+
+The =keycount.pyx= and =setup.py= files used to generate this example
+have been added to the =examples/howto/advanced/cython/= directory.
 
 
 * Miscellaneous work-arounds
