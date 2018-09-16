@@ -27,6 +27,7 @@
 * Working with keys::
 * Basic Functions::
 * Creating keys and subkeys::
+* Advanced or Experimental Use Cases::
 * Miscellaneous work-arounds::
 * Copyright and Licensing::
 
@@ -119,6 +120,10 @@ User IDs
 
 * Adding User IDs::
 * Revokinging User IDs::
+
+Advanced or Experimental Use Cases
+
+* C plus Python plus SWIG plus Cython::
 
 Miscellaneous work-arounds
 
@@ -2060,6 +2065,120 @@ dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
 key = c.get_key(dmfpr, secret=True)
 c.key_sign(key, uids=uid, expires_in=2764800)
 @end example
+
+@node Advanced or Experimental Use Cases
+@chapter Advanced or Experimental Use Cases
+
+@menu
+* C plus Python plus SWIG plus Cython::
+@end menu
+
+@node C plus Python plus SWIG plus Cython
+@section C plus Python plus SWIG plus Cython
+
+In spite of my near facetious commentary in @ref{CFFI is the Best™ and GPGME should use it instead of SWIG, , an earlier section}, it is
+in fact quite possible to use the GPGME bindings with @uref{http://docs.cython.org/en/latest/index.html, Cython}.  In many
+cases the benefits may not be obvious since the most computationally
+intensive work never leaves the level of the C code with which GPGME
+itself is interacting with.
+
+Nevertheless, there are some situations where the benefits are
+demonstrable.  One of the better and easier examples being the one of
+the early examples in this HOWTO, the @ref{Counting keys, , key counting} code.  Running that
+example as an executable Python script, @samp{keycount.py} (available in
+the @samp{examples/howto/} directory), will take a noticable amount of time
+to run on most systems where the public keybox or keyring contains a
+few thousand public keys.
+
+Earlier in the evening I ran that script on my laptop, as I tend to do
+periodically and timed it using @samp{time} utility, with the following
+results:
+
+@example
+bash-4.4$ time keycount.py
+
+Number of secret keys:  23
+Number of public keys:  12112
+
+
+real        11m52.945s
+user        0m0.913s
+sys        0m0.752s
+
+bash-4.4$ 
+@end example
+
+Sometime after that I imported another key and followed it with a
+little test of Cython.  This test was kept fairly basic, essentially
+lifting the material from the initial @uref{http://docs.cython.org/en/latest/src/tutorial/cython_tutorial.html#cython-hello-world, Cython Hello World tutorial} to
+demonstrate compiling Python code to C.  The first step was to take
+the example key counting code quoted previously, essentially from the
+importing of the @samp{gpg} module to the end of the script:
+
+@example
+import gpg
+
+c = gpg.Context()
+seckeys = c.keylist(pattern=None, secret=True)
+pubkeys = c.keylist(pattern=None, secret=False)
+
+seclist = list(seckeys)
+secnum = len(seclist)
+
+publist = list(pubkeys)
+pubnum = len(publist)
+
+print("""
+  Number of secret keys:  @{0@}
+  Number of public keys:  @{1@}
+""".format(secnum, pubnum))
+@end example
+
+Save that into a file called @samp{keycount.pyx} and then create a
+@samp{setup.py} file which contains this:
+
+@example
+from distutils.core import setup
+from Cython.Build import cythonize
+
+setup(
+    ext_modules = cythonize("keycount.pyx")
+)
+@end example
+
+Compile it:
+
+@example
+bash-4.4$ python setup.py build_ext --inplace
+bash-4.4$ 
+@end example
+
+Then run it in a similar manner to @samp{keycount.py}:
+
+@example
+bash-4.4$ time python3.7 -c "import keycount"
+
+Number of secret keys:  23
+Number of public keys:  12113
+
+
+real        6m47.905s
+user        0m0.785s
+sys        0m0.331s
+
+bash-4.4$
+@end example
+
+Cython turned @samp{keycount.pyx} into an 81KB @samp{keycount.o} file in the
+@samp{build/} directory, a 24KB @samp{keycount.cpython-37m-darwin.so} file to be
+imported into Python 3.7 and a 113KB @samp{keycount.c} generated C source
+code file of nearly three thousand lines.  Quite a bit bigger than the
+314 bytes of the @samp{keycount.pyx} file or the full 1,452 bytes of the
+full executable @samp{keycount.py} example script.
+
+On the other hand it ran in nearly half the time; taking 6 minutes and
+47.905 seconds to run.  As opposed to the 11 minutes and 52.945 seconds
+which the CPython script alone took.
 
 @node Miscellaneous work-arounds
 @chapter Miscellaneous work-arounds

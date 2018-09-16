@@ -1970,6 +1970,122 @@ c.key_sign(key, uids=uid, expires_in=2764800)
 #+END_SRC
 
 
+* Advanced or Experimental Use Cases
+  :PROPERTIES:
+  :CUSTOM_ID: advanced-use
+  :END:
+
+
+** C plus Python plus SWIG plus Cython
+   :PROPERTIES:
+   :CUSTOM_ID: cython
+   :END:
+
+In spite of my near facetious commentary in [[#snafu-cffi][an earlier section]], it is
+in fact quite possible to use the GPGME bindings with [[http://docs.cython.org/en/latest/index.html][Cython]].  In many
+cases the benefits may not be obvious since the most computationally
+intensive work never leaves the level of the C code with which GPGME
+itself is interacting with.
+
+Nevertheless, there are some situations where the benefits are
+demonstrable.  One of the better and easier examples being the one of
+the early examples in this HOWTO, the [[#howto-keys-counting][key counting]] code.  Running that
+example as an executable Python script, =keycount.py= (available in
+the =examples/howto/= directory), will take a noticable amount of time
+to run on most systems where the public keybox or keyring contains a
+few thousand public keys.
+
+Earlier in the evening I ran that script on my laptop, as I tend to do
+periodically and timed it using =time= utility, with the following
+results:
+
+#+BEGIN_SRC shell
+  bash-4.4$ time keycount.py
+
+  Number of secret keys:  23
+  Number of public keys:  12112
+
+
+  real	11m52.945s
+  user	0m0.913s
+  sys	0m0.752s
+
+  bash-4.4$ 
+#+END_SRC
+
+Sometime after that I imported another key and followed it with a
+little test of Cython.  This test was kept fairly basic, essentially
+lifting the material from the initial [[http://docs.cython.org/en/latest/src/tutorial/cython_tutorial.html#cython-hello-world][Cython Hello World tutorial]] to
+demonstrate compiling Python code to C.  The first step was to take
+the example key counting code quoted previously, essentially from the
+importing of the =gpg= module to the end of the script:
+
+#+BEGIN_SRC python -i
+import gpg
+
+c = gpg.Context()
+seckeys = c.keylist(pattern=None, secret=True)
+pubkeys = c.keylist(pattern=None, secret=False)
+
+seclist = list(seckeys)
+secnum = len(seclist)
+
+publist = list(pubkeys)
+pubnum = len(publist)
+
+print("""
+  Number of secret keys:  {0}
+  Number of public keys:  {1}
+""".format(secnum, pubnum))
+#+END_SRC
+
+Save that into a file called =keycount.pyx= and then create a
+=setup.py= file which contains this:
+
+#+BEGIN_SRC python -i
+from distutils.core import setup
+from Cython.Build import cythonize
+
+setup(
+    ext_modules = cythonize("keycount.pyx")
+)
+#+END_SRC
+
+Compile it:
+
+#+BEGIN_SRC shell
+  bash-4.4$ python setup.py build_ext --inplace
+  bash-4.4$ 
+#+END_SRC
+
+Then run it in a similar manner to =keycount.py=:
+
+#+BEGIN_SRC shell
+  bash-4.4$ time python3.7 -c "import keycount"
+
+  Number of secret keys:  23
+  Number of public keys:  12113
+
+
+  real	6m47.905s
+  user	0m0.785s
+  sys	0m0.331s
+
+  bash-4.4$
+#+END_SRC
+
+Cython turned =keycount.pyx= into an 81KB =keycount.o= file in the
+=build/= directory, a 24KB =keycount.cpython-37m-darwin.so= file to be
+imported into Python 3.7 and a 113KB =keycount.c= generated C source
+code file of nearly three thousand lines.  Quite a bit bigger than the
+314 bytes of the =keycount.pyx= file or the full 1,452 bytes of the
+full executable =keycount.py= example script.
+
+On the other hand it ran in nearly half the time; taking 6 minutes and
+47.905 seconds to run.  As opposed to the 11 minutes and 52.945 seconds
+which the CPython script alone took.
+
+
 * Miscellaneous work-arounds
   :PROPERTIES:
   :CUSTOM_ID: cheats-and-hacks
