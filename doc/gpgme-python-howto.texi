@@ -28,7 +28,7 @@
 * Basic Functions::
 * Creating keys and subkeys::
 * Miscellaneous work-arounds::
-* Copyright and Licensing::
+* Copyright, Draft Editions and Licensing: Copyright Draft Editions and Licensing. 
 
 @detailmenu
 --- The Detailed Node Listing ---
@@ -66,7 +66,7 @@ Known Issues
 * Breaking Builds::
 * Multiple installations::
 * Won't Work With Windows::
-* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead.
+* CFFI is the Best™ and GPGME should use it instead of SWIG::
 
 Fundamentals
 
@@ -124,9 +124,10 @@ Miscellaneous work-arounds
 
 * Group lines::
 
-Copyright and Licensing
+Copyright, Draft Editions and Licensing
 
-* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018.
+* Copyright::
+* Draft Editions of this HOWTO::
 * License GPL compatible::
 
 @end detailmenu
@@ -135,13 +136,13 @@ Copyright and Licensing
 @node Introduction
 @chapter Introduction
 
-@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @item Version:
 @tab 0.1.4
 @item GPGME Version:
 @tab 1.12.0-draft
 @item Author:
-@tab Ben McGinnes <ben@@gnupg.org>
+@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <ben@@gnupg.org>
 @item Author GPG Key:
 @tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 @item Language:
@@ -327,7 +328,7 @@ include a package in PyPI which actually built correctly would require
 either statically built libraries for every architecture bundled with
 it or a full implementation of C for each architecture.
 
-See the additional notes regarding @ref{I don't like SWIG Use CFFI instead, , CFFI and SWIG} at the end of this
+See the additional notes regarding @ref{CFFI is the Best™ and GPGME should use it instead of SWIG, , CFFI and SWIG} at the end of this
 section for further details.
 
 @node Requirements
@@ -390,7 +391,7 @@ they be encountered.
 * Breaking Builds::
 * Multiple installations::
 * Won't Work With Windows::
-* I don't like SWIG, Use CFFI instead: I don't like SWIG Use CFFI instead.
+* CFFI is the Best™ and GPGME should use it instead of SWIG::
 @end menu
 
 @node Breaking Builds
@@ -526,8 +527,8 @@ what.
 Investigations into the extent or the limitations of this issue are
 ongoing.
 
-@node I don't like SWIG Use CFFI instead
-@subsection I don't like SWIG, Use CFFI instead
+@node CFFI is the Best™ and GPGME should use it instead of SWIG
+@subsection CFFI is the Best™ and GPGME should use it instead of SWIG
 
 There are many reasons for favouring @uref{https://cffi.readthedocs.io/en/latest/overview.html, CFFI} and proponents of it are
 quite happy to repeat these things as if all it would take to switch
@@ -560,6 +561,16 @@ methods, they'll work with pretty much anything).  When you start
 running into trouble with "ifdefs" then you'll know what sort of
 things are lacking.  That doesn't even take into account the amount of
 work saved via SWIG's code generation techniques either.
+
+There's a greater likelihood of turning to Cython to add something to
+these bindings at this point than there is of turning to CFFI.  Except
+that there's little reason to do so when the C code in question either
+already exists or could be produced fairly quickly by the far more
+expedient means of asking either @uref{https://gnupg.org/people/index.html#sec-1-1, Werner}, @uref{https://gnupg.org/people/index.html#sec-1-3, Niibe} or @uref{https://gnupg.org/people/index.html#sec-1-6, Andre} to write
+whatever was missing.  Perhaps even @uref{https://gnupg.org/people/index.html#sec-1-4, Jussi}, but there shouldn't be any
+need for these bindings to interface directly with his work and for
+much the same reasons as we recommend people not call libgcrypt
+directly unless they know what they're doing.
 
 @node Fundamentals
 @chapter Fundamentals
@@ -2121,18 +2132,64 @@ script reads all the group entries in a user's @samp{gpg.conf} file and
 converts them into crypt-hooks suitable for use with the Mutt and
 Neomutt mail clients.
 
-@node Copyright and Licensing
-@chapter Copyright and Licensing
+@node Copyright Draft Editions and Licensing
+@chapter Copyright, Draft Editions and Licensing
 
 @menu
-* Copyright (C) The GnuPG Project, 2018: Copyright (C) The GnuPG Project 2018.
+* Copyright::
+* Draft Editions of this HOWTO::
 * License GPL compatible::
 @end menu
 
-@node Copyright (C) The GnuPG Project 2018
-@section Copyright (C) The GnuPG Project, 2018
+@node Copyright
+@section Copyright
 
 Copyright © The GnuPG Project, 2018.
+
+Copyright (C) The GnuPG Project, 2018.
+
+@node Draft Editions of this HOWTO
+@section Draft Editions of this HOWTO
+
+Draft editions of this HOWTO may be periodically available directly
+from the author at any of the following URLs:
+
+@itemize
+@item
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML AWS S3 SSL)}
+@item
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML AWS S3 no SSL)}
+@item
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.texi, GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 SSL)}
+@item
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.texi, GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 no SSL)}
+@item
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.info, GPGME Python Bindings HOWTO draft (Info file AWS S3 SSL)}
+@item
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.info, GPGME Python Bindings HOWTO draft (Info file AWS S3 no SSL)}
+@item
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.xml, GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 SSL)}
+@item
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.xml, GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no SSL)}
+@end itemize
+
+All of these draft versions are generated from this document via Emacs
+@uref{https://orgmode.org/, Org mode} and @uref{https://www.gnu.org/software/texinfo/, GNU Texinfo}.  Though it is likely that the specific @uref{https://files.au.adversary.org/crypto/gpgme-python-howto.org, file}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.org, version} used will be on the same server with the generated output
+formats.
+
+In addition to these there is a significantly less frequently updated
+version as a HTML @uref{https://files.au.adversary.org/crypto/gpgme-python-howto/webhelp/index.html, WebHelp site} (AWS S3 SSL); generated from DITA XML
+source files, which can be found in @uref{https://dev.gnupg.org/source/gpgme/browse/ben%252Fhowto-dita/, an alternative branch} of the GPGME
+git repository.
+
+These draft editions are not official documents and the version of
+documentation in the master branch or which ships with released
+versions is the only official documentation.  Nevertheless, these
+draft editions may occasionally be of use by providing more accessible
+web versions which are updated between releases.  They are provided on
+the understanding that they may contain errors or may contain content
+subject to change prior to an official release.
 
 @node License GPL compatible
 @section License GPL compatible

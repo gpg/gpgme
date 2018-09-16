@@ -2077,7 +2077,9 @@ from the author at any of the following URLs:
 - [[http://files.au.adversary.org/crypto/gpgme-python-howto.xml][GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no SSL)]]
 
 All of these draft versions are generated from this document via Emacs
-[[https://orgmode.org/][Org mode]] and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]].
+[[https://orgmode.org/][Org mode]] and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]].  Though it is likely that the specific [[https://files.au.adversary.org/crypto/gpgme-python-howto.org][file]]
+[[http://files.au.adversary.org/crypto/gpgme-python-howto.org][version]] used will be on the same server with the generated output
+formats.
 
 In addition to these there is a significantly less frequently updated
 version as a HTML [[https://files.au.adversary.org/crypto/gpgme-python-howto/webhelp/index.html][WebHelp site]] (AWS S3 SSL); generated from DITA XML
