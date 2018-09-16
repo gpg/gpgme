@@ -2043,7 +2043,7 @@ converts them into crypt-hooks suitable for use with the Mutt and
 Neomutt mail clients.
 
 
-* Copyright, Draft Editions and Licensing
+* Copyright and Licensing
   :PROPERTIES:
   :CUSTOM_ID: copyright-and-license
   :END:

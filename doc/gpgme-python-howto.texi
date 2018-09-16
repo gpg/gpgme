@@ -28,7 +28,7 @@
 * Basic Functions::
 * Creating keys and subkeys::
 * Miscellaneous work-arounds::
-* Copyright, Draft Editions and Licensing: Copyright Draft Editions and Licensing. 
+* Copyright and Licensing::
 
 @detailmenu
 --- The Detailed Node Listing ---
@@ -124,7 +124,7 @@ Miscellaneous work-arounds
 
 * Group lines::
 
-Copyright, Draft Editions and Licensing
+Copyright and Licensing
 
 * Copyright::
 * Draft Editions of this HOWTO::
@@ -2132,8 +2132,8 @@ script reads all the group entries in a user's @samp{gpg.conf} file and
 converts them into crypt-hooks suitable for use with the Mutt and
 Neomutt mail clients.
 
-@node Copyright Draft Editions and Licensing
-@chapter Copyright, Draft Editions and Licensing
+@node Copyright and Licensing
+@chapter Copyright and Licensing
 
 @menu
 * Copyright::
