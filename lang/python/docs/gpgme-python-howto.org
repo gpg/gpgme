@@ -2025,8 +2025,9 @@ publist = list(pubkeys)
 pubnum = len(publist)
 
 print("""
-  Number of secret keys:  {0}
-  Number of public keys:  {1}
+    Number of secret keys:  {0}
+    Number of public keys:  {1}
+
 """.format(secnum, pubnum))
 #+END_SRC
 
@@ -2077,7 +2078,10 @@ On the other hand it ran in nearly half the time; taking 6 minutes and
 which the CPython script alone took.
 
 The =keycount.pyx= and =setup.py= files used to generate this example
-have been added to the =examples/howto/advanced/cython/= directory.
+have been added to the =examples/howto/advanced/cython/= directory
+The example versions include some additional options to annotate the
+existing code and to detect Cython's use.  The latter comes from the
+[[http://docs.cython.org/en/latest/src/tutorial/pure.html#magic-attributes-within-the-pxd][Magic Attributes]] section of the Cython documentation.
 
 
 * Miscellaneous work-arounds
