@@ -438,16 +438,6 @@ running into trouble with "ifdefs" then you'll know what sort of
 things are lacking.  That doesn't even take into account the amount of
 work saved via SWIG's code generation techniques either.
 
-There's a greater likelihood of turning to Cython to add something to
-these bindings at this point than there is of turning to CFFI.  Except
-that there's little reason to do so when the C code in question either
-already exists or could be produced fairly quickly by the far more
-expedient means of asking either [[https://gnupg.org/people/index.html#sec-1-1][Werner]], [[https://gnupg.org/people/index.html#sec-1-3][Niibe]] or [[https://gnupg.org/people/index.html#sec-1-6][Andre]] to write
-whatever was missing.  Perhaps even [[https://gnupg.org/people/index.html#sec-1-4][Jussi]], but there shouldn't be any
-need for these bindings to interface directly with his work and for
-much the same reasons as we recommend people not call libgcrypt
-directly unless they know what they're doing.
-
 
 * Fundamentals
   :PROPERTIES:
@@ -1981,9 +1971,10 @@ c.key_sign(key, uids=uid, expires_in=2764800)
    :CUSTOM_ID: cython
    :END:
 
-In spite of my near facetious commentary in [[#snafu-cffi][an earlier section]], it is
-in fact quite possible to use the GPGME bindings with [[http://docs.cython.org/en/latest/index.html][Cython]].  In many
-cases the benefits may not be obvious since the most computationally
+In spite of the apparent incongruence of using Python bindings to a C
+interface only to generate more C from the Python; it is in fact quite
+possible to use the GPGME bindings with [[http://docs.cython.org/en/latest/index.html][Cython]].  Though in many cases
+the benefits may not be obvious since the most computationally
 intensive work never leaves the level of the C code with which GPGME
 itself is interacting with.
 
@@ -1995,9 +1986,9 @@ the =examples/howto/= directory), will take a noticable amount of time
 to run on most systems where the public keybox or keyring contains a
 few thousand public keys.
 
-Earlier in the evening I ran that script on my laptop, as I tend to do
-periodically and timed it using =time= utility, with the following
-results:
+Earlier in the evening, prior to starting this section, I ran that
+script on my laptop; as I tend to do periodically and timed it using
+=time= utility, with the following results:
 
 #+BEGIN_SRC shell
   bash-4.4$ time keycount.py
@@ -2015,10 +2006,10 @@ results:
 
 Sometime after that I imported another key and followed it with a
 little test of Cython.  This test was kept fairly basic, essentially
-lifting the material from the initial [[http://docs.cython.org/en/latest/src/tutorial/cython_tutorial.html#cython-hello-world][Cython Hello World tutorial]] to
-demonstrate compiling Python code to C.  The first step was to take
-the example key counting code quoted previously, essentially from the
-importing of the =gpg= module to the end of the script:
+lifting the material from the [[http://docs.cython.org/en/latest/src/tutorial/cython_tutorial.html][Cython Basic Tutorial]] to demonstrate
+compiling Python code to C.  The first step was to take the example
+key counting code quoted previously, essentially from the importing of
+the =gpg= module to the end of the script:
 
 #+BEGIN_SRC python -i
 import gpg
