@@ -105,5 +105,11 @@ gpg.conf:
 	echo no-force-v3-sigs > ./gpg.conf
 
 gpg-agent.conf:
-# This is required for gpg2, which does not support command fd.
+# This is required for gpg2, which does not support command fd for the
+# passphrase.  disable-scdaemon is required so that we don't try using
+# a key from a smartcard reader (error might be: Unusable secret key)
 	echo pinentry-program $(abs_srcdir)/pinentry > ./gpg-agent.conf
+	echo disable-scdaemon >> ./gpg-agent.conf
+
+
+# end-of-file

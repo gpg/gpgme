@@ -119,3 +119,7 @@ gpg.conf:
 gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
 	echo pinentry-program $(abs_top_srcdir)/tests/gpg/pinentry >$@
+	echo disable-scdaemon >> $@
+
+
+# end-of-file
