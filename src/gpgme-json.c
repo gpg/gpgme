@@ -2973,15 +2973,10 @@ static const char hlp_createkey[] =
   "userid:  The user id. E.g. \"Foo Bar <foo@bar.baz>\"\n"
   "\n"
   "Optional parameters:\n"
-  "algo:        Algo of the key as string. See doc for gpg --quick-gen-key.\n"
-  "subkey-algo: Algo of the encryption subkey. If ommited the same as algo\n"
-  "             is used.\n"
-  "             Except for dsa and ed25519 where the according\n"
-  "             elg / cv25519 algo will be used as subkey-algo.\n"
-  "\n"
-  "             If algo is omitted or default or future-default subkey-algo\n"
-  "             is ignored.\n"
-  "expires:     Seconds from now to expiry as Number. 0 means no expiry.\n"
+  "algo:        Algo of the key as string.  See doc for gpg --quick-gen-key.\n"
+  "             Supported values are \"default\" and \"future-default\".\n"
+  "expires:     Seconds from now to expiry as Number.  0 means no expiry.\n"
+  "             The default is to use a standard expiration interval.\n"
   "\n"
   "Response on success:\n"
   "fingerprint:   The fingerprint of the created key.\n"
@@ -3000,9 +2995,8 @@ op_createkey (cjson_t request, cjson_t result)
   const char *algo = "default";
   const char *userid;
   gpgme_genkey_result_t res;
-  char *new_fpr = NULL;
 
-#ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
+#ifdef GPG_AGENT_ALLOWS_KEYGEN_THROUGH_BROWSER
   /* GnuPG forbids keygen through the browser socket so for
      this we create an unrestricted context.
      See GnuPG-Bug-Id: T4010 for more info */
@@ -3054,79 +3048,10 @@ op_createkey (cjson_t request, cjson_t result)
       goto leave;
     }
 
-  /* Dup the fpr as the result might become invalid after context reuse. */
-  new_fpr = xstrdup (res->fpr);
-
-  if (algo && strcmp ("default", algo) && strcmp ("future-default", algo))
-    {
-      /* We need to add the encryption subkey manually */
-      gpgme_ctx_t keylistctx = create_onetime_context (GPGME_PROTOCOL_OpenPGP);
-      gpgme_key_t new_key = NULL;
-      char *subkey_algo = NULL;
-
-      j_tmp = cJSON_GetObjectItem (request, "subkey_algo");
-      if (j_tmp && cjson_is_string (j_tmp))
-        {
-          subkey_algo = xstrdup (j_tmp->valuestring);
-        }
-
-      if (!subkey_algo)
-        {
-          subkey_algo = strdup (algo);
-          if (!strncmp ("dsa", subkey_algo, 3))
-            {
-              subkey_algo[0] = 'e';
-              subkey_algo[1] = 'l';
-              subkey_algo[2] = 'g';
-            }
-          if (!strcmp ("ed25519", subkey_algo))
-            {
-              strcpy (subkey_algo, "cv25519");
-            }
-        }
-
-      err = gpgme_get_key (keylistctx, new_fpr, &new_key, 1);
-      release_onetime_context (keylistctx);
-      if (err || !new_key)
-        {
-          gpg_error_object (result, err, "Error finding created key: %s",
-                            gpg_strerror (err));
-          xfree (subkey_algo);
-          goto leave;
-        }
-
-      err = gpgme_op_createsubkey (ctx, new_key, subkey_algo,
-                                   0, expires, flags |= GPGME_CREATE_ENCR);
-      xfree (subkey_algo);
-      if (err)
-        {
-          /* This can happen for example if the user cancels the
-           * pinentry to unlock the primary key when adding the
-           * subkey.  To avoid an artifact of a pimary key without
-           * an encryption capable subkey we delete the created
-           * key and treat the whole operation as failed. */
-          gpgme_error_t err2;
-          gpg_error_object (result, err, "Error creating subkey: %s",
-                            gpg_strerror (err));
-          log_info ("Deleting primary key after keygen failure.\n");
-          err2 = gpgme_op_delete_ext (ctx, new_key, GPGME_DELETE_FORCE |
-                                      GPGME_DELETE_ALLOW_SECRET);
-          if (err2)
-            {
-              log_error ("Error deleting primary key: %s",
-                         gpg_strerror (err));
-            }
-          gpgme_key_unref (new_key);
-          goto leave;
-        }
-      gpgme_key_unref (new_key);
-    }
-
-  xjson_AddStringToObject0 (result, "fingerprint", new_fpr);
+  xjson_AddStringToObject0 (result, "fingerprint", res->fpr);
 
 leave:
-  xfree (new_fpr);
-#ifdef GPG_AGENT_ALLOWS_KEYGEN_TRHOUGH_BROWSER
+#ifdef GPG_AGENT_ALLOWS_KEYGEN_THROUGH_BROWSER
   release_context (ctx);
 #else
   gpgme_release (ctx);

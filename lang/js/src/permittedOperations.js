@@ -348,9 +348,6 @@ export const permittedOperations = {
             algo: {
                 allowed: ['string']
             },
-            'subkey-algo': {
-                allowed: ['string']
-            },
             expires: {
                 allowed: ['number'],
             }
