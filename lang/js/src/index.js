@@ -31,13 +31,17 @@ import { Connection } from './Connection';
  * connection once, and then offers the available functions as method of the
  * response object.
  * An unsuccessful attempt will reject as a GPGME_Error.
+ * @param {Object} config (optional) configuration options
+ * @param {Number} config.timeout set the timeout for the initial connection
+ * check. On some machines and operating systems a default timeout of 500 ms is
+ * too low, so a higher number might be attempted.
  * @returns {Promise<GpgME>}
  * @async
  */
-function init (){
+function init ({ timeout = 500 } = {}){
     return new Promise(function (resolve, reject){
         const connection = new Connection;
-        connection.checkConnection(false).then(
+        connection.checkConnection(false, timeout).then(
             function (result){
                 if (result === true) {
                     resolve(new GpgME());

@@ -74,11 +74,15 @@ export class Connection{
      * Retrieves the information about the backend.
      * @param {Boolean} details (optional) If set to false, the promise will
      *  just return if a connection was successful.
+     * @param {Number} timeout (optional)
      * @returns {Promise<backEndDetails>|Promise<Boolean>} Details from the
      * backend
      * @async
      */
-    checkConnection (details = true){
+    checkConnection (details = true, timeout = 1000){
+        if (typeof timeout !== 'number' && timeout <= 0) {
+            timeout = 1000;
+        }
         const msg = createMessage('version');
         if (details === true) {
             return this.post(msg);
@@ -90,7 +94,7 @@ export class Connection{
                     new Promise(function (resolve, reject){
                         setTimeout(function (){
                             reject(gpgme_error('CONN_TIMEOUT'));
-                        }, 500);
+                        }, timeout);
                     })
                 ]).then(function (){ // success
                     resolve(true);

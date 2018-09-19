@@ -27,7 +27,7 @@ describe('Long running Encryption/Decryption', function () {
     let context = null;
     const good_fpr = inputvalues.encrypt.good.fingerprint;
     before(function (done){
-        const prm = Gpgmejs.init();
+        const prm = Gpgmejs.init({ timeout: 2000 });
         prm.then(function (gpgmejs){
             context = gpgmejs;
             done();

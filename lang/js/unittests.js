@@ -34,34 +34,38 @@ import { GPGME_Message, createMessage } from './src/Message';
 mocha.setup('bdd');
 const expect = chai.expect;
 chai.config.includeStack = true;
+const connectionTimeout = 2000;
 
 function unittests (){
     describe('Connection testing', function (){
 
         it('Connecting', function (done) {
             let conn0 = new Connection;
-            conn0.checkConnection().then(function (answer) {
-                expect(answer).to.not.be.empty;
-                expect(answer.gpgme).to.not.be.undefined;
-                expect(answer.gpgme).to.be.a('string');
-                expect(answer.info).to.be.an('Array');
-                expect(conn0.disconnect).to.be.a('function');
-                expect(conn0.post).to.be.a('function');
-                done();
-            });
+            conn0.checkConnection(true, connectionTimeout).then(
+                function (answer) {
+                    expect(answer).to.not.be.empty;
+                    expect(answer.gpgme).to.not.be.undefined;
+                    expect(answer.gpgme).to.be.a('string');
+                    expect(answer.info).to.be.an('Array');
+                    expect(conn0.disconnect).to.be.a('function');
+                    expect(conn0.post).to.be.a('function');
+                    done();
+                });
 
         });
 
         it('Disconnecting', function (done) {
             let conn0 = new Connection;
-            conn0.checkConnection(false).then(function (answer) {
-                expect(answer).to.be.true;
-                conn0.disconnect();
-                conn0.checkConnection(false).then(function (result) {
-                    expect(result).to.be.false;
-                    done();
+            conn0.checkConnection(false, connectionTimeout).then(
+                function (answer) {
+                    expect(answer).to.be.true;
+                    conn0.disconnect();
+                    conn0.checkConnection(false, connectionTimeout).then(
+                        function (result) {
+                            expect(result).to.be.false;
+                            done();
+                        });
                 });
-            });
         });
     });
 

@@ -32,7 +32,7 @@ describe('Key importing', function () {
 
     let context = null;
     before(function (done){
-        const prm = Gpgmejs.init();
+        const prm = Gpgmejs.init({ timeout: 2000 });
         prm.then(function (gpgmejs){
             context = gpgmejs;
             context.Keyring.getKeys({ pattern: fpr }).then(

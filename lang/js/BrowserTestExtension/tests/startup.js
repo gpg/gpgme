@@ -25,7 +25,7 @@
 
 describe('GPGME context', function (){
     it('Starting a GpgME instance', function (done){
-        let prm = Gpgmejs.init();
+        let prm = Gpgmejs.init({ timeout: 2000 });
         const input = inputvalues.someInputParameter;
         prm.then(
             function (context){
