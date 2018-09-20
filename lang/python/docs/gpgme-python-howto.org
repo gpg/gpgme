@@ -642,7 +642,7 @@ one argument which is a bytes literal object containing either the
 binary or ASCII armoured key data for one or more keys.
 
 The following example retrieves one or more keys from the SKS
-keyservers via the web using the requests module. Since requests
+keyservers via the web using the requests module.  Since requests
 returns the content as a bytes literal object, we can then use that
 directly to import the resulting data into our keybox.
 
@@ -690,7 +690,7 @@ else:
 
 *NOTE:* When searching for a key ID of any length or a fingerprint
 (without spaces), the SKS servers require the the leading =0x=
-indicative of hexadecimal be included. Also note that the old short
+indicative of hexadecimal be included.  Also note that the old short
 key IDs (e.g. =0xDEADBEEF=) should no longer be used due to the
 relative ease by which such key IDs can be reproduced, as demonstrated
 by the Evil32 Project in 2014 (which was subsequently exploited in
@@ -2084,7 +2084,7 @@ existing code and to detect Cython's use.  The latter comes from the
 [[http://docs.cython.org/en/latest/src/tutorial/pure.html#magic-attributes-within-the-pxd][Magic Attributes]] section of the Cython documentation.
 
 
-* Miscellaneous work-arounds
+* Miscellaneous extras and work-arounds
   :PROPERTIES:
   :CUSTOM_ID: cheats-and-hacks
   :END:
@@ -2155,6 +2155,34 @@ the form of the executable =mutt-groups.py= script.  This second
 script reads all the group entries in a user's =gpg.conf= file and
 converts them into crypt-hooks suitable for use with the Mutt and
 Neomutt mail clients.
+
+
+** Keyserver access for Python
+   :PROPERTIES:
+   :CUSTOM_ID: hkp4py
+   :END:
+
+The [[https://github.com/Selfnet/hkp4py][hkp4py]] module by Marcel Fest was originally a port of the old
+[[https://github.com/dgladkov/python-hkp][python-hkp]] module from Python 2 to Python 3 and updated to use the
+[[http://docs.python-requests.org/en/latest/index.html][requests]] module instead.  It has since been modified to provide
+support for Python 2.7 as well and is available via PyPI.
+
+Since it rewrites the =hkp= protocol prefix as =http= and =hkps= as
+=https=, the module is able to be used even with servers which do not
+support the full scope of keyserver functions.  It will work quite
+readily when incorporated into a [[#cython][Cython]] generated and compiled version
+of any code.
+
+
+*** Key import format
+    :PROPERTIES:
+    :CUSTOM_ID: hkp4py-strings
+    :END:
+
+The hkp4py module returns key data via requests as string literals
+(=r.text=) instead of byte literals (=r.content=).  This means that
+the retrurned key data must be encoded to UTF-8 when importing that
+key material using a =gpg.Context().key_import()= method.
 
 
 * Copyright and Licensing
