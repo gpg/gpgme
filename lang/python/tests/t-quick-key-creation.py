@@ -80,8 +80,11 @@ with support.EphemeralContext() as ctx:
         "Primary keys expiration time is off"
 
     # Check capabilities
-    for sign, encrypt, certify, authenticate in itertools.
-    product([False, True], [False, True], [False, True], [False, True]):
+    for sign, encrypt, certify, authenticate \
+            in itertools.product([False, True],
+                                 [False, True],
+                                 [False, True],
+                                 [False, True]):
         # Filter some out
         if not (sign or encrypt or certify or authenticate):
             # This triggers the default capabilities tested before.

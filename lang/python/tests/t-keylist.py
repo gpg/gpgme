@@ -162,25 +162,25 @@ def check_global(key, uids, n_subkeys):
     assert key.can_sign, "Key unexpectedly unusable for signing"
     assert key.can_certify, "Key unexpectedly unusable for certifications"
     assert not key.secret, "Key unexpectedly secret"
-    assert not key.protocol != gpg.constants.protocol.OpenPGP,
-    "Key has unexpected protocol: {}".format(key.protocol)
-    assert not key.issuer_serial,
-    "Key unexpectedly carries issuer serial: {}".format(key.issuer_serial)
-    assert not key.issuer_name,
-    "Key unexpectedly carries issuer name: {}".format(key.issuer_name)
-    assert not key.chain_id,
-    "Key unexpectedly carries chain ID: {}".format(key.chain_id)
+    assert not key.protocol != gpg.constants.protocol.OpenPGP, \
+        "Key has unexpected protocol: {}".format(key.protocol)
+    assert not key.issuer_serial, \
+        "Key unexpectedly carries issuer serial: {}".format(key.issuer_serial)
+    assert not key.issuer_name, \
+        "Key unexpectedly carries issuer name: {}".format(key.issuer_name)
+    assert not key.chain_id, \
+        "Key unexpectedly carries chain ID: {}".format(key.chain_id)
 
     # Only key Alfa is trusted
-    assert key.uids[0].name == 'Alfa Test' or
-    key.owner_trust == gpg.constants.validity.UNKNOWN,
-    "Key has unexpected owner trust: {}".format(key.owner_trust)
-    assert key.uids[0].name != 'Alfa Test' or key.owner_trust == gpg.constants.
-    validity.ULTIMATE, "Key has unexpected owner trust: {}".
-    format(key.owner_trust)
+    assert (key.uids[0].name == 'Alfa Test'
+            or key.owner_trust == gpg.constants.validity.UNKNOWN), \
+            "Key has unexpected owner trust: {}".format(key.owner_trust)
+    assert (key.uids[0].name != 'Alfa Test'
+            or key.owner_trust == gpg.constants.validity.ULTIMATE), \
+            "Key has unexpected owner trust: {}".format(key.owner_trust)
 
-    assert len(key.subkeys) - 1 == n_subkeys,
-    "Key `{}' has unexpected number of subkeys".format(uids[0][0])
+    assert len(key.subkeys) - 1 == n_subkeys, \
+        "Key `{}' has unexpected number of subkeys".format(uids[0][0])
 
 
 def check_subkey(fpr, which, subkey):
@@ -207,18 +207,19 @@ def check_subkey(fpr, which, subkey):
     assert not subkey.secret, which + " key unexpectedly secret"
     assert not subkey.is_cardkey, "Public key marked as card key"
     assert not subkey.card_number, "Public key with card number set"
-    assert not subkey.pubkey_algo !=
-    (gpg.constants.pk.DSA if which == "Primary" else gpg.constants.pk.ELG_E),
-    which + " key has unexpected public key algo: {}".format(subkey.
+    assert not subkey.pubkey_algo != \
+        (gpg.constants.pk.DSA if which == "Primary"
+         else gpg.constants.pk.ELG_E), \
+        which + " key has unexpected public key algo: {}".format(subkey.
                                                              pubkey_algo)
-    assert subkey.length == 1024,
-    which + " key has unexpected length: {}".format(subkey.length)
-    assert fpr.endswith(subkey.keyid),
-    which + " key has unexpected key ID: {}".format(subkey.keyid)
-    assert which == "Secondary" or subkey.fpr == fpr,
-    which + " key has unexpected fingerprint: {}".format(subkey.fpr)
-    assert not subkey.expires,
-    which + " key unexpectedly expires: {}".format(subkey.expires)
+    assert subkey.length == 1024, \
+        which + " key has unexpected length: {}".format(subkey.length)
+    assert fpr.endswith(subkey.keyid), \
+        which + " key has unexpected key ID: {}".format(subkey.keyid)
+    assert which == "Secondary" or subkey.fpr == fpr, \
+        which + " key has unexpected fingerprint: {}".format(subkey.fpr)
+    assert not subkey.expires, \
+        which + " key unexpectedly expires: {}".format(subkey.expires)
 
 
 def check_uid(which, ref, uid):
@@ -227,16 +228,16 @@ def check_uid(which, ref, uid):
     assert uid.validity == (gpg.constants.validity.UNKNOWN
                             if uid.name.split()[0]
                             not in {'Alfa', 'Alpha', 'Alice'} else
-                            gpg.constants.validity.ULTIMATE),
-    which + " user ID has unexpectedly validity: {}".format(uid.validity)
+                            gpg.constants.validity.ULTIMATE), \
+        which + " user ID has unexpectedly validity: {}".format(uid.validity)
     assert not uid.signatures, which + " user ID unexpectedly signed"
-    assert uid.name == ref[0],
-    "Unexpected name in {} user ID: {!r}".format(which.lower(), uid.name)
-    assert uid.comment == ref[1],
-    "Unexpected comment in {} user ID: {!r}".format(which.lower(),
-                                                    uid.comment)
-    assert uid.email == ref[2],
-    "Unexpected email in {} user ID: {!r}".format(which.lower(), uid.email)
+    assert uid.name == ref[0], \
+        "Unexpected name in {} user ID: {!r}".format(which.lower(), uid.name)
+    assert uid.comment == ref[1], \
+        "Unexpected comment in {} user ID: {!r}".\
+        format(which.lower(), uid.comment)
+    assert uid.email == ref[2], \
+        "Unexpected email in {} user ID: {!r}".format(which.lower(), uid.email)
 
 
 i = 0

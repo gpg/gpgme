@@ -60,8 +60,10 @@ with support.EphemeralContext() as ctx:
         "subkeys expiration time is off"
 
     # Check capabilities
-    for sign, encrypt, authenticate in itertools.
-    product([False, True], [False, True], [False, True]):
+    for sign, encrypt, authenticate \
+            in itertools.product([False, True],
+                                 [False, True],
+                                 [False, True]):
         # Filter some out
         if not (sign or encrypt or authenticate):
             # This triggers the default capabilities tested before.
