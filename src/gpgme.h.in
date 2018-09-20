@@ -95,6 +95,12 @@ extern "C" {
 #define _GPGME_DEPRECATED_OUTSIDE_GPGME(a,b) _GPGME_DEPRECATED(a,b)
 #endif
 
+/* We used to use some symbols which clash with keywords in some
+ * languages.  This macro is used to obsolete them.  */
+#if defined(__cplusplus) || defined(SWIGPYTHON)
+# define _GPGME_OBSOLETE_SOME_SYMBOLS 1
+#endif
+
 
 /* Check for a matching _FILE_OFFSET_BITS definition.  */
 #if @NEED__FILE_OFFSET_BITS@
@@ -640,7 +646,7 @@ struct _gpgme_key_sig
   gpgme_error_t status;
 
   /* Deprecated; use SIG_CLASS instead.  */
-#ifdef __cplusplus
+#ifdef _GPGME_OBSOLETE_SOME_SYMBOLS
   unsigned int _obsolete_class _GPGME_DEPRECATED(0,4);
 #else
   unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);
@@ -1466,7 +1472,7 @@ struct _gpgme_new_signature
   char *fpr;
 
   /* Deprecated; use SIG_CLASS instead.  */
-#ifdef __cplusplus
+#ifdef _GPGME_OBSOLETE_SOME_SYMBOLS
   unsigned int _obsolete_class_2;
 #else
   unsigned int class _GPGME_DEPRECATED_OUTSIDE_GPGME(0,4);

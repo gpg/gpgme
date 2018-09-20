@@ -21,6 +21,12 @@
 %include "cpointer.i"
 %include "cstring.i"
 
+%{
+/* We use public symbols (eg. "_obsolete_class") which are marked as
+ * deprecated but we need to keep them.  Silence the warning.  */
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+%}
+
 /* Generate doc strings for all methods.
 
    This will generate docstrings of the form
@@ -575,7 +581,8 @@ off_t gpgme_data_seek (gpgme_data_t dh, off_t offset, int whence=SEEK_SET);
 %}
 
 /* This is for notations, where we want to hide the length fields, and
-   the unused bit field block.  */
+ * the unused bit field block.  We silence the warning.  */
+%warnfilter(302) _gpgme_sig_notation;
 struct _gpgme_sig_notation
 {
   struct _gpgme_sig_notation *next;
