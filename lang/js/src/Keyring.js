@@ -428,7 +428,7 @@ export class GPGME_Keyring {
  * documentation for details
  */
 const supportedKeyAlgos = [
-    'default', 'default-future',
+    'default', 'future-default',
     'rsa', 'rsa2048', 'rsa3072', 'rsa4096',
     'dsa', 'dsa2048', 'dsa3072', 'dsa4096',
     'elg', 'elg2048', 'elg3072', 'elg4096',
