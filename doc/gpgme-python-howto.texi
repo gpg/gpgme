@@ -38,6 +38,7 @@ Introduction
 
 * Python 2 versus Python 3::
 * Examples::
+* Unofficial Drafts::
 
 GPGME Concepts
 
@@ -167,6 +168,7 @@ Python bindings to programmatically leverage the GPGME library.
 @menu
 * Python 2 versus Python 3::
 * Examples::
+* Unofficial Drafts::
 @end menu
 
 @node Python 2 versus Python 3
@@ -197,6 +199,14 @@ types with which GPGME deals considerably easier.
 
 All of the examples found in this document can be found as Python 3
 scripts in the @samp{lang/python/examples/howto} directory.
+
+@node Unofficial Drafts
+@section Unofficial Drafts
+
+In addition to shipping with each release of GPGME, there is a section
+on locations to read or download @ref{Draft Editions of this HOWTO, , draft editions} of this document from
+at the end of it.  These are unofficial versions produced in between
+major releases.
 
 @node GPGME Concepts
 @chapter GPGME Concepts
@@ -780,7 +790,7 @@ import requests
 c = gpg.Context()
 url = "https://sks-keyservers.net/pks/lookup"
 pattern = input("Enter the pattern to search for key or user IDs: ")
-payload = @{ "op": "get", "search": pattern @}
+payload = @{"op": "get", "search": pattern@}
 
 r = requests.get(url, verify=True, params=payload)
 result = c.key_import(r.content)
@@ -822,8 +832,77 @@ relative ease by which such key IDs can be reproduced, as demonstrated
 by the Evil32 Project in 2014 (which was subsequently exploited in
 2016).
 
-Here is a variation on the above which checks the constrained
-ProtonMail keyserver for ProtonMail public keys.
+Performing the same task with the @uref{https://github.com/Selfnet/hkp4py, hkp4py module} (available via PyPI)
+is not too much different, but does provide a number of options of
+benefit to end users.  Not least of which being the ability to perform
+some checks on a key before importing it or not.  For instance it may
+be the policy of a site or project to only import keys which have not
+been revoked.  The hkp4py module permits such checks prior to the
+importing of the keys found.
+
+@example
+import gpg
+import hkp4py
+
+c = gpg.Context()
+server = hkp4py.KeyServer("https://hkps.pool.sks-keyservers.net")
+pattern = input("Enter the pattern to search for keys or user IDs: ")
+results = []
+
+try:
+    keys = server.search(pattern)
+    print("Found @{0@} key(s).".format(len(keys)))
+except Exception as e:
+    keys = []
+    for logrus in pattern.split():
+        if logrus.startswith("0x") is True:
+            key = server.search(logrus)
+        else:
+            key = server.search("0x@{0@}".format(logrus))
+        keys.append(key[0])
+    print("Found @{0@} key(s).".format(len(keys)))
+
+for key in keys:
+    import_result = c.key_import(key.key_blob)
+    results.append(import_result)
+
+for result in results:
+    if result is not None and hasattr(result, "considered") is False:
+        print(result)
+    elif result is not None and hasattr(result, "considered") is True:
+        num_keys = len(result.imports)
+        new_revs = result.new_revocations
+        new_sigs = result.new_signatures
+        new_subs = result.new_sub_keys
+        new_uids = result.new_user_ids
+        new_scrt = result.secret_imported
+        nochange = result.unchanged
+        print("""
+The total number of keys considered for import was:  @{0@}
+
+   Number of keys revoked:  @{1@}
+ Number of new signatures:  @{2@}
+    Number of new subkeys:  @{3@}
+   Number of new user IDs:  @{4@}
+Number of new secret keys:  @{5@}
+ Number of unchanged keys:  @{6@}
+
+The key IDs for all considered keys were:
+""".format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+        for i in range(num_keys):
+            print(result.imports[i].fpr)
+        print("")
+    else:
+        pass
+@end example
+
+Since the hkp4py module handles multiple keys just as effectively as
+one (@samp{keys} is a list of responses per matching key), thie above
+example is able to do a little bit more with the returned data.
+
+Here is a variation on the first example above which checks the
+constrained ProtonMail keyserver for ProtonMail public keys.
 
 @example
 import gpg
