@@ -2265,7 +2265,7 @@ support for Python 2.7 as well and is available via PyPI.
 
 Since it rewrites the @samp{hkp} protocol prefix as @samp{http} and @samp{hkps} as
 @samp{https}, the module is able to be used even with servers which do not
-support the full scope of keyserver functions.  It will work quite
+support the full scope of keyserver functions.  It also works quite
 readily when incorporated into a @ref{C plus Python plus SWIG plus Cython, , Cython} generated and compiled version
 of any code.
 
@@ -2280,6 +2280,23 @@ The hkp4py module returns key data via requests as string literals
 (@samp{r.text}) instead of byte literals (@samp{r.content}).  This means that
 the retrurned key data must be encoded to UTF-8 when importing that
 key material using a @samp{gpg.Context().key_import()} method.
+
+For this reason an alternative method has been added to the @samp{search}
+function of @samp{hkp4py.KeyServer()} which returns the key in the correct
+format as expected by @samp{key_import}.  When importing using this module,
+it is now possible to import with this:
+
+@example
+for key in keys:
+    if key.revoked is False:
+        gpg.Context().key_import(key.key_blob)
+    else:
+        pass
+@end example
+
+Without that recent addition it would have been necessary to encode
+the contents of each @samp{hkp4py.KeyServer().search()[i].key} in
+@samp{hkp4py.KeyServer().search()} before trying to import it.
 
 @node Copyright and Licensing
 @chapter Copyright and Licensing

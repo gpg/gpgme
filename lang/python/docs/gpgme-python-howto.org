@@ -2169,7 +2169,7 @@ support for Python 2.7 as well and is available via PyPI.
 
 Since it rewrites the =hkp= protocol prefix as =http= and =hkps= as
 =https=, the module is able to be used even with servers which do not
-support the full scope of keyserver functions.  It will work quite
+support the full scope of keyserver functions.  It also works quite
 readily when incorporated into a [[#cython][Cython]] generated and compiled version
 of any code.
 
@@ -2183,6 +2183,24 @@ The hkp4py module returns key data via requests as string literals
 (=r.text=) instead of byte literals (=r.content=).  This means that
 the retrurned key data must be encoded to UTF-8 when importing that
 key material using a =gpg.Context().key_import()= method.
+
+For this reason an alternative method has been added to the =search=
+function of =hkp4py.KeyServer()= which returns the key in the correct
+format as expected by =key_import=.  When importing using this module,
+it is now possible to import with this:
+
+#+BEGIN_SRC python -i
+for key in keys:
+    if key.revoked is False:
+        gpg.Context().key_import(key.key_blob)
+    else:
+        pass
+#+END_SRC
+
+Without that recent addition it would have been necessary to encode
+the contents of each =hkp4py.KeyServer().search()[i].key= in
+=hkp4py.KeyServer().search()= before trying to import it.
+
 
 
 * Copyright and Licensing
