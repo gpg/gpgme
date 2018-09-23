@@ -843,11 +843,18 @@ importing of the keys found.
 @example
 import gpg
 import hkp4py
+import sys
 
 c = gpg.Context()
-server = hkp4py.KeyServer("https://hkps.pool.sks-keyservers.net")
-pattern = input("Enter the pattern to search for keys or user IDs: ")
+server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
 results = []
+
+if len(sys.argv) > 2:
+    pattern = " ".join(sys.argv[1:])
+elif len(sys.argv) == 2:
+    pattern = sys.argv[1]
+else:
+    pattern = input("Enter the pattern to search for keys or user IDs: ")
 
 try:
     keys = server.search(pattern)
@@ -2376,6 +2383,11 @@ for key in keys:
 Without that recent addition it would have been necessary to encode
 the contents of each @samp{hkp4py.KeyServer().search()[i].key} in
 @samp{hkp4py.KeyServer().search()} before trying to import it.
+
+An example of this is included in the @ref{Importing keys, , Importing Keys} section of this
+HOWTO and the corresponding executable version of that example is
+available in the @samp{lang/python/examples/howto} directory as normal; the
+executable version is the @samp{import-keys-hkp.py} file.
 
 @node Copyright and Licensing
 @chapter Copyright and Licensing

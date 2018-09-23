@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, unicode_literals
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU General Public License and the GNU
-# Lesser General Public Licensefor more details.
+# Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see

@@ -2288,6 +2288,10 @@ Without that recent addition it would have been necessary to encode
 the contents of each =hkp4py.KeyServer().search()[i].key= in
 =hkp4py.KeyServer().search()= before trying to import it.
 
+An example of this is included in the [[#howto-import-key][Importing Keys]] section of this
+HOWTO and the corresponding executable version of that example is
+available in the =lang/python/examples/howto= directory as normal; the
+executable version is the =import-keys-hkp.py= file.
 
 
 * Copyright and Licensing
