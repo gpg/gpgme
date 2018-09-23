@@ -707,84 +707,14 @@ relative ease by which such key IDs can be reproduced, as demonstrated
 by the Evil32 Project in 2014 (which was subsequently exploited in
 2016).
 
-Performing the same task with the [[https://github.com/Selfnet/hkp4py][hkp4py module]] (available via PyPI)
-is not too much different, but does provide a number of options of
-benefit to end users.  Not least of which being the ability to perform
-some checks on a key before importing it or not.  For instance it may
-be the policy of a site or project to only import keys which have not
-been revoked.  The hkp4py module permits such checks prior to the
-importing of the keys found.
 
-#+BEGIN_SRC python -i
-import gpg
-import hkp4py
-import sys
+*** Working with ProtonMail
+    :PROPERTIES:
+    :CUSTOM_ID: import-protonmail
+    :END:
 
-c = gpg.Context()
-server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
-results = []
-
-if len(sys.argv) > 2:
-    pattern = " ".join(sys.argv[1:])
-elif len(sys.argv) == 2:
-    pattern = sys.argv[1]
-else:
-    pattern = input("Enter the pattern to search for keys or user IDs: ")
-
-try:
-    keys = server.search(pattern)
-    print("Found {0} key(s).".format(len(keys)))
-except Exception as e:
-    keys = []
-    for logrus in pattern.split():
-        if logrus.startswith("0x") is True:
-            key = server.search(logrus)
-        else:
-            key = server.search("0x{0}".format(logrus))
-        keys.append(key[0])
-    print("Found {0} key(s).".format(len(keys)))
-
-for key in keys:
-    import_result = c.key_import(key.key_blob)
-    results.append(import_result)
-
-for result in results:
-    if result is not None and hasattr(result, "considered") is False:
-        print(result)
-    elif result is not None and hasattr(result, "considered") is True:
-        num_keys = len(result.imports)
-        new_revs = result.new_revocations
-        new_sigs = result.new_signatures
-        new_subs = result.new_sub_keys
-        new_uids = result.new_user_ids
-        new_scrt = result.secret_imported
-        nochange = result.unchanged
-        print("""
-The total number of keys considered for import was:  {0}
-
-   Number of keys revoked:  {1}
- Number of new signatures:  {2}
-    Number of new subkeys:  {3}
-   Number of new user IDs:  {4}
-Number of new secret keys:  {5}
- Number of unchanged keys:  {6}
-
-The key IDs for all considered keys were:
-""".format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
-           nochange))
-        for i in range(num_keys):
-            print(result.imports[i].fpr)
-        print("")
-    else:
-        pass
-#+END_SRC
-
-Since the hkp4py module handles multiple keys just as effectively as
-one (=keys= is a list of responses per matching key), thie above
-example is able to do a little bit more with the returned data.
-
-Here is a variation on the first example above which checks the
-constrained ProtonMail keyserver for ProtonMail public keys.
+Here is a variation on the example above which checks the constrained
+ProtonMail keyserver for ProtonMail public keys.
 
 #+BEGIN_SRC python -i
 import gpg
@@ -888,6 +818,397 @@ being that the ProtonMail server does not permit non ProtonMail users
 to update their own keys, which could be a vector for attacking
 ProtonMail users who may not receive a key's revocation if it had been
 compromised.
+
+
+*** Importing with HKP for Python
+    :PROPERTIES:
+    :CUSTOM_ID: import-hkp4py
+    :END:
+
+Performing the same tasks with the [[https://github.com/Selfnet/hkp4py][hkp4py module]] (available via PyPI)
+is not too much different, but does provide a number of options of
+benefit to end users.  Not least of which being the ability to perform
+some checks on a key before importing it or not.  For instance it may
+be the policy of a site or project to only import keys which have not
+been revoked.  The hkp4py module permits such checks prior to the
+importing of the keys found.
+
+#+BEGIN_SRC python -i
+import gpg
+import hkp4py
+import sys
+
+c = gpg.Context()
+server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
+results = []
+
+if len(sys.argv) > 2:
+    pattern = " ".join(sys.argv[1:])
+elif len(sys.argv) == 2:
+    pattern = sys.argv[1]
+else:
+    pattern = input("Enter the pattern to search for keys or user IDs: ")
+
+try:
+    keys = server.search(pattern)
+    print("Found {0} key(s).".format(len(keys)))
+except Exception as e:
+    keys = []
+    for logrus in pattern.split():
+        if logrus.startswith("0x") is True:
+            key = server.search(logrus)
+        else:
+            key = server.search("0x{0}".format(logrus))
+        keys.append(key[0])
+    print("Found {0} key(s).".format(len(keys)))
+
+for key in keys:
+    import_result = c.key_import(key.key_blob)
+    results.append(import_result)
+
+for result in results:
+    if result is not None and hasattr(result, "considered") is False:
+        print(result)
+    elif result is not None and hasattr(result, "considered") is True:
+        num_keys = len(result.imports)
+        new_revs = result.new_revocations
+        new_sigs = result.new_signatures
+        new_subs = result.new_sub_keys
+        new_uids = result.new_user_ids
+        new_scrt = result.secret_imported
+        nochange = result.unchanged
+        print("""
+The total number of keys considered for import was:  {0}
+
+   Number of keys revoked:  {1}
+ Number of new signatures:  {2}
+    Number of new subkeys:  {3}
+   Number of new user IDs:  {4}
+Number of new secret keys:  {5}
+ Number of unchanged keys:  {6}
+
+The key IDs for all considered keys were:
+""".format(num_keys, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+        for i in range(num_keys):
+            print(result.imports[i].fpr)
+        print("")
+    else:
+        pass
+#+END_SRC
+
+Since the hkp4py module handles multiple keys just as effectively as
+one (=keys= is a list of responses per matching key), the example
+above is able to do a little bit more with the returned data before
+anything is actually imported.
+
+
+*** Importing from ProtonMail with HKP for Python
+    :PROPERTIES:
+    :CUSTOM_ID: import-protonmail-hkp4py
+    :END:
+
+Though this can provide certain benefits even when working with
+ProtonMail, the scope is somewhat constrained there due to the
+limitations of the ProtonMail keyserver.
+
+For instance, searching the SKS keyserver pool for the term "gnupg"
+produces hundreds of results from any time the word appears in any
+part of a user ID.  Performing the same search on the ProtonMail
+keyserver returns zero results, even though there are at least two
+test accounts which include it as part of the username.
+
+The cause of this discrepancy is the deliberate configuration of that
+server by ProtonMail to require an exact match of the full email
+address of the ProtonMail user whose key is being requested.
+Presumably this is intended to reduce breaches of privacy of their
+users as an email address must already be known before a key for that
+address can be obtained.
+
+
+**** Import from ProtonMail via HKP for Python Example no. 1
+     :PROPERTIES:
+     :CUSTOM_ID: import-hkp4py-pm1
+     :END:
+
+The following script is avalable with the rest of the examples under
+the somewhat less than original name, =pmkey-import-hkp.py=.
+
+#+BEGIN_SRC python -i
+import gpg
+import hkp4py
+import os.path
+import sys
+
+print("""
+This script searches the ProtonMail key server for the specified key and
+imports it.
+
+Usage:  pmkey-import-hkp.py [search strings]
+""")
+
+c = gpg.Context(armor=True)
+server = hkp4py.KeyServer("hkps://api.protonmail.ch")
+keyterms = []
+ksearch = []
+allkeys = []
+results = []
+paradox = []
+homeless = None
+
+if len(sys.argv) > 2:
+    keyterms = sys.argv[1:]
+elif len(sys.argv) == 2:
+    keyterm = sys.argv[1]
+    keyterms.append(keyterm)
+else:
+    key_term = input("Enter the key ID, UID or search string: ")
+    keyterms = key_term.split()
+
+for keyterm in keyterms:
+    if keyterm.count("@") == 2 and keyterm.startswith("@") is True:
+        ksearch.append(keyterm[1:])
+        ksearch.append(keyterm[1:])
+        ksearch.append(keyterm[1:])
+    elif keyterm.count("@") == 1 and keyterm.startswith("@") is True:
+        ksearch.append("{0}@protonmail.com".format(keyterm[1:]))
+        ksearch.append("{0}@protonmail.ch".format(keyterm[1:]))
+        ksearch.append("{0}@pm.me".format(keyterm[1:]))
+    elif keyterm.count("@") == 0:
+        ksearch.append("{0}@protonmail.com".format(keyterm))
+        ksearch.append("{0}@protonmail.ch".format(keyterm))
+        ksearch.append("{0}@pm.me".format(keyterm))
+    elif keyterm.count("@") == 2 and keyterm.startswith("@") is False:
+        uidlist = keyterm.split("@")
+        for uid in uidlist:
+            ksearch.append("{0}@protonmail.com".format(uid))
+            ksearch.append("{0}@protonmail.ch".format(uid))
+            ksearch.append("{0}@pm.me".format(uid))
+    elif keyterm.count("@") > 2:
+        uidlist = keyterm.split("@")
+        for uid in uidlist:
+            ksearch.append("{0}@protonmail.com".format(uid))
+            ksearch.append("{0}@protonmail.ch".format(uid))
+            ksearch.append("{0}@pm.me".format(uid))
+    else:
+        ksearch.append(keyterm)
+
+for k in ksearch:
+    print("Checking for key for: {0}".format(k))
+    try:
+        keys = server.search(k)
+        if isinstance(keys, list) is True:
+            for key in keys:
+                allkeys.append(key)
+                try:
+                    import_result = c.key_import(key.key_blob)
+                except Exception as e:
+                    import_result = c.key_import(key.key)
+        else:
+            paradox.append(keys)
+            import_result = None
+    except Exception as e:
+        import_result = None
+    results.append(import_result)
+
+for result in results:
+    if result is not None and hasattr(result, "considered") is False:
+        print("{0} for {1}".format(result.decode(), k))
+    elif result is not None and hasattr(result, "considered") is True:
+        num_keys = len(result.imports)
+        new_revs = result.new_revocations
+        new_sigs = result.new_signatures
+        new_subs = result.new_sub_keys
+        new_uids = result.new_user_ids
+        new_scrt = result.secret_imported
+        nochange = result.unchanged
+        print("""
+The total number of keys considered for import was:  {0}
+
+With UIDs wholely or partially matching the following string:
+
+        {1}
+
+   Number of keys revoked:  {2}
+ Number of new signatures:  {3}
+    Number of new subkeys:  {4}
+   Number of new user IDs:  {5}
+Number of new secret keys:  {6}
+ Number of unchanged keys:  {7}
+
+The key IDs for all considered keys were:
+""".format(num_keys, k, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+        for i in range(num_keys):
+            print(result.imports[i].fpr)
+        print("")
+    elif result is None:
+        pass
+#+END_SRC
+
+
+**** Import from ProtonMail via HKP for Python Example no. 2
+     :PROPERTIES:
+     :CUSTOM_ID: import-hkp4py-pm2
+     :END:
+
+Like its counterpart above, this script can also be found with the
+rest of the examples, by the name pmkey-import-hkp-alt.py.
+
+With this script a modicum of effort has been made to treat anything
+passed as a =homedir= which either does not exist or which is not a
+directory, as also being a pssible user ID to check for.  It's not
+guaranteed to pick up on all such cases, but it should cover most of
+them.
+
+#+BEGIN_SRC python -i
+import gpg
+import hkp4py
+import os.path
+import sys
+
+print("""
+This script searches the ProtonMail key server for the specified key and
+imports it.  Optionally enables specifying a different GnuPG home directory.
+
+Usage:  pmkey-import-hkp.py [homedir] [search string]
+   or:  pmkey-import-hkp.py [search string]
+""")
+
+c = gpg.Context(armor=True)
+server = hkp4py.KeyServer("hkps://api.protonmail.ch")
+keyterms = []
+ksearch = []
+allkeys = []
+results = []
+paradox = []
+homeless = None
+
+if len(sys.argv) > 3:
+    homedir = sys.argv[1]
+    keyterms = sys.argv[2:]
+elif len(sys.argv) == 3:
+    homedir = sys.argv[1]
+    keyterm = sys.argv[2]
+    keyterms.append(keyterm)
+elif len(sys.argv) == 2:
+    homedir = ""
+    keyterm = sys.argv[1]
+    keyterms.append(keyterm)
+else:
+    keyterm = input("Enter the key ID, UID or search string: ")
+    homedir = input("Enter the GPG configuration directory path (optional): ")
+    keyterms.append(keyterm)
+
+if len(homedir) == 0:
+    homedir = None
+    homeless = False
+
+if homedir is not None:
+    if homedir.startswith("~"):
+        if os.path.exists(os.path.expanduser(homedir)) is True:
+            if os.path.isdir(os.path.expanduser(homedir)) is True:
+                c.home_dir = os.path.realpath(os.path.expanduser(homedir))
+            else:
+                homeless = True
+        else:
+            homeless = True
+    elif os.path.exists(os.path.realpath(homedir)) is True:
+        if os.path.isdir(os.path.realpath(homedir)) is True:
+            c.home_dir = os.path.realpath(homedir)
+        else:
+            homeless = True
+    else:
+        homeless = True
+
+# First check to see if the homedir really is a homedir and if not, treat it as
+# a search string.
+if homeless is True:
+    keyterms.append(homedir)
+    c.home_dir = None
+else:
+    pass
+
+for keyterm in keyterms:
+    if keyterm.count("@") == 2 and keyterm.startswith("@") is True:
+        ksearch.append(keyterm[1:])
+        ksearch.append(keyterm[1:])
+        ksearch.append(keyterm[1:])
+    elif keyterm.count("@") == 1 and keyterm.startswith("@") is True:
+        ksearch.append("{0}@protonmail.com".format(keyterm[1:]))
+        ksearch.append("{0}@protonmail.ch".format(keyterm[1:]))
+        ksearch.append("{0}@pm.me".format(keyterm[1:]))
+    elif keyterm.count("@") == 0:
+        ksearch.append("{0}@protonmail.com".format(keyterm))
+        ksearch.append("{0}@protonmail.ch".format(keyterm))
+        ksearch.append("{0}@pm.me".format(keyterm))
+    elif keyterm.count("@") == 2 and keyterm.startswith("@") is False:
+        uidlist = keyterm.split("@")
+        for uid in uidlist:
+            ksearch.append("{0}@protonmail.com".format(uid))
+            ksearch.append("{0}@protonmail.ch".format(uid))
+            ksearch.append("{0}@pm.me".format(uid))
+    elif keyterm.count("@") > 2:
+        uidlist = keyterm.split("@")
+        for uid in uidlist:
+            ksearch.append("{0}@protonmail.com".format(uid))
+            ksearch.append("{0}@protonmail.ch".format(uid))
+            ksearch.append("{0}@pm.me".format(uid))
+    else:
+        ksearch.append(keyterm)
+
+for k in ksearch:
+    print("Checking for key for: {0}".format(k))
+    try:
+        keys = server.search(k)
+        if isinstance(keys, list) is True:
+            for key in keys:
+                allkeys.append(key)
+                try:
+                    import_result = c.key_import(key.key_blob)
+                except Exception as e:
+                    import_result = c.key_import(key.key)
+        else:
+            paradox.append(keys)
+            import_result = None
+    except Exception as e:
+        import_result = None
+    results.append(import_result)
+
+for result in results:
+    if result is not None and hasattr(result, "considered") is False:
+        print("{0} for {1}".format(result.decode(), k))
+    elif result is not None and hasattr(result, "considered") is True:
+        num_keys = len(result.imports)
+        new_revs = result.new_revocations
+        new_sigs = result.new_signatures
+        new_subs = result.new_sub_keys
+        new_uids = result.new_user_ids
+        new_scrt = result.secret_imported
+        nochange = result.unchanged
+        print("""
+The total number of keys considered for import was:  {0}
+
+With UIDs wholely or partially matching the following string:
+
+        {1}
+
+   Number of keys revoked:  {2}
+ Number of new signatures:  {3}
+    Number of new subkeys:  {4}
+   Number of new user IDs:  {5}
+Number of new secret keys:  {6}
+ Number of unchanged keys:  {7}
+
+The key IDs for all considered keys were:
+""".format(num_keys, k, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+           nochange))
+        for i in range(num_keys):
+            print(result.imports[i].fpr)
+        print("")
+    elif result is None:
+        pass
+#+END_SRC
 
 
 ** Exporting keys
