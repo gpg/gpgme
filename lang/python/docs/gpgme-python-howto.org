@@ -72,6 +72,68 @@ at the end of it.  These are unofficial versions produced in between
 major releases.
 
 
+** What's New
+   :PROPERTIES:
+   :CUSTOM_ID: new-stuff
+   :END:
+
+The most obviously new point for those reading this guide is this
+section on other new things, but that's hardly important.  Not given
+all the other things which spurred the need for adding this section
+and its subsections.
+
+*** New in GPGME 1.12.0
+    :PROPERTIES:
+    :CUSTOM_ID: new-stuff-1-12-0
+    :END:
+
+There have been quite a number of additions to GPGME and the Python
+bindings to it since the last release of GPGME with versions 1.11.0
+and 1.11.1 in April, 2018.
+
+The bullet points of new additiions are:
+
+- an expanded section on [[#installation][installing]] and [[#snafu][troubleshooting]] the Python
+  bindings.
+- The release of Python 3.7.0; which appears to be working just fine
+  with our bindings, in spite of intermittent reports of problems for
+  many other Python projects with that new release.
+- In order to fix some other issues, there are certain underlying
+  functions which are more exposed through the [[#howto-get-context][gpg.Context()]], but
+  ongoing documentation ought to clarify that or otherwise provide the
+  best means of using the bindings.  Some additions to =gpg.core= and
+  the =Context()=, however, were intended (see below).
+- Continuing work in identifying and confirming the cause of
+  oft-reported [[#snafu-runtime-not-funtime][problems installing the Python bindings on Windows]].
+- GSOC: Google's Surreptitiously Ordered Conscription ... erm ... oh,
+  right; Google's Summer of Code.  Though there were two hopeful
+  candidates this year; only one ended up involved with the GnuPG
+  Project directly, the other concentrated on an unrelated third party
+  project with closer ties to one of the GNU/Linux distributions than
+  to the GnuPG Project.  Thus the Python bindings benefited from GSOC
+  participant Jacob Adams, who added the key_import function; building
+  on prior work by Tobias Mueller.
+- Several new methods functions were added to the gpg.Context(),
+  including: [[#howto-import-key][key_import]], [[#howto-export-key][key_export]], [[#howto-export-public-key][key_export_minimal]] and
+  [[#howto-export-secret-key][key_export_secret]].
+- Importing and exporting examples include versions integrated with
+  Marcel Fest's recently released [[https://github.com/Selfnet/hkp4py][HKP for Python]] module.  Some
+  [[#hkp4py][additional notes on this module]] are included at the end of the HOWTO.
+- Instructions for dealing with semi-walled garden implementations
+  like ProtonMail are also included.  This is intended to make things
+  a little easier when communicating with users of ProtonMail's
+  services and should not be construed as an endorsement of said
+  service.  The GnuPG Project neither favours, nor disfavours
+  ProtonMail and the majority of this deals with interacting with the
+  ProtonMail keyserver.
+- Semi-formalised the location where [[#draft-editions][draft versions]] of this HOWTO may
+  periodically be accessible.  This is both for the reference of
+  others and testing the publishing of the document itself.
+- Added a new section for [[#advanced-use][advanced or experimental use]].
+- Began the advanced use cases with [[#cython][a section]] on using the module with
+  [[http://cython.org/][Cython]].
+
+
 * GPGME Concepts
   :PROPERTIES:
   :CUSTOM_ID: gpgme-concepts
@@ -336,7 +398,7 @@ If Python is set to precede one of the other languages then it is
 possible that the errors described here may interrupt the build
 process before generating bindings for those other languages.  In
 these cases it may be preferable to configure all preferred language
-bindings separately with alternative =configure= steps for GPGME using
+howto-export-public-keybindings separately with alternative =configure= steps for GPGME using
 the =--enable-languages=$LANGUAGE= option.
 
 
@@ -2577,7 +2639,7 @@ support for Python 2.7 as well and is available via PyPI.
 
 Since it rewrites the =hkp= protocol prefix as =http= and =hkps= as
 =https=, the module is able to be used even with servers which do not
-support the full scope of keyserver functions.  It also works quite
+support the full scope of keyserver functions.[fn:6]  It also works quite
 readily when incorporated into a [[#cython][Cython]] generated and compiled version
 of any code.
 
@@ -2704,3 +2766,9 @@ POSIX systems which utilise single user mode (some even require it).
 keyservers for "gnupg.org" produces over 400 results, the majority of
 which aren't actually at the gnupg.org domain, but just included a
 comment regarding the project in their key somewhere.
+
+[fn:6] Such as with ProtonMail servers.  This also means that
+restricted servers which only advertise either HTTP or HTTPS end
+points and not HKP or HKPS end points must still be identified as as
+HKP or HKPS within the Python Code.  The =hkp4py= module will rewrite
+these appropriately when the connection is made to the server.

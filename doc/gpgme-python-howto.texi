@@ -39,6 +39,11 @@ Introduction
 * Python 2 versus Python 3::
 * Examples::
 * Unofficial Drafts::
+* What's New::
+
+What's New
+
+* New in GPGME 1.12.0: New in GPGME 1120. 
 
 GPGME Concepts
 
@@ -175,6 +180,7 @@ Python bindings to programmatically leverage the GPGME library.
 * Python 2 versus Python 3::
 * Examples::
 * Unofficial Drafts::
+* What's New::
 @end menu
 
 @node Python 2 versus Python 3
@@ -213,6 +219,80 @@ In addition to shipping with each release of GPGME, there is a section
 on locations to read or download @ref{Draft Editions of this HOWTO, , draft editions} of this document from
 at the end of it.  These are unofficial versions produced in between
 major releases.
+
+@node What's New
+@section What's New
+
+The most obviously new point for those reading this guide is this
+section on other new things, but that's hardly important.  Not given
+all the other things which spurred the need for adding this section
+and its subsections.
+
+@menu
+* New in GPGME 1.12.0: New in GPGME 1120. 
+@end menu
+
+@node New in GPGME 1120
+@subsection New in GPGME 1.12.0
+
+There have been quite a number of additions to GPGME and the Python
+bindings to it since the last release of GPGME with versions 1.11.0
+and 1.11.1 in April, 2018.
+
+The bullet points of new additiions are:
+
+@itemize
+@item
+an expanded section on @ref{Installation, , installing} and @ref{Known Issues, , troubleshooting} the Python
+bindings.
+@item
+The release of Python 3.7.0; which appears to be working just fine
+with our bindings, in spite of intermittent reports of problems for
+many other Python projects with that new release.
+@item
+In order to fix some other issues, there are certain underlying
+functions which are more exposed through the @ref{Context, , gpg.Context()}, but
+ongoing documentation ought to clarify that or otherwise provide the
+best means of using the bindings.  Some additions to @samp{gpg.core} and
+the @samp{Context()}, however, were intended (see below).
+@item
+Continuing work in identifying and confirming the cause of
+oft-reported @ref{Won't Work With Windows, , problems installing the Python bindings on Windows}.
+@item
+GSOC: Google's Surreptitiously Ordered Conscription @dots{} erm @dots{} oh,
+right; Google's Summer of Code.  Though there were two hopeful
+candidates this year; only one ended up involved with the GnuPG
+Project directly, the other concentrated on an unrelated third party
+project with closer ties to one of the GNU/Linux distributions than
+to the GnuPG Project.  Thus the Python bindings benefited from GSOC
+participant Jacob Adams, who added the key@math{_import} function; building
+on prior work by Tobias Mueller.
+@item
+Several new methods functions were added to the gpg.Context(),
+including: @ref{Importing keys, , key@math{_import}}, @ref{Exporting keys, , key@math{_export}}, @ref{Exporting public keys, , key@math{_export}@math{_minimal}} and
+@ref{Exporting secret keys, , key@math{_export}@math{_secret}}.
+@item
+Importing and exporting examples include versions integrated with
+Marcel Fest's recently released @uref{https://github.com/Selfnet/hkp4py, HKP for Python} module.  Some
+@ref{Keyserver access for Python, , additional notes on this module} are included at the end of the HOWTO.
+@item
+Instructions for dealing with semi-walled garden implementations
+like ProtonMail are also included.  This is intended to make things
+a little easier when communicating with users of ProtonMail's
+services and should not be construed as an endorsement of said
+service.  The GnuPG Project neither favours, nor disfavours
+ProtonMail and the majority of this deals with interacting with the
+ProtonMail keyserver.
+@item
+Semi-formalised the location where @ref{Draft Editions of this HOWTO, , draft versions} of this HOWTO may
+periodically be accessible.  This is both for the reference of
+others and testing the publishing of the document itself.
+@item
+Added a new section for @ref{Advanced or Experimental Use Cases, , advanced or experimental use}.
+@item
+Began the advanced use cases with @ref{C plus Python plus SWIG plus Cython, , a section} on using the module with
+@uref{http://cython.org/, Cython}.
+@end itemize
 
 @node GPGME Concepts
 @chapter GPGME Concepts
@@ -479,7 +559,7 @@ If Python is set to precede one of the other languages then it is
 possible that the errors described here may interrupt the build
 process before generating bindings for those other languages.  In
 these cases it may be preferable to configure all preferred language
-bindings separately with alternative @samp{configure} steps for GPGME using
+howto-export-public-keybindings separately with alternative @samp{configure} steps for GPGME using
 the @samp{--enable-languages=$LANGUAGE} option.
 @end enumerate
 
@@ -2673,7 +2753,11 @@ support for Python 2.7 as well and is available via PyPI.
 
 Since it rewrites the @samp{hkp} protocol prefix as @samp{http} and @samp{hkps} as
 @samp{https}, the module is able to be used even with servers which do not
-support the full scope of keyserver functions.  It also works quite
+support the full scope of keyserver functions.@footnote{Such as with ProtonMail servers.  This also means that
+restricted servers which only advertise either HTTP or HTTPS end
+points and not HKP or HKPS end points must still be identified as as
+HKP or HKPS within the Python Code.  The @samp{hkp4py} module will rewrite
+these appropriately when the connection is made to the server.}  It also works quite
 readily when incorporated into a @ref{C plus Python plus SWIG plus Cython, , Cython} generated and compiled version
 of any code.
 
