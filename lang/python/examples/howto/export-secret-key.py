@@ -54,12 +54,26 @@ else:
     logrus = input("Enter the UID matching the secret key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
-if homedir.startswith("~"):
-    if os.path.exists(os.path.expanduser(homedir)) is True:
-        c.home_dir = os.path.expanduser(homedir)
+if len(homedir) == 0:
+    homedir = None
+elif homedir.startswith("~"):
+    userdir = os.path.expanduser(homedir)
+    if os.path.exists(userdir) is True:
+        homedir = os.path.realpath(userdir)
+    else:
+        homedir = None
+else:
+    homedir = os.path.realpath(homedir)
+
+if os.path.exists(homedir) is False:
+    homedir = None
+else:
+    if os.path.isdir(homedir) is False:
+        homedir = None
     else:
         pass
-elif os.path.exists(homedir) is True:
+
+if homedir is not None:
     c.home_dir = homedir
 else:
     pass

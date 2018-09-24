@@ -293,10 +293,32 @@ section for further details.
 The GPGME Python bindings only have three requirements:
 
 1. A suitable version of Python 2 or Python 3.  With Python 2 that
-   means Python 2.7 and with Python 3 that means Python 3.4 or higher.
+   means CPython 2.7 and with Python 3 that means CPython 3.4 or
+   higher.
 2. [[https://www.swig.org][SWIG]].
 3. GPGME itself.  Which also means that all of GPGME's dependencies
    must be installed too.
+
+
+*** Recommended Additions
+   :PROPERTIES:
+   :CUSTOM_ID: gpgme-python-recommendations
+   :END:
+
+Though none of the following are absolute requirements, they are all
+recommended for use with the Python bindings.  In some cases these
+recommendations refer to which version(s) of CPython to use the
+bindings with, while others refer to third party modules which provide
+a significant advantage in some way.
+
+1. If possible, use Python 3 instead of 2.
+2. Favour a more recent version of Python since even 3.4 is due to
+   reach EOL soon.  In production systems and services, Python 3.6
+   should be robust enough to be relied on.
+3. If possible add the following Python modules which are not part of
+   the standard library: [[http://docs.python-requests.org/en/latest/index.html][Requests]], [[http://cython.org/][Cython]] and [[https://github.com/Selfnet/hkp4py][hkp4py]].  Chances are
+   quite high that at least the first one and maybe two of those will
+   already be installed.
 
 
 ** Installation
@@ -398,8 +420,35 @@ If Python is set to precede one of the other languages then it is
 possible that the errors described here may interrupt the build
 process before generating bindings for those other languages.  In
 these cases it may be preferable to configure all preferred language
-howto-export-public-keybindings separately with alternative =configure= steps for GPGME using
+bindings separately with alternative =configure= steps for GPGME using
 the =--enable-languages=$LANGUAGE= option.
+
+
+*** Reinstalling Responsibly
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-lessons-for-the-lazy
+    :END:
+
+Regardless of whether you're installing for one version of Python or
+several, there will come a point where reinstallation is required.
+With most Python module installations, the installed files go into the
+relevant site-packages directory and are then forgotten about.  Then
+the module is upgraded, the new files are copied over the old and
+that's the end of the matter.
+
+While the same is true of these bindings, there have been intermittent
+issues observed on some platforms which have benefited significantly
+from removing all the previous installations of the bindings before
+installing the updated versions.
+
+Removing the previous version(s) is simply a matter of changing to the
+relevant =site-packages= directory for the version of Python in
+question and removing the =gpg/= directory and any accompanying
+egg-info files for that module.
+
+In most cases this will require root or administration privileges on
+the system, but the same is true of installing the module in the first
+place.
 
 
 *** Multiple installations
@@ -1446,12 +1495,26 @@ else:
     logrus = input("Enter the UID matching the secret key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
-if homedir.startswith("~"):
-    if os.path.exists(os.path.expanduser(homedir)) is True:
-        c.home_dir = os.path.expanduser(homedir)
+if len(homedir) == 0:
+    homedir = None
+elif homedir.startswith("~"):
+    userdir = os.path.expanduser(homedir)
+    if os.path.exists(userdir) is True:
+        homedir = os.path.realpath(userdir)
+    else:
+        homedir = None
+else:
+    homedir = os.path.realpath(homedir)
+
+if os.path.exists(homedir) is False:
+    homedir = None
+else:
+    if os.path.isdir(homedir) is False:
+        homedir = None
     else:
         pass
-elif os.path.exists(homedir) is True:
+
+if homedir is not None:
     c.home_dir = homedir
 else:
     pass
@@ -1516,12 +1579,26 @@ else:
     logrus = input("Enter the UID matching the secret key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
-if homedir.startswith("~"):
-    if os.path.exists(os.path.expanduser(homedir)) is True:
-        c.home_dir = os.path.expanduser(homedir)
+if len(homedir) == 0:
+    homedir = None
+elif homedir.startswith("~"):
+    userdir = os.path.expanduser(homedir)
+    if os.path.exists(userdir) is True:
+        homedir = os.path.realpath(userdir)
+    else:
+        homedir = None
+else:
+    homedir = os.path.realpath(homedir)
+
+if os.path.exists(homedir) is False:
+    homedir = None
+else:
+    if os.path.isdir(homedir) is False:
+        homedir = None
     else:
         pass
-elif os.path.exists(homedir) is True:
+
+if homedir is not None:
     c.home_dir = homedir
 else:
     pass
@@ -1571,6 +1648,73 @@ if b_result is not None:
 else:
     pass
 #+END_SRC
+
+
+*** Sending public keys to the SKS Keyservers
+    :PROPERTIES:
+    :CUSTOM_ID: howto-send-public-key
+    :END:
+
+As with the previous section on importing keys, the =hkp4py= module
+adds another option with exporting keys in order to send them to the
+public keyservers.
+
+The following example demonstrates how this may be done.
+
+#+BEGIN_SRC python -i
+import gpg
+import hkp4py
+import os.path
+import sys
+
+print("""
+This script sends one or more public keys to the SKS keyservers and is
+essentially a slight variation on the export-key.py script.
+""")
+
+c = gpg.Context(armor=True)
+server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
+
+if len(sys.argv) > 2:
+    logrus = " ".join(sys.argv[1:])
+elif len(sys.argv) == 2:
+    logrus = sys.argv[1]
+else:
+    logrus = input("Enter the UID matching the key(s) to send: ")
+
+if len(logrus) > 0:
+    try:
+        export_result = c.key_export(pattern=logrus)
+    except Exception as e:
+        print(e)
+        export_result = None
+else:
+    export_result = c.key_export(pattern=None)
+
+if export_result is not None:
+    try:
+        try:
+            send_result = server.add(export_result)
+        except:
+            send_result = server.add(export_result.decode())
+        if send_result is not None:
+            print(send_result)
+        else:
+            pass
+    except Exception as e:
+        print(e)
+else:
+    pass
+#+END_SRC
+
+An expanded version of this script with additional functions for
+specifying an alternative homedir location is in the examples
+directory as =send-key-to-keyserver.py=.
+
+The =hkp4py= module appears to handle both string and byte literal text
+data equally well, but the GPGME bindings deal primarily with byte
+literal data only and so this script sends in that format first, then
+tries the string literal form.
 
 
 * Basic Functions

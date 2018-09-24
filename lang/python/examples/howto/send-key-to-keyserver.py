@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 
 import gpg
+import hkp4py
 import os.path
 import sys
 
@@ -29,25 +30,22 @@ import sys
 # <http://www.gnu.org/licenses/>.
 
 print("""
-This script exports one or more public keys in minimised form.
+This script sends one or more public keys to the SKS keyservers and is
+essentially a slight variation on the export-key.py script.
+
+The default is to send all keys if there is no pattern or search term.
 """)
 
 c = gpg.Context(armor=True)
+server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
 
-if len(sys.argv) >= 4:
-    keyfile = sys.argv[1]
-    logrus = sys.argv[2]
-    homedir = sys.argv[3]
-elif len(sys.argv) == 3:
-    keyfile = sys.argv[1]
-    logrus = sys.argv[2]
-    homedir = input("Enter the GPG configuration directory path (optional): ")
+if len(sys.argv) >= 3:
+    logrus = sys.argv[1]
+    homedir = sys.argv[2]
 elif len(sys.argv) == 2:
-    keyfile = sys.argv[1]
-    logrus = input("Enter the UID matching the key(s) to export: ")
+    logrus = sys.argv[1]
     homedir = input("Enter the GPG configuration directory path (optional): ")
 else:
-    keyfile = input("Enter the path and filename to save the key(s) to: ")
     logrus = input("Enter the UID matching the key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
@@ -75,13 +73,26 @@ if homedir is not None:
 else:
     pass
 
-try:
-    result = c.key_export_minimal(pattern=logrus)
-except:
-    result = c.key_export_minimal(pattern=None)
+if len(logrus) > 0:
+    try:
+        export_result = c.key_export(pattern=logrus)
+    except Exception as e:
+        print(e)
+        export_result = None
+else:
+    export_result = c.key_export(pattern=None)
 
-if result is not None:
-    with open(keyfile, "wb") as f:
-        f.write(result)
+if export_result is not None:
+    try:
+        try:
+            send_result = server.add(export_result)
+        except:
+            send_result = server.add(export_result.decode())
+        if send_result is not None:
+            print(send_result)
+        else:
+            pass
+    except Exception as e:
+        print(e)
 else:
     pass
