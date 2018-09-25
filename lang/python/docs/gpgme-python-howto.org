@@ -82,7 +82,7 @@ section on other new things, but that's hardly important.  Not given
 all the other things which spurred the need for adding this section
 and its subsections.
 
-*** New in GPGME 1.12.0
+*** New in GPGME 1·12·0
     :PROPERTIES:
     :CUSTOM_ID: new-stuff-1-12-0
     :END:
