@@ -74,9 +74,9 @@ elif homedir.startswith("~"):
 else:
     homedir = os.path.realpath(homedir)
 
-if os.path.exists(homedir) is False:
+if homedir is not None and os.path.exists(homedir) is False:
     homedir = None
-else:
+elif homedir is not None and os.path.exists(homedir) is True:
     if os.path.isdir(homedir) is False:
         homedir = None
     else:
