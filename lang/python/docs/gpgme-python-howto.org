@@ -561,6 +561,73 @@ things are lacking.  That doesn't even take into account the amount of
 work saved via SWIG's code generation techniques either.
 
 
+*** Virtualised Environments
+    :PROPERTIES:
+    :CUSTOM_ID: snafu-venv
+    :END:
+
+It is fairly common practice amongst Python developers to, as much as
+possible, use packages like virtualenv to keep various things that are
+to be installed from interfering with each other.  Given how much of
+the GPGME bindings is often at odds with the usual pythonic way of
+doing things, it stands to reason that this would be called into
+question too.
+
+As it happens the answer as to whether or not the bindings can be used
+with virtualenv, the answer is both yes and no.
+
+In general we recommend installing to the relevant path and matching
+prefix of GPGME itself.  Which means that when GPGME, and ideally the
+rest of the GnuPG stack, is installed to a prefix like =/usr/local= or
+=/opt/local= then the bindings would need to be installed to the main
+Python installation and not a virtualised abstraction.  Attempts to
+separate the two in the past have been known to cause weird and
+intermittent errors ranging from minor annoyances to complete failures
+in the build process.
+
+As a consequence we only recommend building with and installing to the
+main Python installations within the same prefix as GPGME is installed
+to or which are found by GPGME's configuration stage immediately prior
+to running the make commands.  Which is exactly what the compiling and
+installing process of GPGME does by default.
+
+Once that is done, however, it appears that a copy the compiled module
+may be installed into a virtualenv of the same major and minor version
+matching the build.  Alternatively it is possible to utilise a
+=sites.pth= file in the =site-packages/= directory of a viertualenv
+installation, which links back to the system installations
+corresponding directory in order to import anything installed system
+wide.  This may or may not be appropriate on a case by case basis.
+
+Though extensive testing of either of these options is not yet
+complete, preliminary testing of them indicates that both are viable
+as long as the main installation is complete.  Which means that
+certain other options normally restricted to virtual environments are
+also available, including integration with pythonic test suites
+(e.g. [[https://docs.pytest.org/en/latest/index.html][pytest]]) and other large projects.
+
+That said, it is worth reiterating the warning regarding non-standard
+installations.  If one were to attempt to install the bindings only to
+a virtual environment without somehow also including the full GnuPG
+stack (or enough of it as to include GPGME) then it is highly likely
+that errors would be encountered at some point and more than a little
+likely that the build process itself would break.
+
+If a degree of separation from the main operating system is still
+required in spite of these warnings, then consider other forms of
+virtualisation.  Either a virtual machine (e.g. [[https://www.virtualbox.org/][VirtualBox]]), a
+hardware emulation layer (e.g. [[https://www.qemu.org/][QEMU]]) or an application container
+(e.g. [[https://www.docker.com/why-docker][Docker]]).
+
+Finally it should be noted that the limited tests conducted thus far
+have been using the =virtualenv= command in a new directory to create
+the virtual python environment.  As opposed to the standard =python3
+-m venv= and it is possible that this will make a difference depending
+on the system and version of Python in use.  Another option is to run
+the command =python3 -m virtualenv /path/to/install/virtual/thingy=
+instead.
+
+
 * Fundamentals
   :PROPERTIES:
   :CUSTOM_ID: howto-fund-a-mental
