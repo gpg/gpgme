@@ -115,12 +115,32 @@ for i in range(len(lines)):
 defkey_fpr = dline.split(":")[-1].replace('"', '').split(',')[0].upper()
 enckey_fpr = eline.split(":")[-1].replace('"', '').split(',')[0].upper()
 
+try:
+    dkey = c.keylist(pattern=defkey_fpr, secret=True)
+    dk = list(dkey)
+except Exception as de:
+    print(de)
+    dk = None
+    print("No valid default key.")
+
+try:
+    ekey = c.keylist(pattern=defkey_fpr, secret=True)
+    ek = list(ekey)
+except Exception as ee:
+    print(ee)
+    ek = None
+    print("No valid always encrypt to key.")
+
 if sigkey is not None:
-    mykey = c.keylist(pattern=sigkey)
+    mykey = c.keylist(pattern=sigkey, secret=True)
     mk = list(mykey)
     mkfpr = mk[0].fpr.upper()
+    c.signers = mk
 else:
-    pass
+    if dk is None and ek is not None:
+        c.signers = ek
+    else:
+        pass
 
 for group in group_lists:
     if group[0] == clique:
