@@ -82,4 +82,4 @@ try:
     result = c.key_import(b"thisisnotakey")
 except ValueError:
     pass
-assert result.considered == 0
+assert result == "IMPORT_PROBLEM"
