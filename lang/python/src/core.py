@@ -366,6 +366,8 @@ class Context(GpgmeWrapper):
         GPGMEError	-- as signaled by the underlying library
 
         """
+        sink_result = None
+        verify_sigs = None
         plaintext = sink if sink else Data()
 
         if passphrase is not None:
@@ -379,13 +381,29 @@ class Context(GpgmeWrapper):
             self.set_passphrase_cb(passphrase_cb)
 
         try:
-            if verify:
+            if verify is not None:
+                if isinstance(verify, bool) is True:
+                    if verify is False:
+                        verify = True
+                        sink_result = True
+                    else:
+                        pass
+                elif isinstance(verify, list) is True:
+                    if len(verify) > 0:
+                        verify_sigs = True
+                    else:
+                        pass
+                else:
+                    verify = True
                 self.op_decrypt_verify(ciphertext, plaintext)
             else:
                 self.op_decrypt(ciphertext, plaintext)
         except errors.GPGMEError as e:
             result = self.op_decrypt_result()
-            verify_result = self.op_verify_result() if verify else None
+            if verify is not None and sink_result is None:
+                verify_result = self.op_verify_result()
+            else:
+                verify_result = None
             # Just raise the error, but attach the results first.
             e.results = (self.__read__(sink, plaintext), result, verify_result)
             raise e
@@ -396,19 +414,25 @@ class Context(GpgmeWrapper):
                     self.set_passphrase_cb(*old_passphrase_cb[1:])
 
         result = self.op_decrypt_result()
-        verify_result = self.op_verify_result() if verify else None
+
+        if verify is not None and sink_result is None:
+            verify_result = self.op_verify_result()
+        else:
+            verify_result = None
+
         results = (self.__read__(sink, plaintext), result, verify_result)
+
         if result.unsupported_algorithm:
-            raise errors.UnsupportedAlgorithm(
-                result.unsupported_algorithm, results=results)
+            raise errors.UnsupportedAlgorithm(result.unsupported_algorithm,
+                                              results=results)
 
         if verify:
             if any(s.status != errors.NO_ERROR
                    for s in verify_result.signatures):
                 raise errors.BadSignatures(verify_result, results=results)
 
-        if not verify:  # was: if verify and verify != True:
-            missing = list()
+        if verify_sigs is not None:
+            missing = []
             for key in verify:
                 ok = False
                 for subkey in key.subkeys:
@@ -423,8 +447,28 @@ class Context(GpgmeWrapper):
                 if not ok:
                     missing.append(key)
             if missing:
-                raise errors.MissingSignatures(
-                    verify_result, missing, results=results)
+                try:
+                    raise errors.MissingSignatures(verify_result, missing,
+                                                   results=results)
+                except errors.MissingSignatures as miss_e:
+                    mse = miss_e
+                    mserr = "gpg.errors.MissingSignatures:"
+                    print(mserr, miss_e, "\n")
+                    # # The full details can then be found in mse.results,
+                    # # mse.result, mse.missing if necessary.
+                    # mse_list = []
+                    # msp = "Missing signatures from: \n".format()
+                    # print(msp)
+                    # for key in mse.missing:
+                    #     mse_list.append(key.fpr)
+                    #     msl = []
+                    #     msl.append(key.fpr)
+                    #     for user in key.uids:
+                    #         msl.append(user.name)
+                    #         msl.append(user.email)
+                    #         # msl.append(user.uid)
+                    #     print(" ".join(msl))
+                    return mse
 
         return results
 
