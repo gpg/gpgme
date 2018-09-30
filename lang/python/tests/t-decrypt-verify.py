@@ -70,7 +70,7 @@ with gpg.Context() as c:
     try:
         c.decrypt(
             open(support.make_filename("cipher-2.asc")), verify=[alpha, bob])
-    except gpg.errors.MissingSignatures as e:
+    except Exception as e:
         assert len(e.missing) == 1
         assert e.missing[0] == bob
     else:

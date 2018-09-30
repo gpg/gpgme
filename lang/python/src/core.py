@@ -450,10 +450,11 @@ class Context(GpgmeWrapper):
                 try:
                     raise errors.MissingSignatures(verify_result, missing,
                                                    results=results)
-                except errors.MissingSignatures as miss_e:
-                    mse = miss_e
-                    mserr = "gpg.errors.MissingSignatures:"
-                    print(mserr, miss_e, "\n")
+                except errors.MissingSignatures as e:
+                    raise e
+                    # mse = e
+                    # mserr = "gpg.errors.MissingSignatures:"
+                    # print(mserr, miss_e, "\n")
                     # # The full details can then be found in mse.results,
                     # # mse.result, mse.missing if necessary.
                     # mse_list = []
@@ -468,7 +469,7 @@ class Context(GpgmeWrapper):
                     #         msl.append(user.email)
                     #         # msl.append(user.uid)
                     #     print(" ".join(msl))
-                    return mse
+                    # raise mse
 
         return results
 
