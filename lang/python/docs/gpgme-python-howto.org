@@ -98,6 +98,8 @@ The bullet points of new additiions are:
 - The release of Python 3.7.0; which appears to be working just fine
   with our bindings, in spite of intermittent reports of problems for
   many other Python projects with that new release.
+- Python 3.7 has been moved to the head of the specified python
+  versions list in the build process.
 - In order to fix some other issues, there are certain underlying
   functions which are more exposed through the [[#howto-get-context][gpg.Context()]], but
   ongoing documentation ought to clarify that or otherwise provide the
@@ -354,7 +356,20 @@ For Python 2 it checks for these executables in this order: =python=,
 =python2= and =python2.7=.
 
 For Python 3 it checks for these executables in this order: =python3=,
-=python3.6=, =python3.5=, =python3.4= and =python3.7=.[fn:3]
+ =python3.7=, =python3.6=, =python3.5= and =python3.4=.[fn:3]
+
+On systems where =python= is actually =python3= and not =python2= it
+may be possible that =python2= may be overlooked, but there have been
+no reports of that actually occurring as yet.
+
+In the three months or so since the release of Python 3.7.0 there has
+been extensive testing and work with these bindings with no issues
+specifically relating to the new version of Python or any of the new
+features of either the language or the bindings.  This has also been
+the case with Python 3.7.1rc1.  With that in mind and given the
+release of Python 3.7.1 is scheduled for around the same time as GPGME
+1.12.0, the order of preferred Python versions has been changed to
+move Python 3.7 ahead of Python 3.6.
 
 
 *** Installing GPGME
@@ -1481,10 +1496,10 @@ else:
     pass
 #+END_SRC
 
-It is important to note that the result will only return =None= when a
-pattern has been entered for =logrus=, but it has not matched any
-keys. When the search pattern itself is set to =None= this triggers
-the exporting of the entire public keybox.
+It should be noted that the result will only return =None= when a
+search pattern has been entered, but has not matched any keys.  When
+the search pattern itself is set to =None= this triggers the exporting
+of the entire public keybox.
 
 #+BEGIN_SRC python -i
 import gpg
@@ -2986,9 +3001,12 @@ PURPOSE.
 
 [fn:2] The =lang/python/docs/= directory in the GPGME source.
 
-[fn:3] As Python 3.7 is a very recent release, it is not given
-priority over 3.6 yet, but will probably be prioritised by the release
-of Python 3.7.2.
+[fn:3] With no issues reported specific to Python 3.7, the release of
+Python 3.7.1 at around the same time as GPGME 1.12.0 and the testing
+with Python 3.7.1rc1, there is no reason to delay moving 3.7 ahead of
+3.6 now.  Production environments with more conservative requirements
+will always enforce their own policies anyway and installation to each
+supported minor release is quite possible too.
 
 [fn:4] Yes, even if you use virtualenv with everything you do in
 Python.  If you want to install this module as just your user account
