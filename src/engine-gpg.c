@@ -2241,7 +2241,14 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if ((mode & GPGME_EXPORT_MODE_MINIMAL))
-    err = add_arg (gpg, "--export-options=export-minimal");
+    {
+      if ((mode & GPGME_EXPORT_MODE_NOUID))
+        err = add_arg (gpg, "--export-options=export-minimal,export-drop-uids");
+      else
+        err = add_arg (gpg, "--export-options=export-minimal");
+    }
+  else if ((mode & GPGME_EXPORT_MODE_NOUID))
+    err = add_arg (gpg, "--export-options=export-drop-uids");
 
   if (err)
     ;

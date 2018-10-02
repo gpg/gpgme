@@ -4663,6 +4663,10 @@ If this flag is used with @code{GPGME_EXPORT_MODE_SECRET} for an X.509
 key the export format will be changed to PKCS#12 which also includes
 the certificate.  This flag may not be used with OpenPGP.
 
+@item GPGME_EXPORT_MODE_NOUID
+@since{1.12.0 - experimental}
+Do not export user ids.  Works only with certain gpg version.
+
 @end table
 
 

@@ -123,6 +123,7 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
                 |GPGME_EXPORT_MODE_MINIMAL
                 |GPGME_EXPORT_MODE_SECRET
                 |GPGME_EXPORT_MODE_RAW
+                |GPGME_EXPORT_MODE_NOUID
                 |GPGME_EXPORT_MODE_PKCS12)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
