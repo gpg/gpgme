@@ -40,8 +40,8 @@ Relics of the past
 
 The Perils of PyPI
 
-* GPG 1.8.0 - Python bindings for GPGME GnuPG cryptography library: GPG 180 - Python bindings for GPGME GnuPG cryptography library. 
-* PyME 0.9.0 - Python support for GPGME GnuPG cryptography library: PyME 090 - Python support for GPGME GnuPG cryptography library. 
+* GPG 1.8.0 - Python bindings for GPGME GnuPG cryptography library: GPG 180 - Python bindings for GPGME GnuPG cryptography library.
+* PyME 0.9.0 - Python support for GPGME GnuPG cryptography library: PyME 090 - Python support for GPGME GnuPG cryptography library.
 
 @end detailmenu
 @end menu
@@ -172,8 +172,8 @@ pyme (0.9.0) - Python support for GPGME GnuPG cryptography library
 @end enumerate
 
 @menu
-* GPG 1.8.0 - Python bindings for GPGME GnuPG cryptography library: GPG 180 - Python bindings for GPGME GnuPG cryptography library. 
-* PyME 0.9.0 - Python support for GPGME GnuPG cryptography library: PyME 090 - Python support for GPGME GnuPG cryptography library. 
+* GPG 1.8.0 - Python bindings for GPGME GnuPG cryptography library: GPG 180 - Python bindings for GPGME GnuPG cryptography library.
+* PyME 0.9.0 - Python support for GPGME GnuPG cryptography library: PyME 090 - Python support for GPGME GnuPG cryptography library.
 @end menu
 
 @node GPG 180 - Python bindings for GPGME GnuPG cryptography library
