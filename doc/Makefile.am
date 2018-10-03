@@ -30,7 +30,7 @@ BUILT_SOURCES = defsincdate defs.inc
 
 
 info_TEXINFOS = gpgme.texi
-gpgme_TEXINFOS = uiserver.texi gpgme-python-howto.texi lesser.texi gpl.texi
+gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
 
 gpgme.texi : defs.inc
 
@@ -60,7 +60,3 @@ online: gpgme.html gpgme.pdf gpgme-python-howto.html gpgme-python-howto.pdf
 	(cd gpgme.html && rsync -vr --exclude='.svn' .  \
 	  $${user}@ftp.gnupg.org:webspace/manuals/gpgme/ ); \
         rsync -v gpgme.pdf $${user}@ftp.gnupg.org:webspace/manuals/
-	(cd gpgme-python-howto.html && rsync -vr --exclude='.svn' .  \
-	  $${user}@ftp.gnupg.org:webspace/manuals/gpgme/ ); \
-        rsync -v gpgme-python-howto.pdf $${user}@ftp.gnupg.org:webspace/manuals/
-
