@@ -22,7 +22,12 @@ EXTRA_DIST = \
 	gpgme.i \
 	helpers.c helpers.h private.h \
 	examples \
+	docs \
 	src
+
+dist-hook:
+        cp -pr "$(srcdir)/docs" "$(DESTDIR)/docs"
+	rm -rf `find "$(srcdir)/docs" -name meta`
 
 SUBDIRS = . tests
 

@@ -1,4 +1,9 @@
-recursive-include examples *.py
+recursive-include docs *.org *.texi *.info *.rst
+recursive-include docs src *.org
+recursive-include docs rst *.rst
+recursive-include docs texinfo *.texi *.infok
+recursive-include examples *.py *.pyx
+include README README.org
 include gpgme.i
 include helpers.c helpers.h private.h
 include version.py
