@@ -59,7 +59,8 @@ python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc: copystamp
 	top_builddir="$(top_builddir)" \
 	  $(PYTHON) setup.py sdist --verbose --dist-dir=python$(PYTHON_VERSION)-gpg-dist \
 		--manifest=python$(PYTHON_VERSION)-gpg-dist/MANIFEST
-	gpg2 --detach-sign --armor python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz
+	gpgbin=gpgconf --list-components | grep OpenPGP | sed -e 's/gpg:OpenPGP://g'
+	$(gpgbin) --detach-sign --armor python$(PYTHON_VERSION)-gpg-dist/gpg-$(VERSION).tar.gz
 
 .PHONY: sdist
 sdist:	python$(PYTHON_VERSION)-gpg/dist/gpg-$(VERSION).tar.gz.asc
