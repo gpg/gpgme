@@ -129,7 +129,7 @@ SWIG itself, which are worth noting here.
    1. gpg (1.8.0) - Python bindings for GPGME GnuPG cryptography library
    2. pyme (0.9.0) - Python support for GPGME GnuPG cryptography library
 
-*** GPG 1.8.0 - Python bindings for GPGME GnuPG cryptography library
+*** GPG 1·8·0 - Python bindings for GPGME GnuPG cryptography library
     :PROPERTIES:
     :CUSTOM_ID: pypi-gpgme-180
     :END:
@@ -144,7 +144,7 @@ SWIG itself, which are worth noting here.
     module and instead installing the current version of GPGME along
     with the Python bindings included with that package.
 
-*** PyME 0.9.0 - Python support for GPGME GnuPG cryptography library
+*** PyME 0·9·0 - Python support for GPGME GnuPG cryptography library
     :PROPERTIES:
     :CUSTOM_ID: pypi-gpgme-90
     :END:
