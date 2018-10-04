@@ -1,0 +1,26 @@
+#+TITLE: GNU Privacy Guard (GnuPG) Made Easy Python Bindings
+#+AUTHOR: Ben McGinnes
+#+LATEX_COMPILER: xelatex
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: [12pt]
+#+LATEX_HEADER: \usepackage{xltxtra}
+#+LATEX_HEADER: \usepackage[margin=1in]{geometry}
+#+LATEX_HEADER: \setmainfont[Ligatures={Common}]{Times New Roman}
+#+LATEX_HEADER: \author{Ben McGinnes <ben@gnupg.org>}
+
+
+* GPGME Python Bindings
+  :PROPERTIES:
+  :CUSTOM_ID: index
+  :END:
+
+
+** Contents
+   :PROPERTIES:
+   :CUSTOM_ID: index-contents
+   :END:
+
+
+- [[short-history][A short history of the project]]
+- [[gpgme-python-howto][GPGME Python Bindings HOWTO]]
+

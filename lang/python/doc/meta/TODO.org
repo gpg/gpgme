@@ -29,6 +29,38 @@
    through converting to either Markdown or XHTML first.
 
 
+** TODO Documentation build systems
+   :PROPERTIES:
+   :CUSTOM_ID: todo-docs-build-systems
+   :END:
+
+Though Org Mode is being used for the default documentation format, it
+still needs to end up as usable by end users.  So the Org Mode files
+are used to produce the "source" files used by the two main contenders
+for documenting the bindings: Texinfo and ReStructuredText/Docutils.
+
+
+*** TODO Texinfo documentation
+    :PROPERTIES:
+    :CUSTOM_ID: todo-docs-build-texinfo
+    :END:
+
+Need to add all of Texinfo's ... special systems to make it do its
+things.
+
+
+*** TODO ReStructuredText documentation
+    :PROPERTIES:
+    :CUSTOM_ID: todo-docs-build-docutils
+    :END:
+
+Need to run Sphinx's quick start, add it to the requirements and tweak
+the index page for the rst files to point to the HOWTO and other files.
+
+It might just be easier to do all that in Org Mode and convert the
+lot, then the Sphinx bits can be automated.
+
+
 ** STARTED Documentation HOWTO
    :PROPERTIES:
    :CUSTOM_ID: todo-docs-howto
