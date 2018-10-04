@@ -21,6 +21,5 @@
    :END:
 
 
-- [[short-history][A short history of the project]]
-- [[gpgme-python-howto][GPGME Python Bindings HOWTO]]
-
+- [[file:short-history.org][A short history of the project]]
+- [[file:gpgme-python-howto.org][GPGME Python Bindings HOWTO]]

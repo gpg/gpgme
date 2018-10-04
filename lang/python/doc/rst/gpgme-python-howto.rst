@@ -248,8 +248,8 @@ The PyME package maintained by Martin Albrecht
 
 This package is the origin of these bindings, though they are somewhat
 different now. For details of when and how the PyME package was folded
-back into GPGME itself see the *Short History* document [1]_ in the
-Python bindings ``docs`` directory. [2]_
+back into GPGME itself see the `Short History <short-history.org>`__
+document. [1]_
 
 The PyME package was first released in 2002 and was also the first
 attempt to implement a low level binding to GPGME. In doing so it
@@ -354,7 +354,7 @@ For Python 2 it checks for these executables in this order: ``python``,
 ``python2`` and ``python2.7``.
 
 For Python 3 it checks for these executables in this order: ``python3``,
-``python3.7``, ``python3.6``, ``python3.5`` and ``python3.4``. [3]_
+``python3.7``, ``python3.6``, ``python3.5`` and ``python3.4``. [2]_
 
 On systems where ``python`` is actually ``python3`` and not ``python2``
 it may be possible that ``python2`` may be overlooked, but there have
@@ -411,7 +411,7 @@ directory missing a lot of expected files. Even when this occurs, the
 solution is actually quite simple and will always work.
 
 That solution is simply to run the following commands as either the
-**root** user or prepended with ``sudo -H``\  [4]_ in the
+**root** user or prepended with ``sudo -H``\  [3]_ in the
 ``lang/python/`` directory:
 
 .. code:: shell
@@ -1880,7 +1880,7 @@ Encrypting to multiple keys essentially just expands upon the key
 selection process and the recipients from the previous examples.
 
 The following example encrypts a message (``text``) to everyone with an
-email address on the ``gnupg.org`` domain, [5]_ but does *not* encrypt
+email address on the ``gnupg.org`` domain, [4]_ but does *not* encrypt
 to a default key or other key which is configured to normally encrypt
 to.
 
@@ -2838,7 +2838,7 @@ module instead. It has since been modified to provide support for Python
 
 Since it rewrites the ``hkp`` protocol prefix as ``http`` and ``hkps``
 as ``https``, the module is able to be used even with servers which do
-not support the full scope of keyserver functions. [6]_ It also works
+not support the full scope of keyserver functions. [5]_ It also works
 quite readily when incorporated into a `Cython <#cython>`__ generated
 and compiled version of any code.
 
@@ -2968,9 +2968,6 @@ Footnotes
    ``short-history.org`` and/or ``short-history.html``.
 
 .. [2]
-   The ``lang/python/docs/`` directory in the GPGME source.
-
-.. [3]
    With no issues reported specific to Python 3.7, the release of Python
    3.7.1 at around the same time as GPGME 1.12.0 and the testing with
    Python 3.7.1rc1, there is no reason to delay moving 3.7 ahead of 3.6
@@ -2978,7 +2975,7 @@ Footnotes
    always enforce their own policies anyway and installation to each
    supported minor release is quite possible too.
 
-.. [4]
+.. [3]
    Yes, even if you use virtualenv with everything you do in Python. If
    you want to install this module as just your user account then you
    will need to manually configure, compile and install the *entire*
@@ -2987,13 +2984,13 @@ Footnotes
    circumstances under which it is worthwhile, but generally only on
    POSIX systems which utilise single user mode (some even require it).
 
-.. [5]
+.. [4]
    You probably don\'t really want to do this. Searching the keyservers
    for \"gnupg.org\" produces over 400 results, the majority of which
    aren\'t actually at the gnupg.org domain, but just included a comment
    regarding the project in their key somewhere.
 
-.. [6]
+.. [5]
    Such as with ProtonMail servers. This also means that restricted
    servers which only advertise either HTTP or HTTPS end points and not
    HKP or HKPS end points must still be identified as as HKP or HKPS

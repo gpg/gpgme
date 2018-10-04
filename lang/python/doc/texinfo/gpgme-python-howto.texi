@@ -418,8 +418,7 @@ version 3.0 (or any later version).
 
 This package is the origin of these bindings, though they are somewhat
 different now.  For details of when and how the PyME package was
-folded back into GPGME itself see the @emph{Short History} document@footnote{@samp{short-history.org} and/or @samp{short-history.html}.}
-in the Python bindings @samp{docs} directory.@footnote{The @samp{lang/python/docs/} directory in the GPGME source.}
+folded back into GPGME itself see the @uref{short-history.org, Short History} document.@footnote{@samp{short-history.org} and/or @samp{short-history.html}.}
 
 The PyME package was first released in 2002 and was also the first
 attempt to implement a low level binding to GPGME.  In doing so it

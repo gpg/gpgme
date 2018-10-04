@@ -1,0 +1,52 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename index.info
+@settitle GNU Privacy Guard (GnuPG) Made Easy Python Bindings
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@finalout
+@titlepage
+@title GNU Privacy Guard (GnuPG) Made Easy Python Bindings
+@author Ben McGinnes
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top GNU Privacy Guard (GnuPG) Made Easy Python Bindings
+@end ifnottex
+
+@menu
+* GPGME Python Bindings::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+GPGME Python Bindings
+
+* Contents::
+
+@end detailmenu
+@end menu
+
+@node GPGME Python Bindings
+@chapter GPGME Python Bindings
+
+@menu
+* Contents::
+@end menu
+
+@node Contents
+@section Contents
+
+@itemize
+@item
+@uref{short-history.org, A short history of the project}
+@item
+@uref{gpgme-python-howto.org, GPGME Python Bindings HOWTO}
+@end itemize
+
+@bye
