@@ -1,7 +1,8 @@
-recursive-include docs *.org *.texi *.info *.rst
-recursive-include docs src *.org
-recursive-include docs rst *.rst
-recursive-include docs texinfo *.texi *.infok
+recursive-include doc *.org
+recursive-include doc *.rst
+recursive-include doc *.tex
+recursive-include doc *.texi
+recursive-include doc *.info
 recursive-include examples *.py *.pyx
 include README README.org
 include gpgme.i

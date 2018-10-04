@@ -22,11 +22,8 @@ EXTRA_DIST = \
 	gpgme.i \
 	helpers.c helpers.h private.h \
 	examples \
-	docs \
+	doc \
 	src
-
-dist-hook:
-        cp -pr "$(srcdir)/docs" "$(DESTDIR)/docs"
 
 SUBDIRS = . tests
 

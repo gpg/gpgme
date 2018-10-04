@@ -53,7 +53,7 @@ defs.inc: defsincdate Makefile mkdefsinc
 	    $(info_TEXINFOS) $(gpgme_TEXINFOS) >$@
 
 
-online: gpgme.html gpgme.pdf gpgme-python-howto.html gpgme-python-howto.pdf
+online: gpgme.html gpgme.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
         user=werner ; \
