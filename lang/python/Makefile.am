@@ -27,7 +27,6 @@ EXTRA_DIST = \
 
 dist-hook:
         cp -pr "$(srcdir)/docs" "$(DESTDIR)/docs"
-	rm -rf `find "$(srcdir)/docs" -name meta`
 
 SUBDIRS = . tests
 
