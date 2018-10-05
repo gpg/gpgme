@@ -34,7 +34,7 @@ prepare: copystamp
 # distutils are not VPATH-aware.
 copystamp:
 	ln -sf "$(top_srcdir)/src/data.h" .
-	ln -sf "$(top_builddir)/config.h" .
+	ln -sf "$(top_builddir)/conf/config.h" .
 	ln -sf "$(srcdir)/src" gpg
 	touch $@
 

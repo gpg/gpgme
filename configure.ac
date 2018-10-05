@@ -88,7 +88,7 @@ VERSION_MICRO=mym4_version_micro
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR(src/gpgme.h.in)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(conf/config.h)
 AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 AM_MAINTAINER_MODE
 AC_CANONICAL_HOST

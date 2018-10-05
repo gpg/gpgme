@@ -34,9 +34,9 @@ gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
 
 gpgme.texi : defs.inc
 
-mkdefsinc: mkdefsinc.c Makefile ../config.h
-	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
-	   -o $@ $(srcdir)/mkdefsinc.c
+mkdefsinc: mkdefsinc.c Makefile $(top_builddir)/conf/config.h
+	$(CC_FOR_BUILD) -I. -I$(top_builddir)/conf  -I$(srcdir) \
+	   $(AM_CPPFLAGS) -o $@ $(srcdir)/mkdefsinc.c
 
 dist-hook: defsincdate
 
