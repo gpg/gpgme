@@ -1,11 +1,11 @@
 # GnuPG exclusions
 /aclocal.m4
 /autom4te.cache
-/config.h.in
 /configure
-/config.h
 /config.log
 /config.status
+/conf/config.h.in
+/conf/config.h
 /libtool
 Makefile.in
 Makefile
