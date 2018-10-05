@@ -2255,6 +2255,8 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
   else if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {
       err = add_arg (gpg, "--send-keys");
+      if (!err && (mode & GPGME_EXPORT_MODE_NOUID))
+        err = add_arg (gpg, "--keyserver-options=export-drop-uids");
     }
   else
     {
