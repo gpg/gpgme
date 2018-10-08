@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.11.2 (unreleased)
+Noteworthy changes in version 1.12.0 (2018-10-08)
 -------------------------------------------------
+
+ * Enhanced the JSON based interface tool gpgme-json to support Native
+   Messaging as well as new Javascript code to support the browser
+   site.  See lang/js/README for details.
+
+ * Major overhaul of the Python language bindings documentation.
 
  * Even for old versions of gpg a missing MDC will now lead to a
    decryption failure.
@@ -8,6 +14,12 @@ Noteworthy changes in version 1.11.2 (unreleased)
    behavior of GPGME_KEYLIST_MODE_LOCATE.
 
  * New data function to create a data object from an estream.
+
+ * Add more interfaces to the C++ bindings.
+
+ * Improved error codes on decryption failure.
+
+ * Lots of minor fixes.
 
  * Interface changes relative to the 1.11.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,6 +36,10 @@ Noteworthy changes in version 1.11.2 (unreleased)
  cpp: Context::setFlag                      NEW.
  cpp: Context::getFlag                      NEW.
  cpp: Context::createKeyEx                  NEW.
+
+ [c=C32/A21/R0 cpp=C14/A8/R0 qt=C10/A3/R2]
+
+ Release-info: https://dev.gnupg.org/T4109
 
 
 Noteworthy changes in version 1.11.1 (2018-04-20)

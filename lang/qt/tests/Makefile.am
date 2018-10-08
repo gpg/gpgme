@@ -68,7 +68,7 @@ noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
 	random_seed S.gpg-agent .gpg-v21-migrated pubring-stamp $(moc_files) \
-	gpg.conf tofu.db
+	gpg.conf tofu.db reader_0.status reader_1.status
 
 clean-local:
 	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop

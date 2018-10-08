@@ -27,8 +27,8 @@ min_automake_version="1.14"
 # commit and push so that the git magic is able to work.  See below
 # for the LT versions.
 m4_define(mym4_version_major, [1])
-m4_define(mym4_version_minor, [11])
-m4_define(mym4_version_micro, [2])
+m4_define(mym4_version_minor, [12])
+m4_define(mym4_version_micro, [0])
 
 # Below is m4 magic to extract and compute the revision number, the
 # decimalized short revision number, a beta version string, and a flag
@@ -54,15 +54,15 @@ AC_INIT([gpgme],[mym4_full_version],[http://bugs.gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed/changed:	AGE=0)
 #
-LIBGPGME_LT_CURRENT=31
-LIBGPGME_LT_AGE=20
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_CURRENT=32
+LIBGPGME_LT_AGE=21
+LIBGPGME_LT_REVISION=0
 
 # If there is an ABI break in gpgmepp or qgpgme also bump the
 # version in IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in
 
-LIBGPGMEPP_LT_CURRENT=13
-LIBGPGMEPP_LT_AGE=7
+LIBGPGMEPP_LT_CURRENT=14
+LIBGPGMEPP_LT_AGE=8
 LIBGPGMEPP_LT_REVISION=0
 
 LIBQGPGME_LT_CURRENT=10
