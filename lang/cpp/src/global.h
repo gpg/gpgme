@@ -60,6 +60,7 @@ enum Engine { GpgEngine, GpgSMEngine, GpgConfEngine, UnknownEngine, AssuanEngine
 enum KeyListMode {
     Local = 0x1,
     Extern = 0x2,
+    Locate = 0x3,
     Signatures = 0x4,
     SignatureNotations = 0x8,
     Validate = 0x10,
