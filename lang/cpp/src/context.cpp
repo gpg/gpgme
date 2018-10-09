@@ -509,7 +509,7 @@ Error Context::startKeyListing(const char *patterns[], bool secretOnly)
 Key Context::nextKey(GpgME::Error &e)
 {
     d->lastop = Private::KeyList;
-    gpgme_key_t key;
+    gpgme_key_t key = nullptr;
     e = Error(d->lasterr = gpgme_op_keylist_next(d->ctx, &key));
     return Key(key, false);
 }
@@ -528,7 +528,7 @@ KeyListResult Context::keyListResult() const
 Key Context::key(const char *fingerprint, GpgME::Error &e , bool secret /*, bool forceUpdate*/)
 {
     d->lastop = Private::KeyList;
-    gpgme_key_t key;
+    gpgme_key_t key = nullptr;
     e = Error(d->lasterr = gpgme_get_key(d->ctx, fingerprint, &key, int(secret)/*, int( forceUpdate )*/));
     return Key(key, false);
 }
@@ -1067,7 +1067,7 @@ Key Context::signingKey(unsigned int idx) const
 std::vector<Key> Context::signingKeys() const
 {
     std::vector<Key> result;
-    gpgme_key_t key;
+    gpgme_key_t key = nullptr;
     for (unsigned int i = 0 ; (key = gpgme_signers_enum(d->ctx, i)) ; ++i) {
         result.push_back(Key(key, false));
     }
