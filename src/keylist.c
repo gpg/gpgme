@@ -1266,10 +1266,11 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   TRACE_BEG2 (DEBUG_CTX, "gpgme_get_key", ctx,
 	      "fpr=%s, secret=%i", fpr, secret);
 
+  if (r_key)
+    *r_key = NULL;
+
   if (!ctx || !r_key || !fpr)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
-
-  *r_key = NULL;
 
   if (strlen (fpr) < 8)	/* We have at least a key ID.  */
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
