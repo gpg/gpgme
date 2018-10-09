@@ -42,6 +42,10 @@
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
 
+#include "context.h"
+
+#include <memory>
+
 #include "t-support.h"
 
 using namespace QGpgME;
@@ -70,6 +74,35 @@ private Q_SLOTS:
         QVERIFY (keys[0].subkeys().size() == 2);
         QVERIFY (keys[0].subkeys()[0].publicKeyAlgorithm() == Subkey::AlgoDSA);
         QVERIFY (keys[0].subkeys()[1].publicKeyAlgorithm() == Subkey::AlgoELG_E);
+    }
+
+    // This test can help with valgrind to check for memleaks when handling
+    // keys
+    void testGetKey()
+    {
+        GpgME::Key key;
+        {
+            auto ctx = std::unique_ptr<GpgME::Context> (GpgME::Context::createForProtocol(GpgME::OpenPGP));
+            ctx->setKeyListMode (GpgME::KeyListMode::Local |
+                    GpgME::KeyListMode::Signatures |
+                    GpgME::KeyListMode::Validate |
+                    GpgME::KeyListMode::WithTofu);
+            GpgME::Error err;
+            key = ctx->key ("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, false);
+        }
+        QVERIFY(key.primaryFingerprint());
+        QVERIFY(!strcmp(key.primaryFingerprint(), "A0FF4590BB6122EDEF6E3C542D727CC768697734"));
+        {
+            auto ctx = std::unique_ptr<GpgME::Context> (GpgME::Context::createForProtocol(GpgME::OpenPGP));
+            ctx->setKeyListMode (GpgME::KeyListMode::Local |
+                    GpgME::KeyListMode::Signatures |
+                    GpgME::KeyListMode::Validate |
+                    GpgME::KeyListMode::WithTofu);
+            GpgME::Error err;
+            key = ctx->key ("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, false);
+        }
+        QVERIFY(key.primaryFingerprint());
+        QVERIFY(!strcmp(key.primaryFingerprint(), "A0FF4590BB6122EDEF6E3C542D727CC768697734"));
     }
 
     void testPubkeyAlgoAsString()
