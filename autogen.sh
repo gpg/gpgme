@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2017-01-17
+# Version: 2018-07-10
 
 configure_ac="configure.ac"
 
@@ -74,7 +74,6 @@ PRINT_HOST=no
 PRINT_BUILD=no
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
-version_parts=3
 
 if [ -n "${AUTOGEN_SH_SILENT}" ]; then
   SILENT=" --silent"
@@ -85,9 +84,10 @@ if test x"$1" = x"--help"; then
   echo "    --silent       Silent operation"
   echo "    --force        Pass --force to autoconf"
   echo "    --find-version Helper for configure.ac"
-  echo "    --build-TYPE   Configure to cross build for TYPE"
+  echo "    --git-build    Run all commands to  build from a Git"
   echo "    --print-host   Print only the host triplet"
   echo "    --print-build  Print only the build platform triplet"
+  echo "    --build-TYPE   Configure to cross build for TYPE"
   echo ""
   echo "  ARGS are passed to configure in --build-TYPE mode."
   echo "  Configuration for this script is expected in autogen.rc"
@@ -159,6 +159,10 @@ case "$1" in
         SILENT=" --silent"
         shift
         ;;
+    --git-build)
+        myhost="git-build"
+        shift
+        ;;
     --build-w32)
         myhost="w32"
         shift
@@ -185,6 +189,25 @@ case "$1" in
         ;;
 esac
 die_p
+
+
+# **** GIT BUILD ****
+# This is a helper to build from git.
+if [ "$myhost" = "git-build" ]; then
+    tmp="$(pwd)"
+    cd "$tsdir" || fatal "error cd-ing to $tsdir"
+    ./autogen.sh || fatal "error running ./autogen.sh"
+    cd "$tmp"   || fatal "error cd-ing back to $tmp"
+    die_p
+    "$tsdir"/configure || fatal "error running $tsdir/configure"
+    die_p
+    make || fatal "error running make"
+    die_p
+    make check || fatal "error running male check"
+    die_p
+    exit 0
+fi
+# **** end GIT BUILD ****
 
 
 # Source our configuration
@@ -215,18 +238,15 @@ if [ "$myhost" = "find-version" ]; then
       exit 1
     fi
 
-    case "$version_parts" in
-      2)
-        matchstr1="$package-$major.[0-9]*"
-        matchstr2="$package-$major-base"
-        vers="$major.$minor"
-        ;;
-      *)
-        matchstr1="$package-$major.$minor.[0-9]*"
-        matchstr2="$package-$major.$minor-base"
-        vers="$major.$minor.$micro"
-        ;;
-    esac
+    if [ -z "$micro" ]; then
+      matchstr1="$package-$major.[0-9]*"
+      matchstr2="$package-$major-base"
+      vers="$major.$minor"
+    else
+      matchstr1="$package-$major.$minor.[0-9]*"
+      matchstr2="$package-$major.$minor-base"
+      vers="$major.$minor.$micro"
+    fi
 
     beta=no
     if [ -e .git ]; then
@@ -467,6 +487,10 @@ EOF
 EOF
       $CP build-aux/git-hooks/commit-msg .git/hooks/commit-msg
       chmod +x  .git/hooks/commit-msg
+      if [ x"${display_name}" != x ]; then
+         git config format.subjectPrefix "PATCH ${display_name}"
+         git config sendemail.to "${patches_to}"
+      fi
   fi
 fi
 

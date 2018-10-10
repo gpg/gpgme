@@ -7,6 +7,7 @@
 /conf/config.h.in
 /conf/config.h
 /libtool
+/VERSION
 Makefile.in
 Makefile
 stamp-h1

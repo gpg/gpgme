@@ -35,7 +35,7 @@ DISTCHECK_CONFIGURE_FLAGS =
 
 EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in                   	\
              ChangeLog-2011 m4/ChangeLog-2011 contrib/ChangeLog-2011    \
-             conf/whatisthis
+             conf/whatisthis VERSION
 
 
 if RUN_GPG_TESTS
@@ -46,13 +46,11 @@ endif
 
 SUBDIRS = src ${tests} doc lang
 
-# Fix the version of the spec file and create a file named VERSION
-# to be used for patch's Prereq: feature.
+# Fix the version of the spec file.
 dist-hook: gen-ChangeLog
 	@set -e; \
 	sed -e 's/@pkg_version@/$(PACKAGE_VERSION)/g' \
 	    $(top_srcdir)/gpgme.spec.in  > $(distdir)/gpgme.spec
-	echo "$(PACKAGE_VERSION)" > $(distdir)/VERSION
 
 distcheck-hook:
 	set -e; ( \
