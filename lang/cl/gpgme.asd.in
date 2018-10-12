@@ -25,11 +25,14 @@
 (in-package #:gpgme-system)
 
 (defsystem gpgme
-    :description "GnuPG Made Easy."
-    :author "g10 Code GmbH"
-    :version "@VERSION@"
-    :licence "GPL"
-    :depends-on ("cffi" "gpg-error")
-    :components ((:file "gpgme-package")
-		 (:file "gpgme"
-			:depends-on ("gpgme-package"))))
+  :description "GnuPG Made Easy."
+  :author "g10 Code GmbH"
+  :version "@VERSION@"
+  :licence "GPL"
+  :defsystem-depends-on ("cffi-grovel")
+  :depends-on ("cffi" "gpg-error" "trivial-garbage")
+  :components ((:file "gpgme-package")
+               (:cffi-grovel-file "gpgme-grovel"
+                :depends-on ("gpgme-package"))
+	       (:file "gpgme"
+		:depends-on ("gpgme-package" "gpgme-grovel"))))

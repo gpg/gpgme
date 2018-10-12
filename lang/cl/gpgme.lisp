@@ -24,6 +24,12 @@
 
 (in-package :gpgme)
 
+(deftype byte-array ()
+  '(simple-array (unsigned-byte 8) (*)))
+
+(deftype character-array ()
+  '(simple-array character (*)))
+
 ;;; Debugging.
 
 (defvar *debug* nil "If debugging output should be given or not.")
@@ -38,23 +44,15 @@
 
 ;;; System dependencies.
 
-; FIXME: Use cffi-grovel?  cffi-unix?
-
-(defctype size-t :unsigned-int "The system size_t type.")
-
-(defctype ssize-t :int "The system ssize_t type.")
-
-; FIXME: Ouch.  Grovel?  Helper function?
-(defconstant +seek-set+ 0)
-(defconstant +seek-cur+ 1)
-(defconstant +seek-end+ 2)
-(defctype off-t :long-long "The system off_t type.")
-
+; Access to ERRNO.
 (defcfun ("strerror" c-strerror) :string
   (err :int))
 
-; Access to ERRNO.
-; FIXME: Ouch.  Should be grovel + helper function.
+(defun get-errno ()
+  *errno*)
+
+(defun set-errno (errno)
+  (setf *errno* errno))
 
 (define-condition system-error (error)
   ((errno :initarg :errno :reader system-error-errno))
@@ -63,14 +61,6 @@
 		     (system-error-errno c)
 		     (c-strerror (system-error-errno c)))))
   (:documentation "Signalled when an errno is encountered."))
-
-(defconstant +ebadf+ 1)
-
-; Ouch.
-(defun get-errno ()
-  +ebadf+)
-
-;;; More about errno below.
 
 ; Needed to write passphrases.
 (defcfun ("write" c-write) ssize-t
@@ -83,14 +73,6 @@
     (when (< res 0) (error 'system-error :errno (get-errno)))
     res))
 
-;;; More about errno here.
-
-(defun set-errno (errno)
-  (cond
-					; Works on GNU/Linux.
-    ((eql errno +ebadf+) (system-write -1 (null-pointer) 0))
-    (t (error 'invalid-errno :errno errno))))
-
 ;;;
 ;;; C Interface Definitions
 ;;;
@@ -100,22 +82,39 @@
 ;;; Some new data types used for easier translation.
 
 ;;; The number of include certs.  Translates to NIL for default.
-(defctype cert-int-t :int)
+(defctype cert-int-t
+    (:wrapper :int
+     :from-c translate-cert-int-t-from-foreign
+     :to-c translate-cert-int-t-to-foreign))
 
 ;;; A string that may be NIL to indicate a null pointer.
-(defctype string-or-nil-t :string)
+(defctype string-or-nil-t
+    (:wrapper :string
+     :to-c translate-string-or-nil-t-to-foreign))
 
 ;;; Some opaque data types used by GPGME.
 
-(defctype gpgme-ctx-t :pointer "The GPGME context type.")
+(defctype gpgme-ctx-t
+    (:wrapper :pointer
+     :to-c translate-gpgme-ctx-t-to-foreign)
+  "The GPGME context type.")
 
-(defctype gpgme-data-t :pointer "The GPGME data object type.")
+(defctype gpgme-data-t
+    (:wrapper :pointer
+     :to-c translate-gpgme-data-t-to-foreign)
+  "The GPGME data object type.")
 
 ;;; Wrappers for the libgpg-error library.
 
-(defctype gpgme-error-t gpg-error::gpg-error-t "The GPGME error type.")
+(defctype gpgme-error-t
+    (:wrapper gpg-error::gpg-error-t
+     :from-c translate-gpgme-error-t-from-foreign
+     :to-c translate-gpgme-error-t-to-foreign)
+  "The GPGME error type.")
 
-(defctype gpgme-error-no-signal-t gpg-error::gpg-error-t
+(defctype gpgme-error-no-signal-t
+    (:wrapper gpg-error::gpg-error-t
+     :from-c translate-gpgme-error-no-signal-t-from-foreign)
   "The GPGME error type (this version does not signal conditions in translation.")
 
 (defctype gpgme-err-code-t gpg-error::gpg-err-code-t
@@ -171,7 +170,11 @@
   (:none 0)
   (:binary 1)
   (:base64 2)
-  (:armor 3))
+  (:armor 3)
+  (:url 4)
+  (:urlesc 5)
+  (:url0 6)
+  (:mime 7))
 
 ;;;
 
@@ -182,7 +185,11 @@
   (:rsa-s 3)
   (:elg-e 16)
   (:dsa 17)
-  (:elg 20))
+  (:ecc 18)
+  (:elg 20)
+  (:ecdsa 301)
+  (:ecdh 302)
+  (:eddsa 303))
 
 (defcenum gpgme-hash-algo-t
   "Hash algorithms from libgcrypt."
@@ -196,6 +203,7 @@
   (:sha256 8)
   (:sha384 9)
   (:sha512 10)
+  (:sha224 11)
   (:md4 301)
   (:crc32 302)
   (:crc32-rfc1510 303)
@@ -225,7 +233,14 @@
 (defcenum gpgme-protocol-t
   "The available protocols."
   (:openpgp 0)
-  (:cms 1))
+  (:cms 1)
+  (:gpgconf 2)
+  (:assuan 3)
+  (:g13 4)
+  (:uiserver 5)
+  (:spawn 6)
+  (:default 254)
+  (:unknown 255))
 
 ;;;
 
@@ -234,6 +249,10 @@
   (:local 1)
   (:extern 2)
   (:sigs 4)
+  (:sig-notations)
+  (:with-secret 16)
+  (:with-tofu 32)
+  (:ephemeral 128)
   (:validate 256))
 
 ;;;
@@ -243,7 +262,9 @@
   (:human-readable 1)
   (:critical 2))
 
-(defctype gpgme-sig-notation-t :pointer
+(defctype gpgme-sig-notation-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-sig-notation-t-from-foreign)
   "Signature notation pointer type.")
 
 ;; FIXME: Doesn't this depend on endianess?
@@ -263,15 +284,115 @@
 
 ;;;
 
-;; FIXME: Add status codes.
 (defcenum gpgme-status-code-t
   "The possible status codes for the edit operation."
   (:eof 0)
-  (:enter 1))
+  (:enter 1)
+  (:leave 2)
+  (:abort 3)
+  (:goodsig 4)
+  (:badsig 5)
+  (:errsig 6)
+  (:badarmor 7)
+  (:rsa-or-idea 8)
+  (:keyexpired 9)
+  (:keyrevoked 10)
+  (:trust-undefined 11)
+  (:trust-never 12)
+  (:trust-marginal 13)
+  (:trust-fully 14)
+  (:trust-ultimate 15)
+  (:shm-info 16)
+  (:shm-get 17)
+  (:shm-get-bool 18)
+  (:shm-get-hidden 19)
+  (:need-passphrase 20)
+  (:validsig 21)
+  (:sig-id 22)
+  (:enc-to 23)
+  (:nodata 24)
+  (:bad-passphrase 25)
+  (:no-pubkey 26)
+  (:no-seckey 27)
+  (:need-passphrase-sym 28)
+  (:decryption-failed 29)
+  (:decryption-okay 30)
+  (:missing-passphrase 31)
+  (:good-passphrase 32)
+  (:goodmdc 33)
+  (:badmdc 34)
+  (:errmdc 35)
+  (:imported 36)
+  (:import-ok 37)
+  (:import-problem 38)
+  (:import-res 39)
+  (:file-start 40)
+  (:file-done 41)
+  (:file-error 42)
+  (:begin-decryption 43)
+  (:end-decryption 44)
+  (:begin-encryption 45)
+  (:end-encryption 46)
+  (:delete-problem 47)
+  (:get-bool 48)
+  (:get-line 49)
+  (:get-hidden 50)
+  (:got-it 51)
+  (:progress 52)
+  (:sig-created 53)
+  (:session-key 54)
+  (:notation-name 55)
+  (:notation-data 56)
+  (:policy-url 57)
+  (:begin-stream 58)
+  (:end-stream 59)
+  (:key-created 60)
+  (:userid-hint 61)
+  (:unexpected 62)
+  (:inv-recp 63)
+  (:no-recp 64)
+  (:already-signed 65)
+  (:sigexpired 66)
+  (:expsig 67)
+  (:expkeysig 68)
+  (:truncated 69)
+  (:error 70)
+  (:newsig 71)
+  (:revkeysig 72)
+  (:sig-subpacket 73)
+  (:need-passphrase-pin 74)
+  (:sc-op-failure 75)
+  (:sc-op-success 76)
+  (:cardctrl 77)
+  (:backup-key-created 78)
+  (:pka-trust-bad 79)
+  (:pka-trust-good 80)
+  (:plaintext 81)
+  (:inv-sgnr 82)
+  (:no-sgnr 83)
+  (:success 84)
+  (:decryption-info 85)
+  (:plaintext-length 86)
+  (:mountpoint 87)
+  (:pinentry-launched 88)
+  (:attribute 89)
+  (:begin-signing 90)
+  (:key-not-created 91)
+  (:inquire-maxlen 92)
+  (:failure 93)
+  (:key-considered 94)
+  (:tofu-user 95)
+  (:tofu-stats 96)
+  (:tofu-stats-long 97)
+  (:notation-flags 98)
+  (:decryption-compliance-mode 99)
+  (:verification-compliance-mode 100))
 
 ;;;
 
-(defctype gpgme-engine-info-t :pointer
+(defctype gpgme-engine-info-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-engine-info-t-to-foreign)
   "The engine information structure pointer type.")
 
 (defcstruct gpgme-engine-info
@@ -285,7 +406,10 @@
 
 ;;;
 
-(defctype gpgme-subkey-t :pointer "A subkey from a key.")
+(defctype gpgme-subkey-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-subkey-t-from-foreign)
+  "A subkey from a key.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-subkey-bitfield :unsigned-int)
@@ -299,7 +423,9 @@
   (:can-certify 64)
   (:secret 128)
   (:can-authenticate 256)
-  (:is-qualified 512))
+  (:is-qualified 512)
+  (:is-cardkey 1024)
+  (:is-de-vs 2048))
 
 (defcstruct gpgme-subkey
   "Subkey from a key."
@@ -314,7 +440,9 @@
   (expires :long))
 
 
-(defctype gpgme-key-sig-t :pointer
+(defctype gpgme-key-sig-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-key-sig-t-from-foreign)
   "A signature on a user ID.")
 
 ;; FIXME: Doesn't this depend on endianess?
@@ -343,7 +471,9 @@
   (sig-class :unsigned-int))
 
 
-(defctype gpgme-user-id-t :pointer
+(defctype gpgme-user-id-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-user-id-t-from-foreign)
   "A user ID from a key.")
 
 ;; FIXME: Doesn't this depend on endianess?
@@ -365,7 +495,10 @@
   (-last-keysig gpgme-key-sig-t))
 
 
-(defctype gpgme-key-t :pointer
+(defctype gpgme-key-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-key-t-from-foreign
+     :to-c translate-gpgme-key-t-to-foreign)
   "A key from the keyring.")
 
 ;; FIXME: Doesn't this depend on endianess?
@@ -693,7 +826,9 @@
 
 ;;;
 
-(defctype gpgme-invalid-key-t :pointer
+(defctype gpgme-invalid-key-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-invalid-key-t-from-foreign)
   "An invalid key structure.")
 
 (defcstruct gpgme-invalid-key
@@ -708,7 +843,9 @@
   "Encryption result structure."
   (invalid-recipients gpgme-invalid-key-t))
 
-(defctype gpgme-op-encrypt-result-t :pointer
+(defctype gpgme-op-encrypt-result-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-op-encrypt-result-t-from-foreign)
   "An encryption result structure.")
 
 (defcfun ("gpgme_op_encrypt_result" c-gpgme-op-encrypt-result)
@@ -716,7 +853,15 @@
   (ctx gpgme-ctx-t))
 
 (defbitfield gpgme-encrypt-flags-t
-  (:always-trust 1))
+  (:always-trust 1)
+  (:no-encrypt-to 2)
+  (:prepare 4)
+  (:expect-sign 8)
+  (:no-compress 16)
+  (:symmetric 32)
+  (:throw-keyids 64)
+  (:wrap 128)
+  (:want-address 256))
 
 (defcfun ("gpgme_op_encrypt_start" c-gpgme-op-encrypt-start) gpgme-error-t
   (ctx gpgme-ctx-t)
@@ -749,7 +894,9 @@
 
 ;;; Decryption.
 
-(defctype gpgme-recipient-t :pointer
+(defctype gpgme-recipient-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-recipient-t-from-foreign)
   "A recipient structure.")
 
 (defcstruct gpgme-recipient
@@ -762,7 +909,9 @@
 
 (defbitfield gpgme-op-decrypt-result-bitfield
   "Decryption result structure bitfield."
-  (:wrong-key-usage 1))
+  (:wrong-key-usage 1)
+  (:is-de-vs 2)
+  (:is-mine 4))
 
 (defcstruct gpgme-op-decrypt-result
   "Decryption result structure."
@@ -771,7 +920,9 @@
   (recipients gpgme-recipient-t)
   (file-name :string))
 
-(defctype gpgme-op-decrypt-result-t :pointer
+(defctype gpgme-op-decrypt-result-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-op-decrypt-result-t-from-foreign)
   "A decryption result structure.")
 
 (defcfun ("gpgme_op_decrypt_result" c-gpgme-op-decrypt-result)
@@ -801,7 +952,9 @@
 
 ;;; Signing.
 
-(defctype gpgme-new-signature-t :pointer
+(defctype gpgme-new-signature-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-new-signature-t-from-foreign)
   "A new signature structure.")
 
 (defcstruct gpgme-new-signature
@@ -821,7 +974,9 @@
   (invalid-signers gpgme-invalid-key-t)
   (signatures gpgme-new-signature-t))
 
-(defctype gpgme-op-sign-result-t :pointer
+(defctype gpgme-op-sign-result-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-op-sign-result-t-from-foreign)
   "A signing result structure.")
 
 (defcfun ("gpgme_op_sign_result" c-gpgme-op-sign-result)
@@ -854,15 +1009,21 @@
   (:crl-missing #x0100)
   (:crl-too-old #x0200)
   (:bad-policy #x0400)
-  (:sys-error #x0800))
+  (:sys-error #x0800)
+  (:tofu-conflict #x1000))
 
-(defctype gpgme-signature-t :pointer
+(defctype gpgme-signature-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-signature-t-from-foreign)
   "A signature structure.")
 
 ;; FIXME: Doesn't this depend on endianess?
 (defbitfield (gpgme-signature-bitfield :unsigned-int)
   "The signature bitfield."
-  (:wrong-key-usage 1))
+  (:wrong-key-usage 1)
+  (:pka-trust 2)
+  (:chain-model 4)
+  (:is-de-vs 8))
 
 (defcstruct gpgme-signature
   "Signature structure."
@@ -884,7 +1045,9 @@
   (signatures gpgme-signature-t)
   (file-name :string))
 
-(defctype gpgme-op-verify-result-t :pointer
+(defctype gpgme-op-verify-result-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-op-verify-result-t-from-foreign)
   "A verify result structure.")
 
 (defcfun ("gpgme_op_verify_result" c-gpgme-op-verify-result)
@@ -913,7 +1076,9 @@
   (:subkey #x0008)
   (:secret #x0010))
 
-(defctype gpgme-import-status-t :pointer
+(defctype gpgme-import-status-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-import-status-t-from-foreign)
   "An import status structure.")
 
 (defcstruct gpgme-import-status
@@ -941,7 +1106,9 @@
   (not-imported :int)
   (imports gpgme-import-status-t))
 
-(defctype gpgme-op-import-result-t :pointer
+(defctype gpgme-op-import-result-t
+    (:wrapper :pointer
+     :from-c translate-gpgme-op-import-result-t-from-foreign)
   "An import status result structure.")
 
 (defcfun ("gpgme_op_import_result" c-gpgme-op-import-result)
@@ -977,7 +1144,8 @@
 (defbitfield (gpgme-genkey-flags-t :unsigned-int)
   "Flags used for the key generation result bitfield."
   (:primary #x0001)
-  (:sub #x0002))
+  (:sub #x0002)
+  (:uid #x0004))
 
 (defcstruct gpgme-op-genkey-result
   "Key generation result structure."
@@ -1078,21 +1246,20 @@
 ;;; cert-int-t is a helper type that takes care of representing the
 ;;; default number of certs as NIL.
 
-(defmethod translate-from-foreign (value (type (eql 'cert-int-t)))
+(defun translate-cert-int-t-from-foreign (value)
   (cond
     ((eql value +include-certs-default+) nil)
     (t value)))
 
-(defmethod translate-to-foreign (value (type (eql 'cert-int-t)))
+(defun translate-cert-int-t-to-foreign (value)
   (cond
     (value value)
     (t +include-certs-default+)))
 
 ;;; string-or-nil-t translates a null pointer to NIL and vice versa.
 ;;; Translation from foreign null pointer already works as expected.
-;;; FIXME: May the "to foreign" conversion problem be a bug in CFFI?
 
-(defmethod translate-to-foreign (value (type (eql 'string-or-nil-t)))
+(defun translate-string-or-nil-t-to-foreign (value)
   (cond
     (value value)
     (t (null-pointer))))
@@ -1109,12 +1276,12 @@
 ;;; FIXME: Should we use a hash table (or struct, or clos) instead of
 ;;; property list, as recommended by the Lisp FAQ?
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-engine-info-t)))
+(defun translate-gpgme-engine-info-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next protocol file-name version req-version home-dir)
-	    value gpgme-engine-info)
+	    value (:struct gpgme-engine-info))
 	 (append (list protocol (list
 			     :file-name file-name
 			     :version version
@@ -1122,55 +1289,53 @@
 			     :home-dir home-dir))
 		 next)))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-invalid-key-t)))
+(defun translate-gpgme-invalid-key-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next fpr reason)
-	    value gpgme-invalid-key)
+	    value (:struct gpgme-invalid-key))
 	 (append (list (list :fpr fpr
 			     :reason reason))
 		 next)))))
 
-(defmethod translate-from-foreign (value
-				   (type (eql 'gpgme-op-encrypt-result-t)))
+(defun translate-gpgme-op-encrypt-result-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((invalid-recipients)
-	    value gpgme-op-encrypt-result)
+	    value (:struct gpgme-op-encrypt-result))
 	 (list :encrypt
 	       (list :invalid-recipients invalid-recipients))))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-recipient-t)))
+(defun translate-gpgme-recipient-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next keyid pubkey-algo status)
-	    value gpgme-recipient)
+	    value (:struct gpgme-recipient))
 	 (append (list (list :keyid keyid
 			     :pubkey-algo pubkey-algo
 			     :status status))
 		 next)))))
 
-(defmethod translate-from-foreign (value
-				   (type (eql 'gpgme-op-decrypt-result-t)))
+(defun translate-gpgme-op-decrypt-result-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((unsupported-algorithm bitfield recipients file-name)
-	    value gpgme-op-decrypt-result)
+	    value (:struct gpgme-op-decrypt-result))
 	 (list :decrypt (list :unsupported-algorithm unsupported-algorithm
 			      :bitfield bitfield
 			      :recipients recipients
 			      :file-name file-name))))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-new-signature-t)))
+(defun translate-gpgme-new-signature-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next type pubkey-algo hash-algo timestamp fpr sig-class)
-	    value gpgme-new-signature)
+	    value (:struct gpgme-new-signature))
 	 (append (list (list :type type
 			     :pubkey-algo pubkey-algo
 			     :hash-algo hash-algo
@@ -1179,24 +1344,23 @@
 			     :sig-class sig-class))
 		 next)))))
 
-(defmethod translate-from-foreign (value
-				   (type (eql 'gpgme-op-sign-result-t)))
+(defun translate-gpgme-op-sign-result-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((invalid-signers signatures)
-	    value gpgme-op-sign-result)
+	    value (:struct gpgme-op-sign-result))
 	 (list :sign (list :invalid-signers invalid-signers
 			   :signatures signatures))))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-signature-t)))
+(defun translate-gpgme-signature-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next summary fpr status notations timestamp
 		  exp-timestamp bitfield validity validity-reason
 		  pubkey-algo hash-algo)
-	    value gpgme-signature)
+	    value (:struct gpgme-signature))
 	 (append (list (list :summary summary
 			     :fpr fpr
 			     :status status
@@ -1209,29 +1373,27 @@
 			     :pubkey-algo pubkey-algo))
 		 next)))))
 
-(defmethod translate-from-foreign (value
-				   (type (eql 'gpgme-op-verify-result-t)))
+(defun translate-gpgme-op-verify-result-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((signatures file-name)
-	    value gpgme-op-verify-result)
+	    value (:struct gpgme-op-verify-result))
 	 (list :verify (list :signatures signatures
 			     :file-name file-name))))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-import-status-t)))
+(defun translate-gpgme-import-status-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next fpr result status)
-	    value gpgme-import-status)
+	    value (:struct gpgme-import-status))
 	 (append (list (list :fpr fpr
 			     :result result
 			     :status status))
 		 next)))))
 
-(defmethod translate-from-foreign (value
-				   (type (eql 'gpgme-op-import-result-t)))
+(defun translate-gpgme-op-import-result-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
@@ -1240,7 +1402,7 @@
 			new-revocations secret-read secret-imported
 			secret-unchanged skipped-new-keys not-imported
 			imports)
-	    value gpgme-op-import-result)
+	    value (:struct gpgme-op-import-result))
 	 (list :verify (list :considered considered
 			     :no-user-id no-user-id
 			     :imported imported
@@ -1272,19 +1434,19 @@
 		     (gpgme-strsource (gpgme-error-value c)))))
   (:documentation "Signalled when a GPGME function returns an error."))
 
-(defmethod translate-from-foreign (value (name (eql 'gpgme-error-t)))
+(defun translate-gpgme-error-t-from-foreign (value)
   "Raise a GPGME-ERROR if VALUE is non-zero."
   (when (not (eql (gpgme-err-code value) :gpg-err-no-error))
     (error 'gpgme-error :gpgme-error value))
   (gpg-err-canonicalize value))
 
-(defmethod translate-to-foreign (value (name (eql 'gpgme-error-t)))
+(defun translate-gpgme-error-t-to-foreign (value)
   "Canonicalize the error value."
   (if (eql (gpgme-err-code value) :gpg-err-no-error)
       0
       (gpg-err-as-value value)))
 
-(defmethod translate-from-foreign (value (name (eql 'gpgme-error-no-signal-t)))
+(defun translate-gpgme-error-no-signal-t-from-foreign (value)
   "Canonicalize the error value."
   (gpg-err-canonicalize value))
 
@@ -1528,61 +1690,68 @@
     (when (not (null-pointer-p handle)) (foreign-free handle))))
 
 (defcallback data-read-cb ssize-t ((handle :pointer) (buffer :pointer)
-				   (size size-t))
+                                   (size size-t))
   (when *debug* (format t "DEBUG: gpgme-data-read-cb: want ~A~%" size))
   (let ((stream (gethash (pointer-address handle) *data-handles*)))
     (cond
       (stream
        (let* ((stream-type (stream-element-type stream))
-	      (seq (make-array size :element-type stream-type))
-	      (read (read-sequence seq stream)))
-	 (loop for i from 0 to (- read 1)
-	       do (setf (mem-aref buffer :unsigned-char i)
-			;;; FIXME: This is a half-assed attempt at
-			;;; supporting character streams.
-			(cond
-			  ((eql stream-type 'character)
-			   (char-code (elt seq i)))
-			  (t (coerce (elt seq i) stream-type)))))
-	 (when *debug* (format t "DEBUG: gpgme-data-read-cb: read ~A~%" read))
-	 read))
-      (t (set-errno +ebadf+)
-	 -1))))
+              (seq (make-array size :element-type stream-type))
+              (read (read-sequence seq stream)))
+         (cond
+           ((equal stream-type '(unsigned-byte 8))
+            (dotimes (i read)
+              (setf (mem-aref buffer :unsigned-char i)
+                    (aref (the byte-array seq) i))))
+           ((eql stream-type 'character)
+            (dotimes (i read)
+              (setf (mem-aref buffer :unsigned-char i)
+                    (char-code (aref (the character-array seq) i)))))
+           (t
+            (dotimes (i read)
+              (setf (mem-aref buffer :unsigned-char i)
+                    (coerce (aref seq i) '(unsigned-byte 8))))))
+         (when *debug* (format t "DEBUG: gpgme-data-read-cb: read ~A~%" read))
+         read))
+      (t
+       (set-errno +ebadf+)
+       -1))))
 
 (defcallback data-write-cb ssize-t ((handle :pointer) (buffer :pointer)
-				   (size size-t))
+                                    (size size-t))
   (when *debug* (format t "DEBUG: gpgme-data-write-cb: want ~A~%" size))
   (let ((stream (gethash (pointer-address handle) *data-handles*)))
     (cond
       (stream
        (let* ((stream-type (stream-element-type stream))
-	      (seq (make-array size :element-type stream-type)))
-	 (loop for i from 0 to (- size 1)
-	       do (setf (elt seq i)
-			;;; FIXME: This is a half-assed attempt at
-			;;; supporting character streams.
-			(cond
-			  ((eql stream-type 'character)
-			   (code-char (mem-aref buffer :unsigned-char i)))
-			  (t (coerce (mem-aref buffer :unsigned-char i)
-				     stream-type)))))
-	 (write-sequence seq stream)
-	 ;;; FIXME: What about write errors?
-	 size))
-      (t (set-errno +ebadf+)
-	 -1))))
+              (seq (make-array size :element-type stream-type)))
+         (cond
+           ((equal stream-type '(unsigned-byte 8))
+            (dotimes (i size)
+              (setf (aref (the byte-array seq) i)
+                    (mem-aref buffer :unsigned-char i))))
+           ((eql stream-type 'character)
+            (dotimes (i size)
+              (setf (aref (the character-array seq) i)
+                    (code-char (mem-aref buffer :unsigned-char i)))))
+           (t
+            (dotimes (i size)
+              (setf (aref seq i)
+                    (coerce (mem-aref buffer :unsigned-char i) stream-type)))))
+         (write-sequence seq stream)
+         size))
+      (t
+       (set-errno +ebadf+)
+       -1))))
 
 ;;; This little helper macro allows us to swallow the cbs structure by
 ;;; simply setting it to a null pointer, but still protect against
 ;;; conditions.
 (defmacro with-cbs-swallowed ((cbs) &body body)
-  `(let ((,cbs (foreign-alloc 'gpgme-data-cbs)))
+  `(let ((,cbs (foreign-alloc '(:struct gpgme-data-cbs))))
     (unwind-protect (progn ,@body)
       (when (not (null-pointer-p ,cbs)) (foreign-free ,cbs)))))
 
-;;; FIXME: Wrap the object and attach to it a finalizer.  Requires new
-;;; CFFI.  Should we use an OO interface, ie make-instance?  For now,
-;;; we do not provide direct access to data objects.
 (defun gpgme-data-new (stream &key encoding file-name)
   "Allocate a new GPGME data object for STREAM."
   (with-foreign-object (dh-p 'gpgme-data-t)
@@ -1592,12 +1761,14 @@
     ;;; unique C pointer as handle anyway to look up the stream in the
     ;;; callback.  This is a convenient one to use.
     (with-cbs-swallowed (cbs)
-      (setf
-       (foreign-slot-value cbs 'gpgme-data-cbs 'read) (callback data-read-cb)
-       (foreign-slot-value cbs 'gpgme-data-cbs 'write) (callback data-write-cb)
-       (foreign-slot-value cbs 'gpgme-data-cbs 'seek) (null-pointer)
-       (foreign-slot-value cbs 'gpgme-data-cbs 'release) (callback
-							  data-release-cb))
+      (setf (foreign-slot-value cbs '(:struct gpgme-data-cbs) 'read)
+            (callback data-read-cb))
+      (setf (foreign-slot-value cbs '(:struct gpgme-data-cbs) 'write)
+            (callback data-write-cb))
+      (setf (foreign-slot-value cbs '(:struct gpgme-data-cbs) 'seek)
+            (null-pointer))
+      (setf (foreign-slot-value cbs '(:struct gpgme-data-cbs) 'release)
+            (callback data-release-cb))
       (c-gpgme-data-new-from-cbs dh-p cbs cbs)
       (let ((dh (mem-ref dh-p 'gpgme-data-t)))
 	(when encoding (gpgme-data-set-encoding dh encoding))
@@ -1619,12 +1790,33 @@
   (when *debug* (format t "DEBUG: gpgme-data-release: ~A~%" dh))
   (c-gpgme-data-release dh))
 
+(defclass data ()
+  (c-data)  ; The C data object pointer
+  (:documentation "The GPGME data type."))
+
+(defmethod initialize-instance :after ((data data) &key streamspec
+                                       &allow-other-keys)
+  (let ((c-data (if (listp streamspec)
+                    (apply #'gpgme-data-new streamspec)
+                    (gpgme-data-new streamspec)))
+        (cleanup t))
+    (unwind-protect
+         (progn
+           (setf (slot-value data 'c-data) c-data)
+           (finalize data (lambda () (gpgme-data-release c-data)))
+           (setf cleanup nil))
+      (if cleanup (gpgme-data-release c-data)))))
+
+(defun translate-gpgme-data-t-to-foreign (value)
+  ;; Allow a pointer to be passed directly for the finalizer to work.
+  (cond
+    ((null value) (null-pointer))
+    ((pointerp value) value)
+    (t (slot-value value 'c-data))))
+
 (defmacro with-gpgme-data ((dh streamspec) &body body)
-  `(let ((,dh (if (listp ,streamspec)
-		  (apply 'gpgme-data-new ,streamspec)
-		  (gpgme-data-new ,streamspec))))
-    (unwind-protect (progn ,@body)
-      (when (not (null-pointer-p ,dh)) (gpgme-data-release ,dh)))))
+  `(let ((,dh (make-instance 'data :streamspec ,streamspec)))
+     ,@body))
 
 (defun gpgme-data-get-encoding (dh)
   "Get the encoding associated with the data object DH."
@@ -1693,7 +1885,7 @@
 		(setf cleanup nil))
       (if cleanup (gpgme-release c-ctx)))))
 
-(defmethod translate-to-foreign (value (type (eql 'gpgme-ctx-t)))
+(defun translate-gpgme-ctx-t-to-foreign (value)
   ;; Allow a pointer to be passed directly for the finalizer to work.
   (if (pointerp value) value (slot-value value 'c-ctx)))
 
@@ -1848,11 +2040,11 @@
   (setf (slot-value key 'c-key) c-key)
   (finalize key (lambda () (gpgme-key-unref c-key))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-key-t)))
+(defun translate-gpgme-key-t-from-foreign (value)
   (when *debug* (format t "DEBUG: import key: ~A~%" value))
   (make-instance 'key :c-key value))
 
-(defmethod translate-to-foreign (value (type (eql 'gpgme-key-t)))
+(defun translate-gpgme-key-t-to-foreign (value)
   ;; Allow a pointer to be passed directly for the finalizer to work.
   (if (pointerp value) value (slot-value value 'c-key)))
 
@@ -1867,12 +2059,12 @@
 ;;; and zero length value (omit?) and human-readable (convert to string).
 ;;; FIXME: Turn binary data into sequence or vector or what it should be.
 ;;; FIXME: Turn the whole thing into a hash?
-(defmethod translate-from-foreign (value (type (eql 'gpgme-sig-notation-t)))
+(defun translate-gpgme-sig-notation-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next name value name-len value-len flags bitfield)
-	    value gpgme-sig-notation)
+	    value (:struct gpgme-sig-notation))
 	 (append (list (list
 			:name name
 			:value value
@@ -1883,12 +2075,12 @@
 		 next)))))
 
 ;;; FIXME: Deal nicer with timestamps.  bitfield field name?
-(defmethod translate-from-foreign (value (type (eql 'gpgme-subkey-t)))
+(defun translate-gpgme-subkey-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next bitfield pubkey-algo length keyid fpr timestamp expires)
-	    value gpgme-subkey)
+	    value (:struct gpgme-subkey))
 	 (append (list (list
 			:bitfield bitfield
 			:pubkey-algo pubkey-algo
@@ -1899,13 +2091,13 @@
 			:expires expires))
 		 next)))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-key-sig-t)))
+(defun translate-gpgme-key-sig-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next bitfield pubkey-algo keyid timestamp expires status
 		  uid name email comment sig-class)
-	    value gpgme-key-sig)
+	    value (:struct gpgme-key-sig))
 	 (append (list (list
 			:bitfield bitfield
 			:pubkey-algo pubkey-algo
@@ -1920,12 +2112,12 @@
 			:sig-class sig-class))
 		 next)))))
 
-(defmethod translate-from-foreign (value (type (eql 'gpgme-user-id-t)))
+(defun translate-gpgme-user-id-t-from-foreign (value)
   (cond
     ((null-pointer-p value) nil)
     (t (with-foreign-slots
 	   ((next bitfield validity uid name email comment signatures)
-	    value gpgme-user-id)
+	    value (:struct gpgme-user-id))
 	 (append (list (list
 			:bitfield bitfield
 			:validity validity
@@ -1941,7 +2133,7 @@
     (with-foreign-slots
 	((bitfield protocol issuer-serial issuer-name chain-id
 		   owner-trust subkeys uids keylist-mode)
-	 c-key gpgme-key)
+	 c-key (:struct gpgme-key))
       (list
        :bitfield bitfield
        :protocol protocol

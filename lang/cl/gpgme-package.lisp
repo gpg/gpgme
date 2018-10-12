@@ -26,7 +26,8 @@
 
 (defpackage #:gpgme
   (:use #:common-lisp #:cffi #:gpg-error)
-
+  (:import-from #:trivial-garbage
+                #:finalize)
   (:export #:check-version
 	   #:*version*
 	   #:context

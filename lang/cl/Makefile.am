@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
-clfiles = gpgme.asd gpgme-package.lisp gpgme.lisp
+clfiles = gpgme.asd gpgme-package.lisp gpgme-grovel.lisp gpgme.lisp
 
 # FIXME: Should be configurable.
 clfilesdir = $(datadir)/common-lisp/source/gpgme

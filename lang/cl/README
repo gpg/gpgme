@@ -3,32 +3,49 @@ Common Lisp Support for GPGME
 
 Requirements:
 
-ASDF		Packaging Support
-CFFI		Foreign Function Interface
-gpg-error	GPG Error Codes
+ASDF             Packaging Support
+CFFI             Foreign Function Interface
+trivial-garbage  Finalizers
+gpg-error        GPG Error Codes
 
 Use with:
 
-> (asdf:operate 'asdf:load-op ':gpgme)
+> (asdf:load-system "gpgme")
 
 
 Examples
 --------
 
-(with-open-file (stream "/tmp/myout" :direction :output
-			:if-exists :supersede :element-type '(unsigned-byte 8))
+(with-open-file (out "/tmp/myout"
+                     :direction :output
+                     :if-exists :supersede
+                     :element-type '(unsigned-byte 8))
   (with-context (ctx)
-    (setf (armor-p ctx) t)
+    (setf (armorp ctx) t)
     (op-export ctx "DEADBEEF" out)))
 
 (with-context (ctx)
   (with-output-to-string (out)
-    (setf (armor-p ctx) t)
+    (setf (armorp ctx) t)
     (op-export ctx "McTester" out)))
 
 (gpgme:with-context (ctx :armor t)
   (with-output-to-string (out)
     (gpgme:op-export ctx "McTester" out)))
+
+(gpgme:with-context (ctx :armor t)
+  (let ((recipient1 (gpgme:get-key ctx "DEADBEEF"))
+        (recipient2 (gpgme:get-key ctx "Alice"))
+        (message "Hello, world!"))
+    (with-output-to-string (out)
+      (with-input-from-string (in message)
+        (gpgme:op-encrypt ctx (vector recipient1 recipient2) in out)))))
+
+(gpgme:with-context (ctx :armor t)
+  (let ((message "Hello, world!"))
+    (with-output-to-string (out)
+      (with-input-from-string (in message)
+        (gpgme:op-sign ctx in out)))))
 
 
 TODO
