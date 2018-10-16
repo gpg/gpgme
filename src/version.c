@@ -338,7 +338,7 @@ _gpgme_get_program_version (const char *const file_name)
 	  mark = strchr (&line[linelen], '\n');
 	  if (mark)
 	    {
-	      if (mark > &line[0] && *mark == '\r')
+	      if (mark > &line[0] && mark[-1] == '\r')
 		mark--;
 	      *mark = '\0';
 	      break;
