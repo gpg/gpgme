@@ -38,7 +38,7 @@ import { Connection } from './Connection';
  * @returns {Promise<GpgME>}
  * @async
  */
-function init ({ timeout = 500 } = {}){
+function init ({ timeout = 1000 } = {}){
     return new Promise(function (resolve, reject){
         const connection = new Connection;
         connection.checkConnection(false, timeout).then(
