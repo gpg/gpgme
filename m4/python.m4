@@ -2,7 +2,8 @@
 ## Python file handling
 ## From Andrew Dalke
 ## Updated by James Henstridge
-## ------------------------
+## Upated by Werner Koch 2018-10-17
+## ---------------------------------
 # Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
@@ -10,7 +11,8 @@
 # with or without modifications, as long as this notice is preserved.
 
 
-# AM_PATH_PYTHON([MINIMUM-VERSION], [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND])
+# AM_PATH_PYTHON([MINIMUM-VERSION], [ACTION-IF-FOUND], [ACTION-IF-NOT-FOUND]
+#                [INTERPRETER-LIST])
 # ---------------------------------------------------------------------------
 # Adds support for distributing Python modules and packages.  To
 # install modules, copy them to $(pythondir), using the python_PYTHON
@@ -67,7 +69,8 @@ AC_DEFUN([AM_PATH_PYTHON],
       # VERSION.
       AC_CACHE_CHECK([for a Python interpreter with version >= $1],
 	[am_cv_pathless_PYTHON],[
-	for am_cv_pathless_PYTHON in _AM_PYTHON_INTERPRETER_LIST none; do
+	for am_cv_pathless_PYTHON dnl
+          in m4_if([$4],[],[_AM_PYTHON_INTERPRETER_LIST],[$4]) none; do
 	  test "$am_cv_pathless_PYTHON" = none && break
 	  AM_PYTHON_CHECK_VERSION([$am_cv_pathless_PYTHON], [$1], [break])
 	done])

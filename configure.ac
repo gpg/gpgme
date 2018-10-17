@@ -180,7 +180,7 @@ have_w64_system=no
 have_macos_system=no
 build_w32_glib=no
 build_w32_qt=no
-available_languages="cl cpp python python2 python3 qt"
+available_languages="cl cpp python qt"
 default_languages="cl cpp python qt"
 case "${host}" in
     x86_64-*mingw32*)
@@ -375,13 +375,9 @@ fi
 AC_SUBST(HAVE_DOT)
 
 # Python bindings.
-LIST_MEMBER("python2", $enabled_languages)
-found_py2=$found
-LIST_MEMBER("python3", $enabled_languages)
-found_py3=$found
 LIST_MEMBER("python", $enabled_languages)
 found_py=$found
-if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
+if test "$found_py" = "1"; then
     AX_PKG_SWIG
     if test -z "$SWIG"; then
         if test "$explicit_languages" = "1"; then
@@ -393,36 +389,15 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
             enabled_languages=$(echo $enabled_languages | sed 's/python//')
         fi
     else
-        # Reset all the stuff, just to be sure.
+        # Reset the version collecting vars.
 	PYTHONS=
 	PYTHON_VERSIONS=
-	unset PYTHON
-	unset PYTHON_VERSION
-	unset PYTHON_CPPFLAGS
-	unset PYTHON_LDFLAGS
-	unset PYTHON_SITE_PKG
-	unset PYTHON_EXTRA_LIBS
-	unset PYTHON_EXTRA_LDFLAGS
-	unset ac_cv_path_PYTHON
-	unset am_cv_pathless_PYTHON
-	unset am_cv_python_version
-	unset am_cv_python_platform
-	unset am_cv_python_pythondir
-	unset am_cv_python_pyexecdir
-
-	if test "$found_py" = "1" -o "$found_py2" = "1"; then
-	    AM_PATH_PYTHON([2.7], [
-		AX_PYTHON_DEVEL
-		if test "$PYTHON_VERSION"; then
-			PYTHONS="$(echo $PYTHONS $PYTHON)"
-			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
-		fi
-	    ], :)
-	fi
 
 	if test "$found_py" = "1" -o "$found_py3" = "1"; then
-	    # Reset everything, so that we can look for another Python.
-	    unset PYTHON
+	  # Reset everything, so that we can look for another Python.
+          m4_foreach([mym4pythonver],
+                     [[2.7],[3.4],[3.5],[3.6],[3.7],[3.8],[all]],
+           [unset PYTHON
 	    unset PYTHON_VERSION
 	    unset PYTHON_CPPFLAGS
 	    unset PYTHON_LDFLAGS
@@ -435,13 +410,14 @@ if test "$found_py" = "1" -o "$found_py2" = "1" -o "$found_py3" = "1"; then
 	    unset am_cv_python_platform
 	    unset am_cv_python_pythondir
 	    unset am_cv_python_pyexecdir
-	    AM_PATH_PYTHON([3.4], [
+	    AM_PATH_PYTHON(mym4pythonver, [
 		AX_PYTHON_DEVEL
 		if test "$PYTHON_VERSION"; then
 			PYTHONS="$(echo $PYTHONS $PYTHON)"
 			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
 		fi
-	    ], :)
+	    ], :, m4_if([mym4pythonver],[all],[],[python]mym4pythonver))
+           ])
 	fi
 
 	# Recover some values lost in the second attempt to find Python.
