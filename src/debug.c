@@ -379,6 +379,9 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
   if (!_gpgme_debug_trace ())
     return;
 
+  if (!buffer)
+    return;
+
   while (idx < len)
     {
       char str[51];
