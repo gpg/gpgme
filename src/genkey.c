@@ -223,9 +223,13 @@ get_key_parameter (const char *parms, gpgme_data_t *key_parameter)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   endtag = strstr (content, "</GnupgKeyParms>");
+  if (!endtag)
+    endtag = content + strlen (content);
+
   /* FIXME: Check that there are no control statements inside.  */
-  while (content[0] == '\n'
-	 || (content[0] == '\r' && content[1] == '\n'))
+  while (content < endtag
+         && (content[0] == '\n'
+             || (content[0] == '\r' && content[1] == '\n')))
     content++;
 
   return gpgme_data_new_from_mem (key_parameter, content,
