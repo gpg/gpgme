@@ -21,6 +21,10 @@
 %include "cpointer.i"
 %include "cstring.i"
 
+/* no need to record whether GPGME's c++ bindings were built
+   concurrently with the python bindings */
+%ignore HAVE_CXX11;
+
 %{
 /* We use public symbols (eg. "_obsolete_class") which are marked as
  * deprecated but we need to keep them.  Silence the warning.  */
