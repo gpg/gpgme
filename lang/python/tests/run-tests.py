@@ -15,7 +15,7 @@
 # Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, see <http://www.gnu.org/licenses/>.
+# License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, division
 from __future__ import print_function, unicode_literals

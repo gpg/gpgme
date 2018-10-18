@@ -22,7 +22,7 @@ from __future__ import absolute_import, division, unicode_literals
 #
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
-# <http://www.gnu.org/licenses/>.
+# <https://www.gnu.org/licenses/>.
 
 import gpg
 

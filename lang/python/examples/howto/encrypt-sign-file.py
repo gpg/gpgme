@@ -25,7 +25,7 @@ import sys
 #
 # You should have received a copy of the GNU General Public License and the GNU
 # Lesser General Public along with this program; if not, see
-# <http://www.gnu.org/licenses/>.
+# <https://www.gnu.org/licenses/>.
 
 """
 Signs and encrypts a file to a specified key.  If entering both the key and the

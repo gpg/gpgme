@@ -13,7 +13,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>.
+# along with this program; if not, see <https://www.gnu.org/licenses/>.
 """A decryption filter
 
 This demonstrates decryption using gpg3 in three lines of code.  To

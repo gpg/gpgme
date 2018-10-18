@@ -15,7 +15,7 @@
 # Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, see <http://www.gnu.org/licenses/>.
+# License along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -32,7 +32,7 @@ expected_notations = {
     "preferred-email-encoding@pgp.com":
     ("pgpmime", gpg.constants.sig.notation.HUMAN_READABLE |
      gpg.constants.sig.notation.CRITICAL),
-    None: ("http://www.gnu.org/policy/", 0),
+    None: ("https://www.gnu.org/policy/", 0),
 }
 
 # GnuPG prior to 2.1.13 did not report the critical flag correctly.

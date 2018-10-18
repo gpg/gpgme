@@ -52,7 +52,7 @@ static struct {
     "pgpmime",
     GPGME_SIG_NOTATION_HUMAN_READABLE | GPGME_SIG_NOTATION_CRITICAL },
   { NULL,
-    "http://www.gnu.org/policy/",
+    "https://www.gnu.org/policy/",
     0 }
 };
 

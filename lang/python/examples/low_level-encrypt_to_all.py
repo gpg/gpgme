@@ -15,7 +15,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>.
+# along with this program; if not, see <https://www.gnu.org/licenses/>.
 """
 This program will try to encrypt a simple message to each key on your
 keyring.  If your keyring has any invalid keys on it, those keys will
