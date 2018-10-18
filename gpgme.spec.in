@@ -4,7 +4,7 @@ Name: gpgme
 Version: @pkg_version@
 Release: 1
 URL: https://gnupg.org/gpgme.html
-Source: ftp://ftp.gnupg.org/gcrypt/alpha/gpgme/%{name}-%{version}.tar.gz
+Source: https://www.gnupg.org/ftp/gcrypt/gpgme/%{name}-%{version}.tar.gz
 Group: Development/Libraries
 Copyright: GPL
 BuildRoot: %{_tmppath}/%{name}-%{version}

@@ -421,7 +421,7 @@ find_program_at_standard_place (const char *name)
   char path[MAX_PATH];
   char *result = NULL;
 
-  /* See http://wiki.tcl.tk/17492 for details on compatibility.
+  /* See https://wiki.tcl-lang.org/page/Getting+Windows+%22special+folders%22+with+Ffidl for details on compatibility.
 
      We First try the generic place and then fallback to the x86
      (i.e. 32 bit) place.  This will prefer a 64 bit of the program

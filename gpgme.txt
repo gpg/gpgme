@@ -47,13 +47,13 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%sponsors: 
 
-%%source: ftp://ftp.gnupg.org/gcrypt/gpgme/
+%%source: https://www.gnupg.org/ftp/gcrypt/gpgme/
 
 %%debian:
 
 %%redhat:
 
-%%repository:  See http://www.gnupg.org/cvs-access.html
+%%repository:  See https://dev.gnupg.org/source/gpgme/
 
 %%related: 
 
