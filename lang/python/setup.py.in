@@ -216,7 +216,7 @@ class BuildExtFirstHack(build):
         self._generate_gpgme_h(gpgme_h, self._in_build_base("gpgme.h"))
         self._generate_errors_i()
 
-        # Copy due to http://bugs.python.org/issue2624
+        # Copy due to https://bugs.python.org/issue2624
         # Avoid creating in srcdir
         for source, target in ((in_srcdir(n), self._in_build_base(n))
                                for n in ('gpgme.i', 'helpers.c', 'private.h',

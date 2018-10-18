@@ -169,7 +169,7 @@ export function atobArray (base64) {
  * Turns a Uint8Array into an utf8-String
  * <pre>
  * Taken and slightly adapted from
- *  http://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
+ *  https://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
  * (original header:
  *   utf.js - UTF-8 <=> UTF-16 convertion
  *

@@ -25,7 +25,7 @@ Welcome to cJSON.
 cJSON aims to be the dumbest possible parser that you can get your job
 done with.  It's a single file of C, and a single header file.
 
-JSON is described best here: http://www.json.org/ It's like XML, but
+JSON is described best here: https://www.json.org/ It's like XML, but
 fat-free. You use it to move data around, store things, or just
 generally represent your program's state.
 
@@ -44,7 +44,7 @@ truth), I'm going to say that you can use it in one of two modes: Auto
 and Manual. Let's have a quick run-through.
 
 
-I lifted some JSON from this page: http://www.json.org/fatfree.html
+I lifted some JSON from this page: https://www.json.org/fatfree.html
 That page inspired me to write cJSON, which is a parser that tries to
 share the same philosophy as JSON itself. Simple, dumb, out of the
 way.

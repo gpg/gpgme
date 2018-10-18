@@ -1493,10 +1493,10 @@ strusage( int level )
     case 10:
 #if ARGPARSE_GPL_VERSION == 3
       p = ("License GPLv3+: GNU GPL version 3 or later "
-           "<http://gnu.org/licenses/gpl.html>");
+           "<https://www.gnu.org/licenses/gpl.html>");
 #else
       p = ("License GPLv2+: GNU GPL version 2 or later "
-           "<http://gnu.org/licenses/>");
+           "<https://www.gnu.org/licenses/>");
 #endif
       break;
     case 11: p = "foo"; break;

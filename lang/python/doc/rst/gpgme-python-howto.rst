@@ -146,7 +146,7 @@ The bullet points of new additiions are:
 -  Added a new section for `advanced or experimental
    use <#advanced-use>`__.
 -  Began the advanced use cases with `a section <#cython>`__ on using
-   the module with `Cython <http://cython.org/>`__.
+   the module with `Cython <https://cython.org/>`__.
 -  Added a number of new scripts to the ``example/howto/`` directory;
    some of which may be in advance of their planned sections of the
    HOWTO (and some are just there because it seemed like a good idea at
@@ -324,7 +324,7 @@ significant advantage in some way.
 #. If possible add the following Python modules which are not part of
    the standard library:
    `Requests <http://docs.python-requests.org/en/latest/index.html>`__,
-   `Cython <http://cython.org/>`__ and
+   `Cython <https://cython.org/>`__ and
    `hkp4py <https://github.com/Selfnet/hkp4py>`__. Chances are quite
    high that at least the first one and maybe two of those will already
    be installed.

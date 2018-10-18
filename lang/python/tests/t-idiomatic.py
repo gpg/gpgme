@@ -71,7 +71,7 @@ if sys.version_info[0] == 3:
     # hence we cannot use it as sink.
 
     # XXX: Python's io.BytesIo.truncate does not work as advertised.
-    # http://bugs.python.org/issue27261
+    # https://bugs.python.org/issue27261
     bio = io.BytesIO()
     bio.truncate(1)
     if len(bio.getvalue()) != 1:

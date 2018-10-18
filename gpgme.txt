@@ -35,9 +35,9 @@ support OpenPGP and the Cryptographic Message Syntax.
 
 %%GNU: no
 
-%%web-page: http://www.gnupg.org/gpgme.html
+%%web-page: https://www.gnupg.org/gpgme.html
 
-%%support: paid extension/consulting from http://www.g10code.com
+%%support: paid extension/consulting from https://www.g10code.com
 
 %%doc: English programmer reference in Texinfo, Postscript, HTML included
 
