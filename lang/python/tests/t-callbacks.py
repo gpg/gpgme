@@ -20,12 +20,14 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import os
+import platform
 import gpg
 import support
 _ = support  # to appease pyflakes.
 
 del absolute_import, print_function, unicode_literals
 
+oops = None
 c = gpg.Context()
 c.set_pinentry_mode(gpg.constants.PINENTRY_MODE_LOOPBACK)
 
@@ -99,6 +101,17 @@ Expire-Date: 2099-12-31
 </GnupgKeyParms>
 """
 
+prams = """<GnupgKeyParms format="internal">
+Key-Type: RSA
+Key-Length: 1024
+Name-Real: Joe Tester
+Name-Comment: with stupid passphrase
+Name-Email: joe+gpg@example.org
+Passphrase: Crypt0R0cks
+Expire-Date: 2037-12-31
+</GnupgKeyParms>
+"""
+
 messages = []
 
 
@@ -111,7 +124,10 @@ def progress_cb(what, typ, current, total, hook=None):
 
 c = gpg.Context()
 c.set_progress_cb(progress_cb, messages)
-c.op_genkey(parms, None, None)
+try:
+    c.op_genkey(parms, None, None)
+except Exception as oops:
+    c.op_genkey(prams, None, None)
 assert len(messages) > 0
 
 
@@ -123,7 +139,10 @@ def progress_cb(what, typ, current, total, hook=None):
 c = gpg.Context()
 c.set_progress_cb(progress_cb, None)
 try:
-    c.op_genkey(parms, None, None)
+    try:
+        c.op_genkey(parms, None, None)
+    except Exception as oops:
+        c.op_genkey(prams, None, None)
 except Exception as e:
     assert e == myException
 else:
@@ -138,6 +157,15 @@ alpha = c.get_key("A0FF4590BB6122EDEF6E3C542D727CC768697734", False)
 
 cookie = object()
 edit_cb_called = False
+
+def oops_check():
+    if oops is not None and platform.architecture()[0] != "64bit":
+        y2k38_msg = "System appears to be 32-bit and vulnerable to EOL in 2038."
+    elif oops is not None and platform.architecture()[0] == "64bit":
+        y2k38_msg = "System appears to be 64-bit, but may use 32-bit time."
+    else:
+        y2k38_msg = "System is 64-bit and/or not susceptible to 2038 EOL."
+    return y2k38_msg
 
 
 def edit_cb(status, args, hook):
