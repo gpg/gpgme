@@ -2980,7 +2980,7 @@ using the latest version of Pandoc from the Org mode source file using
 the following command:
 
 #+BEGIN_SRC shell
-  pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
+  pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto.org
 #+END_SRC
 
 In addition to these there is a significantly less frequently updated

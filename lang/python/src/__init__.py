@@ -55,10 +55,10 @@ GENERAL OVERVIEW
 For those of you familiar with GPGME, you will be right at home here.
 
 The python gpg module is, for the most part, a direct interface to the C GPGME
-library.  However, it is re-packaged in a more Pythonic way --
-object-oriented with classes and modules.  Take a look at the classes
-defined here -- they correspond directly to certain object types in GPGME
-for C.  For instance, the following C code:
+library.  However, it is re-packaged in a more Pythonic way -- object-oriented
+with classes and modules.  Take a look at the classes defined here -- they
+correspond directly to certain object types in GPGME for C.  For instance, the
+following C code:
 
 gpgme_ctx_t context;
 gpgme_new(&context);
@@ -71,26 +71,50 @@ context = core.Context()
 ...
 context.op_encrypt(recp, 1, plain, cipher)
 
-The Python module automatically does error-checking and raises Python
-exception gpg.errors.GPGMEError when GPGME signals an error. getcode()
-and getsource() of this exception return code and source of the error.
+The Python module automatically does error-checking and raises Python exception
+gpg.errors.GPGMEError when GPGME signals an error. getcode() and getsource() of
+this exception return code and source of the error.
 
 IMPORTANT NOTE
 --------------
-This documentation only covers a small subset of available GPGME functions and
-methods.  Please consult the documentation for the C library
-for comprehensive coverage.
 
-This library uses Python's reflection to automatically detect the methods
-that are available for each class, and as such, most of those methods
-do not appear explicitly anywhere. You can use dir() python built-in command
-on an object to see what methods and fields it has but their meaning can
-be found only in GPGME documentation.
+This documentation only covers a small subset of available GPGME functions and
+methods.  Please consult the documentation for the C library for comprehensive
+coverage.
+
+This library uses Python's reflection to automatically detect the methods that
+are available for each class, and as such, most of those methods do not appear
+explicitly anywhere. You can use dir() python built-in command on an object to
+see what methods and fields it has but their meaning can often only be found in
+the GPGME documentation.
+
+HIGHER LEVEL PYTHONIC LAYER
+---------------------------
+
+A more pythonic or intuitive layer is being added above the automatically
+generated lower level bindings.  This is the recommended way to access the
+module as if it is ever necessary to modify the underlying GPGME API, the
+higher level methods will remain the same.
+
+The quick example above is an example of this higher layer in action, whereas
+the second example demonstrating the mapping to GPGME itself is the lower
+layer.  The second example in the higher layer would be more like the encrypt
+line in the quick example.
 
 FOR MORE INFORMATION
 --------------------
+
 GnuPG homepage: https://www.gnupg.org/
 GPGME documentation: https://www.gnupg.org/documentation/manuals/gpgme/
+GPGME Python HOWTO: http://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html
+
+To view this documentation, run help(gpg) in Python or one of the following
+commands outside of Python:
+
+        pydoc gpg
+        pydoc3 gpg
+        python -m pydoc gpg
+        python3 -m pydoc gpg
 
 """
 
