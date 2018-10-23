@@ -625,10 +625,10 @@ to or which are found by GPGME's configuration stage immediately prior
 to running the make commands.  Which is exactly what the compiling and
 installing process of GPGME does by default.
 
-Once that is done, however, it appears that a copy the compiled module
-may be installed into a virtualenv of the same major and minor version
-matching the build.  Alternatively it is possible to utilise a
-=sites.pth= file in the =site-packages/= directory of a viertualenv
+Once that is done, however, it appears that a copy of the compiled
+module may be installed into a virtualenv of the same major and minor
+version matching the build.  Alternatively it is possible to utilise a
+=sites.pth= file in the =site-packages/= directory of a virtualenv
 installation, which links back to the system installations
 corresponding directory in order to import anything installed system
 wide.  This may or may not be appropriate on a case by case basis.
@@ -2876,7 +2876,7 @@ is the key IDs of the group as a string.
 The =group_lists= result is very similar in that it is a list of
 lists.  The first part, =group_lists[i][0]= matches
 =group_lines[i][0]= as the name of the group, but =group_lists[i][1]=
-is the key IDs of the group as a string.
+is the key IDs of the group as a list.
 
 A demonstration of using the =groups.py= module is also available in
 the form of the executable =mutt-groups.py= script.  This second
