@@ -1033,6 +1033,26 @@ time_t Key::lastUpdate() const
     return static_cast<time_t>(key ? key->last_update : 0);
 }
 
+bool Key::isBad() const
+{
+    return isNull() || isRevoked() || isExpired() || isDisabled() || isInvalid();
+}
+
+bool Subkey::isBad() const
+{
+    return isNull() || isRevoked() || isExpired() || isDisabled() || isInvalid();
+}
+
+bool UserID::isBad() const
+{
+    return isNull() || isRevoked() || isInvalid();
+}
+
+bool UserID::Signature::isBad() const
+{
+    return isNull() || isExpired() || isInvalid();
+}
+
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
 {
     os << "GpgME::UserID(";

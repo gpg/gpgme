@@ -1,6 +1,14 @@
 Noteworthy changes in version 1.12.1 (unreleased)
 -------------------------------------------------
 
+ * Interface changes relative to the 1.12.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: Context::create                       NEW.
+ cpp: Key::isBad                            NEW.
+ cpp: Subkey::isBad                         NEW.
+ cpp: UserID::isBad                         NEW.
+ cpp: UserID::Signature::isBad              NEW.
+
 
 Noteworthy changes in version 1.12.0 (2018-10-08)
 -------------------------------------------------

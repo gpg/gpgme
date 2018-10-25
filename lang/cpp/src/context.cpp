@@ -228,6 +228,11 @@ Context *Context::createForProtocol(Protocol proto)
     return new Context(ctx);
 }
 
+std::unique_ptr<Context> Context::create(Protocol proto)
+{
+  return std::unique_ptr <Context> (createForProtocol(proto));
+}
+
 std::unique_ptr<Context> Context::createForEngine(Engine eng, Error *error)
 {
     gpgme_ctx_t ctx = 0;

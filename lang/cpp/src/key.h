@@ -98,6 +98,10 @@ public:
     bool isDisabled() const;
     bool isInvalid() const;
 
+    /*! Shorthand for isNull || isRevoked || isExpired ||
+     *                          isDisabled || isInvalid */
+    bool isBad() const;
+
     bool canEncrypt() const;
     /*!
       This function contains a workaround for old gpgme's: all secret
@@ -250,6 +254,10 @@ public:
     bool isInvalid() const;
     bool isDisabled() const;
 
+    /*! Shorthand for isNull || isRevoked || isExpired ||
+     *                          isDisabled || isInvalid */
+    bool isBad() const;
+
     bool canEncrypt() const;
     bool canSign() const;
     bool canCertify() const;
@@ -366,6 +374,9 @@ public:
     bool isRevoked() const;
     bool isInvalid() const;
 
+    /*! Shorthand for isNull || isRevoked || isInvalid */
+    bool isBad() const;
+
     /** TOFU info for this userid.
      * @returns The TOFU stats or a null TofuInfo.
      */
@@ -453,6 +464,9 @@ public:
     bool isInvalid() const;
     bool isExpired() const;
     bool isExportable() const;
+
+    /*! Shorthand for isNull || isExpired || isInvalid */
+    bool isBad() const;
 
     const char *signerUserID() const;
     const char *signerName() const;

@@ -68,6 +68,8 @@ public:
     //
 
     static Context *createForProtocol(Protocol proto);
+    /** Same as above but returning a unique ptr. */
+    static std::unique_ptr<Context> create(Protocol proto);
     static std::unique_ptr<Context> createForEngine(Engine engine, Error *err = 0);
     virtual ~Context();
 
