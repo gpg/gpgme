@@ -31,5 +31,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
 
 run_getkey_SOURCES = run-getkey.cpp
 run_keylist_SOURCES = run-keylist.cpp
+run_verify_SOURCES = run-verify.cpp
 
-noinst_PROGRAMS = run-getkey run-keylist
+noinst_PROGRAMS = run-getkey run-keylist run-verify
