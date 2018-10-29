@@ -230,6 +230,7 @@ show_usage (int ex)
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
          "  --sender MBOX    use MBOX as sender address\n"
+         "  --repeat N       repeat the operation N times\n"
          "  --auto-key-retrieve\n"
          , stderr);
   exit (ex);
@@ -241,17 +242,11 @@ main (int argc, char **argv)
 {
   int last_argc = -1;
   const char *s;
-  gpgme_error_t err;
-  gpgme_ctx_t ctx;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
-  FILE *fp_sig = NULL;
-  gpgme_data_t sig = NULL;
-  FILE *fp_msg = NULL;
-  gpgme_data_t msg = NULL;
-  gpgme_verify_result_t result;
   int print_status = 0;
   const char *sender = NULL;
   int auto_key_retrieve = 0;
+  int repeats = 1;
 
   if (argc)
     { argc--; argv++; }
@@ -294,6 +289,14 @@ main (int argc, char **argv)
           sender = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--repeat"))
+        {
+            argc--; argv++;
+            if (!argc)
+                show_usage (1);
+            repeats = atoi (*argv);
+            argc--; argv++;
+        }
       else if (!strcmp (*argv, "--auto-key-retrieve"))
         {
           auto_key_retrieve = 1;
@@ -308,87 +311,108 @@ main (int argc, char **argv)
   if (argc < 1 || argc > 2)
     show_usage (1);
 
-  fp_sig = fopen (argv[0], "rb");
-  if (!fp_sig)
+  init_gpgme (protocol);
+
+  for (int i = 0; i < repeats; i++)
     {
-      err = gpgme_error_from_syserror ();
-      fprintf (stderr, PGM ": can't open `%s': %s\n",
-               argv[0], gpgme_strerror (err));
-      exit (1);
-    }
-  if (argc > 1)
-    {
-      fp_msg = fopen (argv[1], "rb");
-      if (!fp_msg)
+      gpgme_error_t err;
+      gpgme_ctx_t ctx;
+      FILE *fp_sig = NULL;
+      gpgme_data_t sig = NULL;
+      FILE *fp_msg = NULL;
+      gpgme_data_t msg = NULL;
+      gpgme_verify_result_t result;
+
+      if (repeats > 1)
+        {
+          printf ("Repeat: %i\n", i);
+        }
+
+      fp_sig = fopen (argv[0], "rb");
+      if (!fp_sig)
         {
           err = gpgme_error_from_syserror ();
           fprintf (stderr, PGM ": can't open `%s': %s\n",
-                   argv[1], gpgme_strerror (err));
+                   argv[0], gpgme_strerror (err));
           exit (1);
         }
-    }
-
-  init_gpgme (protocol);
-
-  err = gpgme_new (&ctx);
-  fail_if_err (err);
-  gpgme_set_protocol (ctx, protocol);
-  if (print_status)
-    {
-      gpgme_set_status_cb (ctx, status_cb, NULL);
-      gpgme_set_ctx_flag (ctx, "full-status", "1");
-    }
-  /* gpgme_set_ctx_flag (ctx, "raw-description", "1"); */
-
-  if (auto_key_retrieve)
-    {
-      gpgme_set_ctx_flag (ctx, "auto-key-retrieve", "1");
-      s = gpgme_get_ctx_flag (ctx, "auto-key-retrieve");
-      if (!s || strcmp (s, "1"))
+      if (argc > 1)
         {
-          fprintf (stderr, PGM ": gpgme_get_ctx_flag failed for '%s'\n",
-                   "auto-key-retrieve");
-          exit (1);
+          fp_msg = fopen (argv[1], "rb");
+          if (!fp_msg)
+            {
+              err = gpgme_error_from_syserror ();
+              fprintf (stderr, PGM ": can't open `%s': %s\n",
+                       argv[1], gpgme_strerror (err));
+              exit (1);
+            }
         }
-    }
 
-  if (sender)
-    {
-      err = gpgme_set_sender (ctx, sender);
+      err = gpgme_new (&ctx);
       fail_if_err (err);
-    }
+      gpgme_set_protocol (ctx, protocol);
+      if (print_status)
+        {
+          gpgme_set_status_cb (ctx, status_cb, NULL);
+          gpgme_set_ctx_flag (ctx, "full-status", "1");
+        }
+      /* gpgme_set_ctx_flag (ctx, "raw-description", "1"); */
 
-  err = gpgme_data_new_from_stream (&sig, fp_sig);
-  if (err)
-    {
-      fprintf (stderr, PGM ": error allocating data object: %s\n",
-               gpgme_strerror (err));
-      exit (1);
-    }
-  if (fp_msg)
-    {
-      err = gpgme_data_new_from_stream (&msg, fp_msg);
+      if (auto_key_retrieve)
+        {
+          gpgme_set_ctx_flag (ctx, "auto-key-retrieve", "1");
+          s = gpgme_get_ctx_flag (ctx, "auto-key-retrieve");
+          if (!s || strcmp (s, "1"))
+            {
+              fprintf (stderr, PGM ": gpgme_get_ctx_flag failed for '%s'\n",
+                       "auto-key-retrieve");
+              exit (1);
+            }
+        }
+
+      if (sender)
+        {
+          err = gpgme_set_sender (ctx, sender);
+          fail_if_err (err);
+        }
+
+      err = gpgme_data_new_from_stream (&sig, fp_sig);
       if (err)
         {
           fprintf (stderr, PGM ": error allocating data object: %s\n",
                    gpgme_strerror (err));
           exit (1);
         }
+      if (fp_msg)
+        {
+          err = gpgme_data_new_from_stream (&msg, fp_msg);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error allocating data object: %s\n",
+                       gpgme_strerror (err));
+              exit (1);
+            }
+        }
+
+      err = gpgme_op_verify (ctx, sig, msg, NULL);
+      result = gpgme_op_verify_result (ctx);
+      if (result)
+        print_result (result);
+      if (err)
+        {
+          fprintf (stderr, PGM ": verify failed: %s\n", gpgme_strerror (err));
+          exit (1);
+        }
+
+      gpgme_data_release (msg);
+      gpgme_data_release (sig);
+
+      gpgme_release (ctx);
+
+      if (fp_msg)
+        fclose (fp_msg);
+      if (fp_sig)
+        fclose (fp_sig);
     }
-
-  err = gpgme_op_verify (ctx, sig, msg, NULL);
-  result = gpgme_op_verify_result (ctx);
-  if (result)
-    print_result (result);
-  if (err)
-    {
-      fprintf (stderr, PGM ": verify failed: %s\n", gpgme_strerror (err));
-      exit (1);
-    }
-
-  gpgme_data_release (msg);
-  gpgme_data_release (sig);
-
-  gpgme_release (ctx);
   return 0;
 }
