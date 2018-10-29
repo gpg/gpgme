@@ -1610,6 +1610,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     {
       close (tmp_fd);
       DeleteFileA (tmp_name);
+      free (tmp_name);
       return TRACE_SYSRES (-1);
     }
 
@@ -1649,6 +1650,9 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       MessageBoxA (NULL, msg, "GpgME not installed correctly", MB_OK);
       gpgrt_free (msg);
       gpg_err_set_errno (EIO);
+      close (tmp_fd);
+      DeleteFileA (tmp_name);
+      free (tmp_name);
       return TRACE_SYSRES (-1);
     }
   if (!CreateProcessA (spawnhelper,
@@ -1667,12 +1671,14 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       free (arg_string);
       close (tmp_fd);
       DeleteFileA (tmp_name);
+      free (tmp_name);
 
       /* FIXME: Should translate the error code.  */
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
 
+  free (tmp_name);
   free (arg_string);
 
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
@@ -1702,6 +1708,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
 	  close (tmp_fd);
 	  DeleteFileA (tmp_name);
+          free (tmp_name);
 
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
