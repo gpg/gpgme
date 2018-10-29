@@ -2030,11 +2030,19 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
     return err;
-  if (plaintext)
+  if (!signed_text)
     {
       /* Normal or cleartext signature.  */
-      gpgsm->output_cb.data = plaintext;
-      err = gpgsm_set_fd (gpgsm, OUTPUT_FD, 0);
+      if (plaintext)
+        {
+          gpgsm->output_cb.data = plaintext;
+          err = gpgsm_set_fd (gpgsm, OUTPUT_FD, 0);
+        }
+      else
+        {
+          /* No output requested.  */
+          gpgsm_clear_fd (gpgsm, OUTPUT_FD);
+        }
       gpgsm_clear_fd (gpgsm, MESSAGE_FD);
     }
   else
