@@ -1,3 +1,4 @@
+# -*- mode: org -*-
 #+TITLE: A Short History of the GPGME bindings for Python
 #+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: article

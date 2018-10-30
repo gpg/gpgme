@@ -1,3 +1,4 @@
+# -*- mode: org -*-
 #+TITLE: GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
 #+AUTHOR: Ben McGinnes
 #+LATEX_COMPILER: xelatex
@@ -490,7 +491,7 @@ place.
     :CUSTOM_ID: snafu-the-full-monty
     :END:
 
-For a veriety of reasons it may be either necessary or just preferable
+For a variety of reasons it may be either necessary or just preferable
 to install the bindings to alternative installed Python versions which
 meet the requirements of these bindings.
 
@@ -506,6 +507,16 @@ by major version numbers and probably minor numbers too).
 
 On most POSIX systems, including OS X, this will very likely be the
 case in most, if not all, cases.
+
+Note that from GPGME [[https://dev.gnupg.org/rMff6ff616aea6f59b7f2ce1176492850ecdf3851e][1.12.1]] the default installation installs to each
+version of Python it can find first.  That is that it will currently
+install for the first copies of Python versions 2.7, 3.4, 3.5, 3.6,
+3.7 and 3.8 (dev branch) that it finds.  Usually this will be in the
+same prefix as GPGME itself, but is dictated by the =$PATH= when the
+installation is performed.  The above instructions can still be
+performed on other python installations which the installer does not
+find, including alternative prefixes.
+
 
 
 *** Won't Work With Windows
