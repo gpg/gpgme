@@ -1678,9 +1678,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       return TRACE_SYSRES (-1);
     }
 
-  free (tmp_name);
-  free (arg_string);
-
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);
 
@@ -1763,6 +1760,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
      (hopefully).  */
 #endif
 
+  free (tmp_name);
+  free (arg_string);
 
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
