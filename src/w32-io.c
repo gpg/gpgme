@@ -37,16 +37,6 @@
 #include <io.h>
 
 #include "util.h"
-
-#ifdef HAVE_W32CE_SYSTEM
-#include <assuan.h>
-#include <winioctl.h>
-#define GPGCEDEV_IOCTL_UNBLOCK                                        \
-  CTL_CODE (FILE_DEVICE_STREAMS, 2050, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define GPGCEDEV_IOCTL_ASSIGN_RVID                                    \
-  CTL_CODE (FILE_DEVICE_STREAMS, 2051, METHOD_BUFFERED, FILE_ANY_ACCESS)
-#endif
-
 #include "sema.h"
 #include "priv-io.h"
 #include "debug.h"
@@ -65,9 +55,6 @@ static struct
 
   /* If this is not INVALID_SOCKET, then it's a Windows socket.  */
   int socket;
-
-  /* If this is not 0, then it's a rendezvous ID for the pipe server.  */
-  int rvid;
 
   /* DUP_FROM is -1 if this file descriptor was allocated by pipe or
      socket functions.  Only then should the handle or socket be
@@ -109,7 +96,6 @@ new_fd (void)
       fd_table[idx].used = 1;
       fd_table[idx].handle = INVALID_HANDLE_VALUE;
       fd_table[idx].socket = INVALID_SOCKET;
-      fd_table[idx].rvid = 0;
       fd_table[idx].dup_from = -1;
     }
 
@@ -132,7 +118,6 @@ release_fd (int fd)
       fd_table[fd].used = 0;
       fd_table[fd].handle = INVALID_HANDLE_VALUE;
       fd_table[fd].socket = INVALID_SOCKET;
-      fd_table[fd].rvid = 0;
       fd_table[fd].dup_from = -1;
     }
 
@@ -334,8 +319,6 @@ reader (void *arg)
                          ctx->buffer + ctx->writepos, nbytes, &nread, NULL))
             {
               ctx->error_code = (int) GetLastError ();
-	      /* NOTE (W32CE): Do not ignore ERROR_BUSY!  Check at
-		 least stop_me if that happens.  */
               if (ctx->error_code == ERROR_BROKEN_PIPE)
                 {
                   ctx->eof = 1;
@@ -445,12 +428,7 @@ create_reader (int fd)
 
   INIT_LOCK (ctx->mutex);
 
-#ifdef HAVE_W32CE_SYSTEM
-  ctx->thread_hd = CreateThread (&sec_attr, 64 * 1024, reader, ctx,
-				 STACK_SIZE_PARAM_IS_A_RESERVATION, &tid);
-#else
   ctx->thread_hd = CreateThread (&sec_attr, 0, reader, ctx, 0, &tid);
-#endif
 
   if (!ctx->thread_hd)
     {
@@ -496,22 +474,6 @@ destroy_reader (struct reader_context_s *ctx)
   if (ctx->have_space_ev)
     SetEvent (ctx->have_space_ev);
   UNLOCK (ctx->mutex);
-
-#ifdef HAVE_W32CE_SYSTEM
-  /* Scenario: We never create a full pipe, but already started
-     reading.  Then we need to unblock the reader in the pipe driver
-     to make our reader thread notice that we want it to go away.  */
-
-  if (ctx->file_hd != INVALID_HANDLE_VALUE)
-    {
-      if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
-			NULL, 0, NULL, 0, NULL, NULL))
-	{
-	  TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
-		  "unblock control call failed for thread %p", ctx->thread_hd);
-	}
-    }
-#endif
 
   /* The reader thread is usually blocking in recv or ReadFile.  If
      the peer does not send an EOF or breaks the pipe the WFSO might
@@ -817,13 +779,7 @@ create_writer (int fd)
 
   INIT_LOCK (ctx->mutex);
 
-#ifdef HAVE_W32CE_SYSTEM
-  ctx->thread_hd = CreateThread (&sec_attr, 64 * 1024, writer, ctx,
-				 STACK_SIZE_PARAM_IS_A_RESERVATION, &tid);
-#else
   ctx->thread_hd = CreateThread (&sec_attr, 0, writer, ctx, 0, &tid );
-#endif
-
   if (!ctx->thread_hd)
     {
       TRACE_LOG1 ("CreateThread failed: ec=%d", (int) GetLastError ());
@@ -868,20 +824,6 @@ destroy_writer (struct writer_context_s *ctx)
 
   /* Give the writer a chance to flush the buffer.  */
   WaitForSingleObject (ctx->is_empty, INFINITE);
-
-#ifdef HAVE_W32CE_SYSTEM
-  /* Scenario: We never create a full pipe, but already started
-     writing more than the pipe buffer.  Then we need to unblock the
-     writer in the pipe driver to make our writer thread notice that
-     we want it to go away.  */
-
-  if (!DeviceIoControl (ctx->file_hd, GPGCEDEV_IOCTL_UNBLOCK,
-			NULL, 0, NULL, 0, NULL, NULL))
-    {
-      TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx->file_hd,
-	      "unblock control call failed for thread %p", ctx->thread_hd);
-    }
-#endif
 
   /* After setting this event CTX is void.  */
   SetEvent (ctx->close_ev);
@@ -1008,14 +950,9 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   int rfd;
   int wfd;
-#ifdef HAVE_W32CE_SYSTEM
-  HANDLE hd;
-  int rvid;
-#else
   HANDLE rh;
   HANDLE wh;
   SECURITY_ATTRIBUTES sec_attr;
-#endif
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
@@ -1030,32 +967,6 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       release_fd (rfd);
       return TRACE_SYSRES (-1);
     }
-
-#ifdef HAVE_W32CE_SYSTEM
-  hd = _assuan_w32ce_prepare_pipe (&rvid, !inherit_idx);
-  if (hd == INVALID_HANDLE_VALUE)
-    {
-      TRACE_LOG1 ("_assuan_w32ce_prepare_pipe failed: ec=%d",
-		  (int) GetLastError ());
-      release_fd (rfd);
-      release_fd (wfd);
-      /* FIXME: Should translate the error code.  */
-      gpg_err_set_errno (EIO);
-      return TRACE_SYSRES (-1);
-    }
-
-  if (inherit_idx == 0)
-    {
-      fd_table[rfd].rvid = rvid;
-      fd_table[wfd].handle = hd;
-    }
-  else
-    {
-      fd_table[rfd].handle = hd;
-      fd_table[wfd].rvid = rvid;
-    }
-
-#else
 
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
@@ -1114,13 +1025,11 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
     }
   fd_table[rfd].handle = rh;
   fd_table[wfd].handle = wh;
-#endif
 
   filedes[0] = rfd;
   filedes[1] = wfd;
-  return TRACE_SUC6 ("read=0x%x (%p/0x%x), write=0x%x (%p/0x%x)",
-		     rfd, fd_table[rfd].handle, fd_table[rfd].rvid,
-		     wfd, fd_table[wfd].handle, fd_table[wfd].rvid);
+  return TRACE_SUC4 ("read=0x%x (%p), write=0x%x (%p)",
+		     rfd, fd_table[rfd].handle, wfd, fd_table[wfd].handle);
 }
 
 
@@ -1213,7 +1122,6 @@ _gpgme_io_close (int fd)
 	      return TRACE_SYSRES (-1);
 	    }
 	}
-      /* Nothing to do for RVIDs.  */
     }
 
   release_fd (fd);
@@ -1263,91 +1171,6 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
-#ifdef HAVE_W32CE_SYSTEM
-static char *
-build_commandline (char **argv, int fd0, int fd0_isnull,
-		   int fd1, int fd1_isnull,
-		   int fd2, int fd2_isnull)
-{
-  int i, n;
-  const char *s;
-  char *buf, *p;
-  char fdbuf[3*30];
-
-  p = fdbuf;
-  *p = 0;
-
-  if (fd0 != -1)
-    {
-      if (fd0_isnull)
-        strcpy (p, "-&S0=null ");
-      else
-	snprintf (p, 25, "-&S0=%d ", fd_table[fd0].rvid);
-      p += strlen (p);
-    }
-  if (fd1 != -1)
-    {
-      if (fd1_isnull)
-        strcpy (p, "-&S1=null ");
-      else
-	snprintf (p, 25, "-&S1=%d ", fd_table[fd1].rvid);
-      p += strlen (p);
-    }
-  if (fd2 != -1)
-    {
-      if (fd2_isnull)
-        strcpy (p, "-&S2=null ");
-      else
-        snprintf (p, 25, "-&S2=%d ", fd_table[fd2].rvid);
-      p += strlen (p);
-    }
-  strcpy (p, "-&S2=null ");
-  p += strlen (p);
-
-  n = strlen (fdbuf);
-  for (i=0; (s = argv[i]); i++)
-    {
-      if (!i)
-        continue; /* Ignore argv[0].  */
-      n += strlen (s) + 1 + 2;  /* (1 space, 2 quoting) */
-      for (; *s; s++)
-        if (*s == '\"')
-          n++;  /* Need to double inner quotes.  */
-    }
-  n++;
-  buf = p = malloc (n);
-  if (! buf)
-    return NULL;
-
-  p = stpcpy (p, fdbuf);
-  for (i = 0; argv[i]; i++)
-    {
-      if (!i)
-        continue; /* Ignore argv[0].  */
-      if (i > 1)
-        p = stpcpy (p, " ");
-
-      if (! *argv[i]) /* Empty string. */
-        p = stpcpy (p, "\"\"");
-      else if (strpbrk (argv[i], " \t\n\v\f\""))
-        {
-          p = stpcpy (p, "\"");
-          for (s = argv[i]; *s; s++)
-            {
-              *p++ = *s;
-              if (*s == '\"')
-                *p++ = *s;
-            }
-          *p++ = '\"';
-          *p = 0;
-        }
-      else
-        p = stpcpy (p, argv[i]);
-    }
-
-  return buf;
-}
-#else
 static char *
 build_commandline (char **argv)
 {
@@ -1401,7 +1224,6 @@ build_commandline (char **argv)
 
   return buf;
 }
-#endif
 
 
 int
@@ -1419,120 +1241,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     };
   int i;
 
-#ifdef HAVE_W32CE_SYSTEM
-  int fd_in = -1;
-  int fd_out = -1;
-  int fd_err = -1;
-  int fd_in_isnull = 1;
-  int fd_out_isnull = 1;
-  int fd_err_isnull = 1;
-  char *cmdline;
-  HANDLE hd = INVALID_HANDLE_VALUE;
-
-  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
-	      "path=%s", path);
-  i = 0;
-  while (argv[i])
-    {
-      TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
-      i++;
-    }
-
-  for (i = 0; fd_list[i].fd != -1; i++)
-    {
-      int fd = fd_list[i].fd;
-
-      TRACE_LOG3 ("fd_list[%2i] = fd %i, dup_to %i", i, fd, fd_list[i].dup_to);
-      if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
-	{
-	  TRACE_LOG1 ("invalid fd 0x%x", fd);
-	  gpg_err_set_errno (EBADF);
-	  return TRACE_SYSRES (-1);
-	}
-      if (fd_table[fd].rvid == 0)
-	{
-	  TRACE_LOG1 ("fd 0x%x not inheritable (not an RVID)", fd);
-	  gpg_err_set_errno (EBADF);
-	  return TRACE_SYSRES (-1);
-	}
-
-      if (fd_list[i].dup_to == 0)
-	{
-	  fd_in = fd_list[i].fd;
-	  fd_in_isnull = 0;
-	}
-      else if (fd_list[i].dup_to == 1)
-	{
-	  fd_out = fd_list[i].fd;
-	  fd_out_isnull = 0;
-	}
-      else if (fd_list[i].dup_to == 2)
-	{
-	  fd_err = fd_list[i].fd;
-	  fd_err_isnull = 0;
-	}
-    }
-
-  cmdline = build_commandline (argv, fd_in, fd_in_isnull,
-			       fd_out, fd_out_isnull, fd_err, fd_err_isnull);
-  if (!cmdline)
-    {
-      TRACE_LOG1 ("build_commandline failed: %s", strerror (errno));
-      return TRACE_SYSRES (-1);
-    }
-
-  if (!CreateProcessA (path,                /* Program to start.  */
-		       cmdline,             /* Command line arguments.  */
-		       NULL,                 /* (not supported)  */
-		       NULL,                 /* (not supported)  */
-		       FALSE,                /* (not supported)  */
-		       (CREATE_SUSPENDED),   /* Creation flags.  */
-		       NULL,                 /* (not supported)  */
-		       NULL,                 /* (not supported)  */
-		       NULL,                 /* (not supported) */
-		       &pi                   /* Returns process information.*/
-		       ))
-    {
-      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
-      free (cmdline);
-      gpg_err_set_errno (EIO);
-      return TRACE_SYSRES (-1);
-    }
-
-  /* Create arbitrary pipe descriptor to send in ASSIGN_RVID
-     commands.  Errors are ignored.  We don't need read or write access,
-     as ASSIGN_RVID works without any permissions, yay!  */
-  hd = CreateFile (L"GPG1:", 0, 0,
-		   NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-  if (hd == INVALID_HANDLE_VALUE)
-    {
-      TRACE_LOG1 ("CreateFile failed (ignored): ec=%d",
-		  (int) GetLastError ());
-    }
-
-  /* Insert the inherited handles.  */
-  for (i = 0; fd_list[i].fd != -1; i++)
-    {
-      /* Return the child name of this handle.  */
-      fd_list[i].peer_name = fd_table[fd_list[i].fd].rvid;
-
-      if (hd != INVALID_HANDLE_VALUE)
-	{
-	  DWORD data[2];
-	  data[0] = (DWORD) fd_table[fd_list[i].fd].rvid;
-	  data[1] = pi.dwProcessId;
-	  if (!DeviceIoControl (hd, GPGCEDEV_IOCTL_ASSIGN_RVID,
-				data, sizeof (data), NULL, 0, NULL, NULL))
-	    {
-	      TRACE_LOG3 ("ASSIGN_RVID(%i, %i) failed (ignored): %i",
-			  data[0], data[1], (int) GetLastError ());
-	    }
-	}
-    }
-  if (hd != INVALID_HANDLE_VALUE)
-    CloseHandle (hd);
-
-#else
   SECURITY_ATTRIBUTES sec_attr;
   STARTUPINFOA si;
   int cr_flags = CREATE_DEFAULT_ERROR_MODE;
@@ -1729,7 +1437,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   close (tmp_fd);
   /* The temporary file is deleted by the gpgme-w32spawn process
      (hopefully).  */
-#endif
 
   free (tmp_name);
   free (arg_string);
@@ -1954,15 +1661,6 @@ _gpgme_io_subsystem_init (void)
 int
 _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
-#ifdef HAVE_W32CE_SYSTEM
-  /* FIXME: For now. See above.  */
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used
-      || fd_table[fd].rvid == 0)
-    fd = -1;
-  else
-    fd = fd_table[fd].rvid;
-#endif
-
   return snprintf (buf, buflen, "%d", fd);
 }
 
@@ -1989,7 +1687,6 @@ _gpgme_io_dup (int fd)
 
   fd_table[newfd].handle = fd_table[fd].handle;
   fd_table[newfd].socket = fd_table[fd].socket;
-  fd_table[newfd].rvid = fd_table[fd].rvid;
   fd_table[newfd].dup_from = fd;
 
   rd_ctx = find_reader (fd, 1);

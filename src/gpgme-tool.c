@@ -3282,15 +3282,11 @@ gpgme_server (gpgme_tool_t gt)
   gt->write_data_hook = &server;
 
   /* We use a pipe based server so that we can work from scripts.
-     assuan_init_pipe_server will automagically detect when we are
-     called with a socketpair and ignore FIELDES in this case. */
-#ifdef HAVE_W32CE_SYSTEM
-  filedes[0] = ASSUAN_STDIN;
-  filedes[1] = ASSUAN_STDOUT;
-#else
+   * assuan_init_pipe_server will automagically detect when we are
+   * called with a socketpair and ignore FILEDES in this case. */
   filedes[0] = assuan_fdopen (0);
   filedes[1] = assuan_fdopen (1);
-#endif
+
   err = assuan_new (&server.assuan_ctx);
   if (err)
     log_error (1, err, "can't create assuan context");
@@ -3438,11 +3434,6 @@ main (int argc, char *argv[])
 
   if (needgt)
     gpgme_release (gt.ctx);
-
-#ifdef HAVE_W32CE_SYSTEM
-  /* Give the buggy ssh server time to flush the output buffers.  */
-  Sleep (300);
-#endif
 
   return 0;
 }

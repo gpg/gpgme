@@ -43,9 +43,6 @@ gpgme_error_t
 gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
 			      FILE *stream, gpgme_off_t offset, size_t length)
 {
-#if defined (HAVE_W32CE_SYSTEM) && defined (_MSC_VER)
-  return gpgme_error (GPG_ERR_NOT_IMPLEMENTED);
-#else
   gpgme_error_t err;
   char *buf = NULL;
   int res;
@@ -114,7 +111,6 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   (*r_dh)->data.mem.length = length;
 
   return TRACE_SUC1 ("r_dh=%p", *r_dh);
-#endif
 }
 
 
@@ -123,9 +119,6 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
 gpgme_error_t
 gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
 {
-#if defined (HAVE_W32CE_SYSTEM) && defined (_MSC_VER)
-  return gpgme_error (GPG_ERR_NOT_IMPLEMENTED);
-#else
   gpgme_error_t err;
   struct stat statbuf;
   TRACE_BEG3 (DEBUG_DATA, "gpgme_data_new_from_file", r_dh,
@@ -139,7 +132,6 @@ gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
 
   err = gpgme_data_new_from_filepart (r_dh, fname, NULL, 0, statbuf.st_size);
   return TRACE_ERR (err);
-#endif
 }
 
 

@@ -186,9 +186,6 @@ case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
         ;;
-    *-mingw32ce*)
-        have_w32ce_system=yes
-	;;
     *-linux-androideabi)
         have_android_system=yes
         ;;
@@ -197,7 +194,7 @@ case "${host}" in
         ;;
 esac
 case "${host}" in
-    *-mingw32ce*|*-mingw32*)
+    *-mingw32*)
 	have_dosish_system=yes
         have_w32_system=yes
         GPG_DEFAULT='c:\\gnupg\\gpg.exe'
@@ -240,12 +237,6 @@ if test "$have_w64_system" = yes; then
              [Defined if we run on a 64 bit W32 API based system])
 fi
 AM_CONDITIONAL(HAVE_W64_SYSTEM, test "$have_w64_system" = yes)
-
-if test "$have_w32ce_system" = yes; then
-   AC_DEFINE(HAVE_W32CE_SYSTEM,1,
-             [Defined if we run on a W32 CE API based system])
-fi
-AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
 
 if test "$have_android_system" = yes; then
    AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])

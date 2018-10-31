@@ -211,6 +211,10 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 #define TRACE_SUC2(fmt, arg1, arg2)					\
   _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
 		_gpgme_trace_func, arg1, arg2), _gpgme_debug_frame_end ()
+#define TRACE_SUC4(fmt, arg1, arg2, arg3, arg4)			\
+  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
+		_gpgme_trace_func, arg1, arg2, arg3, arg4), \
+    _gpgme_debug_frame_end ()
 #define TRACE_SUC5(fmt, arg1, arg2, arg3, arg4, arg5)			\
   _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
 		_gpgme_trace_func, arg1, arg2, arg3, arg4, arg5), \

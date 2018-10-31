@@ -65,9 +65,7 @@
 #include "sys-util.h"
 
 
-#ifndef HAVE_W32CE_SYSTEM
 #define HAVE_ALLOW_SET_FOREGROUND_WINDOW 1
-#endif
 #ifndef F_OK
 # define F_OK 0
 #endif
@@ -302,53 +300,6 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
       goto leave;
     }
   result[nbytes] = 0; /* Make sure it is really a string.  */
-
-#ifndef HAVE_W32CE_SYSTEM
-  /* Windows CE does not have an environment.  */
-  if (type == REG_EXPAND_SZ && strchr (result, '%'))
-    {
-      char *tmp;
-
-      n1 += 1000;
-      tmp = malloc (n1 + 1);
-      if (!tmp)
-        goto leave;
-      nbytes = ExpandEnvironmentStrings (result, tmp, n1);
-      if (nbytes && nbytes > n1)
-        {
-          free (tmp);
-          n1 = nbytes;
-          tmp = malloc (n1 + 1);
-          if (!tmp)
-            goto leave;
-          nbytes = ExpandEnvironmentStrings (result, tmp, n1);
-          if (nbytes && nbytes > n1) {
-            free (tmp); /* Oops - truncated, better don't expand at all. */
-            goto leave;
-          }
-          tmp[nbytes] = 0;
-          free (result);
-          result = tmp;
-        }
-      else if (nbytes)  /* Okay, reduce the length. */
-        {
-          tmp[nbytes] = 0;
-          free (result);
-          result = malloc (strlen (tmp)+1);
-          if (!result)
-            result = tmp;
-          else
-            {
-              strcpy (result, tmp);
-              free (tmp);
-            }
-        }
-      else  /* Error - don't expand. */
-        {
-          free (tmp);
-        }
-    }
-#endif
 
  leave:
   RegCloseKey (key_handle);
@@ -652,15 +603,8 @@ _gpgme_get_conf_int (const char *key, int *value)
   return 1;
 }
 
-
-#ifdef HAVE_W32CE_SYSTEM
-int
-_gpgme_mkstemp (int *fd, char **name)
-{
-  return -1;
-}
-#else
 
+
 /* mkstemp extracted from libc/sysdeps/posix/tempname.c.  Copyright
    (C) 1991-1999, 2000, 2001, 2006 Free Software Foundation, Inc.
 
@@ -794,30 +738,9 @@ _gpgme_mkstemp (int *fd, char **name)
   *name = tmpname;
   return 0;
 }
-#endif
 
 
 
-#ifdef HAVE_W32CE_SYSTEM
-/* Return a malloced string with the replacement value for the
-   GPGME_DEBUG envvar.  Caller must release.  Returns NULL if not
-   set.  */
-char *
-_gpgme_w32ce_get_debug_envvar (void)
-{
-  char *tmp;
-
-  tmp = read_w32_registry_string (NULL, "\\Software\\GNU\\gpgme", "debug");
-  if (tmp && !*tmp)
-    {
-      free (tmp);
-      tmp = NULL;
-    }
-  return tmp;
-}
-#endif /*HAVE_W32CE_SYSTEM*/
-
-
 /* Entry point called by the DLL loader.  */
 #ifdef DLL_EXPORT
 int WINAPI

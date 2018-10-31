@@ -33,8 +33,8 @@ ACLOCAL_AMFLAGS = -I m4
 
 DISTCHECK_CONFIGURE_FLAGS =
 
-EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in                   	\
-             ChangeLog-2011 m4/ChangeLog-2011 contrib/ChangeLog-2011    \
+EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in  \
+             ChangeLog-2011 m4/ChangeLog-2011     \
              conf/whatisthis VERSION
 
 

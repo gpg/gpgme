@@ -150,16 +150,12 @@ debug_init (void)
         }
       else
         {
-#ifdef HAVE_W32CE_SYSTEM
-          e = _gpgme_w32ce_get_debug_envvar ();
-#else /*!HAVE_W32CE_SYSTEM*/
           err = _gpgme_getenv ("GPGME_DEBUG", &e);
           if (err)
             {
               UNLOCK (debug_lock);
               return;
             }
-#endif /*!HAVE_W32CE_SYSTEM*/
         }
 
       initialized = 1;
@@ -257,15 +253,6 @@ _gpgme_debug (int level, const char *format, ...)
   va_start (arg_ptr, format);
   LOCK (debug_lock);
   {
-#ifdef HAVE_W32CE_SYSTEM
-    SYSTEMTIME t;
-
-    GetLocalTime (&t);
-    fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
-	     t.wYear, t.wMonth, t.wDay,
-	     t.wHour, t.wMinute, t.wSecond,
-	     (unsigned long long) ath_self ());
-#else
     struct tm *tp;
     time_t atime = time (NULL);
 
@@ -274,7 +261,6 @@ _gpgme_debug (int level, const char *format, ...)
 	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
 	     tp->tm_hour, tp->tm_min, tp->tm_sec,
 	     (unsigned long long) ath_self ());
-#endif
   }
 #ifdef FRAME_NR
   {

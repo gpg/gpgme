@@ -23,9 +23,6 @@
 #define IO_H
 
 #ifdef HAVE_W32_SYSTEM
-# ifdef HAVE_W32CE_SYSTEM
-#  include "w32-ce.h"
-# endif
 # include <winsock2.h>
 # include <windows.h>
 #else

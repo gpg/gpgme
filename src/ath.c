@@ -78,22 +78,14 @@ ath_self (void)
 gpgme_ssize_t
 ath_read (int fd, void *buf, size_t nbytes)
 {
-#if defined(HAVE_W32CE_SYSTEM) && defined(_MSC_VER)
-  return -1; /* Not supported. */
-#else
   return read (fd, buf, nbytes);
-#endif
 }
 
 
 gpgme_ssize_t
 ath_write (int fd, const void *buf, size_t nbytes)
 {
-#if defined(HAVE_W32CE_SYSTEM) && defined(_MSC_VER)
-  return -1; /* Not supported. */
-#else
   return write (fd, buf, nbytes);
-#endif
 }
 
 

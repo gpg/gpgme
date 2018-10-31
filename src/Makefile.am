@@ -50,10 +50,6 @@ system_components = ath.h posix-util.c posix-io.c
 system_components_not_extra =
 endif
 
-if HAVE_W32CE_SYSTEM
-system_components += w32-ce.h w32-ce.c
-endif
-
 if HAVE_UISERVER
 uiserver_components = engine-uiserver.c
 else
@@ -111,12 +107,7 @@ if HAVE_W32_SYSTEM
 # Windows provides us with an endless stream of Tough Love.  To spawn
 # processes with a controlled set of inherited handles, we need a
 # wrapper process.
-# Except on Windows CE.  There nothing is inheritable anyway.
-if HAVE_W32CE_SYSTEM
-libexec_PROGRAMS =
-else
 libexec_PROGRAMS = gpgme-w32spawn
-endif
 
 RCCOMPILE = $(RC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)
 LTRCCOMPILE = $(LIBTOOL) --mode=compile --tag=RC $(RCCOMPILE)

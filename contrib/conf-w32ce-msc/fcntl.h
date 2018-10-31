@@ -1,1 +1,0 @@
-/* Dummy fcntl.h header.  */

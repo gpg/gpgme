@@ -23,12 +23,8 @@
 #define UTIL_H
 
 #ifdef HAVE_W32_SYSTEM
-# ifdef HAVE_W32CE_SYSTEM
-#  include "w32-ce.h"
-# else
-#  include "winsock2.h"
-#  include "windows.h"
-# endif
+# include "winsock2.h"
+# include "windows.h"
 #endif
 
 /* For pid_t.  */
@@ -208,9 +204,6 @@ const char *_gpgme_status_to_string (gpgme_status_code_t code);
 int _gpgme_mkstemp (int *fd, char **name);
 const char *_gpgme_get_w32spawn_path (void);
 #endif /*HAVE_W32_SYSTEM*/
-#ifdef HAVE_W32CE_SYSTEM
-char *_gpgme_w32ce_get_debug_envvar (void);
-#endif /*HAVE_W32CE_SYSTEM*/
 
 
 
