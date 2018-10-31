@@ -247,33 +247,6 @@ get_desired_thread_priority (void)
 }
 
 
-static HANDLE
-set_synchronize (HANDLE hd)
-{
-#ifdef HAVE_W32CE_SYSTEM
-  return hd;
-#else
-  HANDLE new_hd;
-
-  /* For NT we have to set the sync flag.  It seems that the only way
-     to do it is by duplicating the handle.  Tsss...  */
-  if (!DuplicateHandle (GetCurrentProcess (), hd,
-			GetCurrentProcess (), &new_hd,
-			EVENT_MODIFY_STATE | SYNCHRONIZE, FALSE, 0))
-    {
-      TRACE1 (DEBUG_SYSIO, "gpgme:set_synchronize", hd,
-	      "DuplicateHandle failed: ec=%d", (int) GetLastError ());
-      /* FIXME: Should translate the error code.  */
-      gpg_err_set_errno (EIO);
-      return INVALID_HANDLE_VALUE;
-    }
-
-  CloseHandle (hd);
-  return new_hd;
-#endif
-}
-
-
 static DWORD CALLBACK
 reader (void *arg)
 {
@@ -470,7 +443,6 @@ create_reader (int fd)
       return NULL;
     }
 
-  ctx->have_data_ev = set_synchronize (ctx->have_data_ev);
   INIT_LOCK (ctx->mutex);
 
 #ifdef HAVE_W32CE_SYSTEM
@@ -843,7 +815,6 @@ create_writer (int fd)
       return NULL;
     }
 
-  ctx->is_empty = set_synchronize (ctx->is_empty);
   INIT_LOCK (ctx->mutex);
 
 #ifdef HAVE_W32CE_SYSTEM
