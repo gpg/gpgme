@@ -1,23 +1,23 @@
 /* w32-io.c - W32 API I/O functions.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2007, 2010 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001-2004, 2007, 2010, 2018 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1+
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -46,6 +46,11 @@
 /* FIXME: Optimize.  */
 #define MAX_SLAFD 512
 
+/* An object to keep track of HANDLEs and sockets and map them to an
+ * integer similar to what we use in Unix.  Note that despite this
+ * integer is often named "fd", it is not a file descriptor but really
+ * only an index into this table. Never ever pass such an fd to any
+ * other function except for those implemented here.  */
 static struct
 {
   int used;
@@ -74,7 +79,9 @@ static struct
 DEFINE_STATIC_LOCK (fd_table_lock);
 
 
-/* Returns the FD or -1 on resource limit.  */
+/* Returns our FD or -1 on resource limit.  The returned integer
+ * references a new object which has not been intialized but can be
+ * release with release_fd.  */
 int
 new_fd (void)
 {
@@ -104,7 +111,9 @@ new_fd (void)
   return idx;
 }
 
-
+/* Releases our FD but it this is just this entry.  No close operation
+ * is involved here; it must be done prior to calling this
+ * function.  */
 void
 release_fd (int fd)
 {
@@ -504,7 +513,7 @@ destroy_reader (struct reader_context_s *ctx)
 /* Find a reader context or create a new one.  Note that the reader
    context will last until a _gpgme_io_close.  */
 static struct reader_context_s *
-find_reader (int fd, int start_it)
+find_reader (int fd)
 {
   struct reader_context_s *rd = NULL;
   int i;
@@ -514,7 +523,7 @@ find_reader (int fd, int start_it)
     if (reader_table[i].used && reader_table[i].fd == fd)
       rd = reader_table[i].context;
 
-  if (rd || !start_it)
+  if (rd)
     {
       UNLOCK (reader_table_lock);
       return rd;
@@ -545,7 +554,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
 	      "buffer=%p, count=%u", buffer, count);
 
-  ctx = find_reader (fd, 1);
+  ctx = find_reader (fd);
   if (!ctx)
     {
       gpg_err_set_errno (EBADF);
@@ -831,9 +840,9 @@ destroy_writer (struct writer_context_s *ctx)
 
 
 /* Find a writer context or create a new one.  Note that the writer
-   context will last until a _gpgme_io_close.  */
+ * context will last until a _gpgme_io_close.  */
 static struct writer_context_s *
-find_writer (int fd, int start_it)
+find_writer (int fd)
 {
   struct writer_context_s *wt = NULL;
   int i;
@@ -843,7 +852,7 @@ find_writer (int fd, int start_it)
     if (writer_table[i].used && writer_table[i].fd == fd)
       wt = writer_table[i].context;
 
-  if (wt || !start_it)
+  if (wt)
     {
       UNLOCK (writer_table_lock);
       return wt;
@@ -877,7 +886,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   if (count == 0)
     return TRACE_SYSRES (0);
 
-  ctx = find_writer (fd, 1);
+  ctx = find_writer (fd);
   if (!ctx)
     return TRACE_SYSRES (-1);
 
@@ -958,6 +967,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
+  /* Get a new empty file descriptor.  */
   rfd = new_fd ();
   if (rfd == -1)
     return TRACE_SYSRES (-1);
@@ -968,6 +978,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       return TRACE_SYSRES (-1);
     }
 
+  /* Create a pipe.  */
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
   sec_attr.bInheritHandle = FALSE;
@@ -1023,6 +1034,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       CloseHandle (wh);
       wh = hd;
     }
+
+  /* Put the HANDLEs of the new pipe into the file descriptor table.  */
   fd_table[rfd].handle = rh;
   fd_table[wfd].handle = wh;
 
@@ -1515,7 +1528,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	{
 	  if (fds[i].for_read)
 	    {
-	      struct reader_context_s *ctx = find_reader (fds[i].fd,1);
+	      struct reader_context_s *ctx = find_reader (fds[i].fd);
 
 	      if (!ctx)
 		TRACE_LOG1 ("error: no reader for FD 0x%x (ignored)",
@@ -1538,7 +1551,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
             }
 	  else if (fds[i].for_write)
 	    {
-	      struct writer_context_s *ctx = find_writer (fds[i].fd,1);
+	      struct writer_context_s *ctx = find_writer (fds[i].fd);
 
 	      if (!ctx)
 		TRACE_LOG1 ("error: no writer for FD 0x%x (ignored)",
@@ -1689,7 +1702,7 @@ _gpgme_io_dup (int fd)
   fd_table[newfd].socket = fd_table[fd].socket;
   fd_table[newfd].dup_from = fd;
 
-  rd_ctx = find_reader (fd, 1);
+  rd_ctx = find_reader (fd);
   if (rd_ctx)
     {
       /* No need for locking, as the only races are against the reader
@@ -1708,7 +1721,7 @@ _gpgme_io_dup (int fd)
       UNLOCK (reader_table_lock);
     }
 
-  wt_ctx = find_writer (fd, 1);
+  wt_ctx = find_writer (fd);
   if (wt_ctx)
     {
       /* No need for locking, as the only races are against the writer
@@ -1737,6 +1750,7 @@ _gpgme_io_dup (int fd)
 void *
 gpgme_get_giochannel (int fd)
 {
+  (void)fd;
   return NULL;
 }
 
@@ -1745,6 +1759,7 @@ gpgme_get_giochannel (int fd)
 void *
 gpgme_get_fdptr (int fd)
 {
+  (void)fd;
   return NULL;
 }
 
