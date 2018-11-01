@@ -485,7 +485,7 @@ destroy_reader (struct reader_context_s *ctx)
      dlopen that syscall.  */
   if (ctx->file_hd != INVALID_HANDLE_VALUE)
     {
-      /* Fixme: Call CancelSynchronousIo (handle_of_thread).  */
+      _gpgme_w32_cancel_synchronous_io (ctx->thread_hd);
     }
   else if (ctx->file_sock != INVALID_SOCKET)
     {

@@ -99,8 +99,6 @@ static char *default_gpgconf_name;
    gpgme_set_global_flag and accessed by _gpgme_get_inst_dir.  */
 static char *override_inst_dir;
 
-#ifdef HAVE_ALLOW_SET_FOREGROUND_WINDOW
-
 #define RTLD_LAZY 0
 
 static GPG_ERR_INLINE void *
@@ -135,7 +133,6 @@ dlclose (void * hd)
     }
   return -1;
 }
-#endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
 
 
 /* Return a malloced string encoded in UTF-8 from the wide char input
@@ -238,6 +235,45 @@ _gpgme_allow_set_foreground_window (pid_t pid)
 	      "function not available");
     }
 #endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
+}
+
+
+/* Wrapper around CancelSynchronousIo which is only available since
+ * Vista.  */
+void
+_gpgme_w32_cancel_synchronous_io (HANDLE thread)
+{
+  static int initialized;
+  static BOOL (WINAPI * func)(DWORD);
+  void *handle;
+
+  if (!initialized)
+    {
+      /* Available since Vista; thus we dynload it.  */
+      initialized = 1;
+      handle = dlopen ("kerner32.dll", RTLD_LAZY);
+      if (handle)
+        {
+          func = dlsym (handle, "CancelSynchronousIo");
+          if (!func)
+            {
+              dlclose (handle);
+              handle = NULL;
+            }
+        }
+    }
+
+  if (func)
+    {
+      int rc = func (thread);
+      TRACE2 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
+	      "called for thread %p; result=%d", thread, rc);
+    }
+  else
+    {
+      TRACE0 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
+	      "function not available");
+    }
 }
 
 

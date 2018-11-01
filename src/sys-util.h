@@ -30,6 +30,7 @@ char *_gpgme_get_gpgconf_path (void);
 
 #ifdef HAVE_W32_SYSTEM
 const char *_gpgme_get_inst_dir (void);
+void _gpgme_w32_cancel_synchronous_io (HANDLE thread);
 #endif
 
 #endif /* SYS_UTIL_H */
