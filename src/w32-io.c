@@ -43,13 +43,73 @@
 #include "sys-util.h"
 
 
-/* FIXME: Optimize.  */
+/* The number of entries in our file table.  We may eventually use a
+ * lower value and dynamically resize the table.  */
 #define MAX_SLAFD 512
+
+#define handle_to_fd(a)  ((int)(a))
+
+#define READBUF_SIZE 4096
+#define WRITEBUF_SIZE 4096
+#define PIPEBUF_SIZE  4096
+
+
+/* The context used by a reader thread.  */
+struct reader_context_s
+{
+  HANDLE file_hd;
+  int file_sock;
+  HANDLE thread_hd;
+  int refcount;   /* Bumbed if the FD has been duped and thus we have
+                   * another FD referencinf this context.  */
+
+  DECLARE_LOCK (mutex);
+
+  int stop_me;
+  int eof;
+  int eof_shortcut;
+  int error;
+  int error_code;
+
+  /* This is manually reset.  */
+  HANDLE have_data_ev;
+  /* This is automatically reset.  */
+  HANDLE have_space_ev;
+  /* This is manually reset but actually only triggered once.  */
+  HANDLE close_ev;
+
+  size_t readpos, writepos;
+  char buffer[READBUF_SIZE];
+};
+
+
+/* The context used by a writer thread.  */
+struct writer_context_s
+{
+  HANDLE file_hd;
+  int file_sock;
+  HANDLE thread_hd;
+  int refcount;
+
+  DECLARE_LOCK (mutex);
+
+  int stop_me;
+  int error;
+  int error_code;
+
+  /* This is manually reset.  */
+  HANDLE have_data;
+  HANDLE is_empty;
+  HANDLE close_ev;
+  size_t nbytes;
+  char buffer[WRITEBUF_SIZE];
+};
+
 
 /* An object to keep track of HANDLEs and sockets and map them to an
  * integer similar to what we use in Unix.  Note that despite this
  * integer is often named "fd", it is not a file descriptor but really
- * only an index into this table. Never ever pass such an fd to any
+ * only an index into this table.  Never ever pass such an fd to any
  * other function except for those implemented here.  */
 static struct
 {
@@ -75,7 +135,23 @@ static struct
      want to close something.  Using the same handle for these
      duplicates works just fine.  */
   int dup_from;
+
+  /* The context of an associated reader object or NULL.  */
+  struct reader_context_s *reader;
+
+  /* The context of an associated writer object or NULL.  */
+  struct writer_context_s *writer;
+
+  /* A notification hanlder.  Noet that we current support only one
+   * callback per fd.  */
+  struct {
+    _gpgme_close_notify_handler_t handler;
+    void *value;
+  } notify;
+
 } fd_table[MAX_SLAFD];
+static size_t fd_table_size = MAX_SLAFD;
+
 DEFINE_STATIC_LOCK (fd_table_lock);
 
 
@@ -89,11 +165,11 @@ new_fd (void)
 
   LOCK (fd_table_lock);
 
-  for (idx = 0; idx < MAX_SLAFD; idx++)
+  for (idx = 0; idx < fd_table_size; idx++)
     if (! fd_table[idx].used)
       break;
 
-  if (idx == MAX_SLAFD)
+  if (idx == fd_table_size)
     {
       gpg_err_set_errno (EIO);
       idx = -1;
@@ -104,6 +180,8 @@ new_fd (void)
       fd_table[idx].handle = INVALID_HANDLE_VALUE;
       fd_table[idx].socket = INVALID_SOCKET;
       fd_table[idx].dup_from = -1;
+      fd_table[idx].notify.handler = NULL;
+      fd_table[idx].notify.value = NULL;
     }
 
   UNLOCK (fd_table_lock);
@@ -117,7 +195,7 @@ new_fd (void)
 void
 release_fd (int fd)
 {
-  if (fd < 0 || fd >= MAX_SLAFD)
+  if (fd < 0 || fd >= fd_table_size)
     return;
 
   LOCK (fd_table_lock);
@@ -128,97 +206,12 @@ release_fd (int fd)
       fd_table[fd].handle = INVALID_HANDLE_VALUE;
       fd_table[fd].socket = INVALID_SOCKET;
       fd_table[fd].dup_from = -1;
+      fd_table[fd].notify.handler = NULL;
+      fd_table[fd].notify.value = NULL;
     }
 
   UNLOCK (fd_table_lock);
 }
-
-
-#define handle_to_fd(a)  ((int)(a))
-
-#define READBUF_SIZE 4096
-#define WRITEBUF_SIZE 4096
-#define PIPEBUF_SIZE  4096
-#define MAX_READERS 64
-#define MAX_WRITERS 64
-
-static struct
-{
-  int inuse;
-  int fd;
-  _gpgme_close_notify_handler_t handler;
-  void *value;
-} notify_table[MAX_SLAFD];
-DEFINE_STATIC_LOCK (notify_table_lock);
-
-
-struct reader_context_s
-{
-  HANDLE file_hd;
-  int file_sock;
-  HANDLE thread_hd;
-  int refcount;
-
-  DECLARE_LOCK (mutex);
-
-  int stop_me;
-  int eof;
-  int eof_shortcut;
-  int error;
-  int error_code;
-
-  /* This is manually reset.  */
-  HANDLE have_data_ev;
-  /* This is automatically reset.  */
-  HANDLE have_space_ev;
-  /* This is manually reset but actually only triggered once.  */
-  HANDLE close_ev;
-
-  size_t readpos, writepos;
-  char buffer[READBUF_SIZE];
-};
-
-
-static struct
-{
-  volatile int used;
-  int fd;
-  struct reader_context_s *context;
-} reader_table[MAX_READERS];
-static int reader_table_size= MAX_READERS;
-DEFINE_STATIC_LOCK (reader_table_lock);
-
-
-struct writer_context_s
-{
-  HANDLE file_hd;
-  int file_sock;
-  HANDLE thread_hd;
-  int refcount;
-
-  DECLARE_LOCK (mutex);
-
-  int stop_me;
-  int error;
-  int error_code;
-
-  /* This is manually reset.  */
-  HANDLE have_data;
-  HANDLE is_empty;
-  HANDLE close_ev;
-  size_t nbytes;
-  char buffer[WRITEBUF_SIZE];
-};
-
-
-static struct
-{
-  volatile int used;
-  int fd;
-  struct writer_context_s *context;
-} writer_table[MAX_WRITERS];
-static int writer_table_size= MAX_WRITERS;
-DEFINE_STATIC_LOCK (writer_table_lock);
 
 
 static int
@@ -241,6 +234,9 @@ get_desired_thread_priority (void)
 }
 
 
+/* The reader thread.  Created on the fly by gpgme_io_read and
+ * destroyed by destroy_reader.  Note that this functions works with a
+ * copy of the value of the HANDLE variable frm the FS_TABLE.  */
 static DWORD CALLBACK
 reader (void *arg)
 {
@@ -382,14 +378,18 @@ reader (void *arg)
 }
 
 
+/* Create a new reader thread and return its context object.  The
+ * input is a HANDLE or a socket SOCK.  This function may not call any
+ * fd based functions because the caller already holds a lock on the
+ * fd_table.  */
 static struct reader_context_s *
-create_reader (int fd)
+create_reader (HANDLE handle, int sock)
 {
   struct reader_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
   DWORD tid;
 
-  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_reader", fd);
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_reader", handle);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -402,17 +402,8 @@ create_reader (int fd)
       return NULL;
     }
 
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
-    {
-      TRACE_SYSERR (EIO);
-      free (ctx);
-      return NULL;
-    }
-  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
-              fd, fd_table[fd].handle, fd_table[fd].socket,
-              fd_table[fd].dup_from);
-  ctx->file_hd = fd_table[fd].handle;
-  ctx->file_sock = fd_table[fd].socket;
+  ctx->file_hd = handle;
+  ctx->file_sock = sock;
 
   ctx->refcount = 1;
   ctx->have_data_ev = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -511,37 +502,44 @@ destroy_reader (struct reader_context_s *ctx)
 
 
 /* Find a reader context or create a new one.  Note that the reader
-   context will last until a _gpgme_io_close.  */
+ * context will last until a _gpgme_io_close.  NULL is returned for a
+ * bad FD or for other errors.  */
 static struct reader_context_s *
 find_reader (int fd)
 {
   struct reader_context_s *rd = NULL;
-  int i;
 
-  LOCK (reader_table_lock);
-  for (i = 0; i < reader_table_size; i++)
-    if (reader_table[i].used && reader_table[i].fd == fd)
-      rd = reader_table[i].context;
+  TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_reader", fd, "");
 
+  LOCK (fd_table_lock);
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
+    {
+      UNLOCK (fd_table_lock);
+      gpg_err_set_errno (EBADF);
+      TRACE_SUC0 ("EBADF");
+      return NULL;
+    }
+
+  rd = fd_table[fd].reader;
   if (rd)
     {
-      UNLOCK (reader_table_lock);
-      return rd;
+      UNLOCK (fd_table_lock);
+      TRACE_SUC1 ("rd=%p", rd);
+      return rd;  /* Return already initialized reader thread object.  */
     }
 
-  for (i = 0; i < reader_table_size; i++)
-    if (!reader_table[i].used)
-      break;
+  /* Create a new reader thread.  */
+  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d creating reader",
+              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd_table[fd].dup_from);
+  rd = create_reader (fd_table[fd].handle, fd_table[fd].socket);
+  if (!rd)
+    gpg_err_set_errno (EIO);
+  else
+    fd_table[fd].reader = rd;
 
-  if (i != reader_table_size)
-    {
-      rd = create_reader (fd);
-      reader_table[i].fd = fd;
-      reader_table[i].context = rd;
-      reader_table[i].used = 1;
-    }
-
-  UNLOCK (reader_table_lock);
+  UNLOCK (fd_table_lock);
+  TRACE_SUC1 ("rd=%p (new)", rd);
   return rd;
 }
 
@@ -556,10 +554,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 
   ctx = find_reader (fd);
   if (!ctx)
-    {
-      gpg_err_set_errno (EBADF);
-      return TRACE_SYSRES (-1);
-    }
+    return TRACE_SYSRES (-1);
   if (ctx->eof_shortcut)
     return TRACE_SYSRES (0);
 
@@ -734,13 +729,13 @@ writer (void *arg)
 
 
 static struct writer_context_s *
-create_writer (int fd)
+create_writer (HANDLE handle, int sock)
 {
   struct writer_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
   DWORD tid;
 
-  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_writer", fd);
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_writer", handle);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -753,17 +748,8 @@ create_writer (int fd)
       return NULL;
     }
 
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
-    {
-      TRACE_SYSERR (EIO);
-      free (ctx);
-      return NULL;
-    }
-  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
-              fd, fd_table[fd].handle, fd_table[fd].socket,
-              fd_table[fd].dup_from);
-  ctx->file_hd = fd_table[fd].handle;
-  ctx->file_sock = fd_table[fd].socket;
+  ctx->file_hd = handle;
+  ctx->file_sock = sock;
 
   ctx->refcount = 1;
   ctx->have_data = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -840,37 +826,44 @@ destroy_writer (struct writer_context_s *ctx)
 
 
 /* Find a writer context or create a new one.  Note that the writer
- * context will last until a _gpgme_io_close.  */
+ * context will last until a _gpgme_io_close.  NULL is returned for a
+ * bad FD or for other errors.  */
 static struct writer_context_s *
 find_writer (int fd)
 {
   struct writer_context_s *wt = NULL;
-  int i;
 
-  LOCK (writer_table_lock);
-  for (i = 0; i < writer_table_size; i++)
-    if (writer_table[i].used && writer_table[i].fd == fd)
-      wt = writer_table[i].context;
+  TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_writer", fd, "");
 
+  LOCK (fd_table_lock);
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
+    {
+      UNLOCK (fd_table_lock);
+      gpg_err_set_errno (EBADF);
+      TRACE_SUC0 ("EBADF");
+      return NULL;
+    }
+
+  wt = fd_table[fd].writer;
   if (wt)
     {
-      UNLOCK (writer_table_lock);
-      return wt;
+      UNLOCK (fd_table_lock);
+      TRACE_SUC1 ("wt=%p", wt);
+      return wt;  /* Return already initialized writer thread object.  */
     }
 
-  for (i = 0; i < writer_table_size; i++)
-    if (!writer_table[i].used)
-      break;
+  /* Create a new writer thread.  */
+  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d creating writer",
+              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd_table[fd].dup_from);
+  wt = create_writer (fd_table[fd].handle, fd_table[fd].socket);
+  if (!wt)
+    gpg_err_set_errno (EIO);
+  else
+    fd_table[fd].writer = wt;
 
-  if (i != writer_table_size)
-    {
-      wt = create_writer (fd);
-      writer_table[i].fd = fd;
-      writer_table[i].context = wt;
-      writer_table[i].used = 1;
-    }
-
-  UNLOCK (writer_table_lock);
+  UNLOCK (fd_table_lock);
+  TRACE_SUC1 ("wt=%p (new)", wt);
   return wt;
 }
 
@@ -931,7 +924,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   ctx->nbytes = count;
 
   /* We have to reset the is_empty event early, because it is also
-     used by the select() implementation to probe the channel.  */
+   * used by the select() implementation to probe the channel.  */
   if (!ResetEvent (ctx->is_empty))
     {
       TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
@@ -1035,7 +1028,10 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       wh = hd;
     }
 
-  /* Put the HANDLEs of the new pipe into the file descriptor table.  */
+  /* Put the HANDLEs of the new pipe into the file descriptor table.
+   * Note that we don't need to lock the table because we have just
+   * acquired these two fresh fds and they are not known by any other
+   * thread.  */
   fd_table[rfd].handle = rh;
   fd_table[wfd].handle = wh;
 
@@ -1046,22 +1042,27 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 }
 
 
+/* Close out File descriptor FD.  */
 int
 _gpgme_io_close (int fd)
 {
-  int i;
   _gpgme_close_notify_handler_t handler = NULL;
   void *value = NULL;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
-  if (fd == -1)
+  if (fd < 0)
     {
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+
+  LOCK (fd_table_lock);
+  /* Check the size in the locked state because we may eventually add
+   * code to change that size.  */
+  if (fd >= fd_table_size || !fd_table[fd].used)
     {
+      UNLOCK (fd_table_lock);
       gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
@@ -1070,48 +1071,22 @@ _gpgme_io_close (int fd)
               fd, fd_table[fd].handle, fd_table[fd].socket,
               fd_table[fd].dup_from);
 
-  LOCK (reader_table_lock);
-  for (i = 0; i < reader_table_size; i++)
+  if (fd_table[fd].reader)
     {
-      if (reader_table[i].used && reader_table[i].fd == fd)
-	{
-	  destroy_reader (reader_table[i].context);
-	  reader_table[i].context = NULL;
-	  reader_table[i].used = 0;
-	  break;
-	}
+      destroy_reader (fd_table[fd].reader);
+      fd_table[fd].reader = NULL;
     }
-  UNLOCK (reader_table_lock);
 
-  LOCK (writer_table_lock);
-  for (i = 0; i < writer_table_size; i++)
+  if (fd_table[fd].writer)
     {
-      if (writer_table[i].used && writer_table[i].fd == fd)
-	{
-	  destroy_writer (writer_table[i].context);
-	  writer_table[i].context = NULL;
-	  writer_table[i].used = 0;
-	  break;
-	}
+      destroy_writer (fd_table[fd].writer);
+      fd_table[fd].writer = NULL;
     }
-  UNLOCK (writer_table_lock);
 
-  LOCK (notify_table_lock);
-  for (i = 0; i < DIM (notify_table); i++)
-    {
-      if (notify_table[i].inuse && notify_table[i].fd == fd)
-	{
-	  handler = notify_table[i].handler;
-	  value   = notify_table[i].value;
-	  notify_table[i].handler = NULL;
-	  notify_table[i].value = NULL;
-	  notify_table[i].inuse = 0;
-	  break;
-	}
-    }
-  UNLOCK (notify_table_lock);
-  if (handler)
-    handler (fd, value);
+  /* FIXME: The handler may not use any fd fucntion becuase the table
+   * is locked.  Can we avoid this?  */
+  handler = fd_table[fd].notify.handler;
+  value   = fd_table[fd].notify.value;
 
   if (fd_table[fd].dup_from == -1)
     {
@@ -1122,6 +1097,7 @@ _gpgme_io_close (int fd)
 	      TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
 	      /* FIXME: Should translate the error code.  */
 	      gpg_err_set_errno (EIO);
+              UNLOCK (fd_table_lock);
 	      return TRACE_SYSRES (-1);
 	    }
 	}
@@ -1129,49 +1105,50 @@ _gpgme_io_close (int fd)
 	{
 	  if (closesocket (fd_table[fd].socket))
 	    {
-	      TRACE_LOG1 ("closesocket failed: ec=%d", (int) WSAGetLastError ());
+	      TRACE_LOG1 ("closesocket failed: ec=%d", (int)WSAGetLastError ());
 	      /* FIXME: Should translate the error code.  */
 	      gpg_err_set_errno (EIO);
+              UNLOCK (fd_table_lock);
 	      return TRACE_SYSRES (-1);
 	    }
 	}
     }
 
-  release_fd (fd);
+  UNLOCK (fd_table_lock);
+
+  /* Run the notification callback.  */
+  if (handler)
+    handler (fd, value);
+
+  release_fd (fd);  /* FIXME: We should have a release_fd_locked () */
 
   return TRACE_SYSRES (0);
 }
 
 
+/* Set a close notification callback which is called right after FD
+ * has been closed but before its slot (ie. the FD number) is beeing
+ * released.  Tha HANDLER may thus use the provided value of the FD
+ * but it may not pass it to any I/O functions.  Note: Only the last
+ * handler set for an FD is used.  */
 int
 _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 			    void *value)
 {
-  int i;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
 	      "close_handler=%p/%p", handler, value);
 
-  assert (fd != -1);
-
-  LOCK (notify_table_lock);
-  for (i=0; i < DIM (notify_table); i++)
-    if (notify_table[i].inuse && notify_table[i].fd == fd)
-      break;
-  if (i == DIM (notify_table))
-    for (i = 0; i < DIM (notify_table); i++)
-      if (!notify_table[i].inuse)
-	break;
-  if (i == DIM (notify_table))
+  LOCK (fd_table_lock);
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
     {
-      UNLOCK (notify_table_lock);
-      gpg_err_set_errno (EINVAL);
-      return TRACE_SYSRES (-1);
+      UNLOCK (fd_table_lock);
+      gpg_err_set_errno (EBADF);
+      return TRACE_SYSRES (-1);;
     }
-  notify_table[i].fd = fd;
-  notify_table[i].handler = handler;
-  notify_table[i].value = value;
-  notify_table[i].inuse = 1;
-  UNLOCK (notify_table_lock);
+
+  fd_table[fd].notify.handler = handler;
+  fd_table[fd].notify.value = value;
+  UNLOCK (fd_table_lock);
   return TRACE_SYSRES (0);
 }
 
@@ -1267,6 +1244,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
+
+  (void)atfork;
+  (void)atforkvalue;
+
   i = 0;
   while (argv[i])
     {
@@ -1374,6 +1355,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     _gpgme_allow_set_foreground_window ((pid_t)pi.dwProcessId);
 
   /* Insert the inherited handles.  */
+  LOCK (fd_table_lock);
   for (i = 0; fd_list[i].fd != -1; i++)
     {
       int fd = fd_list[i].fd;
@@ -1381,7 +1363,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       HANDLE hd = INVALID_HANDLE_VALUE;
 
       /* Make it inheritable for the wrapper process.  */
-      if (fd >= 0 && fd < MAX_SLAFD && fd_table[fd].used)
+      if (fd >= 0 && fd < fd_table_size && fd_table[fd].used)
 	ohd = fd_table[fd].handle;
 
       if (!DuplicateHandle (GetCurrentProcess(), ohd,
@@ -1401,6 +1383,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
 	  /* FIXME: Should translate the error code.  */
 	  gpg_err_set_errno (EIO);
+          UNLOCK (fd_table_lock);
 	  return TRACE_SYSRES (-1);
         }
       /* Return the child name of this handle.  */
@@ -1453,6 +1436,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   free (tmp_name);
   free (arg_string);
+
+  UNLOCK (fd_table_lock);
 
   TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
@@ -1528,6 +1513,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	{
 	  if (fds[i].for_read)
 	    {
+              /* FIXME: A find_reader_locked() along with separate
+               * lock calls might be a better appaoched here.  */
 	      struct reader_context_s *ctx = find_reader (fds[i].fd);
 
 	      if (!ctx)
@@ -1581,11 +1568,11 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   code = WaitForMultipleObjects (nwait, waitbuf, 0, nonblock ? 0 : 1000);
   if (code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait)
     {
-      /* This WFMO is a really silly function: It does return either
+      /* The WFMO is a really silly function: It does return either
 	 the index of the signaled object or if 2 objects have been
 	 signalled at the same time, the index of the object with the
 	 lowest object is returned - so and how do we find out how
-	 many objects have been signaled???.  The only solution I can
+	 many objects have been signaled?.  The only solution I can
 	 imagine is to test each object starting with the returned
 	 index individually - how dull.  */
       any = 0;
@@ -1668,13 +1655,15 @@ _gpgme_io_subsystem_init (void)
 }
 
 
-/* Write the printable version of FD to the buffer BUF of length
-   BUFLEN.  The printable version is the representation on the command
-   line that the child process expects.  */
+/* Write the printable version of FD to BUFFER which has an allocated
+ * length of BUFLEN.  The printable version is the representation on
+ * the command line that the child process expects.  Note that this
+ * works closely together with the gpgme-32spawn wrapper process which
+ * translates these command line args to the real handles. */
 int
-_gpgme_io_fd2str (char *buf, int buflen, int fd)
+_gpgme_io_fd2str (char *buffer, int buflen, int fd)
 {
-  return snprintf (buf, buflen, "%d", fd);
+  return snprintf (buffer, buflen, "%d", fd);
 }
 
 
@@ -1684,60 +1673,47 @@ _gpgme_io_dup (int fd)
   int newfd;
   struct reader_context_s *rd_ctx;
   struct writer_context_s *wt_ctx;
-  int i;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd);
 
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+  LOCK (fd_table_lock);
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
     {
-      gpg_err_set_errno (EINVAL);
+      UNLOCK (fd_table_lock);
+      gpg_err_set_errno (EBADF);
       return TRACE_SYSRES (-1);
     }
 
   newfd = new_fd();
   if (newfd == -1)
-    return TRACE_SYSRES (-1);
+    {
+      UNLOCK (fd_table_lock);
+      gpg_err_set_errno (EMFILE);
+      return TRACE_SYSRES (-1);
+    }
 
   fd_table[newfd].handle = fd_table[fd].handle;
   fd_table[newfd].socket = fd_table[fd].socket;
   fd_table[newfd].dup_from = fd;
 
+  UNLOCK (fd_table_lock);
+
   rd_ctx = find_reader (fd);
   if (rd_ctx)
     {
-      /* No need for locking, as the only races are against the reader
-	 thread itself, which doesn't touch refcount.  */
+      /* No need for locking in the context, as the only races are
+       * against the reader thread itself, which doesn't touch
+       * refcount.  NEWFD initializes a freshly allocated slot and
+       * does not need locking either. */
       rd_ctx->refcount++;
-
-      LOCK (reader_table_lock);
-      for (i = 0; i < reader_table_size; i++)
-	if (!reader_table[i].used)
-	  break;
-      /* FIXME.  */
-      assert (i != reader_table_size);
-      reader_table[i].fd = newfd;
-      reader_table[i].context = rd_ctx;
-      reader_table[i].used = 1;
-      UNLOCK (reader_table_lock);
+      fd_table[newfd].reader = rd_ctx;
     }
 
   wt_ctx = find_writer (fd);
   if (wt_ctx)
     {
-      /* No need for locking, as the only races are against the writer
-	 thread itself, which doesn't touch refcount.  */
       wt_ctx->refcount++;
-
-      LOCK (writer_table_lock);
-      for (i = 0; i < writer_table_size; i++)
-	if (!writer_table[i].used)
-	  break;
-      /* FIXME.  */
-      assert (i != writer_table_size);
-      writer_table[i].fd = newfd;
-      writer_table[i].context = wt_ctx;
-      writer_table[i].used = 1;
-      UNLOCK (writer_table_lock);
+      fd_table[newfd].writer = wt_ctx;
     }
 
   return TRACE_SYSRES (newfd);
@@ -1815,17 +1791,22 @@ int
 _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 {
   int res;
+  int sock;
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
-  if (fd < 0 || fd >= MAX_SLAFD || !fd_table[fd].used)
+  LOCK (fd_table_lock);
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
     {
       gpg_err_set_errno (EBADF);
+      UNLOCK (fd_table_lock);
       return TRACE_SYSRES (-1);
     }
+  sock = fd_table[fd].socket;
+  UNLOCK (fd_table_lock);
 
-  res = connect (fd_table[fd].socket, addr, addrlen);
+  res = connect (sock, addr, addrlen);
   if (res)
     {
       gpg_err_set_errno (wsa2errno (WSAGetLastError ()));
