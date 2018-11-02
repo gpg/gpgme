@@ -251,7 +251,7 @@ _gpgme_w32_cancel_synchronous_io (HANDLE thread)
     {
       /* Available since Vista; thus we dynload it.  */
       initialized = 1;
-      handle = dlopen ("kerner32.dll", RTLD_LAZY);
+      handle = dlopen ("kernel32.dll", RTLD_LAZY);
       if (handle)
         {
           func = dlsym (handle, "CancelSynchronousIo");
@@ -265,9 +265,11 @@ _gpgme_w32_cancel_synchronous_io (HANDLE thread)
 
   if (func)
     {
-      int rc = func (thread);
-      TRACE2 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
-	      "called for thread %p; result=%d", thread, rc);
+      if (!func (thread) && GetLastError() != ERROR_NOT_FOUND)
+        {
+          TRACE2 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
+                  "called for thread %p: ec=%d", thread, GetLastError ());
+        }
     }
   else
     {
