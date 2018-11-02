@@ -161,6 +161,36 @@ DEFINE_STATIC_LOCK (hddesc_lock);
 
 
 
+/* Wrapper around CloseHandle to print an error.  */
+#define close_handle(hd) _close_handle ((hd), __LINE__);
+static void
+_close_handle (HANDLE hd, int line)
+{
+  if (!CloseHandle (hd))
+    {
+      TRACE2 (DEBUG_INIT, "w32-io", hd, "CloseHandle failed at line %d: ec=%d",
+              line, (int) GetLastError ());
+    }
+}
+
+/* Wrapper around WaitForSingleObject to print an error.  */
+#define wait_for_single_object(hd,msec) \
+        _wait_for_single_object ((hd), (msec), __LINE__)
+static DWORD
+_wait_for_single_object (HANDLE hd, DWORD msec, int line)
+{
+  DWORD res;
+
+  res = WaitForSingleObject (hd, msec);
+  if (res == WAIT_FAILED)
+    {
+      TRACE2 (DEBUG_INIT, "w32-io", hd,
+              "WFSO failed at line %d: ec=%d", line, (int) GetLastError ());
+    }
+  return res;
+}
+
+
 /* Create a new handle descriptor object.  */
 static hddesc_t
 new_hddesc (void)
@@ -207,13 +237,8 @@ release_hddesc (hddesc_t hdd)
                   hdd->hd, hdd->sock, hdd->refcount);
 
       if (hdd->hd != INVALID_HANDLE_VALUE)
-        {
-          TRACE_LOG1 ("closing handle %p", hdd->hd);
-          if (!CloseHandle (hdd->hd))
-            {
-              TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
-            }
-        }
+        close_handle (hdd->hd);
+
       if (hdd->sock != INVALID_SOCKET)
         {
           TRACE_LOG1 ("closing socket %d", hdd->sock);
@@ -352,7 +377,7 @@ reader (void *arg)
             }
 	  UNLOCK (ctx->mutex);
 	  TRACE_LOG1 ("waiting for space (refcnt=%d)", ctx->refcount);
-	  WaitForSingleObject (ctx->have_space_ev, INFINITE);
+	  wait_for_single_object (ctx->have_space_ev, INFINITE);
 	  TRACE_LOG ("got space");
 	  LOCK (ctx->mutex);
        	}
@@ -462,13 +487,13 @@ reader (void *arg)
     }
 
   TRACE_LOG ("waiting for close");
-  WaitForSingleObject (ctx->close_ev, INFINITE);
+  wait_for_single_object (ctx->close_ev, INFINITE);
 
   release_hddesc (ctx->hdd);
-  CloseHandle (ctx->close_ev);
-  CloseHandle (ctx->have_data_ev);
-  CloseHandle (ctx->have_space_ev);
-  CloseHandle (ctx->thread_hd);
+  close_handle (ctx->close_ev);
+  close_handle (ctx->have_data_ev);
+  close_handle (ctx->have_space_ev);
+  close_handle (ctx->thread_hd);
   DESTROY_LOCK (ctx->mutex);
   free (ctx);
 
@@ -514,11 +539,11 @@ create_reader (hddesc_t hdd)
     {
       TRACE_LOG1 ("CreateEvent failed: ec=%d", (int) GetLastError ());
       if (ctx->have_data_ev)
-	CloseHandle (ctx->have_data_ev);
+	close_handle (ctx->have_data_ev);
       if (ctx->have_space_ev)
-	CloseHandle (ctx->have_space_ev);
+	close_handle (ctx->have_space_ev);
       if (ctx->close_ev)
-	CloseHandle (ctx->close_ev);
+	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
       TRACE_SYSERR (EIO);
@@ -534,11 +559,11 @@ create_reader (hddesc_t hdd)
       TRACE_LOG1 ("CreateThread failed: ec=%d", (int) GetLastError ());
       DESTROY_LOCK (ctx->mutex);
       if (ctx->have_data_ev)
-	CloseHandle (ctx->have_data_ev);
+	close_handle (ctx->have_data_ev);
       if (ctx->have_space_ev)
-	CloseHandle (ctx->have_space_ev);
+	close_handle (ctx->have_space_ev);
       if (ctx->close_ev)
-	CloseHandle (ctx->close_ev);
+	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
       TRACE_SYSERR (EIO);
@@ -668,7 +693,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       /* No data available.  */
       UNLOCK (ctx->mutex);
       TRACE_LOG1 ("waiting for data from thread %p", ctx->thread_hd);
-      WaitForSingleObject (ctx->have_data_ev, INFINITE);
+      wait_for_single_object (ctx->have_data_ev, INFINITE);
       TRACE_LOG1 ("data from thread %p available", ctx->thread_hd);
       LOCK (ctx->mutex);
     }
@@ -756,7 +781,7 @@ writer (void *arg)
 	    TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
 	  UNLOCK (ctx->mutex);
 	  TRACE_LOG ("idle");
-	  WaitForSingleObject (ctx->have_data, INFINITE);
+	  wait_for_single_object (ctx->have_data, INFINITE);
 	  TRACE_LOG ("got data to send");
 	  LOCK (ctx->mutex);
        	}
@@ -817,16 +842,16 @@ writer (void *arg)
     TRACE_LOG1 ("SetEvent failed: ec=%d", (int) GetLastError ());
 
   TRACE_LOG ("waiting for close");
-  WaitForSingleObject (ctx->close_ev, INFINITE);
+  wait_for_single_object (ctx->close_ev, INFINITE);
 
   if (ctx->nbytes)
     TRACE_LOG1 ("still %d bytes in buffer at close time", ctx->nbytes);
 
   release_hddesc (ctx->hdd);
-  CloseHandle (ctx->close_ev);
-  CloseHandle (ctx->have_data);
-  CloseHandle (ctx->is_empty);
-  CloseHandle (ctx->thread_hd);
+  close_handle (ctx->close_ev);
+  close_handle (ctx->have_data);
+  close_handle (ctx->is_empty);
+  close_handle (ctx->thread_hd);
   DESTROY_LOCK (ctx->mutex);
   free (ctx);
 
@@ -869,11 +894,11 @@ TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
     {
       TRACE_LOG1 ("CreateEvent failed: ec=%d", (int) GetLastError ());
       if (ctx->have_data)
-	CloseHandle (ctx->have_data);
+	close_handle (ctx->have_data);
       if (ctx->is_empty)
-	CloseHandle (ctx->is_empty);
+	close_handle (ctx->is_empty);
       if (ctx->close_ev)
-	CloseHandle (ctx->close_ev);
+	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
       /* FIXME: Translate the error code.  */
@@ -889,11 +914,11 @@ TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
       TRACE_LOG1 ("CreateThread failed: ec=%d", (int) GetLastError ());
       DESTROY_LOCK (ctx->mutex);
       if (ctx->have_data)
-	CloseHandle (ctx->have_data);
+	close_handle (ctx->have_data);
       if (ctx->is_empty)
-	CloseHandle (ctx->is_empty);
+	close_handle (ctx->is_empty);
       if (ctx->close_ev)
-	CloseHandle (ctx->close_ev);
+	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
       TRACE_SYSERR (EIO);
@@ -932,7 +957,7 @@ destroy_writer (struct writer_context_s *ctx)
   UNLOCK (ctx->mutex);
 
   /* Give the writer a chance to flush the buffer.  */
-  WaitForSingleObject (ctx->is_empty, INFINITE);
+  wait_for_single_object (ctx->is_empty, INFINITE);
 
   /* After setting this event CTX is void.  */
   SetEvent (ctx->close_ev);
@@ -1014,7 +1039,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 	}
       UNLOCK (ctx->mutex);
       TRACE_LOG1 ("waiting for empty buffer in thread %p", ctx->thread_hd);
-      WaitForSingleObject (ctx->is_empty, INFINITE);
+      wait_for_single_object (ctx->is_empty, INFINITE);
       TRACE_LOG1 ("thread %p buffer is empty", ctx->thread_hd);
       LOCK (ctx->mutex);
     }
@@ -1131,14 +1156,14 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 		      (int) GetLastError ());
 	  release_fd (rfd);
 	  release_fd (wfd);
-	  CloseHandle (rh);
-	  CloseHandle (wh);
+	  close_handle (rh);
+	  close_handle (wh);
           release_hddesc (rhdesc);
           release_hddesc (whdesc);
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
-      CloseHandle (rh);
+      close_handle (rh);
       rh = hd;
     }
   else if (inherit_idx == 1)
@@ -1152,14 +1177,14 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 		      (int) GetLastError ());
 	  release_fd (rfd);
 	  release_fd (wfd);
-	  CloseHandle (rh);
-	  CloseHandle (wh);
+	  close_handle (rh);
+	  close_handle (wh);
           release_hddesc (rhdesc);
           release_hddesc (whdesc);
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
-      CloseHandle (wh);
+      close_handle (wh);
       wh = hd;
     }
 
@@ -1500,8 +1525,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  /* Just in case TerminateProcess didn't work, let the
 	     process fail on its own.  */
 	  ResumeThread (pi.hThread);
-	  CloseHandle (pi.hThread);
-	  CloseHandle (pi.hProcess);
+	  close_handle (pi.hThread);
+	  close_handle (pi.hProcess);
 
 	  close (tmp_fd);
 	  DeleteFileA (tmp_name);
@@ -1577,16 +1602,12 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   if (ResumeThread (pi.hThread) < 0)
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
 
-  if (!CloseHandle (pi.hThread))
-    TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
-		(int) GetLastError ());
+  close_handle (pi.hThread);
 
   TRACE_LOG1 ("process=%p", pi.hProcess);
 
   /* We don't need to wait for the process.  */
-  if (!CloseHandle (pi.hProcess))
-    TRACE_LOG1 ("CloseHandle of process failed: ec=%d",
-		(int) GetLastError ());
+  close_handle (pi.hProcess);
 
   if (! (flags & IOSPAWN_FLAG_NOCLOSE))
     {
@@ -1704,7 +1725,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       any = 0;
       for (i = code - WAIT_OBJECT_0; i < nwait; i++)
 	{
-	  if (WaitForSingleObject (waitbuf[i], 0) == WAIT_OBJECT_0)
+	  if (wait_for_single_object (waitbuf[i], 0) == WAIT_OBJECT_0)
 	    {
 	      assert (waitidx[i] >=0 && waitidx[i] < nfds);
 	      fds[waitidx[i]].signaled = 1;
