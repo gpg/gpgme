@@ -202,6 +202,11 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
     (_gpgme_debug (_gpgme_trace_level, "%s: error: %s\n",		\
 		   _gpgme_trace_func, strerror (res)),			\
      _gpgme_debug_frame_end (), (res))
+#define TRACE_SYSERR_NR(res)						\
+  do { res == 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :     \
+    (_gpgme_debug (_gpgme_trace_level, "%s: error: %s\n",		\
+		   _gpgme_trace_func, strerror (res)),			\
+     _gpgme_debug_frame_end ()); } while (0)
 
 #define TRACE_SUC()						 \
   _gpgme_debug (_gpgme_trace_level, "%s: leave\n",       \

@@ -523,7 +523,7 @@ create_reader (hddesc_t hdd)
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     {
-      TRACE_SYSERR (errno);
+      TRACE_SYSERR_NR (errno);
       return NULL;
     }
 
@@ -546,7 +546,7 @@ create_reader (hddesc_t hdd)
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR (EIO);
+      TRACE_SYSERR_NR (EIO);
       return NULL;
     }
 
@@ -566,7 +566,7 @@ create_reader (hddesc_t hdd)
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR (EIO);
+      TRACE_SYSERR_NR (EIO);
       return NULL;
     }
   else
@@ -878,7 +878,7 @@ TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     {
-      TRACE_SYSERR (errno);
+      TRACE_SYSERR_NR (errno);
       return NULL;
     }
 
@@ -901,8 +901,7 @@ TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      /* FIXME: Translate the error code.  */
-      TRACE_SYSERR (EIO);
+      TRACE_SYSERR_NR (EIO);
       return NULL;
     }
 
@@ -921,7 +920,7 @@ TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR (EIO);
+      TRACE_SYSERR_NR (EIO);
       return NULL;
     }
   else
@@ -971,7 +970,6 @@ static struct writer_context_s *
 find_writer (int fd)
 {
   struct writer_context_s *wt = NULL;
-  HANDLE ahandle;
 
   TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_writer", fd, "");
 
@@ -1214,7 +1212,6 @@ _gpgme_io_close (int fd)
 {
   _gpgme_close_notify_handler_t handler = NULL;
   void *value = NULL;
-  int any_reader_or_writer = 0;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
@@ -1238,7 +1235,6 @@ _gpgme_io_close (int fd)
 
   if (fd_table[fd].reader)
     {
-      any_reader_or_writer = 1;
       TRACE_LOG1 ("destroying reader %p", fd_table[fd].reader);
       destroy_reader (fd_table[fd].reader);
       fd_table[fd].reader = NULL;
@@ -1246,14 +1242,13 @@ _gpgme_io_close (int fd)
 
   if (fd_table[fd].writer)
     {
-      any_reader_or_writer = 1;
       TRACE_LOG1 ("destroying writer %p", fd_table[fd].writer);
       destroy_writer (fd_table[fd].writer);
       fd_table[fd].writer = NULL;
     }
 
-  /* FIXME: The handler may not use any fd fucntion becuase the table
-   * is locked.  Can we avoid this?  */
+  /* The handler may not use any fd fucntion because the table is
+   * locked.  Can we avoid this?  */
   handler = fd_table[fd].notify.handler;
   value   = fd_table[fd].notify.value;
 
@@ -1599,7 +1594,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
     *r_pid = (pid_t)pi.dwProcessId;
 
 
-  if (ResumeThread (pi.hThread) < 0)
+  if (ResumeThread (pi.hThread) == (DWORD)(-1))
     TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
 
   close_handle (pi.hThread);
@@ -1713,7 +1708,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     return TRACE_SYSRES (0);
 
   code = WaitForMultipleObjects (nwait, waitbuf, 0, nonblock ? 0 : 1000);
-  if (code >= WAIT_OBJECT_0 && code < WAIT_OBJECT_0 + nwait)
+  if (code < WAIT_OBJECT_0 + nwait)
     {
       /* The WFMO is a really silly function: It does return either
 	 the index of the signaled object or if 2 objects have been
