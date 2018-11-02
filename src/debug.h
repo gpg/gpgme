@@ -34,7 +34,11 @@
 #define XSTRINGIFY(v) STRINGIFY(v)
 
 
-/* The debug levels.  */
+/*
+ * The debug levels.
+ *
+ * Note that TRACE_LOGBUFX uses the current debug level + 1.
+ */
 
 #define DEBUG_INIT	1
 #define DEBUG_GLOBAL    2
@@ -211,6 +215,9 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 #define TRACE_SUC2(fmt, arg1, arg2)					\
   _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
 		_gpgme_trace_func, arg1, arg2), _gpgme_debug_frame_end ()
+#define TRACE_SUC3(fmt, arg1, arg2, arg3)                            \
+  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
+		_gpgme_trace_func, arg1, arg2, arg3), _gpgme_debug_frame_end ()
 #define TRACE_SUC4(fmt, arg1, arg2, arg3, arg4)			\
   _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
 		_gpgme_trace_func, arg1, arg2, arg3, arg4), \
@@ -254,6 +261,10 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 
 #define TRACE_LOGBUF(buf, len)					\
   _gpgme_debug_buffer (_gpgme_trace_level, "%s: check: %s",	\
+		       _gpgme_trace_func, buf, len)
+
+#define TRACE_LOGBUFX(buf, len)					\
+  _gpgme_debug_buffer (_gpgme_trace_level+1, "%s: check: %s",	\
 		       _gpgme_trace_func, buf, len)
 
 #define TRACE_SEQ(hlp,fmt)						\

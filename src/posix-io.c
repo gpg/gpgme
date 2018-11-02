@@ -117,7 +117,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
   while (nread == -1 && errno == EINTR);
 
-  TRACE_LOGBUF (buffer, nread);
+  TRACE_LOGBUFX (buffer, nread);
   return TRACE_SYSRES (nread);
 }
 
@@ -128,7 +128,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   int nwritten;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
-  TRACE_LOGBUF (buffer, count);
+  TRACE_LOGBUFX (buffer, count);
 
   do
     {
@@ -785,7 +785,7 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
       while (nr > 0)
 	{
 	  int len = nr > iov->iov_len ? iov->iov_len : nr;
-	  TRACE_LOGBUF (msg->msg_iov->iov_base, len);
+	  TRACE_LOGBUFX (msg->msg_iov->iov_base, len);
 	  iov++;
 	  nr -= len;
 	}
@@ -816,7 +816,7 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
   while (nwritten > 0)
     {
       int len = nwritten > iov->iov_len ? iov->iov_len : nwritten;
-      TRACE_LOGBUF (msg->msg_iov->iov_base, len);
+      TRACE_LOGBUFX (msg->msg_iov->iov_base, len);
       iov++;
       nwritten -= len;
     }

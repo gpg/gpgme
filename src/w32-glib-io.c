@@ -301,7 +301,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
 
   if (nread != 0 && nread != -1)
-    TRACE_LOGBUF (buffer, nread);
+    TRACE_LOGBUFX (buffer, nread);
 
   errno = saved_errno;
   return TRACE_SYSRES (nread);
@@ -319,7 +319,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
-  TRACE_LOGBUF (buffer, count);
+  TRACE_LOGBUFX (buffer, count);
 
   chan = find_channel (fd);
   if (!chan)
