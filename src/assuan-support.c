@@ -219,7 +219,7 @@ my_waitpid (assuan_context_t ctx, pid_t pid,
   (void)nowait;
   (void)status;
   (void)options;
-  CloseHandle ((HANDLE) pid);
+  (void)pid;  /* Just a number without a kernel object.  */
 #else
   /* We can't just release the PID, a waitpid is mandatory.  But
      NOWAIT in POSIX systems just means the caller already did the
