@@ -54,14 +54,24 @@
 #define PIPEBUF_SIZE  4096
 
 
+/* An object to store handles or sockets.  */
+struct hddesc_s
+{
+  HANDLE hd;
+  SOCKET sock;
+  int refcount;
+};
+typedef struct hddesc_s *hddesc_t;
+
+
+
 /* The context used by a reader thread.  */
 struct reader_context_s
 {
-  HANDLE file_hd;
-  int file_sock;
+  hddesc_t hdd;
   HANDLE thread_hd;
-  int refcount;   /* Bumbed if the FD has been duped and thus we have
-                   * another FD referencinf this context.  */
+  int refcount;   /* Bumped if the FD has been duped and thus we have
+                   * another FD referencing this context.  */
 
   DECLARE_LOCK (mutex);
 
@@ -86,8 +96,7 @@ struct reader_context_s
 /* The context used by a writer thread.  */
 struct writer_context_s
 {
-  HANDLE file_hd;
-  int file_sock;
+  hddesc_t hdd;
   HANDLE thread_hd;
   int refcount;
 
@@ -115,26 +124,18 @@ static struct
 {
   int used;
 
-  /* If this is not INVALID_HANDLE_VALUE, then it's a handle.  */
-  HANDLE handle;
+  /* The handle descriptor.  */
+  hddesc_t hdd;
 
-  /* If this is not INVALID_SOCKET, then it's a Windows socket.  */
-  int socket;
-
-  /* DUP_FROM is -1 if this file descriptor was allocated by pipe or
-     socket functions.  Only then should the handle or socket be
-     destroyed when this FD is closed.  This, together with the fact
-     that dup'ed file descriptors are closed before the file
-     descriptors from which they are dup'ed are closed, ensures that
-     the handle or socket is always valid, and shared among all file
-     descriptors referring to the same underlying object.
-
-     The logic behind this is that there is only one reason for us to
-     dup file descriptors anyway: to allow simpler book-keeping of
-     file descriptors shared between GPGME and libassuan, which both
-     want to close something.  Using the same handle for these
-     duplicates works just fine.  */
+  /* DUP_FROM is just a debug helper to show from which fd this fd was
+   * dup-ed. */
   int dup_from;
+
+  /* Two flags to indicate whether a reader or writer (or both) are
+   * needed.  This is so that we can delay the actual thread creation
+   * until they are needed.  */
+  unsigned int want_reader:1;
+  unsigned int want_writer:1;
 
   /* The context of an associated reader object or NULL.  */
   struct reader_context_s *reader;
@@ -155,10 +156,85 @@ static size_t fd_table_size = MAX_SLAFD;
 DEFINE_STATIC_LOCK (fd_table_lock);
 
 
+/* We use a single global lock for all hddesc_t objects.  */
+DEFINE_STATIC_LOCK (hddesc_lock);
+
+
+
+/* Create a new handle descriptor object.  */
+static hddesc_t
+new_hddesc (void)
+{
+  hddesc_t hdd;
+
+  hdd = malloc (sizeof *hdd);
+  if (!hdd)
+    return NULL;
+  hdd->hd = INVALID_HANDLE_VALUE;
+  hdd->sock = INVALID_SOCKET;
+  hdd->refcount = 0;
+
+  return hdd;
+}
+
+
+static hddesc_t
+ref_hddesc (hddesc_t hdd)
+{
+  LOCK (hddesc_lock);
+  hdd->refcount++;
+  UNLOCK (hddesc_lock);
+  return hdd;
+}
+
+
+/* Release a handle descriptor object and close its handle or socket
+ * if needed.  */
+static void
+release_hddesc (hddesc_t hdd)
+{
+  if (!hdd)
+    return;
+
+  LOCK (hddesc_lock);
+  hdd->refcount--;
+  if (hdd->refcount < 1)
+    {
+      /* Holds a valid handle or was never intialized (in which case
+       * REFCOUNT would be -1 here).  */
+      TRACE_BEG3 (DEBUG_SYSIO, "gpgme:release_hddesc", hdd,
+                  "hd=%p, sock=%d, refcount=%d",
+                  hdd->hd, hdd->sock, hdd->refcount);
+
+      if (hdd->hd != INVALID_HANDLE_VALUE)
+        {
+          TRACE_LOG1 ("closing handle %p", hdd->hd);
+          if (!CloseHandle (hdd->hd))
+            {
+              TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
+            }
+        }
+      if (hdd->sock != INVALID_SOCKET)
+        {
+          TRACE_LOG1 ("closing socket %d", hdd->sock);
+          if (closesocket (hdd->sock))
+            {
+              TRACE_LOG1 ("closesocket failed: ec=%d", (int)WSAGetLastError ());
+            }
+        }
+
+      free (hdd);
+      TRACE_SUC ();
+    }
+  UNLOCK (hddesc_lock);
+}
+
+
+
 /* Returns our FD or -1 on resource limit.  The returned integer
  * references a new object which has not been intialized but can be
  * release with release_fd.  */
-int
+static int
 new_fd (void)
 {
   int idx;
@@ -177,9 +253,12 @@ new_fd (void)
   else
     {
       fd_table[idx].used = 1;
-      fd_table[idx].handle = INVALID_HANDLE_VALUE;
-      fd_table[idx].socket = INVALID_SOCKET;
+      fd_table[idx].hdd = NULL;
       fd_table[idx].dup_from = -1;
+      fd_table[idx].want_reader = 0;
+      fd_table[idx].want_writer = 0;
+      fd_table[idx].reader = NULL;
+      fd_table[idx].writer = NULL;
       fd_table[idx].notify.handler = NULL;
       fd_table[idx].notify.value = NULL;
     }
@@ -189,10 +268,11 @@ new_fd (void)
   return idx;
 }
 
+
 /* Releases our FD but it this is just this entry.  No close operation
  * is involved here; it must be done prior to calling this
  * function.  */
-void
+static void
 release_fd (int fd)
 {
   if (fd < 0 || fd >= fd_table_size)
@@ -202,10 +282,14 @@ release_fd (int fd)
 
   if (fd_table[fd].used)
     {
+      release_hddesc (fd_table[fd].hdd);
       fd_table[fd].used = 0;
-      fd_table[fd].handle = INVALID_HANDLE_VALUE;
-      fd_table[fd].socket = INVALID_SOCKET;
+      fd_table[fd].hdd = NULL;
       fd_table[fd].dup_from = -1;
+      fd_table[fd].want_reader = 0;
+      fd_table[fd].want_writer = 0;
+      fd_table[fd].reader = NULL;
+      fd_table[fd].writer = NULL;
       fd_table[fd].notify.handler = NULL;
       fd_table[fd].notify.value = NULL;
     }
@@ -244,10 +328,12 @@ reader (void *arg)
   int nbytes;
   DWORD nread;
   int sock;
-  TRACE_BEG2 (DEBUG_SYSIO, "gpgme:reader", ctx->file_hd,
-	      "file_sock=%d, thread=%p", ctx->file_sock, ctx->thread_hd);
 
-  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+  TRACE_BEG4 (DEBUG_SYSIO, "gpgme:reader", ctx->hdd,
+	      "hd=%p, sock=%d, thread=%p, refcount=%d",
+              ctx->hdd->hd, ctx->hdd->sock, ctx->thread_hd, ctx->refcount);
+
+  if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
     sock = 0;
   else
     sock = 1;
@@ -261,9 +347,11 @@ reader (void *arg)
 	{
 	  /* Wait for space.  */
 	  if (!ResetEvent (ctx->have_space_ev))
-	    TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
+            {
+              TRACE_LOG1 ("ResetEvent failed: ec=%d", (int) GetLastError ());
+            }
 	  UNLOCK (ctx->mutex);
-	  TRACE_LOG ("waiting for space");
+	  TRACE_LOG1 ("waiting for space (refcnt=%d)", ctx->refcount);
 	  WaitForSingleObject (ctx->have_space_ev, INFINITE);
 	  TRACE_LOG ("got space");
 	  LOCK (ctx->mutex);
@@ -285,7 +373,7 @@ reader (void *arg)
         {
           int n;
 
-          n = recv (ctx->file_sock, ctx->buffer + ctx->writepos, nbytes, 0);
+          n = recv (ctx->hdd->sock, ctx->buffer + ctx->writepos, nbytes, 0);
           if (n < 0)
             {
               ctx->error_code = (int) WSAGetLastError ();
@@ -320,7 +408,7 @@ reader (void *arg)
         }
       else
         {
-          if (!ReadFile (ctx->file_hd,
+          if (!ReadFile (ctx->hdd->hd,
                          ctx->buffer + ctx->writepos, nbytes, &nread, NULL))
             {
               ctx->error_code = (int) GetLastError ();
@@ -328,6 +416,11 @@ reader (void *arg)
                 {
                   ctx->eof = 1;
                   TRACE_LOG ("got EOF (broken pipe)");
+                }
+              else if (ctx->error_code == ERROR_OPERATION_ABORTED)
+                {
+                  ctx->eof = 1;
+                  TRACE_LOG ("got EOF (closed by us)");
                 }
               else
                 {
@@ -351,22 +444,27 @@ reader (void *arg)
 	  break;
         }
 
-      TRACE_LOG1 ("got %u bytes", nread);
+      TRACE_LOG2 ("got %u bytes (refcnt=%d)", nread, ctx->refcount);
 
       ctx->writepos = (ctx->writepos + nread) % READBUF_SIZE;
       if (!SetEvent (ctx->have_data_ev))
-	TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
-		    (int) GetLastError ());
+        {
+          TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
+                      (int) GetLastError ());
+        }
       UNLOCK (ctx->mutex);
     }
   /* Indicate that we have an error or EOF.  */
   if (!SetEvent (ctx->have_data_ev))
-    TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
+    {
+      TRACE_LOG2 ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
                 (int) GetLastError ());
+    }
 
   TRACE_LOG ("waiting for close");
   WaitForSingleObject (ctx->close_ev, INFINITE);
 
+  release_hddesc (ctx->hdd);
   CloseHandle (ctx->close_ev);
   CloseHandle (ctx->have_data_ev);
   CloseHandle (ctx->have_space_ev);
@@ -379,17 +477,19 @@ reader (void *arg)
 
 
 /* Create a new reader thread and return its context object.  The
- * input is a HANDLE or a socket SOCK.  This function may not call any
+ * input is the handle descriptor HDD.  This function may not call any
  * fd based functions because the caller already holds a lock on the
  * fd_table.  */
 static struct reader_context_s *
-create_reader (HANDLE handle, int sock)
+create_reader (hddesc_t hdd)
 {
   struct reader_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
   DWORD tid;
 
-  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_reader", handle);
+  TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_reader", hdd,
+              "handle=%p sock=%d refhdd=%d",
+              hdd->hd, hdd->sock, hdd->refcount);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -402,8 +502,7 @@ create_reader (HANDLE handle, int sock)
       return NULL;
     }
 
-  ctx->file_hd = handle;
-  ctx->file_sock = sock;
+  ctx->hdd = ref_hddesc (hdd);
 
   ctx->refcount = 1;
   ctx->have_data_ev = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -420,8 +519,8 @@ create_reader (HANDLE handle, int sock)
 	CloseHandle (ctx->have_space_ev);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
+      release_hddesc (ctx->hdd);
       free (ctx);
-      /* FIXME: Translate the error code.  */
       TRACE_SYSERR (EIO);
       return NULL;
     }
@@ -440,6 +539,7 @@ create_reader (HANDLE handle, int sock)
 	CloseHandle (ctx->have_space_ev);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
+      release_hddesc (ctx->hdd);
       free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
@@ -467,12 +567,16 @@ destroy_reader (struct reader_context_s *ctx)
   ctx->refcount--;
   if (ctx->refcount != 0)
     {
+      TRACE2 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx,
+              "hdd=%p refcount now %d", ctx->hdd, ctx->refcount);
       UNLOCK (ctx->mutex);
       return;
     }
   ctx->stop_me = 1;
   if (ctx->have_space_ev)
     SetEvent (ctx->have_space_ev);
+  TRACE1 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx,
+          "hdd=%p close triggered", ctx->hdd);
   UNLOCK (ctx->mutex);
 
   /* The reader thread is usually blocking in recv or ReadFile.  If
@@ -483,16 +587,17 @@ destroy_reader (struct reader_context_s *ctx)
      (i.e. pipes) it would also be nice to cancel the operation, but
      such a feature is only available since Vista.  Thus we need to
      dlopen that syscall.  */
-  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+  assert (ctx->hdd);
+  if (ctx->hdd && ctx->hdd->hd != INVALID_HANDLE_VALUE)
     {
       _gpgme_w32_cancel_synchronous_io (ctx->thread_hd);
     }
-  else if (ctx->file_sock != INVALID_SOCKET)
+  else if (ctx->hdd && ctx->hdd->sock != INVALID_SOCKET)
     {
-      if (shutdown (ctx->file_sock, 2))
-        TRACE2 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx->file_hd,
+      if (shutdown (ctx->hdd->sock, 2))
+        TRACE2 (DEBUG_SYSIO, "gpgme:destroy_reader", ctx,
                 "shutdown socket %d failed: %s",
-                ctx->file_sock, (int) WSAGetLastError ());
+                ctx->hdd->sock, (int) WSAGetLastError ());
     }
 
   /* After setting this event CTX is void. */
@@ -529,10 +634,9 @@ find_reader (int fd)
     }
 
   /* Create a new reader thread.  */
-  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d creating reader",
-              fd, fd_table[fd].handle, fd_table[fd].socket,
-              fd_table[fd].dup_from);
-  rd = create_reader (fd_table[fd].handle, fd_table[fd].socket);
+  TRACE_LOG3 ("fd=%d -> hdd=%p dupfrom=%d creating reader",
+              fd, fd_table[fd].hdd, fd_table[fd].dup_from);
+  rd = create_reader (fd_table[fd].hdd);
   if (!rd)
     gpg_err_set_errno (EIO);
   else
@@ -613,7 +717,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
   UNLOCK (ctx->mutex);
 
-  TRACE_LOGBUF (buffer, nread);
+  TRACE_LOGBUFX (buffer, nread);
   return TRACE_SYSRES (nread);
 }
 
@@ -627,10 +731,11 @@ writer (void *arg)
   struct writer_context_s *ctx = arg;
   DWORD nwritten;
   int sock;
-  TRACE_BEG2 (DEBUG_SYSIO, "gpgme:writer", ctx->file_hd,
-	      "file_sock=%d, thread=%p", ctx->file_sock, ctx->thread_hd);
+  TRACE_BEG4 (DEBUG_SYSIO, "gpgme:writer", ctx->hdd,
+	      "hd=%p, sock=%d, thread=%p, refcount=%d",
+              ctx->hdd->hd, ctx->hdd->sock, ctx->thread_hd, ctx->refcount);
 
-  if (ctx->file_hd != INVALID_HANDLE_VALUE)
+  if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
     sock = 0;
   else
     sock = 1;
@@ -673,7 +778,7 @@ writer (void *arg)
              be used with WriteFile.  */
           int n;
 
-          n = send (ctx->file_sock, ctx->buffer, ctx->nbytes, 0);
+          n = send (ctx->hdd->sock, ctx->buffer, ctx->nbytes, 0);
           if (n < 0)
             {
               ctx->error_code = (int) WSAGetLastError ();
@@ -685,7 +790,7 @@ writer (void *arg)
         }
       else
         {
-          if (!WriteFile (ctx->file_hd, ctx->buffer,
+          if (!WriteFile (ctx->hdd->hd, ctx->buffer,
                           ctx->nbytes, &nwritten, NULL))
             {
 	      if (GetLastError () == ERROR_BUSY)
@@ -717,6 +822,7 @@ writer (void *arg)
   if (ctx->nbytes)
     TRACE_LOG1 ("still %d bytes in buffer at close time", ctx->nbytes);
 
+  release_hddesc (ctx->hdd);
   CloseHandle (ctx->close_ev);
   CloseHandle (ctx->have_data);
   CloseHandle (ctx->is_empty);
@@ -729,13 +835,16 @@ writer (void *arg)
 
 
 static struct writer_context_s *
-create_writer (HANDLE handle, int sock)
+create_writer (hddesc_t hdd)
 {
   struct writer_context_s *ctx;
   SECURITY_ATTRIBUTES sec_attr;
   DWORD tid;
 
-  TRACE_BEG (DEBUG_SYSIO, "gpgme:create_writer", handle);
+
+TRACE_BEG3 (DEBUG_SYSIO, "gpgme:create_writer", hdd,
+             "handle=%p sock=%d refhdd=%d",
+             hdd->hd, hdd->sock, hdd->refcount);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -748,8 +857,7 @@ create_writer (HANDLE handle, int sock)
       return NULL;
     }
 
-  ctx->file_hd = handle;
-  ctx->file_sock = sock;
+  ctx->hdd = ref_hddesc (hdd);
 
   ctx->refcount = 1;
   ctx->have_data = CreateEvent (&sec_attr, TRUE, FALSE, NULL);
@@ -766,6 +874,7 @@ create_writer (HANDLE handle, int sock)
 	CloseHandle (ctx->is_empty);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
+      release_hddesc (ctx->hdd);
       free (ctx);
       /* FIXME: Translate the error code.  */
       TRACE_SYSERR (EIO);
@@ -785,6 +894,7 @@ create_writer (HANDLE handle, int sock)
 	CloseHandle (ctx->is_empty);
       if (ctx->close_ev)
 	CloseHandle (ctx->close_ev);
+      release_hddesc (ctx->hdd);
       free (ctx);
       TRACE_SYSERR (EIO);
       return NULL;
@@ -809,12 +919,16 @@ destroy_writer (struct writer_context_s *ctx)
   ctx->refcount--;
   if (ctx->refcount != 0)
     {
+      TRACE2 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx,
+              "hdd=%p refcount now %d", ctx->hdd, ctx->refcount);
       UNLOCK (ctx->mutex);
       return;
     }
   ctx->stop_me = 1;
   if (ctx->have_data)
     SetEvent (ctx->have_data);
+  TRACE1 (DEBUG_SYSIO, "gpgme:destroy_writer", ctx,
+          "hdd=%p close triggered", ctx->hdd);
   UNLOCK (ctx->mutex);
 
   /* Give the writer a chance to flush the buffer.  */
@@ -832,6 +946,7 @@ static struct writer_context_s *
 find_writer (int fd)
 {
   struct writer_context_s *wt = NULL;
+  HANDLE ahandle;
 
   TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_writer", fd, "");
 
@@ -854,9 +969,9 @@ find_writer (int fd)
 
   /* Create a new writer thread.  */
   TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d creating writer",
-              fd, fd_table[fd].handle, fd_table[fd].socket,
+              fd, fd_table[fd].hdd->hd, fd_table[fd].hdd->sock,
               fd_table[fd].dup_from);
-  wt = create_writer (fd_table[fd].handle, fd_table[fd].socket);
+  wt = create_writer (fd_table[fd].hdd);
   if (!wt)
     gpg_err_set_errno (EIO);
   else
@@ -874,7 +989,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   struct writer_context_s *ctx;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
-  TRACE_LOGBUF (buffer, count);
+  TRACE_LOGBUFX (buffer, count);
 
   if (count == 0)
     return TRACE_SYSRES (0);
@@ -954,6 +1069,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   int wfd;
   HANDLE rh;
   HANDLE wh;
+  hddesc_t rhdesc;
+  hddesc_t whdesc;
   SECURITY_ATTRIBUTES sec_attr;
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
@@ -970,6 +1087,21 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       release_fd (rfd);
       return TRACE_SYSRES (-1);
     }
+  rhdesc = new_hddesc ();
+  if (!rhdesc)
+    {
+      release_fd (rfd);
+      release_fd (wfd);
+      return TRACE_SYSRES (-1);
+    }
+  whdesc = new_hddesc ();
+  if (!whdesc)
+    {
+      release_fd (rfd);
+      release_fd (wfd);
+      release_hddesc (rhdesc);
+      return TRACE_SYSRES (-1);
+    }
 
   /* Create a pipe.  */
   memset (&sec_attr, 0, sizeof (sec_attr));
@@ -981,7 +1113,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       TRACE_LOG1 ("CreatePipe failed: ec=%d", (int) GetLastError ());
       release_fd (rfd);
       release_fd (wfd);
-      /* FIXME: Should translate the error code.  */
+      release_hddesc (rhdesc);
+      release_hddesc (whdesc);
       gpg_err_set_errno (EIO);
       return TRACE_SYSRES (-1);
     }
@@ -1000,7 +1133,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  release_fd (wfd);
 	  CloseHandle (rh);
 	  CloseHandle (wh);
-	  /* FIXME: Should translate the error code.  */
+          release_hddesc (rhdesc);
+          release_hddesc (whdesc);
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
@@ -1020,7 +1154,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 	  release_fd (wfd);
 	  CloseHandle (rh);
 	  CloseHandle (wh);
-	  /* FIXME: Should translate the error code.  */
+          release_hddesc (rhdesc);
+          release_hddesc (whdesc);
 	  gpg_err_set_errno (EIO);
 	  return TRACE_SYSRES (-1);
         }
@@ -1032,13 +1167,19 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
    * Note that we don't need to lock the table because we have just
    * acquired these two fresh fds and they are not known by any other
    * thread.  */
-  fd_table[rfd].handle = rh;
-  fd_table[wfd].handle = wh;
+  fd_table[rfd].want_reader = 1;
+  ref_hddesc (rhdesc)->hd = rh;
+  fd_table[rfd].hdd = rhdesc;
+
+  fd_table[wfd].want_writer = 1;
+  ref_hddesc (whdesc)->hd = wh;
+  fd_table[wfd].hdd = whdesc;
 
   filedes[0] = rfd;
   filedes[1] = wfd;
-  return TRACE_SUC4 ("read=0x%x (%p), write=0x%x (%p)",
-		     rfd, fd_table[rfd].handle, wfd, fd_table[wfd].handle);
+  return TRACE_SUC6 ("read=0x%x (hdd=%p,hd=%p), write=0x%x (hdd=%p,hd=%p)",
+		     rfd, fd_table[rfd].hdd, fd_table[rfd].hdd->hd,
+                     wfd, fd_table[wfd].hdd, fd_table[wfd].hdd->hd);
 }
 
 
@@ -1048,6 +1189,7 @@ _gpgme_io_close (int fd)
 {
   _gpgme_close_notify_handler_t handler = NULL;
   void *value = NULL;
+  int any_reader_or_writer = 0;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
 
@@ -1067,18 +1209,20 @@ _gpgme_io_close (int fd)
       return TRACE_SYSRES (-1);
     }
 
-  TRACE_LOG4 ("fd=%d -> handle=%p socket=%d dupfrom=%d",
-              fd, fd_table[fd].handle, fd_table[fd].socket,
-              fd_table[fd].dup_from);
+  TRACE_LOG2 ("hdd=%p dupfrom=%d", fd_table[fd].hdd, fd_table[fd].dup_from);
 
   if (fd_table[fd].reader)
     {
+      any_reader_or_writer = 1;
+      TRACE_LOG1 ("destroying reader %p", fd_table[fd].reader);
       destroy_reader (fd_table[fd].reader);
       fd_table[fd].reader = NULL;
     }
 
   if (fd_table[fd].writer)
     {
+      any_reader_or_writer = 1;
+      TRACE_LOG1 ("destroying writer %p", fd_table[fd].writer);
       destroy_writer (fd_table[fd].writer);
       fd_table[fd].writer = NULL;
     }
@@ -1088,31 +1232,12 @@ _gpgme_io_close (int fd)
   handler = fd_table[fd].notify.handler;
   value   = fd_table[fd].notify.value;
 
-  if (fd_table[fd].dup_from == -1)
-    {
-      if (fd_table[fd].handle != INVALID_HANDLE_VALUE)
-	{
-	  if (!CloseHandle (fd_table[fd].handle))
-	    {
-	      TRACE_LOG1 ("CloseHandle failed: ec=%d", (int) GetLastError ());
-	      /* FIXME: Should translate the error code.  */
-	      gpg_err_set_errno (EIO);
-              UNLOCK (fd_table_lock);
-	      return TRACE_SYSRES (-1);
-	    }
-	}
-      else if (fd_table[fd].socket != INVALID_SOCKET)
-	{
-	  if (closesocket (fd_table[fd].socket))
-	    {
-	      TRACE_LOG1 ("closesocket failed: ec=%d", (int)WSAGetLastError ());
-	      /* FIXME: Should translate the error code.  */
-	      gpg_err_set_errno (EIO);
-              UNLOCK (fd_table_lock);
-	      return TRACE_SYSRES (-1);
-	    }
-	}
-    }
+  /* Release our reference to the handle descripor.  Note that if no
+   * reader or writer threads were used this release will also take
+   * care that the handle descriptor is closed
+   * (i.e. CloseHandle(hdd->hd) is called).  */
+  release_hddesc (fd_table[fd].hdd);
+  fd_table[fd].hdd = NULL;
 
   UNLOCK (fd_table_lock);
 
@@ -1363,8 +1488,9 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       HANDLE hd = INVALID_HANDLE_VALUE;
 
       /* Make it inheritable for the wrapper process.  */
-      if (fd >= 0 && fd < fd_table_size && fd_table[fd].used)
-	ohd = fd_table[fd].handle;
+      if (fd >= 0 && fd < fd_table_size && fd_table[fd].used
+          && fd_table[fd].hdd)
+	ohd = fd_table[fd].hdd->hd;
 
       if (!DuplicateHandle (GetCurrentProcess(), ohd,
 			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
@@ -1673,6 +1799,7 @@ _gpgme_io_dup (int fd)
   int newfd;
   struct reader_context_s *rd_ctx;
   struct writer_context_s *wt_ctx;
+  int want_reader, want_writer;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd);
 
@@ -1692,27 +1819,30 @@ _gpgme_io_dup (int fd)
       return TRACE_SYSRES (-1);
     }
 
-  fd_table[newfd].handle = fd_table[fd].handle;
-  fd_table[newfd].socket = fd_table[fd].socket;
+  fd_table[newfd].hdd = ref_hddesc (fd_table[fd].hdd);
   fd_table[newfd].dup_from = fd;
+  want_reader = fd_table[fd].want_reader;
+  want_writer = fd_table[fd].want_writer;
 
   UNLOCK (fd_table_lock);
 
-  rd_ctx = find_reader (fd);
+  rd_ctx = want_reader? find_reader (fd) : NULL;
   if (rd_ctx)
     {
-      /* No need for locking in the context, as the only races are
-       * against the reader thread itself, which doesn't touch
-       * refcount.  NEWFD initializes a freshly allocated slot and
-       * does not need locking either. */
+      /* NEWFD initializes a freshly allocated slot and does not need
+       * to be locked.  */
+      LOCK (rd_ctx->mutex);
       rd_ctx->refcount++;
+      UNLOCK (rd_ctx->mutex);
       fd_table[newfd].reader = rd_ctx;
     }
 
-  wt_ctx = find_writer (fd);
+  wt_ctx = want_writer? find_writer (fd) : NULL;
   if (wt_ctx)
     {
+      LOCK (wt_ctx->mutex);
       wt_ctx->refcount++;
+      UNLOCK (wt_ctx->mutex);
       fd_table[newfd].writer = wt_ctx;
     }
 
@@ -1764,6 +1894,7 @@ _gpgme_io_socket (int domain, int type, int proto)
 {
   int res;
   int fd;
+  hddesc_t hdd;
 
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
 	      "type=%i, protp=%i", type, proto);
@@ -1771,6 +1902,14 @@ _gpgme_io_socket (int domain, int type, int proto)
   fd = new_fd();
   if (fd == -1)
     return TRACE_SYSRES (-1);
+  hdd = new_hddesc ();
+  if (!hdd)
+    {
+      UNLOCK (fd_table_lock);
+      release_fd (fd);
+      gpg_err_set_errno (ENOMEM);
+      return TRACE_SYSRES (-1);
+    }
 
   res = socket (domain, type, proto);
   if (res == INVALID_SOCKET)
@@ -1779,9 +1918,12 @@ _gpgme_io_socket (int domain, int type, int proto)
       gpg_err_set_errno (wsa2errno (WSAGetLastError ()));
       return TRACE_SYSRES (-1);
     }
-  fd_table[fd].socket = res;
+  ref_hddesc (hdd)->sock = res;
+  fd_table[fd].hdd = hdd;
+  fd_table[fd].want_reader = 1;
+  fd_table[fd].want_writer = 1;
 
-  TRACE_SUC2 ("socket=0x%x (0x%x)", fd, fd_table[fd].socket);
+  TRACE_SUC3 ("hdd=%p, socket=0x%x (0x%x)", hdd, fd, hdd->sock);
 
   return fd;
 }
@@ -1797,13 +1939,13 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
   LOCK (fd_table_lock);
-  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
+  if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used || !fd_table[fd].hdd)
     {
       gpg_err_set_errno (EBADF);
       UNLOCK (fd_table_lock);
       return TRACE_SYSRES (-1);
     }
-  sock = fd_table[fd].socket;
+  sock = fd_table[fd].hdd->sock;
   UNLOCK (fd_table_lock);
 
   res = connect (sock, addr, addrlen);
