@@ -2580,7 +2580,7 @@ Unsurprisingly the result of this is:
 #+END_SRC
 
 
-*** Revokinging User IDs
+*** Revoking User IDs
     :PROPERTIES:
     :CUSTOM_ID: keygen-uids-revoke
     :END:
