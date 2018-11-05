@@ -1694,7 +1694,14 @@ gpg_decrypt (void *engine,
                                          strlen (override_session_key), 1);
           if (!err)
             {
-              err = add_arg (gpg, "--override-session-key-fd");
+              /* We add --no-keyring because a keyring is not required
+               * when we are overriding the session key.  It would
+               * work without that option but --no-keyring avoids that
+               * gpg return a failure due to a missing key log_error()
+               * diagnostic.  --no-keyring is supported since 2.1.14. */
+              err = add_arg (gpg, "--no-keyring");
+              if (!err)
+                err = add_arg (gpg, "--override-session-key-fd");
               if (!err)
                 err = add_data (gpg, gpg->override_session_key, -2, 0);
             }
