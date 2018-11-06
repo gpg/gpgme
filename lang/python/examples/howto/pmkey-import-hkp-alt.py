@@ -123,20 +123,17 @@ for keyterm in keyterms:
 
 for k in ksearch:
     print("Checking for key for: {0}".format(k))
-    try:
-        keys = server.search(k)
-        if isinstance(keys, list) is True:
-            for key in keys:
-                allkeys.append(key)
-                try:
-                    import_result = c.key_import(key.key_blob)
-                except Exception as e:
-                    import_result = c.key_import(key.key)
-        else:
-            paradox.append(keys)
-            import_result = None
-    except Exception as e:
-        import_result = None
+    import_result = None
+    keys = server.search(k)
+    if isinstance(keys, list) is True:
+        for key in keys:
+            allkeys.append(key)
+            try:
+                import_result = c.key_import(key.key_blob)
+            except Exception as e:
+                import_result = c.key_import(key.key)
+    else:
+        paradox.append(keys)
     results.append(import_result)
 
 for result in results:
