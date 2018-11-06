@@ -19,10 +19,10 @@ Keeping the flame alive
 -----------------------
 
 A couple of years later the project was picked up by Igor Belyi and
-actively developed and maintained by him from 2004 to 2008. Igor's
-whereabouts at the time of this document's creation are unknown, but the
-current authors do hope he is well. We're assuming (or hoping) that life
-did what life does and made continuing untenable.
+actively developed and maintained by him from 2004 to 2008. Igor\'s
+whereabouts at the time of this document\'s creation are unknown, but
+the current authors do hope he is well. We\'re assuming (or hoping) that
+life did what life does and made continuing untenable.
 
 Passing the torch
 -----------------
@@ -135,7 +135,7 @@ Python 2 to Python 3 code was made in 2015.
 
 Users of the more recent Python bindings will recognise numerous points
 of similarity, but also significant differences. It is likely that the
-more recent official bindings will feel "more pythonic."
+more recent official bindings will feel \"more pythonic.\"
 
 For those using Python 2, there is essentially no harm in using this
 module, but it may lack a number of more recent features added to GPGME.
@@ -144,7 +144,7 @@ Footnotes
 =========
 
 .. [1]
-   In all likelihood thos would have been Python 2.2 or possibly Python
+   In all likelihood this would have been Python 2.2 or possibly Python
    2.3.
 
 .. [2]

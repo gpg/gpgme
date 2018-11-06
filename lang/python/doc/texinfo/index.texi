@@ -44,9 +44,13 @@ GPGME Python Bindings
 
 @itemize
 @item
-@uref{short-history.org, A short history of the project}
+@uref{short-history, A short history of the project}
 @item
-@uref{gpgme-python-howto.org, GPGME Python Bindings HOWTO}
+@uref{what-is-new, What's New}
+@item
+@uref{what-was-new, What Was New}
+@item
+@uref{gpgme-python-howto, GPGME Python Bindings HOWTO}
 @end itemize
 
 @bye

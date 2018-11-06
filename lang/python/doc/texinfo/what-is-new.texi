@@ -1,0 +1,79 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename what-is-new.info
+@settitle What's New in the GPGME Python Bindings and Documentation
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@finalout
+@titlepage
+@title What's New in the GPGME Python Bindings and Documentation
+@author Ben McGinnes
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top What's New in the GPGME Python Bindings and Documentation
+@end ifnottex
+
+@menu
+* What's New::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+What's New
+
+* New in GPGME 1·13·0::
+
+@end detailmenu
+@end menu
+
+@node What's New
+@chapter What's New
+
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@item Version:
+@tab 0.0.1-draft
+@item GPGME Version:
+@tab 1.13.0
+@item Author:
+@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <ben@@gnupg.org>
+@item Author GPG Key:
+@tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+@item Language:
+@tab Australian English, British English
+@item xml:lang:
+@tab en-AU, en-GB, en
+@end multitable
+
+Last time the most obviously new thing was adding the @emph{What's New}
+section to the HOWTO.  Now it's moving it out of the HOWTO.  Not to
+mention expanding on the documentation both generally and
+considerably.
+
+@menu
+* New in GPGME 1·13·0::
+@end menu
+
+@node New in GPGME 1·13·0
+@section New in GPGME 1·13·0
+
+Additions since GPGME 1.12.0 include:
+
+@itemize
+@item
+An advanced HOWTO on using the bindings with web interfaces,
+specifically Flask.
+@item
+Moving the @emph{What's New} section out of the basic @uref{gpgme-python-howto.org, HOWTO} document and
+into its own file so as to more readily include other documents
+beyond that HOWTO.
+@item
+Moving the preceding, archival, segments into @uref{what-was-new.org, another file}.
+@end itemize
+
+@bye

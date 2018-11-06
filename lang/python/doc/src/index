@@ -12,15 +12,17 @@
 
 * GPGME Python Bindings
   :PROPERTIES:
-  :CUSTOM_ID: index
+  :CUSTOM_ID: top
   :END:
 
 
 ** Contents
    :PROPERTIES:
-   :CUSTOM_ID: index-contents
+   :CUSTOM_ID: contents
    :END:
 
 
 - [[file:short-history][A short history of the project]]
+- [[file:what-is-new][What's New]]
+- [[file:what-was-new][What Was New]]
 - [[file:gpgme-python-howto][GPGME Python Bindings HOWTO]]

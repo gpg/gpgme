@@ -25,14 +25,14 @@ This docs directory contains four main subdirectories:
  4. texinfo
 
 The Meta directory is for docs that are not intended for distribution
-or are about the docs themselves.  The sole exception being this RDME
-file.
+or are about the docs themselves.  The sole exception being this
+README file.
 
 The Src directory is where the original edited files are, from which
 the following two formats are generated initially.  Most, if not all,
 of these are written in Org Mode.
 
-The ReST directory contains reStructuredText files ehich have been
+The ReST directory contains reStructuredText files which have been
 converted to that format from the Org Mode files via Pandoc.
 
 The Texinfo directory contains Texinfo files which have been exported

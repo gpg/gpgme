@@ -65,7 +65,7 @@ return to the source.  This is a short explanation of that journey.
 
 In 2002 John Goerzen released PyME; Python bindings for the GPGME
 module which utilised the current release of Python of the time and
-SWIG.@footnote{In all likelihood thos would have been Python 2.2 or possibly
+SWIG.@footnote{In all likelihood this would have been Python 2.2 or possibly
 Python 2.3.}  Shortly after creating it and ensuring it worked he stopped
 supporting it, though he left his work available on his Gopher
 site.
