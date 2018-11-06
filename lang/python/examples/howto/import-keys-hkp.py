@@ -45,7 +45,10 @@ else:
 
 try:
     keys = server.search(pattern)
-    print("Found {0} key(s).".format(len(keys)))
+    if keys is not None:
+        print("Found {0} key(s).".format(len(keys)))
+    else:
+        pass
 except Exception as e:
     keys = []
     for logrus in pattern.split():
@@ -56,9 +59,10 @@ except Exception as e:
         keys.append(key[0])
     print("Found {0} key(s).".format(len(keys)))
 
-for key in keys:
-    import_result = c.key_import(key.key_blob)
-    results.append(import_result)
+if keys is not None:
+    for key in keys:
+        import_result = c.key_import(key.key_blob)
+        results.append(import_result)
 
 for result in results:
     if result is not None and hasattr(result, "considered") is False:
