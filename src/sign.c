@@ -337,7 +337,7 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_INV_RECP:
       if (opd->inv_sgnr_seen && opd->ignore_inv_recp)
         break;
-      /* FALLTROUGH */
+      /* FALLTHROUGH */
     case GPGME_STATUS_INV_SGNR:
       if (code == GPGME_STATUS_INV_SGNR)
         opd->inv_sgnr_seen = 1;

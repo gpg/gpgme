@@ -1041,7 +1041,7 @@ gpgconf_conf_dir (void *engine, const char *what, char **result)
 
 
 /* Parse a line received from gpgconf --query-swdb.  This function may
- * modify LINE.  The result is stored at RESUL.  */
+ * modify LINE.  The result is stored at RESULT.  */
 static gpg_error_t
 parse_swdb_line (char *line, gpgme_query_swdb_result_t result)
 {

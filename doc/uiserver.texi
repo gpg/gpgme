@@ -564,7 +564,7 @@ do this it uses the Assuan command:
 @deffn Command START_KEYMANAGER
 The server shall pop up the main window of the key manager (aka
 certificate manager).  The client expects that the key manager is brought
-into the foregound and that this command immediatley returns (does not
+into the foregound and that this command immediately returns (does not
 wait until the key manager has been fully brought up).
 @end deffn
 
@@ -575,7 +575,7 @@ do this it uses the Assuan command:
 @deffn Command START_CONFDIALOG
 The server shall pop up its configuration dialog.  The client expects
 that this dialog is brought into the foregound and that this command
-immediatley returns (i.e. it does not wait until the dialog has been
+immediately returns (i.e. it does not wait until the dialog has been
 fully brought up).
 @end deffn
 

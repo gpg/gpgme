@@ -83,7 +83,7 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 
-    /** Set the order in which prettyDN will reorder the Attirbutes. */
+    /** Set the order in which prettyDN will reorder the Attributes. */
     void setAttributeOrder(const QStringList &order) const;
 
     /** Get the used attribute order. */

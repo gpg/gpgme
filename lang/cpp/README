@@ -43,7 +43,7 @@ pattern so the documentation for GPGME itself provides a good
 way to start.
 
 The context structure in GPGME is mapped to a Context object in
-GpgMEpp. Additional convienience code provides Data objects and
+GpgMEpp. Additional convenience code provides Data objects and
 a Dataprovider interface that can be used to implement GPGME's
 data with any subclass by implementing the right callbacks.
 

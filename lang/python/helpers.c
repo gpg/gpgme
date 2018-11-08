@@ -914,7 +914,7 @@ static ssize_t pyDataWriteCb(void *hook, const void *buffer, size_t size)
 }
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle HOOK to OFFSET, relativ to
+   in the data object with the handle HOOK to OFFSET, relative to
    WHENCE.  Returns the new offset in bytes from the beginning of the
    data object.  */
 static off_t pyDataSeekCb(void *hook, off_t offset, int whence)

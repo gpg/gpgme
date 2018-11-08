@@ -732,7 +732,7 @@ directory part is used as the default installation directory; the
 Windows.
 
 @item require-gnupg
-Set the mimimum version of the required GnuPG engine.  If that version
+Set the minimum version of the required GnuPG engine.  If that version
 is not met, GPGME fails early instead of trying to use the existent
 version.  The given version must be a string with major, minor, and
 micro number.  Example: "2.1.0".
@@ -4031,7 +4031,7 @@ does only work for OpenPGP and requires at least version 2.1.13 of
 GnuPG.
 
 @var{userid} is commonly the mail address associated with the key.
-GPGME does not require a specificy syntax but if more than a mail
+GPGME does not require a specific syntax but if more than a mail
 address is given, RFC-822 style format is suggested.  The value is
 expected to be in UTF-8 encoding (i.e. no IDN encoding for mail
 addresses).  This is a required parameter.
@@ -4240,7 +4240,7 @@ requires at least version 2.1.13 of GnuPG.
 
 @var{userid} is the user ID to add to the key.  A user ID is commonly
 the mail address to be associated with the key.  GPGME does not
-require a specificy syntax but if more than a mail address is given,
+require a specific syntax but if more than a mail address is given,
 RFC-822 style format is suggested.  The value is expected to be in
 UTF-8 encoding (i.e. no IDN encoding for mail addresses).  This is a
 required parameter.
@@ -5432,7 +5432,7 @@ multiple of the following bit values:
 @since{1.8.0}
 
 The @code{GPGME_DECRYPT_VERIFY} symbol specifies that this function
-shall exacty act as @code{gpgme_op_decrypt_verify}.
+shall exactly act as @code{gpgme_op_decrypt_verify}.
 
 @item GPGME_DECRYPT_UNWRAP
 @since{1.8.0}
@@ -5444,7 +5444,7 @@ counterpart to @code{GPGME_ENCRYPT_WRAP}.
 
 @end table
 
-The function returns the error codes as descriped for
+The function returns the error codes as described for
 @code{gpgme_op_decrypt} respective @code{gpgme_op_encrypt}.
 @end deftypefun
 
@@ -5739,7 +5739,7 @@ The defined bits are:
   A policy requirement was not met.
 
   @item GPGME_SIGSUM_SYS_ERROR
-  A system error occured.
+  A system error occurred.
 
   @item GPGME_SIGSUM_TOFU_CONFLICT
   A TOFU conflict was detected.
@@ -6897,7 +6897,7 @@ returned.  Synchronous operations running in parallel, as well as key
 and trust item list operations, do not affect @code{gpgme_wait}.
 
 In a multi-threaded environment, only one thread should ever call
-@code{gpgme_wait} at any time, irregardless if @var{ctx} is specified
+@code{gpgme_wait} at any time, regardless of whether @var{ctx} is specified
 or not.  This means that all calls to this function should be fully
 synchronized by locking primitives.  It is safe to start asynchronous
 operations while a thread is running in @code{gpgme_wait}.
@@ -8229,7 +8229,7 @@ The function @code{gpgme_get_sig_string_attr} is equivalent to:
 @end example
 @end deftypefun
 
-@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_attr_t @var{waht}}, @w{int @var{whatidx}})
+@deftypefun {const char *} gpgme_get_sig_ulong_attr (@w{gpgme_ctx_t @var{ctx}}, @w{int @var{idx}}, @w{gpgme_attr_t @var{what}}, @w{int @var{whatidx}})
 The function @code{gpgme_get_sig_ulong_attr} is equivalent to:
 
 @example

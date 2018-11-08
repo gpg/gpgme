@@ -52,7 +52,7 @@ int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
 #define MIN_REPLY_CHUNK_SIZE  30
 
 /* If no chunksize is provided we print everything.  Changing
- * this to a positive value will result in all messages beeing
+ * this to a positive value will result in all messages being
  * chunked. */
 #define DEF_REPLY_CHUNK_SIZE  0
 #define MAX_REPLY_CHUNK_SIZE (10 * 1024 * 1024)
@@ -720,7 +720,7 @@ create_keylist_patterns (cjson_t request, const char *name)
       ret[i++] = xstrdup (tmp);
       tmp = p + 1;
     }
-  /* The last key is not newline delimted. */
+  /* The last key is not newline delimited. */
   ret[i] = *tmp ? xstrdup (tmp) : NULL;
 
   xfree (keystring);
@@ -1499,11 +1499,11 @@ make_data_object (cjson_t result, gpgme_data_t data,
 
 /* Encode and chunk response.
  *
- * If neccessary this base64 encodes and chunks the repsonse
+ * If necessary this base64 encodes and chunks the response
  * for getmore so that we always return valid json independent
  * of the chunksize.
  *
- * A chunked repsonse contains the base64 encoded chunk
+ * A chunked response contains the base64 encoded chunk
  * as a string and a boolean if there is still more data
  * available for getmore like:
  * {
@@ -3681,7 +3681,7 @@ native_messaging_repl (void)
 
   for (;;)
     {
-      /* Read length.  Note that the protocol uses native endianess.
+      /* Read length.  Note that the protocol uses native endianness.
        * Is it allowed to call such a thing a well thought out
        * protocol?  */
       if (es_read (es_stdin, &nrequest, sizeof nrequest, &n))
@@ -3702,7 +3702,7 @@ native_messaging_repl (void)
           log_error ("error reading request: request too long (%zu MiB)\n",
                      (size_t)nrequest / (1024*1024));
           /* Fixme: Shall we read the request to the bit bucket and
-           * return an error reponse or just return an error reponse
+           * return an error response or just return an error response
            * and terminate?  Needs some testing.  */
           break;
         }

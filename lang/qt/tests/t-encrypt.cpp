@@ -303,7 +303,7 @@ private:
 
         killAgent(mDir.path());
 
-        /* Now create a new homedir which with we test symetric decrypt. */
+        /* Now create a new homedir which with we test symmetric decrypt. */
         QTemporaryDir tmp;
         qputenv("GNUPGHOME", tmp.path().toUtf8());
         QFile agentConf(tmp.path() + QStringLiteral("/gpg-agent.conf"));

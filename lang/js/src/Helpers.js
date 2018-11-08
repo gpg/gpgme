@@ -171,7 +171,7 @@ export function atobArray (base64) {
  * Taken and slightly adapted from
  *  https://www.onicos.com/staff/iz/amuse/javascript/expert/utf.txt
  * (original header:
- *   utf.js - UTF-8 <=> UTF-16 convertion
+ *   utf.js - UTF-8 <=> UTF-16 conversion
  *
  *   Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  *   Version: 1.0

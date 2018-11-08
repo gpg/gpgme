@@ -700,7 +700,7 @@
 
 2002-05-26  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgme.texi: Some typographical correctons throughout.
+	* gpgme.texi: Some typographical corrections throughout.
 
 2002-05-09  Marcus Brinkmann  <marcus@g10code.de>
 
@@ -720,7 +720,7 @@
 	* gpgme.texi (Manipulating Data Buffers): Changed some data types
 	to void*.
 	(Protocol Selection): Added gpgme_get_protocol.
-	(Verify): Updated to include the new attribute fucntions and
+	(Verify): Updated to include the new attribute functions and
 	status codes.
 
 2002-04-27  Werner Koch  <wk@gnupg.org>
@@ -839,7 +839,7 @@
 2002-01-29  Marcus Brinkmann  <marcus@g10code.de>
 
 	* gpgme.texi (Run Control): New section.
-	(Verify): Docuent gpgme_get_notation.
+	(Verify): Document gpgme_get_notation.
 	(More Information): New section describing gpgme_get_op_info.
 
 2002-01-22  Marcus Brinkmann  <marcus@g10code.de>
@@ -865,7 +865,7 @@
 
 	* gpgme.texi (Top): Complete detailmenu.
 
-	* gpgme.texi: Convert embarassing cruft to the real thing.
+	* gpgme.texi: Convert embarrassing cruft to the real thing.
 
 2002-01-16  Marcus Brinkmann  <marcus@g10code.de>
 

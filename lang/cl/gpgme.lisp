@@ -140,11 +140,11 @@
   (gpg-err-source err))
 
 (defun gpgme-strerror (err)
-  "Return a string containig a description of the error code."
+  "Return a string containing a description of the error code."
   (gpg-strerror err))
 
 (defun gpgme-strsource (err)
-  "Return a string containig a description of the error source."
+  "Return a string containing a description of the error source."
   (gpg-strsource err))
 
 (defun gpgme-err-code-from-errno (err)
@@ -267,7 +267,7 @@
      :from-c translate-gpgme-sig-notation-t-from-foreign)
   "Signature notation pointer type.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-sig-notation-bitfield :unsigned-int)
   (:human-readable 1)
   (:critical 2))
@@ -411,7 +411,7 @@
      :from-c translate-gpgme-subkey-t-from-foreign)
   "A subkey from a key.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-subkey-bitfield :unsigned-int)
   "The subkey bitfield."
   (:revoked 1)
@@ -445,7 +445,7 @@
      :from-c translate-gpgme-key-sig-t-from-foreign)
   "A signature on a user ID.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-key-sig-bitfield :unsigned-int)
   "The key signature bitfield."
   (:revoked 1)
@@ -476,7 +476,7 @@
      :from-c translate-gpgme-user-id-t-from-foreign)
   "A user ID from a key.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-user-id-bitfield :unsigned-int)
   "The user ID bitfield."
   (:revoked 1)
@@ -501,7 +501,7 @@
      :to-c translate-gpgme-key-t-to-foreign)
   "A key from the keyring.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-key-bitfield :unsigned-int)
   "The key bitfield."
   (:revoked 1)
@@ -1017,7 +1017,7 @@
      :from-c translate-gpgme-signature-t-from-foreign)
   "A signature structure.")
 
-;; FIXME: Doesn't this depend on endianess?
+;; FIXME: Doesn't this depend on endianness?
 (defbitfield (gpgme-signature-bitfield :unsigned-int)
   "The signature bitfield."
   (:wrong-key-usage 1)
@@ -1683,7 +1683,7 @@
 
 ;;; The release callback removes the stream from the *data-handles*
 ;;; hash and releases the CBS structure that is used as the key in
-;;; that hash.  It is implicitely invoked (through GPGME) by
+;;; that hash.  It is implicitly invoked (through GPGME) by
 ;;; gpgme-data-release.
 (defcallback data-release-cb :void ((handle :pointer))
   (unwind-protect (remhash (pointer-address handle) *data-handles*)
@@ -1783,7 +1783,7 @@
 	(when *debug* (format t "DEBUG: gpgme-data-new: ~A~%" dh))
 	dh))))
 
-;;; This function releases a GPGME data object.  It implicitely
+;;; This function releases a GPGME data object.  It implicitly
 ;;; invokes the data-release-cb function to clean up associated junk.
 (defun gpgme-data-release (dh)
   "Release a GPGME data object."
@@ -1907,7 +1907,7 @@
   (:documentation "Set the protocol of CONTEXT to PROTOCOL."))
 
 ;;; FIXME: Adjust translator to reject invalid protocols.  Currently,
-;;; specifing an invalid protocol throws a "NIL is not 32 signed int"
+;;; specifying an invalid protocol throws a "NIL is not 32 signed int"
 ;;; error.  This is suboptimal.
 (defmethod (setf protocol) (protocol (ctx context))
   (gpgme-set-protocol ctx protocol))

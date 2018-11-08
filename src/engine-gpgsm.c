@@ -1661,7 +1661,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
               && *keyarray[idx]->subkeys->fpr)
             buflen += strlen (keyarray[idx]->subkeys->fpr) + 1;
         }
-      /* Allocate a bufer with extra space for the trailing Nul
+      /* Allocate a buffer with extra space for the trailing Nul
          introduced by the use of stpcpy.  */
       buffer = malloc (buflen+1);
       if (!buffer)

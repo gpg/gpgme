@@ -143,7 +143,7 @@ static struct
   /* The context of an associated writer object or NULL.  */
   struct writer_context_s *writer;
 
-  /* A notification hanlder.  Noet that we current support only one
+  /* A notification handler.  Noet that we current support only one
    * callback per fd.  */
   struct {
     _gpgme_close_notify_handler_t handler;
@@ -230,7 +230,7 @@ release_hddesc (hddesc_t hdd)
   hdd->refcount--;
   if (hdd->refcount < 1)
     {
-      /* Holds a valid handle or was never intialized (in which case
+      /* Holds a valid handle or was never initialized (in which case
        * REFCOUNT would be -1 here).  */
       TRACE_BEG3 (DEBUG_SYSIO, "gpgme:release_hddesc", hdd,
                   "hd=%p, sock=%d, refcount=%d",
@@ -257,7 +257,7 @@ release_hddesc (hddesc_t hdd)
 
 
 /* Returns our FD or -1 on resource limit.  The returned integer
- * references a new object which has not been intialized but can be
+ * references a new object which has not been initialized but can be
  * release with release_fd.  */
 static int
 new_fd (void)
@@ -1247,12 +1247,12 @@ _gpgme_io_close (int fd)
       fd_table[fd].writer = NULL;
     }
 
-  /* The handler may not use any fd fucntion because the table is
+  /* The handler may not use any fd function because the table is
    * locked.  Can we avoid this?  */
   handler = fd_table[fd].notify.handler;
   value   = fd_table[fd].notify.value;
 
-  /* Release our reference to the handle descripor.  Note that if no
+  /* Release our reference to the handle descriptor.  Note that if no
    * reader or writer threads were used this release will also take
    * care that the handle descriptor is closed
    * (i.e. CloseHandle(hdd->hd) is called).  */
@@ -1272,8 +1272,8 @@ _gpgme_io_close (int fd)
 
 
 /* Set a close notification callback which is called right after FD
- * has been closed but before its slot (ie. the FD number) is beeing
- * released.  Tha HANDLER may thus use the provided value of the FD
+ * has been closed but before its slot (ie. the FD number) is being
+ * released.  The HANDLER may thus use the provided value of the FD
  * but it may not pass it to any I/O functions.  Note: Only the last
  * handler set for an FD is used.  */
 int

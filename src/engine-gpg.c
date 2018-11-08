@@ -745,7 +745,7 @@ gpg_set_status_cb (void *engine, gpgme_status_cb_t cb, void *cb_value)
 }
 
 
-/* Note, that the status_handler is allowed to modifiy the args
+/* Note, that the status_handler is allowed to modify the args
    value.  */
 static void
 gpg_set_status_handler (void *engine, engine_status_handler_t fnc,

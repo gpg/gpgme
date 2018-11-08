@@ -53,7 +53,7 @@ namespace QGpgME {
  * send the RFC822 mail returned in returnedData.
  *
  * When the response is received start a startRecieve with the
- * RFC822 mail received as paramater response. Check for errors
+ * RFC822 mail received as parameter response. Check for errors
  * and then send again send the result from returnedData back to
  * the server.
  *
@@ -87,7 +87,7 @@ public:
      */
     virtual void startCreate(const char *fpr, const QString &mailbox) = 0;
 
-    /** Handle a submisson response. The returnedData in the result singnal
+    /** Handle a submission response. The returnedData in the result singnal
      * will contain the confirmation response as returned by gpg-wks-client --receive
      *
      * @param response The response of the server.

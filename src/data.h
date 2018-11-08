@@ -49,7 +49,7 @@ typedef gpgme_ssize_t (*gpgme_data_write_cb) (gpgme_data_t dh,
                                               size_t size);
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle DH to OFFSET, relativ to
+   in the data object with the handle DH to OFFSET, relative to
    WHENCE.  */
 typedef gpgme_off_t (*gpgme_data_seek_cb) (gpgme_data_t dh,
                                             gpgme_off_t offset,

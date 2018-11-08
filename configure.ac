@@ -347,7 +347,7 @@ if test "$found" = "1"; then
 
         AC_CHECK_PROGS([DOXYGEN], [doxygen])
         if test -z "$DOXYGEN";
-            # This is not highlighted becase it's not really important.
+            # This is not highlighted because it's not really important.
             then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
         fi
         AC_CHECK_PROGS([GRAPHVIZ], [dot])

@@ -2,7 +2,7 @@
 ## Python file handling
 ## From Andrew Dalke
 ## Updated by James Henstridge
-## Upated by Werner Koch 2018-10-17
+## Updated by Werner Koch 2018-10-17
 ## ---------------------------------
 # Copyright (C) 1999-2017 Free Software Foundation, Inc.
 #

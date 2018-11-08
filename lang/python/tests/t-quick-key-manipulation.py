@@ -82,7 +82,7 @@ with support.EphemeralContext() as ctx:
 
     # try to revoke a non-existent UID
     try:
-        ctx.key_revoke_uid(key, "i dont exist")
+        ctx.key_revoke_uid(key, "i don't exist")
         # IMHO this should fail.  issue2963.
         # assert False, "Expected an error but got none"
     except gpg.errors.GpgError:

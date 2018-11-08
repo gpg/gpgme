@@ -94,7 +94,7 @@ class GPGME_Key {
 
     /**
      * Query any property of the Key listed in {@link validKeyProperties}
-     * @param {String} property property to be retreived
+     * @param {String} property property to be retrieved
      * @returns {Boolean| String | Date | Array | Object}
      * @returns {Promise<Boolean| String | Date | Array | Object>} (if in async
      * mode)

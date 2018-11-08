@@ -459,7 +459,7 @@ Noteworthy changes in version 1.6.0 (2015-08-26) [C25/A14/R0]
  * The passphrase handler for the loopback mode has been improved and may
    also be used with genkey.
 
- * [w32] The standard GnuPG 2.1 install directory is now seached for
+ * [w32] The standard GnuPG 2.1 install directory is now searched for
    gpgconf.exe before a registry specified directory and the Gpg4win
    install directory.
 
@@ -762,7 +762,7 @@ Noteworthy changes in version 1.1.8 (2008-12-08)
 ------------------------------------------------
 
  * SIGPIPE is now again ignored as described in the manual.  Fixes
-   regresion introduced with 1.1.6.
+   regression introduced with 1.1.6.
 
 
 Noteworthy changes in version 1.1.7 (2008-10-17)
@@ -958,8 +958,8 @@ Noteworthy changes in version 1.0.3 (2005-06-20)
  * Previousy, GPGME would use a default "include certs" of 1.  This
    has been changed.  Now GPGME will use the crypto backend engines
    default unless you set the value with gpgme_set_include_certs()
-   explicitely.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
-   as a value to explicitely request the new default behaviour.
+   explicitly.  A new macro GPGME_INCLUDE_CERTS_DEFAULT can be used
+   as a value to explicitly request the new default behaviour.
 
    Because the default changes, this is a slight change of the API
    semantics.  We consider it to be a bug fix.
@@ -1046,7 +1046,7 @@ Noteworthy changes in version 0.4.7 (2004-04-29)
    disabled in the gpgme_key_t structures.
 
  * A bug fix: The flag wrong_key_usage of gpgme_signature_t was
-   accidently of type int instead unsigned int.
+   accidentally of type int instead unsigned int.
 
  * Interface changes relative to the 0.4.5 release:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1259,7 +1259,7 @@ Noteworthy changes in version 0.4.1 (2003-06-06)
 
  The error values have been completely replaced by a more
  sophisticated model that allows GPGME to transparently and accurately
- report all errors from the other GnuPG components, irregardless of
+ report all errors from the other GnuPG components, regardless of
  process boundaries.  This is achieved by using the library
  libgpg-errors, which is shared by all GnuPG components.  This library
  is now required for GPGME.
@@ -1877,7 +1877,7 @@ Noteworthy changes in version 0.3.1 (2002-02-09)
    selects between local keyring, remote keyserver, or both.
    For this, two new macros are defined, GPGME_KEYLIST_MODE_LOCAL
    and GPGME_KEYLIST_MODE_EXTERN.  To make it possible to modify the
-   current setting, a fucntion gpgme_get_keylist_mode was added to
+   current setting, a function gpgme_get_keylist_mode was added to
    retrieve the current mode.
 
  * gpgme_wait accepts a new argument STATUS to return the error status

@@ -384,7 +384,7 @@ export class GPGME_Keyring {
      * @param {String} option.userId The user Id, e.g. 'Foo Bar <foo@bar.baz>'
      * @param {String} option.algo (optional) algorithm (and optionally key
      * size) to be used. See {@link supportedKeyAlgos} below for supported
-     * values. If ommitted, 'default' is used.
+     * values. If omitted, 'default' is used.
      * @param {Number} option.expires (optional) Expiration time in seconds
      * from now. If not set or set to 0, expiration will be 'never'
      *

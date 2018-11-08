@@ -258,7 +258,7 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
         case PKT_COMPRESSED:
           /* If this is the first packet we assume that that a signed
            * packet follows.  We do not want to uncompress it here due
-           * to the need of a lot of code and the potentail DoS. */
+           * to the need of a lot of code and the potential DoS. */
           if (!anypacket)
             return GPGME_DATA_TYPE_PGP_SIGNED;
           return GPGME_DATA_TYPE_PGP_OTHER;
@@ -479,7 +479,7 @@ basic_detection (char *data, size_t datalen)
    file pointer but there is no guarantee that it will work.
 
    FIXME: We may want to add internal buffering so that this function
-   can be implemented for allmost all kind of data objects.
+   can be implemented for almost all kind of data objects.
  */
 gpgme_data_type_t
 gpgme_data_identify (gpgme_data_t dh, int reserved)

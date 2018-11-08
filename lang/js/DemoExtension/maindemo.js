@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById(
                             'pubkey').value = keys[0].fingerprint;
                     } else if (keys.length > 1) {
-                        alert('The pattern was not unambigious enough for a Key. '
+                        alert('The pattern was not unambiguous enough for a Key. '
                         + keys.length + ' Keys were found');
                     } else {
                         alert('No keys found');

@@ -31,7 +31,7 @@
 
 #include "t-support.h"
 
-/* Tests mixed symmetric and asymetric decryption. Verifies
+/* Tests mixed symmetric and asymmetric decryption. Verifies
    that an encrypted message can be decrypted without the
    secret key but that the recipient is also set correctly. */
 int

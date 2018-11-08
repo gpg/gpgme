@@ -1063,7 +1063,7 @@ obtained.
 
 #. Import from ProtonMail via HKP for Python Example no. 1
 
-   The following script is avalable with the rest of the examples under
+   The following script is available with the rest of the examples under
    the somewhat less than original name, ``pmkey-import-hkp.py``.
 
    .. code:: python
@@ -1814,7 +1814,7 @@ to any preconfigured keys set in the ``gpg.conf`` file:
    with open("secret_plans.txt.asc", "wb") as afile:
        afile.write(ciphertext)
 
-If the ``recipients`` paramater is empty then the plaintext is encrypted
+If the ``recipients`` parameter is empty then the plaintext is encrypted
 symmetrically. If no ``passphrase`` is supplied as a parameter or via a
 callback registered with the ``Context()`` then an out-of-band prompt
 for the passphrase via pinentry will be invoked.
@@ -2592,7 +2592,7 @@ demonstrable. One of the better and easier examples being the one of the
 early examples in this HOWTO, the `key
 counting <#howto-keys-counting>`__ code. Running that example as an
 executable Python script, ``keycount.py`` (available in the
-``examples/howto/`` directory), will take a noticable amount of time to
+``examples/howto/`` directory), will take a noticeable amount of time to
 run on most systems where the public keybox or keyring contains a few
 thousand public keys.
 

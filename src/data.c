@@ -409,7 +409,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 
 
 /* Set the current position from where the next read or write starts
-   in the data object with the handle DH to OFFSET, relativ to
+   in the data object with the handle DH to OFFSET, relative to
    WHENCE.  */
 gpgme_off_t
 gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)

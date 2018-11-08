@@ -39,7 +39,7 @@ gnupg.
 **Due to security constraints, the javascript-binding currently only offers
 limited support for secret-Key interaction.**
 
-The existance of secret Keys is not secret, and those secret Keys can be used
+The existence of secret Keys is not secret, and those secret Keys can be used
 for signing, but Operations that may expose, modify or delete secret Keys are
 not supported.
 

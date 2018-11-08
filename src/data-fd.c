@@ -1,4 +1,4 @@
-/* data-fd.c - A file descripor based data object.
+/* data-fd.c - A file descriptor based data object.
    Copyright (C) 2002, 2004 g10 Code GmbH
 
    This file is part of GPGME.

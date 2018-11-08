@@ -514,7 +514,7 @@
 	* engine-backend.h (struct engine_ops): Add PASSWD.
 	* engine-gpgsm.c (gpgsm_passwd): New.
 	(_gpgme_engine_ops_gpgsm): Register.
-	(gpgsm_reset): Reset only if we have a conenction.
+	(gpgsm_reset): Reset only if we have a connection.
 
 	* gpgme.h.in (GPGME_PK_ECDSA, GPGME_PK_ECDH): New.
 	* gpgme.c (gpgme_pubkey_algo_name): Add them.
@@ -934,7 +934,7 @@
 	* engine-backend.h: Define with [ENABLE_ASSUAN] instead
 	of [ENABLE_GPGSM].
 	* posix-io.c (_gpgme_io_waitpid): Make non-static.
-	* util.h (ENABLE_ASSUAN): Declar _gpgme_assuan_system_hooks,
+	* util.h (ENABLE_ASSUAN): Declare _gpgme_assuan_system_hooks,
 	_gpgme_assuan_malloc_hooks, _gpgme_assuan_log_cb.
 	* engine-gpgsm.c: Don't map assuan error codes.  Use
 	assuan_release instead of assuan_disconnect.
@@ -1401,7 +1401,7 @@
 2008-06-19  Werner Koch  <wk@g10code.com>
 
 	* gpgme.h (GPGME_CONF_PATHNAME): Replace by GPGME_CONF_FILENAME,
-	change all callers and provide compatibilty macro.
+	change all callers and provide compatibility macro.
 	(gpgme_conf_type_t): Add complex types 34..37.
 	* engine-gpgconf.c (gpgconf_parse_option, arg_to_data)
 	(_gpgme_conf_arg_new, _gpgme_conf_arg_release): Add new types.
@@ -1806,7 +1806,7 @@
 
 2007-07-12  Marcus Brinkmann  <marcus@g10code.de>
 
-	* Makefile.am: Replace implicite rule by suffix rule.  Add
+	* Makefile.am: Replace implicit rule by suffix rule.  Add
 	SUFFIXES for that.
 
 2007-07-12  Werner Koch  <wk@g10code.com>
@@ -2029,7 +2029,7 @@
 
 2006-03-06  Marcus Brinkmann  <marcus@g10code.de>
 
-	* gpgme-config.in (cflags_pth): Revert accidential removal of
+	* gpgme-config.in (cflags_pth): Revert accidental removal of
 	pthread support with last change.
 
 2006-02-28  Marcus Brinkmann  <marcus@g10code.de>
@@ -2052,7 +2052,7 @@
 
 2006-02-15  Marcus Brinkmann  <marcus@g10code.de>
 
-	* w32-io.c (create_writer): Make C->have_data a manually resetted
+	* w32-io.c (create_writer): Make C->have_data a manually reset
 	event.
 	(writer): Move code from end of if block to beginning, so it
 	is also run the first time.
@@ -2368,7 +2368,7 @@
 
 	* gpgme.def: New.
 	* versioninfo.rc.in: New.
-	* Makefile.am: Addes support for building a W32 DLL.
+	* Makefile.am: Adds support for building a W32 DLL.
 
 	* ttyname_r.c (ttyname_r) [W32]: Return error.
 	* ath-compat.c [W32]: select and co are not yet supported; return
@@ -2779,7 +2779,7 @@
 2004-03-03  Werner Koch  <wk@gnupg.org>
 
 	* engine-gpgsm.c (gpgsm_export_ext): Properly insert a space
-	beween patterns.
+	between patterns.
 
 2004-02-18  Werner Koch  <wk@gnupg.org>
 
@@ -3132,23 +3132,23 @@
 	* engine.h: Likewise for _gpgme_engine_op_export and
 	_gpgme_engine_op_export_ext.
 	* engine-backend.h (struct engine_ops): Change second argument of
-	prototype of export to const char *, and add reserverd int as
+	prototype of export to const char *, and add reserved int as
 	third argument.  Add prototype for export_ext.
 	* engine.c (_gpgme_engine_op_export_ext): New function.
 	(_gpgme_engine_op_export): Change second argument of prototype of
-	export to const char *, and add reserverd int as third argument.
+	export to const char *, and add reserved int as third argument.
 	* rungpg.c (gpg_export): Change second argument of prototype of
-	export to const char *, and add reserverd int as third argument.
+	export to const char *, and add reserved int as third argument.
 	(gpg_export_ext): New function.
 	(gpg_keylist_ext): Break loop at error.
 	(_gpgme_engine_ops_gpg): Add gpg_export_ext.
 	* engine-gpgsm.c (gpgsm_export): Change second argument of
-	prototype of export to const char *, and add reserverd int as
+	prototype of export to const char *, and add reserved int as
 	third argument.
 	(gpgsm_export_ext): New function.
 	(_gpgme_engine_ops_gpgsm): Add gpgsm_export_ext.
 	* export.c (export_start): Change second argument of prototype of
-	export to const char *, and add reserverd int as third argument.
+	export to const char *, and add reserved int as third argument.
 	(gpgme_op_export_start): Likewise.
 	(export_ext_start): New function.
 	(gpgme_op_export_ext_start): Likewise.
@@ -5109,7 +5109,7 @@
 	* key.h (struct certsig_s): New.  Use it in gpgme_key_s.
 	* key.c (gpgme_key_release): Release it. We need to add more code
 	of course.
-	(_gpgme_key_append_name): Use memset to intialize the struct.
+	(_gpgme_key_append_name): Use memset to initialize the struct.
 	* gpgme.h (GPGME_KEYLIST_MODE_SIGS): New.
 	* rungpg.c (_gpgme_gpg_op_keylist): Include sigs in listing depending
 	non the list mode.
@@ -5217,7 +5217,7 @@
 
 2002-07-27  Marcus Brinkmann  <marcus@g10code.de>
 
-	* delete.c (delete_problem): New case ambigious specification.
+	* delete.c (delete_problem): New case ambiguous specification.
 	(delete_status_handler): Handle new case (poorly).
 
 2002-07-25  Marcus Brinkmann  <marcus@g10code.de>
@@ -5338,8 +5338,8 @@
 	* import.c (append_xml_impinfo): Kludge to print fingerprint
 	instead of keyid for use with gpgsm.
 	(import_status_handler): Set a flag to know whether any import
-	occured.
-	(gpgme_op_import): Reurn -1 if no certificate ewas imported.
+	occurred.
+	(gpgme_op_import): Return -1 if no certificate ewas imported.
 
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
@@ -5364,7 +5364,7 @@
 	(gpgsm_status_handler): Use parse_status.
 	(gpgsm_assuan_simple_command): Accept new arguments STATUS_FNC and
 	STATUS_FNC_VALUE and process status messages.
-	(gpgsm_set_recipients): Pass new arugments to gpgsm_assuan_simple_command.
+	(gpgsm_set_recipients): Pass new arguments to gpgsm_assuan_simple_command.
 	(gpgsm_set_fd): Likewise.
 	(_gpgme_gpgsm_op_keylist): Likewise.
 	(_gpgme_gpgsm_op_keylist_ext): Likewise.
@@ -5397,7 +5397,7 @@
 2002-06-13  Werner Koch  <wk@gnupg.org>
 
 	* verify.c (gpgme_op_verify): Make sure that we never access an
-	unitialized result structure.
+	uninitialized result structure.
 
 2002-06-12  Werner Koch  <wk@gnupg.org>
 
@@ -5701,7 +5701,7 @@
 	(_gpgme_key_cache_get): Likewise.
 	(gpgme_key_ref, gpgme_key_release): Lock the key_ref_lock.
 	* import.c (append_xml_impinfo): Make IMPORTED_FIELDS and
-	IMPORT_RES_FIELDS very const.  Make FIELD and FIELD_NAME a litle
+	IMPORT_RES_FIELDS very const.  Make FIELD and FIELD_NAME a little
 	const.
 	* engine.c (_gpgme_engine_get_info): New variable
 	ENGINE_INFO_LOCK.  Take lock while determining engine info.
@@ -6058,7 +6058,7 @@
 	flagged and EOF is not received.  One problem is that the engine
 	status handlers don't have access to the context, a horrible
 	kludge works around this for now.  All errors that happen during a
-	pending operation should be catched and reported in ctx->error,
+	pending operation should be caught and reported in ctx->error,
 	including out-of-core and cancellation.  This rounds up neatly a
 	couple of loose ends, and makes it possible to pass up any errors
 	in the communication with the backend as well.  As a bonus, there
@@ -6424,7 +6424,7 @@
 	(gpgsm_assuan_simple_command): Removed underscore from
 	assuan_write_line.
 	(_gpgme_gpgsm_start): Ditto.
-	(gpgsm_assuan_simple_command): Replaced interal Assuan read
+	(gpgsm_assuan_simple_command): Replaced internal Assuan read
 	function by the new assuan_read_line.  Removed the use of the
 	internal header.
 	(gpgsm_status_handler): Ditto. Use the new assuan_pending_line.
@@ -6516,7 +6516,7 @@
 2001-11-22  Marcus Brinkmann  <marcus@g10code.de>
 
 	* engine-gpgsm.c: Shuffle around header inclusion a bit, to still
-	keep them seperate.
+	keep them separate.
 	(_gpgme_set_status_handler) [!ENABLE_GPGSM]: New function.
 
 2001-11-22  Werner Koch  <wk@gnupg.org>
@@ -6726,7 +6726,7 @@
 	passphrase result.
 	(_gpgme_release_decrypt_result): Don't release removed members.
 	(decrypt_status_handler): Call _gpgme_passphrase_status_handler,
-	and don't handle the cases catched there.
+	and don't handle the cases caught there.
 	(command_handler): Removed.
 	(gpgme_op_decrypt_start): Don't set command handler, but invoke
 	_gpgme_passphrase_start which does it.
@@ -6739,7 +6739,7 @@
 	passphrase result.
 	(_gpgme_release_sign_result): Don't release removed members.
 	(sign_status_handler): Call _gpgme_passphrase_status_handler,
-	and don't handle the cases catched there.
+	and don't handle the cases caught there.
 	(command_handler): Removed.
 	(gpgme_op_sign_start): Don't set command handler, but invoke
 	_gpgme_passphrase_start which does it.
@@ -6976,7 +6976,7 @@
 	* key.h: New keyflags for capabilities.
 	* keylist.c (set_mainkey_capability, set_subkey_capability): New.
 	(keylist_colon_handler): Parse them.
-	* gpgme.h: New attribute values for capabilties.
+	* gpgme.h: New attribute values for capabilities.
 	* key.c (gpgme_key_get_string_attr): Return them.
 	(capabilities_to_string): New.
 	(gpgme_key_get_ulong_attr): Return the global caps.
@@ -7006,9 +7006,9 @@
 
 	* w32-io.c (destroy_reader): Set stop_me flag.
 	(writer,create_writer,destroy_writer,find_writer,kill_writer): New.
-	(_gpgme_io_write): Use a writer thread to avaoid blocking.
+	(_gpgme_io_write): Use a writer thread to avoid blocking.
 	(_gpgme_io_close): Cleanup a writer thread
-	(_gpgme_io_select): Repalce tthe faked wait on writing by a real
+	(_gpgme_io_select): Repalce the faked wait on writing by a real
 	waiting which is now possible due to the use of a writer thread.
 
 2001-02-20  Werner Koch  <wk@gnupg.org>
@@ -7109,7 +7109,7 @@
 
 	* w32-io.c: Does now use reader threads, so that we can use
 	WaitForMultipleObjects.
-	* sema.h, posix-sema.c, w32-sema.c: Support for Critcial sections.
+	* sema.h, posix-sema.c, w32-sema.c: Support for Critical sections.
 	Does currently only work for W32.
 
 	* debug.c, util.h : New. Changed all fprintfs to use this new

@@ -163,7 +163,7 @@ public:
      * Needs gnupg 2.1.13 and the key needs to be updated
      * afterwards to see the new uid.
      *
-     * @param uid should be fully formated and UTF-8 encoded.
+     * @param uid should be fully formatted and UTF-8 encoded.
      *
      * @returns a possible error.
      **/

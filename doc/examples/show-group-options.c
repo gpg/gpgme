@@ -1,4 +1,4 @@
-/* show-group-options.c - Example code to retriev the group option.
+/* show-group-options.c - Example code to retrieve the group option.
    Copyright (C) 2008 g10 Code GmbH
 
    This file is part of GPGME.

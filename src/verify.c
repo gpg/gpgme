@@ -1024,7 +1024,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
        * a GPGME user can do a keylisting with the address
        * normalisation.
        * So when a duplicated TOFU_USER line is encountered
-       * we ignore the conflicting tofu stats emited afterwards.
+       * we ignore the conflicting tofu stats emitted afterwards.
        */
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
         {

@@ -105,7 +105,7 @@ main (void)
 
   if (result->fpr)
     {
-      fprintf (stderr, "%s:%d: generated key has (unexpectdly) a fingerprint\n",
+      fprintf (stderr, "%s:%d: generated key has (unexpectedly) a fingerprint\n",
 	       __FILE__, __LINE__);
       exit (1);
     }

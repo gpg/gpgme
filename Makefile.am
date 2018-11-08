@@ -99,7 +99,7 @@ release:
 	 $(MAKE) distcheck TESTFLAGS=--parallel; \
 	 echo "/* Build finished at $$(date -uIseconds) */" ;\
          echo "/*" ;\
-	 echo " * Please run the final step interactivly:" ;\
+	 echo " * Please run the final step interactively:" ;\
 	 echo " *   make sign-release" ;\
 	 echo " */" ;\
 	) 2>&1 | tee "$(RELEASE_NAME).buildlog"

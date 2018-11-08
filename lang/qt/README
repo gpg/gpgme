@@ -3,7 +3,7 @@ Qt API bindings/wrapper for GPGME
 Based on KF5gpgmepp QGpgME and libkleo/backends/qgpgme
 
 Please note that QGpgME has a different license (GPL only)
-then GPGME itself. See the License secion in this
+then GPGME itself. See the License section in this
 document for more information.
 
 Overview
@@ -47,14 +47,14 @@ for API stability reasons.
 Some jobs like the verification or decryption jobs have
 dedicated result classes. Each result class at least
 has the member function error() that can be used
-to check if a job failed. Additionally errors are emited
+to check if a job failed. Additionally errors are emitted
 in the result signal.
 
 Jobs also provide progress signal whenever GnuPG emits
 a progress status line.
 
 Most jobs also provide a way synchronusly execute them.
-Please not that synchronus use does not cause the autodeletion
+Please not that synchronous use does not cause the autodeletion
 to take place so you have to manually delete them.
 
 Async usage:
