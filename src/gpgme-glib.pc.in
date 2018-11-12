@@ -5,9 +5,9 @@ libdir=@libdir@
 host=@GPGME_CONFIG_HOST@
 api_version=@GPGME_CONFIG_API_VERSION@
 
-Name: gpgme
-Description: GnuPG Made Easy to access GnuPG
-Requires: gpg-error, libassuan
+Name: gpgme-glib
+Description: GnuPG Made Easy to access GnuPG with Glib
+Requires: gpg-error, libassuan, glib-2.0
 Version: @PACKAGE_VERSION@
 Cflags: @GPGME_CONFIG_CFLAGS@
 Libs: @GPGME_CONFIG_LIBS@

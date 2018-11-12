@@ -19,10 +19,11 @@
 ## Process this file with automake to produce Makefile.in
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = gpgme.pc
+pkgconfig_DATA = gpgme.pc gpgme-glib.pc
 
 EXTRA_DIST = gpgme-config.in gpgme.m4 libgpgme.vers ChangeLog-2011 \
-	     gpgme.h.in versioninfo.rc.in gpgme.def gpgme.pc.in
+	     gpgme.h.in versioninfo.rc.in gpgme.def \
+	     gpgme.pc.in gpgme-glib.pc.in
 
 bin_SCRIPTS = gpgme-config
 m4datadir = $(datadir)/aclocal
