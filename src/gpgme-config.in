@@ -9,8 +9,11 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-prefix=@prefix@
-exec_prefix=@exec_prefix@
+prefix="@prefix@"
+exec_prefix="@exec_prefix@"
+version="@PACKAGE_VERSION@"
+api_version="@GPGME_CONFIG_API_VERSION@"
+my_host="@GPGME_CONFIG_HOST@"
 
 # Make sure that no weird locale setting messes up our sed regexps etc.
 LC_COLLATE=C
@@ -96,15 +99,15 @@ while test $# -gt 0; do
 	    with_glib=yes
 	    ;;
         --version)
-            echo "@VERSION@"
+            echo "$version"
 	    exit 0
 	    ;;
         --api-version)
-	    echo "@GPGME_CONFIG_API_VERSION@"
+	    echo "$api_version"
 	    exit 0
 	    ;;
         --host)
-	    echo "@GPGME_CONFIG_HOST@"
+	    echo "$my_host"
 	    exit 0
 	    ;;
         --cflags)

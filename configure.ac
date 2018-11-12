@@ -855,6 +855,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 tests/opassuan/Makefile
 		doc/Makefile
                 src/versioninfo.rc
+                src/gpgme.pc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
