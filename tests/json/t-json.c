@@ -261,9 +261,9 @@ run_test (const char *test, const char *gpgme_json)
       exit(1);
     }
 
-  gpgrt_asprintf (&test_in, "%s/tests/json/%s.in",
+  gpgrt_asprintf (&test_in, "%s/tests/json/%s.in.json",
                   top_srcdir, test);
-  gpgrt_asprintf (&test_out, "%s/tests/json/%s.out",
+  gpgrt_asprintf (&test_out, "%s/tests/json/%s.out.json",
                   top_srcdir, test);
 
   printf ("Running %s...\n", test);
