@@ -125,7 +125,9 @@ test_contains (cjson_t needle, cjson_t hay)
     }
   if (cjson_is_string (needle))
     {
-      if (strcmp (needle->valuestring, hay->valuestring))
+      if (strcmp (needle->valuestring, hay->valuestring) &&
+          /* Use * as a general don't care placeholder */
+          strcmp (needle->valuestring, "*"))
         {
           if (verbose)
             fprintf (stderr, "%s: string mismatch Expected '%s' got '%s'\n",
