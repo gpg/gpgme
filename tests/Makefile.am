@@ -38,7 +38,7 @@ noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
 
 
 if RUN_GPG_TESTS
-gpgtests = gpg
+gpgtests = gpg json
 else
 gpgtests =
 endif

@@ -853,6 +853,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 tests/gpg/Makefile
                 tests/gpgsm/Makefile
                 tests/opassuan/Makefile
+                tests/json/Makefile
 		doc/Makefile
                 src/versioninfo.rc
                 src/gpgme.pc
