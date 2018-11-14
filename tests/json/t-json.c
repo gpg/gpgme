@@ -350,6 +350,14 @@ main (int argc, char *argv[])
         }
     }
 
+  if (!check_gpg_version ("2.2.0"))
+    {
+      /* Lets not break too much or have to test all combinations */
+      printf ("Testsuite skipped. Minimum GnuPG version (2.2.0) "
+              "not found.\n");
+      exit(0);
+    }
+
   init_gpgme (GPGME_PROTOCOL_SPAWN);
 
   for (const char **test = tests; *test; test++)
