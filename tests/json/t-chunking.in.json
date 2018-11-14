@@ -1,0 +1,5 @@
+{
+    "op": "keylist",
+    "keys": ["alpha@example.net", "bravo@example.net"],
+    "chunksize": 64
+}

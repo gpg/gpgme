@@ -1,0 +1,4 @@
+#!/bin/sh
+
+${top_srcdir}/tests/start-stop-agent --start
+exit 0
