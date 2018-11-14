@@ -154,7 +154,19 @@ test_contains (cjson_t needle, cjson_t hay)
         }
       if (test_contains (needle->child, hay->child))
         {
-          return 1;
+          int found = 0;
+          for (cjson_t hit = hay->child; hit; hit = hit->next)
+            {
+              found |= !test_contains (needle->child, hit);
+              if (found)
+                {
+                  break;
+                }
+            }
+          if (!found)
+            {
+              return 1;
+            }
         }
     }
 
