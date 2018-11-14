@@ -59,6 +59,7 @@ EXTRA_DIST = initial.test final.test \
 		t-keylist.in.json t-keylist.out.json \
 		t-keylist-secret.in.json t-keylist-secret.out.json \
 		t-sign.in.json t-sign.out.json \
+		t-sig-notations.in.json t-sig-notations.out.json \
 		t-verify.in.json t-verify.out.json \
 		t-version.in.json t-version.out.json
 
