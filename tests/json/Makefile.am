@@ -43,7 +43,8 @@ private_keys = \
         $(top_srcdir)/tests/gpg/7A030357C0F253A5BBCD282FFC4E521B37558F5C
 
 
-EXTRA_DIST = t-chunking.in.json t-chunking.out.json \
+EXTRA_DIST = initial.test final.test \
+		t-chunking.in.json t-chunking.out.json \
 		t-config.in.json t-config-opt.in.json \
 		t-config-opt.out.json t-config.out.json \
 		t-createkey.in.json t-createkey.out.json \
@@ -63,7 +64,7 @@ EXTRA_DIST = t-chunking.in.json t-chunking.out.json \
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
-t_json_SOURCES = t-json.c ../../src/cJSON.o
+t_json_SOURCES = t-json.c
 AM_LDFLAGS = -no-install
 LDADD = ../../src/libgpgme.la
 t_json_LDADD = ../../src/cJSON.o -lm ../../src/libgpgme.la @GPG_ERROR_LIBS@
