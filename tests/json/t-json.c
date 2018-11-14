@@ -243,9 +243,9 @@ run_test (const char *test, const char *gpgme_json)
   gpgme_data_t json_stderr = NULL;
   char *test_in;
   char *test_out;
-  const char *argv[2];
+  const char *argv[3];
   char *response;
-  char *expected;
+  char *expected = NULL;
   size_t response_size;
   int rc = 0;
   const char *top_srcdir = getenv ("top_srcdir");
@@ -256,9 +256,9 @@ run_test (const char *test, const char *gpgme_json)
       exit(1);
     }
 
-  gpgrt_asprintf (&test_in, "%s//tests//json//%s.in",
+  gpgrt_asprintf (&test_in, "%s/tests/json/%s.in",
                   top_srcdir, test);
-  gpgrt_asprintf (&test_out, "%s//tests//json//%s.out",
+  gpgrt_asprintf (&test_out, "%s/tests/json/%s.out",
                   top_srcdir, test);
 
   printf ("Running %s...\n", test);
@@ -273,6 +273,7 @@ run_test (const char *test, const char *gpgme_json)
 
   argv[0] = gpgme_json;
   argv[1] = "-s";
+  argv[2] = NULL;
 
   fail_if_err (gpgme_op_spawn (ctx, gpgme_json, argv,
                                json_stdin,
@@ -281,13 +282,18 @@ run_test (const char *test, const char *gpgme_json)
                                0));
   response = gpgme_data_release_and_get_mem (json_stdout,
                                              &response_size);
-  test (response_size);
+  if (response_size)
+    {
+      expected = get_file (test_out);
 
-  expected = get_file (test_out);
+      test (expected);
 
-  test (expected);
-
-  rc = check_response (response, expected);
+      rc = check_response (response, expected);
+    }
+  else
+    {
+      rc = 1;
+    }
 
   if (!rc)
     {
@@ -300,7 +306,8 @@ run_test (const char *test, const char *gpgme_json)
       size_t size;
 
       buf = gpgme_data_release_and_get_mem (json_stderr, &size);
-      printf (" failed\n");
+      printf (" failed%s\n", response_size ? "" :
+                             ", no response from gpgme-json");
       if (size)
         {
           printf ("gpgme-json stderr:\n%.*s\n", (int)size, buf);
