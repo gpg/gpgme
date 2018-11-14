@@ -1,0 +1,10 @@
+{
+   "info": [{
+                   "protocol":     "OpenPGP"
+           }, {
+                   "protocol":     "spawn",
+                   "fname":        "/nonexistent",
+                   "version":      "1.0.0",
+                   "req_version":  "1.0.0"
+           }]
+}

@@ -36,7 +36,15 @@
 #include "../../src/cJSON.h"
 
 /* Register tests here */
-static const char*tests[] = { "t-keylist", "t-config", "t-keylist", NULL };
+static const char*tests[] = { "t-config", "t-version",
+    "t-keylist", "t-keylist-secret", "t-decrypt", "t-config-opt",
+    "t-encrypt", "t-encrypt-sign", "t-sign", "t-verify",
+    "t-decrypt-verify", "t-export", "t-createkey",
+    "t-export-secret-info",
+    /* For these two the order is important
+     * as t-import imports the deleted key from t-delete */
+    "t-delete", "t-import",
+    NULL };
 
 static int verbose = 0;
 

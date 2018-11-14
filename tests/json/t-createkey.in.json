@@ -1,0 +1,5 @@
+{
+    "op": "createkey",
+    "userid": "foo@bar.baz",
+    "algo": "rsa1024"
+}

@@ -1,0 +1,8 @@
+{
+    "op": "encrypt",
+    "keys": ["alpha@example.net", "victor@example.org"],
+    "signing_keys": ["A0FF4590BB6122EDEF6E3C542D727CC768697734"],
+    "data": "Hello world",
+    "armor": true,
+    "always-trust": true
+}

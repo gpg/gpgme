@@ -1,0 +1,56 @@
+{
+    "dec_info":     {
+        "symkey_algo":  "TWOFISH.CFB",
+        "wrong_key_usage":      false,
+        "is_de_vs":     false,
+        "is_mime":      false,
+        "legacy_cipher_nomdc":  false,
+        "recipients":   [{
+            "keyid":        "6AE6D7EE46A871F8",
+            "pubkey_algo_name":     "ELG-E",
+            "status_string":        "Success",
+            "status_code":  0
+        }, {
+        "keyid":        "04071FB807287134",
+        "pubkey_algo_name":     "ELG-E",
+        "status_string":        "No secret key",
+        "status_code":  117440529
+        }]
+    },
+    "info": {
+        "is_mime":      false,
+        "signatures":   [{
+            "summary":      {
+                "sigsum":       [],
+                "valid":        false,
+                "green":        false,
+                "red":  false,
+                "revoked":      false,
+                "key-expired":  false,
+                "sig-expired":  false,
+                "key-missing":  false,
+                "crl-missing":  false,
+                "crl-too-old":  false,
+                "bad-policy":   false,
+                "sys-error":    false
+            },
+            "wrong_key_usage":      false,
+            "chain_model":  false,
+            "is_de_vs":     false,
+            "status_string":        "Success",
+            "fingerprint":  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+            "validity_string":      "unknown",
+            "pubkey_algo_name":     "DSA",
+            "hash_algo_name":       "RIPEMD160",
+            "status_code":  0,
+            "timestamp":    1542200353,
+            "exp_timestamp":        0,
+            "pka_trust":    0,
+            "validity":     0,
+            "validity_reason":      0
+        }]
+    },
+    "type": "plaintext",
+    "base64":       false,
+    "data": "Hello world"
+}
