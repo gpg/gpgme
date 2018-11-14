@@ -1,0 +1,8 @@
+{
+    "op": "sign",
+    "keys": "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+    "sender": "alpha@example.net",
+    "data": "Hello world",
+    "armor": true,
+    "base64": false
+}
