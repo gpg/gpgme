@@ -36,7 +36,7 @@
 #include "../../src/cJSON.h"
 
 /* Register tests here */
-static const char*tests[] = { "t-config", NULL };
+static const char*tests[] = { "t-keylist", "t-config", "t-keylist", NULL };
 
 static int verbose = 0;
 
@@ -95,14 +95,18 @@ get_file (const char *fname)
 int
 test_contains (cjson_t needle, cjson_t hay)
 {
-  /*fprintf (stderr, "checking \n%s\n -------against-------- \n%s\n",
-           cJSON_Print (needle), cJSON_Print (hay)); */
+  if (verbose == 2)
+    fprintf (stderr, "%s: -------checking-------- "
+                     "\n%s\n -------against-------- \n%s\n",
+             nonnull (needle->string), cJSON_Print (needle),
+             cJSON_Print (hay));
 
   /* Type check. This automatically checks bool vals and NULL */
   if (needle->type != hay->type)
     {
       if (verbose)
-        fprintf (stderr, "type mismatch expected %i got %i\n", needle->type,
+        fprintf (stderr, "%s: type mismatch expected %i got %i\n",
+                 nonnull (needle->string), needle->type,
                  hay->type);
       return 1;
     }
@@ -113,8 +117,9 @@ test_contains (cjson_t needle, cjson_t hay)
       if (needle->valueint != hay->valueint)
         {
           if (verbose)
-            fprintf (stderr, "Value mismatch. Expected %i got %i\n",
-                     needle->valueint, hay->valueint);
+            fprintf (stderr, "%s: value mismatch. Expected %i got %i\n",
+                     nonnull (needle->string), needle->valueint,
+                     hay->valueint);
           return 1;
         }
     }
@@ -123,8 +128,8 @@ test_contains (cjson_t needle, cjson_t hay)
       if (strcmp (needle->valuestring, hay->valuestring))
         {
           if (verbose)
-            fprintf (stderr, "String mismatch Expected '%s' got '%s'\n",
-                     needle->valuestring, hay->valuestring);
+            fprintf (stderr, "%s: string mismatch Expected '%s' got '%s'\n",
+                     needle->string, needle->valuestring, hay->valuestring);
           return 1;
         }
     }
@@ -329,14 +334,21 @@ int
 main (int argc, char *argv[])
 {
   const char *gpgme_json = getenv ("gpgme_json");
+  int last_argc = -1;
 
-  if (argc == 2 && !strcmp (argv[1], "--verbose"))
+  if (argc)
+    { argc--; argv++; }
+
+
+  while (argc && last_argc != argc )
     {
-      /* Note that verbose will print out lots of mismatchs
-         because we have to try trough anonymous objects */
-      verbose = 1;
+      last_argc = argc;
+      if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
     }
-
 
   init_gpgme (GPGME_PROTOCOL_SPAWN);
 
