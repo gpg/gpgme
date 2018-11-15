@@ -77,6 +77,7 @@ noinst_PROGRAMS = $(c_tests)
 clean-local:
 	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR private-keys-v1.d
+	-rm -fR openpgp-revocs.d
 
 gpg-sample.stamp: $(private_keys)
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all
