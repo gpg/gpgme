@@ -173,7 +173,7 @@ gpgme_error_t
 gpgme_op_passwd_start (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags)
 {
   gpg_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_passwd_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_passwd_start", ctx,
 	      "key=%p, flags=0x%x", key, flags);
 
   if (!ctx)
@@ -191,7 +191,7 @@ gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_passwd", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_passwd", ctx,
 	      "key=%p, flags=0x%x", key, flags);
 
   if (!ctx)

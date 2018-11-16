@@ -381,7 +381,7 @@ engspawn_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_spawn_t esp = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:engspawn_io_event", esp,
+  TRACE (DEBUG_ENGINE, "gpgme:engspawn_io_event", esp,
           "event %p, type %d, type_data %p",
           esp->io_cbs.event, type, type_data);
   if (esp->io_cbs.event)

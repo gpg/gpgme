@@ -47,7 +47,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   char *buf = NULL;
   int res;
 
-  TRACE_BEG4 (DEBUG_DATA, "gpgme_data_new_from_filepart", r_dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_filepart", r_dh,
 	      "file_name=%s, stream=%p, offset=%lli, length=%u",
 	      fname, stream, offset, length);
 
@@ -110,7 +110,7 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   (*r_dh)->data.mem.size = length;
   (*r_dh)->data.mem.length = length;
 
-  return TRACE_SUC1 ("r_dh=%p", *r_dh);
+  return TRACE_SUC ("r_dh=%p", *r_dh);
 }
 
 
@@ -121,7 +121,7 @@ gpgme_data_new_from_file (gpgme_data_t *r_dh, const char *fname, int copy)
 {
   gpgme_error_t err;
   struct stat statbuf;
-  TRACE_BEG3 (DEBUG_DATA, "gpgme_data_new_from_file", r_dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_file", r_dh,
 	      "file_name=%s, copy=%i (%s)", fname, copy, copy ? "yes" : "no");
 
   if (!fname || !copy)
@@ -159,7 +159,7 @@ gpgme_error_to_errno (gpgme_error_t err)
 	  break;
 	}
     }
-  TRACE3 (DEBUG_DATA, "gpgme:gpgme_error_to_errno", 0,
+  TRACE (DEBUG_DATA, "gpgme:gpgme_error_to_errno", 0,
 	  "mapping %s <%s> to: %s", gpgme_strerror (err),
 	  gpgme_strsource (err), strerror (res));
   gpg_err_set_errno (res);
@@ -172,7 +172,7 @@ old_user_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   gpgme_error_t err;
   size_t amt;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme:old_user_read", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme:old_user_read", dh,
 	      "buffer=%p, size=%u", buffer, size);
 
   err = (*dh->data.old_user.cb) (dh->data.old_user.handle,
@@ -187,7 +187,7 @@ static gpgme_off_t
 old_user_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   gpgme_error_t err;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme:old_user_seek", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme:old_user_seek", dh,
 	      "offset=%llu, whence=%i", offset, whence);
 
   if (whence != SEEK_SET || offset)
@@ -219,7 +219,7 @@ gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
                              void *read_cb_value)
 {
   gpgme_error_t err;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_new_with_read_cb", r_dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_with_read_cb", r_dh,
 	      "read_cb=%p/%p", read_cb, read_cb_value);
 
   err = _gpgme_data_new (r_dh, &old_user_cbs);

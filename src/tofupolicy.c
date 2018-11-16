@@ -155,7 +155,7 @@ gpgme_op_tofu_policy_start (gpgme_ctx_t ctx,
                             gpgme_key_t key, gpgme_tofu_policy_t policy)
 {
   gpg_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_tofu_policy_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_tofu_policy_start", ctx,
 	      "key=%p, policy=%u", key, (unsigned int)policy);
 
   if (!ctx)
@@ -172,7 +172,7 @@ gpgme_op_tofu_policy (gpgme_ctx_t ctx,
                       gpgme_key_t key, gpgme_tofu_policy_t policy)
 {
   gpgme_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_tofu_policy", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_tofu_policy", ctx,
 	      "key=%p, policy=%u", key, (unsigned int)policy);
 
   if (!ctx)

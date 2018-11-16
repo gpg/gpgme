@@ -92,7 +92,7 @@ gpgme_error_t
 gpgme_data_new_from_cbs (gpgme_data_t *r_dh, gpgme_data_cbs_t cbs, void *handle)
 {
   gpgme_error_t err;
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_cbs", r_dh, "handle=%p", handle);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_cbs", r_dh, "handle=%p", handle);
 
   err = _gpgme_data_new (r_dh, &user_cbs);
   if (err)
@@ -100,5 +100,5 @@ gpgme_data_new_from_cbs (gpgme_data_t *r_dh, gpgme_data_cbs_t cbs, void *handle)
 
   (*r_dh)->data.user.cbs = cbs;
   (*r_dh)->data.user.handle = handle;
-  return TRACE_SUC1 ("dh=%p", *r_dh);
+  return TRACE_SUC ("dh=%p", *r_dh);
 }

@@ -70,7 +70,7 @@ gpgme_op_spawn_start (gpgme_ctx_t ctx, const char *file, const char *argv[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_spawn_start", ctx, "file=(%s) flaggs=%x",
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_spawn_start", ctx, "file=(%s) flaggs=%x",
               file, flags);
 
   if (!ctx)
@@ -93,7 +93,7 @@ gpgme_op_spawn (gpgme_ctx_t ctx, const char *file, const char *argv[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_spawn", ctx, "file=(%s) flags=%x",
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_spawn", ctx, "file=(%s) flags=%x",
               file, flags);
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));

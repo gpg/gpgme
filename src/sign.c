@@ -107,13 +107,13 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
   unsigned int inv_signers = 0;
   unsigned int signatures = 0;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_sign_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_sign_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_SIGN, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -130,7 +130,7 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
          broken and should not be used.  We add the already created
          signatures to the invalid signers list and thus this case can
          be detected.  */
-      TRACE_LOG3 ("result: invalid signers: %u, signatures: %u, count: %u",
+      TRACE_LOG  ("result: invalid signers: %u, signatures: %u, count: %u",
                   inv_signers, signatures, gpgme_signers_count (ctx));
 
       for (sig = opd->result.signatures; sig; sig = sig->next)
@@ -138,7 +138,7 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
           key = calloc (1, sizeof *key);
           if (!key)
             {
-              TRACE_SUC0 ("out of core; result=(null)");
+              TRACE_SUC ("out of core; result=(null)");
               return NULL;
             }
           if (sig->fpr)
@@ -147,7 +147,7 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
               if (!key->fpr)
                 {
                   free (key);
-                  TRACE_SUC0 ("out of core; result=(null)");
+                  TRACE_SUC ("out of core; result=(null)");
                   return NULL;
                 }
             }
@@ -170,24 +170,24 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
 
   if (_gpgme_debug_trace())
     {
-      TRACE_LOG2 ("result: invalid signers: %i, signatures: %i",
+      TRACE_LOG  ("result: invalid signers: %i, signatures: %i",
 		  inv_signers, signatures);
       for (inv_key=opd->result.invalid_signers; inv_key; inv_key=inv_key->next)
 	{
-	  TRACE_LOG3 ("result: invalid signer: fpr=%s, reason=%s <%s>",
+	  TRACE_LOG  ("result: invalid signer: fpr=%s, reason=%s <%s>",
 		      inv_key->fpr, gpgme_strerror (inv_key->reason),
 		      gpgme_strsource (inv_key->reason));
 	}
       for (sig = opd->result.signatures; sig; sig = sig->next)
 	{
-	  TRACE_LOG6 ("result: signature: type=%i, pubkey_algo=%i, "
+	  TRACE_LOG  ("result: signature: type=%i, pubkey_algo=%i, "
 		      "hash_algo=%i, timestamp=%li, fpr=%s, sig_class=%i",
 		      sig->type, sig->pubkey_algo, sig->hash_algo,
 		      sig->timestamp, sig->fpr, sig->sig_class);
 	}
    }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -469,7 +469,7 @@ gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 		     gpgme_sig_mode_t mode)
 {
   gpg_error_t err;
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_sign_start", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
 
   if (!ctx)
@@ -487,7 +487,7 @@ gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_sign", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_sign", ctx,
 	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
 
   if (!ctx)

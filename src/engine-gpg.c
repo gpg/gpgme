@@ -165,7 +165,7 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_gpg_t gpg = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:gpg_io_event", gpg,
+  TRACE (DEBUG_ENGINE, "gpgme:gpg_io_event", gpg,
           "event %p, type %d, type_data %p",
           gpg->io_cbs.event, type, type_data);
   if (gpg->io_cbs.event)
@@ -1313,7 +1313,7 @@ read_status (engine_gpg_t gpg)
 			     received and the next thing will be that
 			     the command handler does its action.  */
 			  if (nread > 1)
-			    TRACE0 (DEBUG_CTX, "gpgme:read_status", 0,
+			    TRACE (DEBUG_CTX, "gpgme:read_status", 0,
 				    "error: unexpected data");
 
 			  add_io_cb (gpg, gpg->cmd.fd, 0,
@@ -1686,7 +1686,7 @@ gpg_decrypt (void *engine,
       if (have_gpg_version (gpg, "2.1.16"))
         {
           gpgme_data_release (gpg->override_session_key);
-          TRACE2 (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
+          TRACE (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
                   override_session_key,
                   strlen (override_session_key));
 

@@ -177,7 +177,7 @@ gpgme_op_trustlist_start (gpgme_ctx_t ctx, const char *pattern, int max_level)
   void *hook;
   op_data_t opd;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_trustlist_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_trustlist_start", ctx,
 	      "pattern=%s, max_level=%i", pattern, max_level);
 
   if (!ctx || !pattern || !*pattern)
@@ -213,7 +213,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   op_data_t opd;
   struct trust_queue_item_s *q;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_trustlist_next", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_trustlist_next", ctx, "");
 
   if (!ctx || !r_item)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -245,20 +245,20 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   free (q);
   if ((*r_item)->type == 1)
     {
-      TRACE_SUC5 ("trust_item=%p: %s: owner trust %s with level %i "
+      TRACE_SUC ("trust_item=%p: %s: owner trust %s with level %i "
 		  "and validity 0x%x", *r_item, (*r_item)->keyid,
 		  (*r_item)->owner_trust, (*r_item)->level,
 		  (*r_item)->validity);
     }
   else if ((*r_item)->type == 2)
     {
-      TRACE_SUC5 ("trust_item=%p: %s: UID %s with level %i "
+      TRACE_SUC ("trust_item=%p: %s: UID %s with level %i "
 		  "and validity 0x%x", *r_item, (*r_item)->keyid,
 		  (*r_item)->name, (*r_item)->level, (*r_item)->validity);
     }
   else
     {
-      TRACE_SUC5 ("trust_item=%p: %s: unknown type %i with level %i "
+      TRACE_SUC ("trust_item=%p: %s: unknown type %i with level %i "
 		  "and validity 0x%x", *r_item, (*r_item)->keyid,
 		  (*r_item)->type, (*r_item)->level, (*r_item)->validity);
     }
@@ -270,7 +270,7 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
 gpgme_error_t
 gpgme_op_trustlist_end (gpgme_ctx_t ctx)
 {
-  TRACE (DEBUG_CTX, "gpgme_op_trustlist_end", ctx);
+  TRACE (DEBUG_CTX, "gpgme_op_trustlist_end", ctx, "");
 
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);

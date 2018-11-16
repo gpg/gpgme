@@ -56,7 +56,7 @@ _gpgme_signers_clear (gpgme_ctx_t ctx)
 void
 gpgme_signers_clear (gpgme_ctx_t ctx)
 {
-  TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx);
+  TRACE (DEBUG_CTX, "gpgme_signers_clear", ctx, "");
   _gpgme_signers_clear (ctx);
 }
 
@@ -65,7 +65,7 @@ gpgme_signers_clear (gpgme_ctx_t ctx)
 gpgme_error_t
 gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 {
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_signers_add", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_signers_add", ctx,
 	      "key=%p (%s)", key, (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid");
 
@@ -89,7 +89,7 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
   gpgme_key_ref (key);
   ctx->signers[ctx->signers_len++] = key;
-  return TRACE_SUC ();
+  return TRACE_SUC ("");
 }
 
 

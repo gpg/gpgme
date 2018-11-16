@@ -282,6 +282,91 @@ _gpgme_debug (int level, const char *format, ...)
   return 0;
 }
 
+/* Log the formatted string FORMAT prefixed with additional info
+ * depending on MODE:
+ *
+ * -1 = Do not print any additional args.
+ *  0 = standalone (used by macro TRACE)
+ *  1 = enter a function (used by macro TRACE_BEG)
+ *  2 = debug a function (used by macro TRACE_LOG)
+ *  3 = leave a function (used by macro TRACE_SUC)
+ *
+ * Returns: 0
+ *
+ * Note that we always return 0 because the old TRACE macro evaluated
+ * to 0 which issues a warning with newer gcc version about an unused
+ * values.  By using a return value of this function this can be
+ * avoided.  Fixme: It might be useful to check whether the return
+ * value from the TRACE macros are actually used somewhere.
+ */
+int
+_gpgme_debugf (int level, int mode, const char *func, const char *tagname,
+               const char *tagvalue, const char *format, ...)
+{
+  va_list arg_ptr;
+  int saved_errno;
+
+  saved_errno = errno;
+  if (debug_level < level)
+    return 0;
+
+  va_start (arg_ptr, format);
+  LOCK (debug_lock);
+  {
+    struct tm *tp;
+    time_t atime = time (NULL);
+
+    tp = localtime (&atime);
+    fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
+	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+	     tp->tm_hour, tp->tm_min, tp->tm_sec,
+	     (unsigned long long) ath_self ());
+  }
+#ifdef FRAME_NR
+  {
+    int indent;
+
+    indent = frame_nr > 0? (2 * (frame_nr - 1)):0;
+    fprintf (errfp, "%*s", indent < 40? indent : 40, "");
+  }
+#endif
+
+  switch (mode)
+    {
+    case -1:  /* Do nothing.  */
+      break;
+    case 0:
+      fprintf (errfp, "%s: call: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 1:
+      fprintf (errfp, "%s: enter: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 2:
+      fprintf (errfp, "%s: check: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 3:
+      if (tagname)
+        fprintf (errfp, "%s: leave: %s=%p ", func, tagname, tagvalue);
+      else
+        fprintf (errfp, "%s: leave: ", func);
+      break;
+    default:
+      fprintf (errfp, "%s: m=%d: %s=%p ", func, mode, tagname, tagvalue);
+      break;
+    }
+
+  vfprintf (errfp, format, arg_ptr);
+  va_end (arg_ptr);
+  if(format && *format && format[strlen (format) - 1] != '\n')
+    putc ('\n', errfp);
+  UNLOCK (debug_lock);
+  fflush (errfp);
+
+  gpg_err_set_errno (saved_errno);
+  return 0;
+}
+
+
 
 /* Start a new debug line in *LINE, logged at level LEVEL or higher,
    and starting with the formatted string FORMAT.  */

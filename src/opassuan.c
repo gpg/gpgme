@@ -91,7 +91,7 @@ gpgme_op_assuan_transact_start (gpgme_ctx_t ctx,
 {
   gpg_error_t err;
 
-  TRACE_BEG7 (DEBUG_CTX, "gpgme_op_assuan_transact_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_assuan_transact_start", ctx,
 	      "command=%s, data_cb=%p/%p, inq_cb=%p/%p, status_cb=%p/%p",
 	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
 	      status_cb, status_cb_value);
@@ -120,7 +120,7 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
   gpgme_error_t err;
   gpgme_error_t op_err;
 
-  TRACE_BEG8 (DEBUG_CTX, "gpgme_op_assuan_transact", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_assuan_transact", ctx,
 	      "command=%s, data_cb=%p/%p, inq_cb=%p/%p, status_cb=%p/%p, "
 	      "op_err=%p",
 	      command, data_cb, data_cb_value, inq_cb, inq_cb_value,
@@ -139,7 +139,7 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
   err = _gpgme_wait_one_ext (ctx, &op_err);
   if (op_err)
     {
-      TRACE_LOG2 ("op_err = %s <%s>", gpgme_strerror (op_err),
+      TRACE_LOG  ("op_err = %s <%s>", gpgme_strerror (op_err),
 		  gpgme_strsource (op_err));
       if (! op_err_p)
 	{
@@ -175,7 +175,7 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
   void *hook;
   op_data_t opd;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_assuan_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_assuan_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_ASSUAN, &hook, -1, NULL);
   opd = hook;
@@ -183,7 +183,7 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
      before.  */
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -192,15 +192,15 @@ gpgme_op_assuan_result (gpgme_ctx_t ctx)
   opd->result.err = _gpgme_engine_assuan_last_op_err (ctx->engine->engine);
   if (opd->result.err)
     {
-      TRACE_LOG1 ("err = %s", gpg_strerror (0));
+      TRACE_LOG  ("err = %s", gpg_strerror (0));
     }
   else
     {
-      TRACE_LOG2 ("err = %s <%s>", gpg_strerror (opd->result.err),
+      TRACE_LOG  ("err = %s <%s>", gpg_strerror (opd->result.err),
 		  gpg_strsource (opd->result.err));
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -217,7 +217,7 @@ gpgme_op_assuan_transact (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE (DEBUG_CTX, "gpgme_op_assuan_transact", ctx);
+  TRACE (DEBUG_CTX, "gpgme_op_assuan_transact", ctx, "");
 
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);

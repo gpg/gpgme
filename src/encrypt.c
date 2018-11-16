@@ -78,14 +78,14 @@ gpgme_op_encrypt_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_encrypt_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_encrypt_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_ENCRYPT, &hook, -1, NULL);
   opd = hook;
 
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -96,7 +96,7 @@ gpgme_op_encrypt_result (gpgme_ctx_t ctx)
 
       while (invkeys)
 	{
-	  TRACE_LOG3 ("invalid_recipients[%i] = %s (%s)",
+	  TRACE_LOG  ("invalid_recipients[%i] = %s (%s)",
 		      i, invkeys->fpr ? invkeys->fpr : "(null)",
 		      gpg_strerror (invkeys->reason));
 	  invkeys = invkeys->next;
@@ -104,7 +104,7 @@ gpgme_op_encrypt_result (gpgme_ctx_t ctx)
 	}
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -291,7 +291,7 @@ gpgme_op_encrypt_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_encrypt", ctx,
 	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
 
   if (!ctx)
@@ -305,7 +305,7 @@ gpgme_op_encrypt_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
           while (recp[i])
             {
-              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+              TRACE_LOG  ("recipient[%i] = %p (%s)", i, recp[i],
 		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
                           recp[i]->subkeys->fpr : "invalid");
               i++;
@@ -313,7 +313,7 @@ gpgme_op_encrypt_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
         }
       else
         {
-          TRACE_LOG1 ("recipients = '%s'", recpstring);
+          TRACE_LOG  ("recipients = '%s'", recpstring);
         }
     }
 
@@ -332,7 +332,7 @@ gpgme_op_encrypt_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_encrypt_start", ctx,
 	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
 
   if (!ctx)
@@ -346,7 +346,7 @@ gpgme_op_encrypt_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
           while (recp[i])
             {
-              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+              TRACE_LOG  ("recipient[%i] = %p (%s)", i, recp[i],
                           (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
                           recp[i]->subkeys->fpr : "invalid");
               i++;
@@ -354,7 +354,7 @@ gpgme_op_encrypt_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
         }
       else
         {
-          TRACE_LOG1 ("recipients = '%s'", recpstring);
+          TRACE_LOG  ("recipients = '%s'", recpstring);
         }
     }
 

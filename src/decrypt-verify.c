@@ -99,7 +99,7 @@ gpgme_op_decrypt_verify_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt_verify_start", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)
@@ -118,7 +118,7 @@ gpgme_op_decrypt_verify (gpgme_ctx_t ctx, gpgme_data_t cipher,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_verify", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt_verify", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)
@@ -142,7 +142,7 @@ gpgme_op_decrypt_ext_start (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_ext_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt_ext_start", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)
@@ -166,7 +166,7 @@ gpgme_op_decrypt_ext (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_ext", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt_ext", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)

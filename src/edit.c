@@ -158,7 +158,7 @@ gpgme_op_interact_start (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_interact_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_interact_start", ctx,
 	      "key=%p flags=0x%x fnc=%p fnc_value=%p, out=%p",
 	      key, flags,fnc, fnc_value, out);
 
@@ -177,7 +177,7 @@ gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_interact", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_interact", ctx,
 	      "key=%p flags=0x%x fnc=%p fnc_value=%p, out=%p",
 	      key, flags,fnc, fnc_value, out);
 
@@ -234,7 +234,7 @@ gpgme_op_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
@@ -255,7 +255,7 @@ gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_edit", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
@@ -278,7 +278,7 @@ gpgme_op_card_edit_start (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_card_edit_start", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);
@@ -299,7 +299,7 @@ gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG5 (DEBUG_CTX, "gpgme_op_card_edit", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_card_edit", ctx,
 	      "key=%p (%s), fnc=%p fnc_value=%p, out=%p", key,
 	      (key && key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", fnc, fnc_value, out);

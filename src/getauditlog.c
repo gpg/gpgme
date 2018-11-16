@@ -71,7 +71,7 @@ gpgme_op_getauditlog_start (gpgme_ctx_t ctx,
                             gpgme_data_t output, unsigned int flags)
 {
   gpg_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
 	      "output=%p, flags=0x%x", output, flags);
 
   if (!ctx)
@@ -91,7 +91,7 @@ gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, unsigned int flags)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_getauditlog", ctx,
 	      "output=%p, flags=0x%x", output, flags);
 
   if (!ctx)

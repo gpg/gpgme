@@ -189,7 +189,7 @@ gpgme_op_keysign_start (gpgme_ctx_t ctx, gpgme_key_t key, const char *userid,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_keysign_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_keysign_start", ctx,
 	      "key=%p, uid='%s' flags=0x%x", key, userid, flags);
 
   if (!ctx)
@@ -206,7 +206,7 @@ gpgme_op_keysign (gpgme_ctx_t ctx, gpgme_key_t key, const char *userid,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_keysign", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_keysign", ctx,
 	      "key=%p, uid='%s' flags=0x%x", key, userid, flags);
 
   if (!ctx)

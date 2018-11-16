@@ -179,7 +179,7 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 {
   gpg_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_vfs_create", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_vfs_create", ctx,
 	      "container_file=%s, flags=0x%x, op_err=%p",
 	      container_file, flags, op_err);
 
@@ -192,7 +192,7 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
       while (recp[i])
 	{
-	  TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+	  TRACE_LOG  ("recipient[%i] = %p (%s)", i, recp[i],
 		      (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
 		      recp[i]->subkeys->fpr : "invalid");
 	  i++;

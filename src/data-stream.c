@@ -96,7 +96,7 @@ gpgme_error_t
 gpgme_data_new_from_stream (gpgme_data_t *r_dh, FILE *stream)
 {
   gpgme_error_t err;
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_stream", r_dh, "stream=%p",
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_stream", r_dh, "stream=%p",
 	      stream);
 
   err = _gpgme_data_new (r_dh, &stream_cbs);
@@ -104,5 +104,5 @@ gpgme_data_new_from_stream (gpgme_data_t *r_dh, FILE *stream)
     return TRACE_ERR (err);
 
   (*r_dh)->data.stream = stream;
-  return TRACE_SUC1 ("dh=%p", *r_dh);
+  return TRACE_SUC ("dh=%p", *r_dh);
 }

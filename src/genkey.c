@@ -70,21 +70,21 @@ gpgme_op_genkey_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_genkey_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_genkey_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_GENKEY, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
-  TRACE_LOG3 ("fpr = %s, %s, %s", opd->result.fpr,
+  TRACE_LOG  ("fpr = %s, %s, %s", opd->result.fpr,
 	      opd->result.primary ? "primary" : "no primary",
 	      opd->result.sub ? "sub" : "no sub");
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -286,7 +286,7 @@ gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_genkey_start", ctx,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, parms? strlen (parms):0);
 
@@ -307,7 +307,7 @@ gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_genkey", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_genkey", ctx,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, parms? strlen (parms):0);
 
@@ -372,7 +372,7 @@ gpgme_op_createkey_start (gpgme_ctx_t ctx, const char *userid, const char *algo,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createkey_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_createkey_start", ctx,
 	      "userid='%s', algo='%s' flags=0x%x", userid, algo, flags);
 
   if (!ctx)
@@ -391,7 +391,7 @@ gpgme_op_createkey (gpgme_ctx_t ctx, const char *userid, const char *algo,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createkey", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_createkey", ctx,
 	      "userid='%s', algo='%s' flags=0x%x", userid, algo, flags);
 
   if (!ctx)
@@ -461,7 +461,7 @@ gpgme_op_createsubkey_start (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createsubkey_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_createsubkey_start", ctx,
 	      "key=%p, algo='%s' flags=0x%x", key, algo, flags);
 
   if (!ctx)
@@ -479,7 +479,7 @@ gpgme_op_createsubkey (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_createsubkey", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_createsubkey", ctx,
 	      "key=%p, algo='%s' flags=0x%x", key, algo, flags);
 
   if (!ctx)
@@ -546,7 +546,7 @@ gpgme_op_adduid_start (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_adduid_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_adduid_start", ctx,
 	      "uid='%s' flags=0x%x", userid, flags);
 
   if (!ctx)
@@ -563,7 +563,7 @@ gpgme_op_adduid (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_adduid", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_adduid", ctx,
 	      "uid='%s' flags=0x%x", userid, flags);
 
   if (!ctx)
@@ -583,7 +583,7 @@ gpgme_op_revuid_start (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_revuid_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_revuid_start", ctx,
 	      "uid='%s' flags=0x%x", userid, flags);
 
   if (!ctx)
@@ -600,7 +600,7 @@ gpgme_op_revuid (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_revuid", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_revuid", ctx,
 	      "uid='%s' flags=0x%x", userid, flags);
 
   if (!ctx)
@@ -622,7 +622,7 @@ set_uid_flag (gpgme_ctx_t ctx, int synchronous,
 {
   gpgme_error_t err;
 
-  TRACE_BEG4 (DEBUG_CTX, "gpgme_op_set_uid_flag", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_set_uid_flag", ctx,
 	      "%d uid='%s' '%s'='%s'", synchronous, userid, name, value);
 
   if (!ctx || !name || !key || !userid)

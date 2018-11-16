@@ -581,6 +581,7 @@ if test "$GCC" = yes; then
           CFLAGS="$CFLAGS -Wdeclaration-after-statement"
           CFLAGS="$CFLAGS -Wno-missing-field-initializers"
           CFLAGS="$CFLAGS -Wno-sign-compare"
+          CFLAGS="$CFLAGS -Wno-format-zero-length"
         fi
         CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-shadow"
 

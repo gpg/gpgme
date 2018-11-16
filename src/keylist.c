@@ -101,19 +101,19 @@ gpgme_op_keylist_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
-  TRACE_LOG1 ("truncated = %i", opd->result.truncated);
+  TRACE_LOG  ("truncated = %i", opd->result.truncated);
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -572,7 +572,7 @@ keylist_colon_handler (void *priv, char *line)
 
   key = opd->tmp_key;
 
-  TRACE2 (DEBUG_CTX, "gpgme:keylist_colon_handler", ctx,
+  TRACE (DEBUG_CTX, "gpgme:keylist_colon_handler", ctx,
 	  "key = %p, line = %s", key, line ? line : "(null)");
 
   if (!line)
@@ -1078,7 +1078,7 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   op_data_t opd;
   int flags = 0;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_keylist_start", ctx,
 	      "pattern=%s, secret_only=%i", pattern, secret_only);
 
   if (!ctx)
@@ -1122,7 +1122,7 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   op_data_t opd;
   int flags = 0;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_keylist_ext_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_keylist_ext_start", ctx,
 	      "secret_only=%i, reserved=0x%x", secret_only, reserved);
 
   if (!ctx)
@@ -1164,7 +1164,7 @@ gpgme_op_keylist_from_data_start (gpgme_ctx_t ctx, gpgme_data_t data,
   void *hook;
   op_data_t opd;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_from_data_start", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_from_data_start", ctx, "");
 
   if (!ctx || !data || reserved)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -1199,7 +1199,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   void *hook;
   op_data_t opd;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_next", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_keylist_next", ctx, "");
 
   if (!ctx || !r_key)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -1235,7 +1235,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   *r_key = queue_item->key;
   free (queue_item);
 
-  return TRACE_SUC2 ("key=%p (%s)", *r_key,
+  return TRACE_SUC ("key=%p (%s)", *r_key,
 		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		     (*r_key)->subkeys->fpr : "invalid");
 }
@@ -1245,7 +1245,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 gpgme_error_t
 gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
-  TRACE (DEBUG_CTX, "gpgme_op_keylist_end", ctx);
+  TRACE (DEBUG_CTX, "gpgme_op_keylist_end", ctx, "");
 
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1264,7 +1264,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   gpgme_error_t err;
   gpgme_key_t result, key;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_get_key", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_get_key", ctx,
 	      "fpr=%s, secret=%i", fpr, secret);
 
   if (r_key)
@@ -1335,7 +1335,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   if (! err)
     {
       *r_key = result;
-      TRACE_LOG2 ("key=%p (%s)", *r_key,
+      TRACE_LOG  ("key=%p (%s)", *r_key,
 		  ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
 		  (*r_key)->subkeys->fpr : "invalid");
     }
