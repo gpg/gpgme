@@ -104,5 +104,6 @@ gpgme_data_new_from_stream (gpgme_data_t *r_dh, FILE *stream)
     return TRACE_ERR (err);
 
   (*r_dh)->data.stream = stream;
-  return TRACE_SUC ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }

@@ -1235,9 +1235,10 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
   *r_key = queue_item->key;
   free (queue_item);
 
-  return TRACE_SUC ("key=%p (%s)", *r_key,
-		     ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
-		     (*r_key)->subkeys->fpr : "invalid");
+  TRACE_SUC ("key=%p (%s)", *r_key,
+             ((*r_key)->subkeys && (*r_key)->subkeys->fpr) ?
+             (*r_key)->subkeys->fpr : "invalid");
+  return 0;
 }
 
 

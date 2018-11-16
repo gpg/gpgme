@@ -166,7 +166,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (err)
     return TRACE_SYSRES (err);
 
-  return TRACE_SUC ("read=0x%x, write=0x%x", filedes[0], filedes[1]);
+  TRACE_SUC ("read=0x%x, write=0x%x", filedes[0], filedes[1]);
+  return 0;
 }
 
 

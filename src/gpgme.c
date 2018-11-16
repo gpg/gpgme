@@ -159,7 +159,8 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   *r_ctx = ctx;
 
-  return TRACE_SUC ("ctx=%p", ctx);
+  TRACE_SUC ("ctx=%p", ctx);
+  return 0;
 }
 
 

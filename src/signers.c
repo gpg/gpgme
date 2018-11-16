@@ -89,7 +89,8 @@ gpgme_signers_add (gpgme_ctx_t ctx, const gpgme_key_t key)
 
   gpgme_key_ref (key);
   ctx->signers[ctx->signers_len++] = key;
-  return TRACE_SUC ("");
+  TRACE_SUC ("");
+  return 0;
 }
 
 

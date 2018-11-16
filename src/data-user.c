@@ -100,5 +100,6 @@ gpgme_data_new_from_cbs (gpgme_data_t *r_dh, gpgme_data_cbs_t cbs, void *handle)
 
   (*r_dh)->data.user.cbs = cbs;
   (*r_dh)->data.user.handle = handle;
-  return TRACE_SUC ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }

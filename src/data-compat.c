@@ -110,7 +110,8 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   (*r_dh)->data.mem.size = length;
   (*r_dh)->data.mem.length = length;
 
-  return TRACE_SUC ("r_dh=%p", *r_dh);
+  TRACE_SUC ("r_dh=%p", *r_dh);
+  return 0;
 }
 
 

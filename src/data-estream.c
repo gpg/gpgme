@@ -95,5 +95,6 @@ gpgme_data_new_from_estream (gpgme_data_t *r_dh, gpgrt_stream_t stream)
     return TRACE_ERR (err);
 
   (*r_dh)->data.e_stream = stream;
-  return TRACE_SUC ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }

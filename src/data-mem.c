@@ -177,7 +177,8 @@ gpgme_data_new (gpgme_data_t *r_dh)
   if (err)
     return TRACE_ERR (err);
 
-  return TRACE_SUC ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }
 
 
@@ -214,7 +215,8 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 
   (*r_dh)->data.mem.size = size;
   (*r_dh)->data.mem.length = size;
-  return TRACE_SUC ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }
 
 
@@ -282,13 +284,9 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
   gpgme_data_release (dh);
 
   if (r_len)
-    {
-      TRACE_SUC ("buffer=%p, len=%zu", str, *r_len);
-    }
+    TRACE_SUC ("buffer=%p, len=%zu", str, *r_len);
   else
-    {
-      TRACE_SUC ("buffer=%p", str);
-    }
+    TRACE_SUC ("buffer=%p", str);
   return str;
 }
 
