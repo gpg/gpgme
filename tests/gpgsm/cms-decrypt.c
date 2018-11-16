@@ -1,21 +1,22 @@
 /* cms-decrypt.c  - Helper to debug the decrupt operation.
-   Copyright (C) 2008 g10 Code GmbH
-
-   This file is part of GPGME.
- 
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-   
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-   
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2008 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 /* We need to include config.h so that we know whether we are building
    with large file system (LFS) support. */
@@ -40,7 +41,7 @@ nonnull (const char *s)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
@@ -80,8 +81,8 @@ main (int argc, char **argv)
       fputs (PGM ": error: decryption result missing\n", stderr);
       exit (1);
     }
-  
-  printf ("unsupported_algorithm: %s\n", 
+
+  printf ("unsupported_algorithm: %s\n",
           nonnull (result->unsupported_algorithm));
   printf ("wrong_key_usage: %u\n",  result->wrong_key_usage);
   printf ("file_name: %s\n", nonnull (result->file_name));

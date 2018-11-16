@@ -5,8 +5,8 @@ Repository: git://git.gnupg.org/gpgme.git
 Maintainer: Werner Koch <wk@gnupg.org>
 Bug reports: https://bugs.gnupg.org
 Security related bug reports: security@gnupg.org
-License (software): LGPLv2.1+
-License (manual+tools): GPLv3+
+License (software): LGPL-2.1-or-later
+License (manual+tools): GPL-3.0-or-later
 
 
 GPGME is free software.  See the files COPYING for copying conditions.
