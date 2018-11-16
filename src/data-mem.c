@@ -190,7 +190,7 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 {
   gpgme_error_t err;
   TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_mem", r_dh,
-	      "buffer=%p, size=%u, copy=%i (%s)", buffer, size,
+	      "buffer=%p, size=%zu, copy=%i (%s)", buffer, size,
 	      copy, copy ? "yes" : "no");
 
   err = _gpgme_data_new (r_dh, &mem_cbs);
@@ -283,7 +283,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 
   if (r_len)
     {
-      TRACE_SUC ("buffer=%p, len=%u", str, *r_len);
+      TRACE_SUC ("buffer=%p, len=%zu", str, *r_len);
     }
   else
     {

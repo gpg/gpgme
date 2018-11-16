@@ -911,7 +911,7 @@ gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int ret;
   TRACE_BEG  (DEBUG_GLOBAL, "gpgme_io_read", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zu", buffer, count);
 
   ret = _gpgme_io_read (fd, buffer, count);
 
@@ -927,7 +927,7 @@ gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int ret;
   TRACE_BEG  (DEBUG_GLOBAL, "gpgme_io_write", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zu", buffer, count);
 
   ret = _gpgme_io_write (fd, buffer, count);
 
@@ -946,7 +946,7 @@ gpgme_io_writen (int fd, const void *buffer_arg, size_t count)
   const char *buffer = buffer_arg;
   int ret = 0;
   TRACE_BEG  (DEBUG_GLOBAL, "gpgme_io_writen", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zu", buffer, count);
   while (count)
     {
       ret = _gpgme_io_write (fd, buffer, count);

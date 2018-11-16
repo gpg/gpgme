@@ -246,20 +246,20 @@ gpgme_op_trustlist_next (gpgme_ctx_t ctx, gpgme_trust_item_t *r_item)
   if ((*r_item)->type == 1)
     {
       TRACE_SUC ("trust_item=%p: %s: owner trust %s with level %i "
-		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  "and validity %s", *r_item, (*r_item)->keyid,
 		  (*r_item)->owner_trust, (*r_item)->level,
 		  (*r_item)->validity);
     }
   else if ((*r_item)->type == 2)
     {
       TRACE_SUC ("trust_item=%p: %s: UID %s with level %i "
-		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  "and validity %s", *r_item, (*r_item)->keyid,
 		  (*r_item)->name, (*r_item)->level, (*r_item)->validity);
     }
   else
     {
       TRACE_SUC ("trust_item=%p: %s: unknown type %i with level %i "
-		  "and validity 0x%x", *r_item, (*r_item)->keyid,
+		  "and validity %s", *r_item, (*r_item)->keyid,
 		  (*r_item)->type, (*r_item)->level, (*r_item)->validity);
     }
   return 0;

@@ -135,7 +135,7 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
 	{
 	  TRACE_LOG  ("sig[%i] = fpr %s, summary 0x%x, status %s",
 		      i, sig->fpr, sig->summary, gpg_strerror (sig->status));
-	  TRACE_LOG  ("sig[%i] = timestamps 0x%x/0x%x flags:%s%s%s",
+	  TRACE_LOG  ("sig[%i] = timestamps 0x%lx/0x%lx flags:%s%s%s",
 		      i, sig->timestamp, sig->exp_timestamp,
 		      sig->wrong_key_usage ? "wrong key usage" : "",
 		      sig->pka_trust == 1 ? "pka bad"

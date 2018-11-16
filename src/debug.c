@@ -379,7 +379,7 @@ _gpgme_debug_end (void **line)
 
   /* The smallest possible level is 1, so force logging here by
      using that.  */
-  _gpgme_debug (1, -1, NULL, NULL, NULL, "%s", *line);
+  _gpgme_debug (1, -1, NULL, NULL, NULL, "%s", (char*)*line);
   gpgrt_free (*line);
   *line = NULL;
 }

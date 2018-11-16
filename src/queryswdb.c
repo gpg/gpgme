@@ -92,7 +92,7 @@ gpgme_op_query_swdb (gpgme_ctx_t ctx, const char *name, const char *iversion,
   op_data_t opd;
 
   TRACE_BEG  (DEBUG_CTX, "gpgme_op_query_swdb", ctx,
-	      "name=%s, iversion=%", name, iversion);
+	      "name=%s, iversion=%s", name, iversion);
 
   if (!ctx || reserved)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));

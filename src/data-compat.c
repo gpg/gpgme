@@ -48,8 +48,8 @@ gpgme_data_new_from_filepart (gpgme_data_t *r_dh, const char *fname,
   int res;
 
   TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_filepart", r_dh,
-	      "file_name=%s, stream=%p, offset=%lli, length=%u",
-	      fname, stream, offset, length);
+	      "file_name=%s, stream=%p, offset=%lli, length=%zu",
+	      fname, stream, (long long int)offset, length);
 
   if (stream && fname)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -173,13 +173,13 @@ old_user_read (gpgme_data_t dh, void *buffer, size_t size)
   gpgme_error_t err;
   size_t amt;
   TRACE_BEG  (DEBUG_DATA, "gpgme:old_user_read", dh,
-	      "buffer=%p, size=%u", buffer, size);
+	      "buffer=%p, size=%zu", buffer, size);
 
   err = (*dh->data.old_user.cb) (dh->data.old_user.handle,
 				 buffer, size, &amt);
   if (err)
     return TRACE_SYSRES (gpgme_error_to_errno (err));
-  return TRACE_SYSRES ((gpgme_ssize_t)amt);
+  return TRACE_SYSRES ((int)amt);
 }
 
 
@@ -188,7 +188,7 @@ old_user_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   gpgme_error_t err;
   TRACE_BEG  (DEBUG_DATA, "gpgme:old_user_seek", dh,
-	      "offset=%llu, whence=%i", offset, whence);
+	      "offset=%llu, whence=%i", (long long int)offset, whence);
 
   if (whence != SEEK_SET || offset)
     {

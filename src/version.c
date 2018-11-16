@@ -230,14 +230,14 @@ gpgme_check_version_internal (const char *req_version,
 
   /* Catch-22, see above.  */
   TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
-	  "req_version=%s, offset_sig_validity=%i",
+	  "req_version=%s, offset_sig_validity=%zu",
 	  req_version ? req_version : "(null)", offset_sig_validity);
 
   if (offset_sig_validity != offsetof (struct _gpgme_signature, validity))
     {
       TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
 	      "offset_sig_validity mismatch: expected %i",
-	      offsetof (struct _gpgme_signature, validity));
+             (int)offsetof (struct _gpgme_signature, validity));
       _gpgme_selftest = GPG_ERR_SELFTEST_FAILED;
     }
 

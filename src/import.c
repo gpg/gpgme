@@ -103,7 +103,8 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       while (impstat)
 	{
 	  TRACE_LOG  ("import[%i] for %s = 0x%x (%s)",
-		      i, impstat->fpr, impstat->status, impstat->result);
+		      i, impstat->fpr, impstat->status,
+                      gpgme_strerror (impstat->result));
 	  impstat = impstat->next;
 	  i++;
 	}

@@ -110,7 +110,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int nread;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zu", buffer, count);
 
   do
     {
@@ -128,7 +128,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int nwritten;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zu", buffer, count);
   TRACE_LOGBUFX (buffer, count);
 
   do
@@ -427,7 +427,7 @@ get_max_fds (void)
     }
 #endif
 
-  TRACE (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%i (%s)", fds, source);
+  TRACE (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%ld (%s)", fds, source);
   return fds;
 }
 
@@ -654,7 +654,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   struct timeval timeout = { 1, 0 };
   void *dbg_help = NULL;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
-	      "nfds=%u, nonblock=%u", nfds, nonblock);
+	      "nfds=%zu, nonblock=%u", nfds, nonblock);
 
   FD_ZERO (&readfds);
   FD_ZERO (&writefds);

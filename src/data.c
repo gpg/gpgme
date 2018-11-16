@@ -353,7 +353,7 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
   gpgme_ssize_t res;
   int blankout;
   TRACE_BEG  (DEBUG_DATA, "gpgme_data_read", dh,
-	      "buffer=%p, size=%u", buffer, size);
+	      "buffer=%p, size=%zu", buffer, size);
 
   if (!dh)
     {
@@ -376,7 +376,7 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
       while (res < 0 && errno == EINTR);
     }
 
-  return TRACE_SYSRES (res);
+  return TRACE_SYSRES ((int)res);
 }
 
 
@@ -388,7 +388,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   gpgme_ssize_t res;
   TRACE_BEG  (DEBUG_DATA, "gpgme_data_write", dh,
-	      "buffer=%p, size=%u", buffer, size);
+	      "buffer=%p, size=%zu", buffer, size);
 
   if (!dh)
     {
@@ -404,7 +404,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
     res = (*dh->cbs->write) (dh, buffer, size);
   while (res < 0 && errno == EINTR);
 
-  return TRACE_SYSRES (res);
+  return TRACE_SYSRES ((int)res);
 }
 
 
@@ -415,7 +415,7 @@ gpgme_off_t
 gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
   TRACE_BEG  (DEBUG_DATA, "gpgme_data_seek", dh,
-	      "offset=%lli, whence=%i", offset, whence);
+	      "offset=%lli, whence=%i", (long long int)offset, whence);
 
   if (!dh)
     {
@@ -437,7 +437,7 @@ gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
   if (offset >= 0)
     dh->pending_len = 0;
 
-  return TRACE_SYSRES (offset);
+  return TRACE_SYSRES ((int)offset);
 }
 
 
