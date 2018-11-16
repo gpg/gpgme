@@ -205,12 +205,13 @@ debug_init (void)
 
   if (debug_level > 0)
     {
-      _gpgme_debug (DEBUG_INIT, "gpgme_debug: level=%d\n", debug_level);
+      _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+                    "gpgme_debug: level=%d\n", debug_level);
 #ifdef HAVE_W32_SYSTEM
       {
         const char *name = _gpgme_get_inst_dir ();
-        _gpgme_debug (DEBUG_INIT, "gpgme_debug: gpgme='%s'\n",
-                      name? name: "?");
+        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+                      "gpgme_debug: gpgme='%s'\n", name? name: "?");
       }
 #endif
     }
@@ -230,58 +231,6 @@ _gpgme_debug_subsystem_init (void)
 
 
 
-/* Log the formatted string FORMAT at debug level LEVEL or higher.
- *
- * Returns: 0
- *
- * Note that we always return 0 because the old TRACE macro evaluated
- * to 0 which issues a warning with newer gcc version about an unused
- * values.  By using a return value of this function this can be
- * avoided.  Fixme: It might be useful to check whether the return
- * value from the TRACE macros are actually used somewhere.
- */
-int
-_gpgme_debug (int level, const char *format, ...)
-{
-  va_list arg_ptr;
-  int saved_errno;
-
-  saved_errno = errno;
-  if (debug_level < level)
-    return 0;
-
-  va_start (arg_ptr, format);
-  LOCK (debug_lock);
-  {
-    struct tm *tp;
-    time_t atime = time (NULL);
-
-    tp = localtime (&atime);
-    fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
-	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-	     tp->tm_hour, tp->tm_min, tp->tm_sec,
-	     (unsigned long long) ath_self ());
-  }
-#ifdef FRAME_NR
-  {
-    int indent;
-
-    indent = frame_nr > 0? (2 * (frame_nr - 1)):0;
-    fprintf (errfp, "%*s", indent < 40? indent : 40, "");
-  }
-#endif
-
-  vfprintf (errfp, format, arg_ptr);
-  va_end (arg_ptr);
-  if(format && *format && format[strlen (format) - 1] != '\n')
-    putc ('\n', errfp);
-  UNLOCK (debug_lock);
-  fflush (errfp);
-
-  gpg_err_set_errno (saved_errno);
-  return 0;
-}
-
 /* Log the formatted string FORMAT prefixed with additional info
  * depending on MODE:
  *
@@ -300,8 +249,8 @@ _gpgme_debug (int level, const char *format, ...)
  * value from the TRACE macros are actually used somewhere.
  */
 int
-_gpgme_debugf (int level, int mode, const char *func, const char *tagname,
-               const char *tagvalue, const char *format, ...)
+_gpgme_debug (int level, int mode, const char *func, const char *tagname,
+              const char *tagvalue, const char *format, ...)
 {
   va_list arg_ptr;
   int saved_errno;
@@ -367,7 +316,6 @@ _gpgme_debugf (int level, int mode, const char *func, const char *tagname,
 }
 
 
-
 /* Start a new debug line in *LINE, logged at level LEVEL or higher,
    and starting with the formatted string FORMAT.  */
 void
@@ -431,7 +379,7 @@ _gpgme_debug_end (void **line)
 
   /* The smallest possible level is 1, so force logging here by
      using that.  */
-  _gpgme_debug (1, "%s", *line);
+  _gpgme_debug (1, -1, NULL, NULL, NULL, "%s", *line);
   gpgrt_free (*line);
   *line = NULL;
 }
@@ -480,6 +428,6 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
       *(strp++) = ' ';
       *(strp2) = '\0';
 
-      _gpgme_debug (lvl, fmt, func, str);
+      _gpgme_debug (lvl, -1, NULL, NULL, NULL, fmt, func, str);
     }
 }

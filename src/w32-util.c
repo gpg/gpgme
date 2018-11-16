@@ -532,7 +532,8 @@ _gpgme_get_gpg_path (void)
 
   /* 4. Print a debug message if not found.  */
   if (!gpg)
-    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpg_path: '%s' not found", name);
+    _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                  "_gpgme_get_gpg_path: '%s' not found", name);
 
   return gpg;
 }
@@ -607,7 +608,8 @@ _gpgme_get_gpgconf_path (void)
 
   /* 5. Print a debug message if not found.  */
   if (!gpgconf)
-    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",name);
+    _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                  "_gpgme_get_gpgconf_path: '%s' not found",name);
 
   return gpgconf;
 }
