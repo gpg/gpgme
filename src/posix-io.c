@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <poll.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -51,6 +52,7 @@
 #include "debug.h"
 #include "mem.h"
 
+#define POLLFD_MAX 65536
 
 void
 _gpgme_io_subsystem_init (void)
@@ -135,6 +137,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   int saved_errno;
   int err;
+  int oldflags;
   TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
@@ -143,8 +146,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (err < 0)
     return TRACE_SYSRES (err);
 
-  /* FIXME: Should get the old flags first.  */
-  err = fcntl (filedes[1 - inherit_idx], F_SETFD, FD_CLOEXEC);
+  oldflags = fcntl (filedes[1 - inherit_idx], F_GETFD, 0);
+  err = fcntl (filedes[1 - inherit_idx], F_SETFD, oldflags | FD_CLOEXEC);
   saved_errno = errno;
   if (err < 0)
     {
@@ -375,8 +378,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 {
   pid_t pid;
   int i;
+  int start;
   int status;
   int signo;
+  struct pollfd pfd[POLLFD_MAX];
 
   TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
@@ -413,13 +418,38 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	    atfork (atforkvalue, 0);
 
 	  /* First close all fds which will not be inherited.  */
-	  for (fd = 0; fd < max_fds; fd++)
+	  for (start = 0; start < max_fds; start += POLLFD_MAX)
 	    {
-	      for (i = 0; fd_list[i].fd != -1; i++)
-		if (fd_list[i].fd == fd)
-		  break;
-	      if (fd_list[i].fd == -1)
-		close (fd);
+	      int nonzero;
+	      for (fd = start; fd < start + POLLFD_MAX; fd++)
+		{
+		  struct pollfd *p = &pfd[fd - start];
+		  p->fd = (fd < max_fds) ? fd : -1;
+		  p->events = 0;
+		}
+	      do
+	        {
+		  nonzero = poll (pfd, max_fds < POLLFD_MAX ? max_fds : POLLFD_MAX, 0);
+		}
+	      while (nonzero <= 0 && (errno == EINTR || errno == EAGAIN));
+	      if (nonzero <= 0)
+		{
+		  TRACE_LOG1 ("poll failed in child: %s\n",
+			      strerror (errno));
+		  _exit(8);
+		}
+
+	      for (fd = start; fd < start + POLLFD_MAX && fd < max_fds; fd++)
+		{
+		  for (i = 0; fd_list[i].fd != -1; i++)
+		    if (fd_list[i].fd == fd)
+		      break;
+		  if (fd_list[i].fd == -1)
+		    {
+		      if (! pfd[fd - start].revents & POLLNVAL)
+			close (fd);
+		    }
+		}
 	    }
 
 	  /* And now dup and close those to be duplicated.  */
