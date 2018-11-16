@@ -254,11 +254,12 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
 {
   va_list arg_ptr;
   int saved_errno;
+  int need_lf;
 
-  saved_errno = errno;
   if (debug_level < level)
     return 0;
 
+  saved_errno = errno;
   va_start (arg_ptr, format);
   LOCK (debug_lock);
   {
@@ -280,6 +281,7 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
   }
 #endif
 
+  need_lf = 0;
   switch (mode)
     {
     case -1:  /* Do nothing.  */
@@ -300,13 +302,14 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
         fprintf (errfp, "%s: leave: ", func);
       break;
     default:
-      fprintf (errfp, "%s: m=%d: %s=%p ", func, mode, tagname, tagvalue);
+      fprintf (errfp, "%s: ?(mode=%d): %s=%p ", func, mode, tagname, tagvalue);
       break;
     }
+  need_lf = (mode != -1 && (!format || !*format));
 
   vfprintf (errfp, format, arg_ptr);
   va_end (arg_ptr);
-  if(format && *format && format[strlen (format) - 1] != '\n')
+  if (need_lf || (format && *format && format[strlen (format) - 1] != '\n'))
     putc ('\n', errfp);
   UNLOCK (debug_lock);
   fflush (errfp);
