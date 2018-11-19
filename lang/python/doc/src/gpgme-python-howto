@@ -16,11 +16,11 @@
   :END:
 
 | Version:        | 0.1.4                                    |
-| GPGME Version:  | 1.12.0                                   |
+| GPGME Version:  | 1.12.1                                   |
 | Author:         | [[https://gnupg.org/people/index.html#sec-1-5][Ben McGinnes]] <ben@gnupg.org>             |
 | Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
 | Language:       | Australian English, British English      |
-| xml:lang:       | en-AU, en-GB, en                         |
+| Language codes: | en-AU, en-GB, en                         |
 
 This document provides basic instruction in how to use the GPGME
 Python bindings to programmatically leverage the GPGME library.
@@ -2925,8 +2925,6 @@ from the author at any of the following URLs:
 - [[http://files.au.adversary.org/crypto/gpgme-python-howto.info][GPGME Python Bindings HOWTO draft (Info file AWS S3 no SSL)]]
 - [[https://files.au.adversary.org/crypto/gpgme-python-howto.rst][GPGME Python Bindings HOWTO draft (reST file AWS S3 SSL)]]
 - [[http://files.au.adversary.org/crypto/gpgme-python-howto.rst][GPGME Python Bindings HOWTO draft (reST file AWS S3 no SSL)]]
-- [[https://files.au.adversary.org/crypto/gpgme-python-howto.xml][GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 SSL)]]
-- [[http://files.au.adversary.org/crypto/gpgme-python-howto.xml][GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no SSL)]]
 
 All of these draft versions except for one have been generated from
 this document via Emacs [[https://orgmode.org/][Org mode]] and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]].  Though it is likely
@@ -2938,8 +2936,8 @@ using the latest version of Pandoc from the Org mode source file using
 either of the following two commands:
 
 #+BEGIN_SRC shell
-  pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto.org
-  pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto
+  pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
+  pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 #+END_SRC
 
 In addition to these there is a significantly less frequently updated

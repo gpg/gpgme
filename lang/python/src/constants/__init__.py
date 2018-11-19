@@ -27,19 +27,21 @@ util.process_constants('GPGME_', globals())
 # For convenience, we import the modules here.
 from . import data, keylist, sig, tofu  # The subdirs.
 # The remaining modules can no longer fit on one line.
-from . import create, event, keysign, md, pk, protocol, sigsum, status
-from . import validity
+from . import create, event, import_type, keysign, md, pk, protocol, sigsum
+from . import status, validity
 
 del absolute_import, print_function, unicode_literals, util
 
-# A complication arises because 'import' is a reserved keyword.
-# Import it as 'Import' instead.
-globals()['Import'] = getattr(
-    __import__('', globals(), locals(), [str('import')], 1), "import")
+# This was a bad idea (though I get why it was done):
+#
+# # A complication arises because 'import' is a reserved keyword.
+# # Import it as 'Import' instead.
+# globals()['Import'] = getattr(
+#     __import__('', globals(), locals(), [str('import')], 1), "import")
 
 __all__ = [
-    'data', 'event', 'import', 'keysign', 'keylist', 'md', 'pk', 'protocol',
-    'sig', 'sigsum', 'status', 'tofu', 'validity', 'create'
+    'data', 'event', 'import_type', 'keysign', 'keylist', 'md', 'pk',
+    'protocol', 'sig', 'sigsum', 'status', 'tofu', 'validity', 'create'
 ]
 
 # GPGME 1.7 replaced gpgme_op_edit with gpgme_op_interact.  We
