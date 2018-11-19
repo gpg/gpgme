@@ -32,13 +32,6 @@ from . import status, validity
 
 del absolute_import, print_function, unicode_literals, util
 
-# This was a bad idea (though I get why it was done):
-#
-# # A complication arises because 'import' is a reserved keyword.
-# # Import it as 'Import' instead.
-# globals()['Import'] = getattr(
-#     __import__('', globals(), locals(), [str('import')], 1), "import")
-
 __all__ = [
     'data', 'event', 'import_type', 'keysign', 'keylist', 'md', 'pk',
     'protocol', 'sig', 'sigsum', 'status', 'tofu', 'validity', 'create'
