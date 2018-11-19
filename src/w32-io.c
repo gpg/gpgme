@@ -469,12 +469,12 @@ reader (void *arg)
 	  break;
         }
 
-      TRACE_LOG  ("got %u bytes (refcnt=%d)", nread, ctx->refcount);
+      TRACE_LOG  ("got %lu bytes (refcnt=%d)", nread, ctx->refcount);
 
       ctx->writepos = (ctx->writepos + nread) % READBUF_SIZE;
       if (!SetEvent (ctx->have_data_ev))
         {
-          TRACE_LOG  ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
+          TRACE_LOG  ("SetEvent (%p) failed: ec=%d", ctx->have_data_ev,
                       (int) GetLastError ());
         }
       UNLOCK (ctx->mutex);
@@ -482,7 +482,7 @@ reader (void *arg)
   /* Indicate that we have an error or EOF.  */
   if (!SetEvent (ctx->have_data_ev))
     {
-      TRACE_LOG  ("SetEvent (0x%x) failed: ec=%d", ctx->have_data_ev,
+      TRACE_LOG ("SetEvent (%p) failed: ec=%d", ctx->have_data_ev,
                 (int) GetLastError ());
     }
 
@@ -497,7 +497,8 @@ reader (void *arg)
   DESTROY_LOCK (ctx->mutex);
   free (ctx);
 
-  return TRACE_SUC ("");
+  TRACE_SUC ("");
+  return 0;
 }
 
 
@@ -523,7 +524,7 @@ create_reader (hddesc_t hdd)
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     {
-      TRACE_SYSERR_NR (errno);
+      TRACE_SYSERR (errno);
       return NULL;
     }
 
@@ -546,7 +547,7 @@ create_reader (hddesc_t hdd)
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR_NR (EIO);
+      TRACE_SYSERR (EIO);
       return NULL;
     }
 
@@ -566,7 +567,7 @@ create_reader (hddesc_t hdd)
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR_NR (EIO);
+      TRACE_SYSERR (EIO);
       return NULL;
     }
   else
@@ -621,7 +622,7 @@ destroy_reader (struct reader_context_s *ctx)
     {
       if (shutdown (ctx->hdd->sock, 2))
         TRACE (DEBUG_SYSIO, "gpgme:destroy_reader", ctx,
-                "shutdown socket %d failed: %s",
+                "shutdown socket %d failed: ec=%d",
                 ctx->hdd->sock, (int) WSAGetLastError ());
     }
 
@@ -639,7 +640,7 @@ find_reader (int fd)
 {
   struct reader_context_s *rd = NULL;
 
-  TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_reader", fd, "");
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:find_reader", fd, "");
 
   LOCK (fd_table_lock);
   if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
@@ -733,7 +734,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
   if (!SetEvent (ctx->have_space_ev))
     {
-      TRACE_LOG  ("SetEvent (0x%x) failed: ec=%d",
+      TRACE_LOG  ("SetEvent (%p) failed: ec=%d",
 		  ctx->have_space_ev, (int) GetLastError ());
       UNLOCK (ctx->mutex);
       /* FIXME: Should translate the error code.  */
@@ -855,7 +856,8 @@ writer (void *arg)
   DESTROY_LOCK (ctx->mutex);
   free (ctx);
 
-  return TRACE_SUC ("");
+  TRACE_SUC ("");
+  return 0;
 }
 
 
@@ -878,7 +880,7 @@ TRACE_BEG  (DEBUG_SYSIO, "gpgme:create_writer", hdd,
   ctx = calloc (1, sizeof *ctx);
   if (!ctx)
     {
-      TRACE_SYSERR_NR (errno);
+      TRACE_SYSERR (errno);
       return NULL;
     }
 
@@ -901,7 +903,7 @@ TRACE_BEG  (DEBUG_SYSIO, "gpgme:create_writer", hdd,
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR_NR (EIO);
+      TRACE_SYSERR (EIO);
       return NULL;
     }
 
@@ -920,7 +922,7 @@ TRACE_BEG  (DEBUG_SYSIO, "gpgme:create_writer", hdd,
 	close_handle (ctx->close_ev);
       release_hddesc (ctx->hdd);
       free (ctx);
-      TRACE_SYSERR_NR (EIO);
+      TRACE_SYSERR (EIO);
       return NULL;
     }
   else
@@ -971,7 +973,7 @@ find_writer (int fd)
 {
   struct writer_context_s *wt = NULL;
 
-  TRACE_BEG0 (DEBUG_SYSIO, "gpgme:find_writer", fd, "");
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:find_writer", fd, "");
 
   LOCK (fd_table_lock);
   if (fd < 0 || fd >= fd_table_size || !fd_table[fd].used)
@@ -1200,9 +1202,10 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 
   filedes[0] = rfd;
   filedes[1] = wfd;
-  return TRACE_SUC ("read=0x%x (hdd=%p,hd=%p), write=0x%x (hdd=%p,hd=%p)",
-		     rfd, fd_table[rfd].hdd, fd_table[rfd].hdd->hd,
-                     wfd, fd_table[wfd].hdd, fd_table[wfd].hdd->hd);
+  TRACE_SUC ("read=0x%x (hdd=%p,hd=%p), write=0x%x (hdd=%p,hd=%p)",
+             rfd, fd_table[rfd].hdd, fd_table[rfd].hdd->hd,
+             wfd, fd_table[wfd].hdd, fd_table[wfd].hdd->hd);
+  return 0;
 }
 
 
@@ -1971,5 +1974,6 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       return TRACE_SYSRES (-1);
     }
 
-  return TRACE_SUC ("");
+  TRACE_SUC ("");
+  return 0;
 }
