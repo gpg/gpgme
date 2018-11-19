@@ -1,0 +1,22 @@
+{
+   "result":       {
+           "considered":   1,
+           "no_user_id":   0,
+           "imported_rsa": 0,
+           "new_user_ids": 0,
+           "new_sub_keys": 0,
+           "new_signatures":       0,
+           "new_revocations":      0,
+           "secret_read":  0,
+           "secret_imported":      0,
+           "secret_unchanged":     0,
+           "skipped_new_keys":     0,
+           "not_imported": 0,
+           "skipped_v3_keys":      0,
+           "imports":      [{
+                           "fingerprint":  "E8143C489C8D41124DC40D0B47AF4B6961F04784",
+                           "error_string": "Success",
+                           "status":       1
+                   }]
+   }
+}

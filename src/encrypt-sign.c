@@ -1,23 +1,23 @@
 /* encrypt-sign.c -  encrypt and verify functions
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -143,7 +143,7 @@ gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_encrypt_sign", ctx,
 	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
 
   if (!ctx)
@@ -157,7 +157,7 @@ gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
           while (recp[i])
             {
-              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+              TRACE_LOG  ("recipient[%i] = %p (%s)", i, recp[i],
                           (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
                           recp[i]->subkeys->fpr : "invalid");
               i++;
@@ -165,7 +165,7 @@ gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
         }
       else
         {
-          TRACE_LOG1 ("recipients = '%s'", recpstring);
+          TRACE_LOG  ("recipients = '%s'", recpstring);
         }
     }
 
@@ -187,7 +187,7 @@ gpgme_op_encrypt_sign_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_encrypt_sign_start", ctx,
 	      "flags=0x%x, plain=%p, cipher=%p", flags, plain, cipher);
 
   if (!ctx)
@@ -201,7 +201,7 @@ gpgme_op_encrypt_sign_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
           while (recp[i])
             {
-              TRACE_LOG3 ("recipient[%i] = %p (%s)", i, recp[i],
+              TRACE_LOG  ("recipient[%i] = %p (%s)", i, recp[i],
                           (recp[i]->subkeys && recp[i]->subkeys->fpr) ?
                           recp[i]->subkeys->fpr : "invalid");
               i++;
@@ -209,7 +209,7 @@ gpgme_op_encrypt_sign_ext_start (gpgme_ctx_t ctx, gpgme_key_t recp[],
         }
       else
         {
-          TRACE_LOG1 ("recipients = '%s'", recpstring);
+          TRACE_LOG  ("recipients = '%s'", recpstring);
         }
     }
 

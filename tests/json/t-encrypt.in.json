@@ -1,0 +1,8 @@
+{
+    "op": "encrypt",
+    "keys": ["bravo@example.net", "alpha@example.net"],
+    "data": "Hello world",
+    "file_name": "test.txt",
+    "armor": false,
+    "always-trust": true
+}

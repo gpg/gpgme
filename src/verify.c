@@ -1,23 +1,23 @@
 /* verify.c - Signature verification.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -92,12 +92,12 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
   gpgme_error_t err;
   gpgme_signature_t sig;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_verify_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_verify_result", ctx, "");
   err = _gpgme_op_data_lookup (ctx, OPDATA_VERIFY, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -133,30 +133,30 @@ gpgme_op_verify_result (gpgme_ctx_t ctx)
 
       for (sig = opd->result.signatures, i = 0; sig; sig = sig->next, i++)
 	{
-	  TRACE_LOG4 ("sig[%i] = fpr %s, summary 0x%x, status %s",
+	  TRACE_LOG  ("sig[%i] = fpr %s, summary 0x%x, status %s",
 		      i, sig->fpr, sig->summary, gpg_strerror (sig->status));
-	  TRACE_LOG6 ("sig[%i] = timestamps 0x%x/0x%x flags:%s%s%s",
+	  TRACE_LOG  ("sig[%i] = timestamps 0x%lx/0x%lx flags:%s%s%s",
 		      i, sig->timestamp, sig->exp_timestamp,
 		      sig->wrong_key_usage ? "wrong key usage" : "",
 		      sig->pka_trust == 1 ? "pka bad"
 		      : (sig->pka_trust == 2 ? "pka_okay" : "pka RFU"),
 		      sig->chain_model ? "chain model" : "");
-	  TRACE_LOG5 ("sig[%i] = validity 0x%x (%s), algos %s/%s",
+	  TRACE_LOG  ("sig[%i] = validity 0x%x (%s), algos %s/%s",
 		      i, sig->validity, gpg_strerror (sig->validity_reason),
 		      gpgme_pubkey_algo_name (sig->pubkey_algo),
 		      gpgme_hash_algo_name (sig->hash_algo));
 	  if (sig->pka_address)
 	    {
-	      TRACE_LOG2 ("sig[%i] = PKA address %s", i, sig->pka_address);
+	      TRACE_LOG  ("sig[%i] = PKA address %s", i, sig->pka_address);
 	    }
 	  if (sig->notations)
 	    {
-	      TRACE_LOG1 ("sig[%i] = has notations (not shown)", i);
+	      TRACE_LOG  ("sig[%i] = has notations (not shown)", i);
 	    }
 	}
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -1165,7 +1165,7 @@ gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 		       gpgme_data_t signed_text, gpgme_data_t plaintext)
 {
   gpg_error_t err;
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_verify_start", ctx,
 	      "sig=%p, signed_text=%p, plaintext=%p",
 	      sig, signed_text, plaintext);
 
@@ -1185,7 +1185,7 @@ gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_verify", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_verify", ctx,
 	      "sig=%p, signed_text=%p, plaintext=%p",
 	      sig, signed_text, plaintext);
 

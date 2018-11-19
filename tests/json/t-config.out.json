@@ -1,0 +1,19 @@
+{
+    "components":   [{
+        "name": "gpg",
+            "description":  "OpenPGP",
+            "options":      [{
+                "name": "Monitor",
+                "flags":        1,
+                "level":        0,
+                "type": 0,
+                "alt_type":     0
+            }, {
+                "name": "verbose",
+                "description":  "verbose",
+                "level":        0,
+                "type": 0,
+                "alt_type":     0
+            }]
+    }]
+}

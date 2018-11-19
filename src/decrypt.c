@@ -1,23 +1,23 @@
 /* decrypt.c - Decrypt function.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2017 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2017 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -102,7 +102,7 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_decrypt_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_decrypt_result", ctx, "");
 
   ctx->ignore_mdc_error = 0;  /* Always reset this flag.  */
 
@@ -110,7 +110,7 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -120,7 +120,7 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
       opd->result.symkey_algo = strdup ("?.?");
       if (!opd->result.symkey_algo)
         {
-          TRACE_SUC0 ("result=(null)");
+          TRACE_SUC ("result=(null)");
           return NULL;
         }
     }
@@ -131,7 +131,7 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
 
       if (opd->result.unsupported_algorithm)
 	{
-	  TRACE_LOG1 ("result: unsupported_algorithm: %s",
+	  TRACE_LOG  ("result: unsupported_algorithm: %s",
 		      opd->result.unsupported_algorithm);
 	}
       if (opd->result.wrong_key_usage)
@@ -141,18 +141,18 @@ gpgme_op_decrypt_result (gpgme_ctx_t ctx)
       rcp = opd->result.recipients;
       while (rcp)
 	{
-	  TRACE_LOG3 ("result: recipient: keyid=%s, pubkey_algo=%i, "
+	  TRACE_LOG  ("result: recipient: keyid=%s, pubkey_algo=%i, "
 		      "status=%s", rcp->keyid, rcp->pubkey_algo,
 		      gpg_strerror (rcp->status));
 	  rcp = rcp->next;
 	}
       if (opd->result.file_name)
 	{
-	  TRACE_LOG1 ("result: original file name: %s", opd->result.file_name);
+	  TRACE_LOG  ("result: original file name: %s", opd->result.file_name);
 	}
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -587,7 +587,7 @@ gpgme_op_decrypt_start (gpgme_ctx_t ctx, gpgme_data_t cipher,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt_start", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)
@@ -605,7 +605,7 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_decrypt", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_decrypt", ctx,
 	      "cipher=%p, plain=%p", cipher, plain);
 
   if (!ctx)

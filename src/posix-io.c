@@ -1,21 +1,22 @@
 /* posix-io.c - Posix I/O functions
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004, 2005, 2007, 2010 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2004, 2005, 2007, 2010 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #ifdef HAVE_CONFIG_H
@@ -108,8 +109,8 @@ int
 _gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int nread;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
-	      "buffer=%p, count=%u", buffer, count);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", fd,
+	      "buffer=%p, count=%zu", buffer, count);
 
   do
     {
@@ -126,8 +127,8 @@ int
 _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int nwritten;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
-	      "buffer=%p, count=%u", buffer, count);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", fd,
+	      "buffer=%p, count=%zu", buffer, count);
   TRACE_LOGBUFX (buffer, count);
 
   do
@@ -145,7 +146,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   int saved_errno;
   int err;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
@@ -165,7 +166,8 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (err)
     return TRACE_SYSRES (err);
 
-  return TRACE_SUC2 ("read=0x%x, write=0x%x", filedes[0], filedes[1]);
+  TRACE_SUC ("read=0x%x, write=0x%x", filedes[0], filedes[1]);
+  return 0;
 }
 
 
@@ -177,7 +179,7 @@ _gpgme_io_close (int fd)
   void *handler_value;
   int idx;
 
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd, "");
 
   if (fd == -1)
     {
@@ -202,7 +204,7 @@ _gpgme_io_close (int fd)
   UNLOCK (notify_table_lock);
   if (handler)
     {
-      TRACE_LOG2 ("invoking close handler %p/%p", handler, handler_value);
+      TRACE_LOG  ("invoking close handler %p/%p", handler, handler_value);
       handler (fd, handler_value);
     }
 
@@ -219,7 +221,7 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
   int res = 0;
   int idx;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
 	      "close_handler=%p/%p", handler, value);
 
   assert (fd != -1);
@@ -270,7 +272,7 @@ _gpgme_io_set_nonblocking (int fd)
 {
   int flags;
   int res;
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd, "");
 
   flags = fcntl (fd, F_GETFL, 0);
   if (flags == -1)
@@ -426,7 +428,7 @@ get_max_fds (void)
     }
 #endif
 
-  TRACE2 (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%i (%s)", fds, source);
+  TRACE (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%ld (%s)", fds, source);
   return fds;
 }
 
@@ -472,19 +474,19 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int status;
   int signo;
 
-  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
   i = 0;
   while (argv[i])
     {
-      TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
+      TRACE_LOG  ("argv[%2i] = %s", i, argv[i]);
       i++;
     }
   for (i = 0; fd_list[i].fd != -1; i++)
     if (fd_list[i].dup_to == -1)
-      TRACE_LOG2 ("fd[%i] = 0x%x", i, fd_list[i].fd);
+      TRACE_LOG  ("fd[%i] = 0x%x", i, fd_list[i].fd);
     else
-      TRACE_LOG3 ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd, fd_list[i].dup_to);
+      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd, fd_list[i].dup_to);
 
   pid = fork ();
   if (pid == -1)
@@ -567,7 +569,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 #if 0
 		  /* FIXME: The debug file descriptor is not
 		     dup'ed anyway, so we can't see this.  */
-		  TRACE_LOG1 ("dup2 failed in child: %s\n",
+		  TRACE_LOG  ("dup2 failed in child: %s\n",
 			      strerror (errno));
 #endif
 		  _exit (8);
@@ -617,7 +619,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	_exit (0);
     }
 
-  TRACE_LOG1 ("waiting for child process pid=%i", pid);
+  TRACE_LOG  ("waiting for child process pid=%i", pid);
   _gpgme_io_waitpid (pid, 1, &status, &signo);
   if (status)
     return TRACE_SYSRES (-1);
@@ -652,8 +654,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   /* Use a 1s timeout.  */
   struct timeval timeout = { 1, 0 };
   void *dbg_help = NULL;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
-	      "nfds=%u, nonblock=%u", nfds, nonblock);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
+	      "nfds=%zu, nonblock=%u", nfds, nonblock);
 
   FD_ZERO (&readfds);
   FD_ZERO (&writefds);
@@ -758,7 +760,7 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
   int nread;
   int saved_errno;
   struct iovec *iov;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_recvmsg", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_recvmsg", fd,
 	      "msg=%p, flags=%i", msg, flags);
 
   nread = 0;
@@ -769,7 +771,7 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
       iov++;
     }
 
-  TRACE_LOG1 ("about to receive %d bytes", nread);
+  TRACE_LOG  ("about to receive %d bytes", nread);
 
   do
     {
@@ -800,7 +802,7 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 {
   int nwritten;
   struct iovec *iov;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_sendmsg", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_sendmsg", fd,
 	      "msg=%p, flags=%i", msg, flags);
 
   nwritten = 0;
@@ -811,7 +813,7 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
       iov++;
     }
 
-  TRACE_LOG1 ("about to receive %d bytes", nwritten);
+  TRACE_LOG  ("about to receive %d bytes", nwritten);
   iov = msg->msg_iov;
   while (nwritten > 0)
     {
@@ -839,7 +841,7 @@ _gpgme_io_dup (int fd)
     new_fd = dup (fd);
   while (new_fd == -1 && errno == EINTR);
 
-  TRACE1 (DEBUG_SYSIO, "_gpgme_io_dup", fd, "new fd==%i", new_fd);
+  TRACE (DEBUG_SYSIO, "_gpgme_io_dup", fd, "new fd==%i", new_fd);
 
   return new_fd;
 }
@@ -850,7 +852,7 @@ _gpgme_io_socket (int domain, int type, int proto)
 {
   int res;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_socket", domain,
 	      "type=%i, proto=%i", type, proto);
 
   res = socket (domain, type, proto);
@@ -864,7 +866,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 {
   int res;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
   do

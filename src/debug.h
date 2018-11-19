@@ -68,7 +68,10 @@ int _gpgme_debug_set_debug_envvar (const char *value);
 void _gpgme_debug_subsystem_init (void);
 
 /* Log the formatted string FORMAT at debug level LEVEL or higher.  */
-int  _gpgme_debug (int level, const char *format, ...);
+int  _gpgme_debug (int level, int mode,
+                   const char *func, const char *tagname, const char *tagvalue,
+                   const char *format, ...) GPGRT_ATTR_PRINTF(6,7);
+
 
 /* Start a new debug line in *LINE, logged at level LEVEL or higher,
    and starting with the formatted string FORMAT.  */
@@ -91,7 +94,8 @@ int  _gpgme_debug_frame_end (void);
 static inline gpgme_error_t
 _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 {
-  _gpgme_debug (DEBUG_ENGINE, "%s:%d: returning error: %s\n",
+  _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                "%s:%d: returning error: %s\n",
                 _gpgme_debug_srcname (file), line, gpgme_strerror (err));
   return err;
 }
@@ -109,173 +113,97 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
   void *_gpgme_trace_tag = (void *) (uintptr_t) tag; \
   _gpgme_debug_frame_begin ()
 
-#define TRACE_BEG(lvl, name, tag)			   \
-  _TRACE (lvl, name, tag);				   \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag)
-#define TRACE_BEG0(lvl, name, tag, fmt)					\
+/* Note: We can't protect this with a do-while block.  */
+#define TRACE_BEG(lvl, name, tag, ...)                                  \
   _TRACE (lvl, name, tag);						\
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n",	\
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag)
-#define TRACE_BEG1(lvl, name, tag, fmt, arg1)				\
-  _TRACE (lvl, name, tag);						\
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n",	\
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1)
-#define TRACE_BEG2(lvl, name, tag, fmt, arg1, arg2)		    \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2)
-#define TRACE_BEG3(lvl, name, tag, fmt, arg1, arg2, arg3)	    \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3)
-#define TRACE_BEG4(lvl, name, tag, fmt, arg1, arg2, arg3, arg4)	    \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4)
-#define TRACE_BEG5(lvl, name, tag, fmt, arg1, arg2, arg3, arg4, arg5) \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4, arg5)
-#define TRACE_BEG7(lvl, name, tag, fmt, arg1, arg2, arg3, arg4,	    \
-		   arg5, arg6, arg7)				    \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-#define TRACE_BEG8(lvl, name, tag, fmt, arg1, arg2, arg3, arg4,	    \
-		   arg5, arg6, arg7, arg8)			    \
-  _TRACE (lvl, name, tag);					    \
-  _gpgme_debug (_gpgme_trace_level, "%s: enter: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+  _gpgme_debug (_gpgme_trace_level, 1,                                  \
+                _gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
+                __VA_ARGS__)
 
-#define TRACE(lvl, name, tag)						\
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p\n",				\
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag),	\
-  _gpgme_debug_frame_end ()
-#define TRACE0(lvl, name, tag, fmt)					\
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p, " fmt "\n",			\
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag),	\
-  _gpgme_debug_frame_end ()
-#define TRACE1(lvl, name, tag, fmt, arg1)			       \
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p, " fmt "\n",		       \
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag, arg1), \
-  _gpgme_debug_frame_end ()
-#define TRACE2(lvl, name, tag, fmt, arg1, arg2)			       \
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p, " fmt "\n",		       \
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag, arg1, \
-		arg2), _gpgme_debug_frame_end ()
-#define TRACE3(lvl, name, tag, fmt, arg1, arg2, arg3)		       \
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p, " fmt "\n",		       \
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag, arg1, \
-		arg2, arg3), _gpgme_debug_frame_end ()
-#define TRACE6(lvl, name, tag, fmt, arg1, arg2, arg3, arg4, arg5, arg6)	\
-  _gpgme_debug_frame_begin (),						\
-  _gpgme_debug (lvl, "%s: call: %s=%p, " fmt "\n",			\
-		name, STRINGIFY (tag), (void *) (uintptr_t) tag, arg1, \
-		arg2, arg3, arg4, arg5, arg6),			       \
-  _gpgme_debug_frame_end ()
+#define TRACE(lvl, name, tag, ...) do {                                 \
+    _gpgme_debug_frame_begin ();					\
+    _gpgme_debug (lvl, 0, name, STRINGIFY (tag), (void *)(uintptr_t)tag, \
+                  __VA_ARGS__);                                         \
+    _gpgme_debug_frame_end ();                                          \
+  } while (0)
 
-#define TRACE_ERR(err)							\
-  err == 0 ? (TRACE_SUC ()) :						\
-    (_gpgme_debug (_gpgme_trace_level, "%s:%d: error: %s <%s>\n",	\
-		   _gpgme_trace_func, __LINE__,  gpgme_strerror (err),  \
-		   gpgme_strsource (err)), _gpgme_debug_frame_end (), (err))
-/* The cast to void suppresses GCC warnings.  */
-#define TRACE_SYSRES(res)						\
-  res >= 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :		\
-    (_gpgme_debug (_gpgme_trace_level, "%s: error: %s\n",	\
-		   _gpgme_trace_func, strerror (errno)), _gpgme_debug_frame_end (), (res))
-#define TRACE_SYSERR(res)						\
-  res == 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :		\
-    (_gpgme_debug (_gpgme_trace_level, "%s: error: %s\n",		\
-		   _gpgme_trace_func, strerror (res)),			\
-     _gpgme_debug_frame_end (), (res))
-#define TRACE_SYSERR_NR(res)						\
-  do { res == 0 ? ((void) (TRACE_SUC1 ("result=%i", res)), (res)) :     \
-    (_gpgme_debug (_gpgme_trace_level, "%s: error: %s\n",		\
-		   _gpgme_trace_func, strerror (res)),			\
-     _gpgme_debug_frame_end ()); } while (0)
 
-#define TRACE_SUC()						 \
-  _gpgme_debug (_gpgme_trace_level, "%s: leave\n",       \
-		_gpgme_trace_func), _gpgme_debug_frame_end ()
-#define TRACE_SUC0(fmt)							\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func), _gpgme_debug_frame_end ()
-#define TRACE_SUC1(fmt, arg1)						\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1), _gpgme_debug_frame_end ()
-#define TRACE_SUC2(fmt, arg1, arg2)					\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1, arg2), _gpgme_debug_frame_end ()
-#define TRACE_SUC3(fmt, arg1, arg2, arg3)                            \
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1, arg2, arg3), _gpgme_debug_frame_end ()
-#define TRACE_SUC4(fmt, arg1, arg2, arg3, arg4)			\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1, arg2, arg3, arg4), \
-    _gpgme_debug_frame_end ()
-#define TRACE_SUC5(fmt, arg1, arg2, arg3, arg4, arg5)			\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1, arg2, arg3, arg4, arg5), \
-    _gpgme_debug_frame_end ()
-#define TRACE_SUC6(fmt, arg1, arg2, arg3, arg4, arg5, arg6)	\
-  _gpgme_debug (_gpgme_trace_level, "%s: leave: " fmt "\n",	\
-		_gpgme_trace_func, arg1, arg2, arg3, arg4, arg5, arg6),	\
-    _gpgme_debug_frame_end ()
+/* Trace a gpg-error and return it.  */
+#define TRACE_ERR(err) \
+    _trace_err ((err), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
+static inline gpg_error_t
+_trace_err (gpg_error_t err, int lvl, const char *func, int line)
+{
+  if (!err)
+    _gpgme_debug (lvl, 3, func, NULL, NULL, "");
+  else
+    _gpgme_debug (lvl, -1, NULL, NULL, NULL,
+                  "%s:%d: error: %s <%s>\n",
+                  func, line,  gpgme_strerror (err), gpgme_strsource (err));
+  _gpgme_debug_frame_end ();
+  return err;
+}
 
-#define TRACE_LOG(fmt)							\
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n",	\
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag)
-#define TRACE_LOG1(fmt, arg1)						\
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n",	\
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1)
-#define TRACE_LOG2(fmt, arg1, arg2)				    \
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2)
-#define TRACE_LOG3(fmt, arg1, arg2, arg3)			    \
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3)
-#define TRACE_LOG4(fmt, arg1, arg2, arg3, arg4)			    \
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4)
-#define TRACE_LOG5(fmt, arg1, arg2, arg3, arg4, arg5)		    \
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4, arg5)
-#define TRACE_LOG6(fmt, arg1, arg2, arg3, arg4, arg5, arg6)	    \
-  _gpgme_debug (_gpgme_trace_level, "%s: check: %s=%p, " fmt "\n", \
-		_gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
-		arg1, arg2, arg3, arg4, arg5, arg6)
+/* Trace a system call result and return it.  */
+#define TRACE_SYSRES(res) \
+    _trace_sysres ((res), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
+static inline int
+_trace_sysres (int res, int lvl, const char *func, int line)
+{
+  if (res >= 0)
+    _gpgme_debug (lvl, 3, func, NULL, NULL, "result=%d", res);
+  else
+    _gpgme_debug (lvl, -1, NULL, NULL, NULL,
+                  "%s:%d: error: %s (%d)\n",
+                  func, line,  strerror (res), res);
+  _gpgme_debug_frame_end ();
+  return res;
+}
 
-#define TRACE_LOGBUF(buf, len)					\
-  _gpgme_debug_buffer (_gpgme_trace_level, "%s: check: %s",	\
-		       _gpgme_trace_func, buf, len)
+/* Trace a system call error and return it.  */
+#define TRACE_SYSERR(rc) \
+    _trace_syserr ((rc), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
+static inline int
+_trace_syserr (int rc, int lvl, const char *func, int line)
+{
+  if (!rc)
+    _gpgme_debug (lvl, 3, func, NULL, NULL, "result=0");
+  else
+    _gpgme_debug (lvl, -1, NULL, NULL, NULL,
+                  "%s:%d: error: %s (%d)\n",
+                  func, line, strerror (rc), rc);
+  _gpgme_debug_frame_end ();
+  return rc;
+}
 
-#define TRACE_LOGBUFX(buf, len)					\
-  _gpgme_debug_buffer (_gpgme_trace_level+1, "%s: check: %s",	\
-		       _gpgme_trace_func, buf, len)
+#define TRACE_SUC(...) do {                                             \
+    _gpgme_debug (_gpgme_trace_level, 3, _gpgme_trace_func, NULL, NULL, \
+                  __VA_ARGS__);                                         \
+    _gpgme_debug_frame_end ();                                          \
+  } while (0)
 
-#define TRACE_SEQ(hlp,fmt)						\
-  _gpgme_debug_begin (&(hlp), _gpgme_trace_level,			\
-                      "%s: check: %s=%p, " fmt, _gpgme_trace_func,	\
-                      _gpgme_trace_tagname, _gpgme_trace_tag)
+#define TRACE_LOG(...) do {                                             \
+    _gpgme_debug (_gpgme_trace_level, 2,                                \
+                  _gpgme_trace_func, _gpgme_trace_tagname, _gpgme_trace_tag, \
+                  __VA_ARGS__);                                         \
+  } while (0)
+
+#define TRACE_LOGBUF(buf, len) do {                             \
+    _gpgme_debug_buffer (_gpgme_trace_level, "%s: check: %s",	\
+                         _gpgme_trace_func, buf, len);          \
+  } while (0)
+
+#define TRACE_LOGBUFX(buf, len) do {                                    \
+    _gpgme_debug_buffer (_gpgme_trace_level+1, "%s: check: %s",         \
+                         _gpgme_trace_func, buf, len); \
+  } while (0)
+
+#define TRACE_SEQ(hlp,fmt) do {						\
+    _gpgme_debug_begin (&(hlp), _gpgme_trace_level,			\
+                        "%s: check: %s=%p, " fmt, _gpgme_trace_func,	\
+                        _gpgme_trace_tagname, _gpgme_trace_tag);        \
+  } while (0)
+
 #define TRACE_ADD0(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt)
 #define TRACE_ADD1(hlp,fmt,a) \
@@ -287,6 +215,7 @@ _gpgme_trace_gpgme_error (gpgme_error_t err, const char *file, int line)
 #define TRACE_END(hlp,fmt) \
   _gpgme_debug_add (&(hlp), fmt); \
   _gpgme_debug_end (&(hlp))
+
 #define TRACE_ENABLED(hlp) (!!(hlp))
 
 /* And finally a simple macro to trace the location of an error code.

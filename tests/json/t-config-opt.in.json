@@ -1,0 +1,5 @@
+{
+    "op": "config_opt",
+    "component": "gpg",
+    "option": "default-key"
+}

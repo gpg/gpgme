@@ -1,23 +1,23 @@
 /* w32-glib-io.c - W32 Glib I/O functions
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2004, 2005 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -231,13 +231,13 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 {
   HANDLE hndl;
 
-  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_fd2str", fd, "fd=%d", fd);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_fd2str", fd, "fd=%d", fd);
   if (giochannel_table[fd].fd != -1)
     hndl = (HANDLE) _get_osfhandle (giochannel_table[fd].fd);
   else
     hndl = (HANDLE) giochannel_table[fd].socket;
 
-  TRACE_SUC1 ("syshd=%p", hndl);
+  TRACE_SUC ("syshd=%p", hndl);
 
   return snprintf (buf, buflen, "%d", (int) hndl);
 }
@@ -263,7 +263,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   gsize nread;
   GIOChannel *chan;
   GIOStatus status;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_read", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", fd,
 	      "buffer=%p, count=%u", buffer, count);
 
   chan = find_channel (fd);
@@ -273,7 +273,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
       errno = EINVAL;
       return TRACE_SYSRES (-1);
     }
-  TRACE_LOG1 ("channel %p", chan);
+  TRACE_LOG  ("channel %p", chan);
 
   {
     GError *err = NULL;
@@ -281,7 +281,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 				      count, &nread, &err);
     if (err)
       {
-	TRACE_LOG2 ("status %i, err %s", status, err->message);
+	TRACE_LOG  ("status %i, err %s", status, err->message);
 	g_error_free (err);
       }
   }
@@ -295,7 +295,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
     }
   else if (status != G_IO_STATUS_NORMAL)
     {
-      TRACE_LOG1 ("status %d", status);
+      TRACE_LOG  ("status %d", status);
       nread = -1;
       saved_errno = EIO;
     }
@@ -317,7 +317,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   GIOStatus status;
   GError *err = NULL;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_write", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", fd,
 	      "buffer=%p, count=%u", buffer, count);
   TRACE_LOGBUFX (buffer, count);
 
@@ -333,7 +333,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 				     &nwritten, &err);
   if (err)
     {
-      TRACE_LOG1 ("write error: %s", err->message);
+      TRACE_LOG  ("write error: %s", err->message);
       g_error_free (err);
     }
 
@@ -358,7 +358,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   int fds[2];
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
@@ -421,7 +421,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       return TRACE_SYSRES (-1);
     }
 
-  return TRACE_SUC5 ("read=0x%x/%p, write=0x%x/%p, channel=%p",
+  return TRACE_SUC ("read=0x%x/%p, write=0x%x/%p, channel=%p",
 		     filedes[0],
 		     (HANDLE) _get_osfhandle (giochannel_table[filedes[0]].fd),
 		     filedes[1],
@@ -433,7 +433,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd);
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd, "");
 
   if (fd < 0 || fd >= MAX_SLAFD)
     {
@@ -472,7 +472,7 @@ _gpgme_io_close (int fd)
   giochannel_table[fd].chan = NULL;
   giochannel_table[fd].primary = 0;
 
-  TRACE_SUC ();
+  TRACE_SUC ("");
   return 0;
 }
 
@@ -481,7 +481,7 @@ int
 _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
 			    void *value)
 {
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
 	      "close_handler=%p/%p", handler, value);
 
   assert (fd != -1);
@@ -503,7 +503,7 @@ _gpgme_io_set_nonblocking (int fd)
   GIOChannel *chan;
   GIOStatus status;
 
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd);
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd, "");
 
   chan = find_channel (fd);
   if (!chan)
@@ -524,7 +524,7 @@ _gpgme_io_set_nonblocking (int fd)
       errno = EIO;
       return TRACE_SYSRES (-1);
 #else
-      TRACE_LOG1 ("g_io_channel_set_flags failed: status=%d (ignored)",
+      TRACE_LOG  ("g_io_channel_set_flags failed: status=%d (ignored)",
 		  status);
 #endif
     }
@@ -613,12 +613,12 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   int tmp_fd;
   char *tmp_name;
 
-  TRACE_BEG1 (DEBUG_SYSIO, "_gpgme_io_spawn", path,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
   i = 0;
   while (argv[i])
     {
-      TRACE_LOG2 ("argv[%2i] = %s", i, argv[i]);
+      TRACE_LOG  ("argv[%2i] = %s", i, argv[i]);
       i++;
     }
 
@@ -629,10 +629,10 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
      which gets the information from a temporary file.  */
   if (_gpgme_mkstemp (&tmp_fd, &tmp_name) < 0)
     {
-      TRACE_LOG1 ("_gpgme_mkstemp failed: %s", strerror (errno));
+      TRACE_LOG  ("_gpgme_mkstemp failed: %s", strerror (errno));
       return TRACE_SYSRES (-1);
     }
-  TRACE_LOG1 ("tmp_name = %s", tmp_name);
+  TRACE_LOG  ("tmp_name = %s", tmp_name);
 
   args = calloc (2 + i + 1, sizeof (*args));
   args[0] = (char *) _gpgme_get_w32spawn_path ();
@@ -675,7 +675,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
     {
-      TRACE_LOG1 ("CreateProcess failed: ec=%d", (int) GetLastError ());
+      TRACE_LOG  ("CreateProcess failed: ec=%d", (int) GetLastError ());
       free (arg_string);
       close (tmp_fd);
       DeleteFile (tmp_name);
@@ -700,7 +700,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
 			    _get_osfhandle (giochannel_table[fd_list[i].fd].fd),
 			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
 	{
-	  TRACE_LOG1 ("DuplicateHandle failed: ec=%d", (int) GetLastError ());
+	  TRACE_LOG  ("DuplicateHandle failed: ec=%d", (int) GetLastError ());
 	  TerminateProcess (pi.hProcess, 0);
 	  /* Just in case TerminateProcess didn't work, let the
 	     process fail on its own.  */
@@ -763,7 +763,7 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
   /* The temporary file is deleted by the gpgme-w32spawn process
      (hopefully).  */
 
-  TRACE_LOG4 ("CreateProcess ready: hProcess=%p, hThread=%p, "
+  TRACE_LOG  ("CreateProcess ready: hProcess=%p, hThread=%p, "
 	      "dwProcessID=%d, dwThreadId=%d",
 	      pi.hProcess, pi.hThread,
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
@@ -772,17 +772,17 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
     *r_pid = (pid_t)pi.dwProcessId;
 
   if (ResumeThread (pi.hThread) < 0)
-    TRACE_LOG1 ("ResumeThread failed: ec=%d", (int) GetLastError ());
+    TRACE_LOG  ("ResumeThread failed: ec=%d", (int) GetLastError ());
 
   if (!CloseHandle (pi.hThread))
-    TRACE_LOG1 ("CloseHandle of thread failed: ec=%d",
+    TRACE_LOG  ("CloseHandle of thread failed: ec=%d",
 		(int) GetLastError ());
 
-  TRACE_LOG1 ("process=%p", pi.hProcess);
+  TRACE_LOG  ("process=%p", pi.hProcess);
 
   /* We don't need to wait for the process.  */
   if (!CloseHandle (pi.hProcess))
-    TRACE_LOG1 ("CloseHandle of process failed: ec=%d",
+    TRACE_LOG  ("CloseHandle of process failed: ec=%d",
 		(int) GetLastError ());
 
   if (! (flags & IOSPAWN_FLAG_NOCLOSE))
@@ -793,10 +793,10 @@ _gpgme_io_spawn (const char *path, char * const argv[], unsigned int flags,
 
   for (i = 0; fd_list[i].fd != -1; i++)
     if (fd_list[i].dup_to == -1)
-      TRACE_LOG3 ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd,
+      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd,
 		  fd_list[i].peer_name);
     else
-      TRACE_LOG4 ("fd[%i] = 0x%x -> 0x%x (std%s)", i, fd_list[i].fd,
+      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x (std%s)", i, fd_list[i].fd,
 		  fd_list[i].peer_name, (fd_list[i].dup_to == 0) ? "in" :
 		  ((fd_list[i].dup_to == 1) ? "out" : "err"));
 
@@ -820,7 +820,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   /* Use a 1s timeout.  */
   int timeout = 1000;
   void *dbg_help = NULL;
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_select", fds,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
   if (nonblock)
@@ -940,7 +940,7 @@ _gpgme_io_dup (int fd)
   int newfd;
   GIOChannel *chan;
 
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd);
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_dup", fd, "");
 
   if (fd < 0 || fd >= MAX_SLAFD || !giochannel_table[fd].used)
     {
@@ -997,7 +997,7 @@ _gpgme_io_socket (int domain, int type, int proto)
   int res;
   int fd;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_socket", domain,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_socket", domain,
 	      "type=%i, protp=%i", type, proto);
 
   res = socket (domain, type, proto);
@@ -1016,7 +1016,7 @@ _gpgme_io_socket (int domain, int type, int proto)
       return TRACE_SYSRES (-1);
     }
 
-  TRACE_SUC2 ("fd=%i, socket=0x%x", fd, res);
+  TRACE_SUC ("fd=%i, socket=0x%x", fd, res);
 
   return fd;
 }
@@ -1032,7 +1032,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
   GIOStatus status;
   GError *err = NULL;
 
-  TRACE_BEG2 (DEBUG_SYSIO, "_gpgme_io_connect", fd,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_connect", fd,
 	      "addr=%p, addrlen=%i", addr, addrlen);
 
   chan = find_channel (fd);
@@ -1048,7 +1048,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       status = g_io_channel_set_flags (chan, flags & ~G_IO_FLAG_NONBLOCK, &err);
       if (err)
 	{
-	  TRACE_LOG1 ("setting flags error: %s", err->message);
+	  TRACE_LOG  ("setting flags error: %s", err->message);
 	  g_error_free (err);
 	  err = NULL;
 	}
@@ -1066,7 +1066,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       return TRACE_SYSRES (-1);
     }
 
-  TRACE_LOG1 ("connect sockfd=0x%x", sockfd);
+  TRACE_LOG  ("connect sockfd=0x%x", sockfd);
   res = connect (sockfd, addr, addrlen);
 
   /* FIXME: Error ignored here.  */
@@ -1075,11 +1075,11 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 
   if (res)
     {
-      TRACE_LOG2 ("connect failed: %i %i", res, WSAGetLastError ());
+      TRACE_LOG  ("connect failed: %i %i", res, WSAGetLastError ());
 
       errno = wsa2errno (WSAGetLastError ());
       return TRACE_SYSRES (-1);
     }
 
-  return TRACE_SUC ();
+  return TRACE_SUC ("");
 }

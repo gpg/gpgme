@@ -1,0 +1,35 @@
+{
+    "info": {
+        "is_mime":      false,
+        "signatures":   [{
+            "summary":      {
+                "sigsum":       [],
+                "valid":        false,
+                "green":        false,
+                "red":  false,
+                "revoked":      false,
+                "key-expired":  false,
+                "sig-expired":  false,
+                "key-missing":  false,
+                "crl-missing":  false,
+                "crl-too-old":  false,
+                "bad-policy":   false,
+                "sys-error":    false
+            },
+            "wrong_key_usage":      false,
+            "chain_model":  false,
+            "is_de_vs":     false,
+            "status_string":        "Success",
+            "fingerprint":  "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+            "validity_string":      "unknown",
+            "pubkey_algo_name":     "DSA",
+            "hash_algo_name":       "SHA1",
+            "status_code":  0,
+            "timestamp":    1542201053,
+            "exp_timestamp":        0,
+            "pka_trust":    0,
+            "validity":     0,
+            "validity_reason":      0
+        }]
+    }
+}

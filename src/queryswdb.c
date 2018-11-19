@@ -14,7 +14,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #if HAVE_CONFIG_H
@@ -57,18 +58,18 @@ gpgme_op_query_swdb_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_query_swdb_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_query_swdb_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_QUERY_SWDB, &hook, -1, NULL);
   opd = hook;
 
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -90,8 +91,8 @@ gpgme_op_query_swdb (gpgme_ctx_t ctx, const char *name, const char *iversion,
   void *hook;
   op_data_t opd;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_query_swdb", ctx,
-	      "name=%s, iversion=%a", name, iversion);
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_query_swdb", ctx,
+	      "name=%s, iversion=%s", name, iversion);
 
   if (!ctx || reserved)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));

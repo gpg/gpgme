@@ -1,23 +1,23 @@
 /* import.c - Import a key.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -67,13 +67,13 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
   op_data_t opd;
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_result", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_result", ctx, "");
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook, -1, NULL);
   opd = hook;
   if (err || !opd)
     {
-      TRACE_SUC0 ("result=(null)");
+      TRACE_SUC ("result=(null)");
       return NULL;
     }
 
@@ -83,18 +83,18 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       gpgme_import_status_t impstat;
       int i;
 
-      TRACE_LOG5 ("%i considered, %i no UID, %i imported, %i imported RSA, "
+      TRACE_LOG  ("%i considered, %i no UID, %i imported, %i imported RSA, "
 		  "%i unchanged", opd->result.considered,
 		  opd->result.no_user_id, opd->result.imported,
 		  opd->result.imported_rsa, opd->result.unchanged);
-      TRACE_LOG4 ("%i new UIDs, %i new sub keys, %i new signatures, "
+      TRACE_LOG  ("%i new UIDs, %i new sub keys, %i new signatures, "
 		  "%i new revocations", opd->result.new_user_ids,
 		  opd->result.new_sub_keys, opd->result.new_signatures,
 		  opd->result.new_revocations);
-      TRACE_LOG3 ("%i secret keys, %i imported, %i unchanged",
+      TRACE_LOG  ("%i secret keys, %i imported, %i unchanged",
 		  opd->result.secret_read, opd->result.secret_imported,
 		  opd->result.secret_unchanged);
-      TRACE_LOG3 ("%i skipped new keys, %i not imported, %i v3 skipped",
+      TRACE_LOG  ("%i skipped new keys, %i not imported, %i v3 skipped",
 		  opd->result.skipped_new_keys, opd->result.not_imported,
                   opd->result.skipped_v3_keys);
 
@@ -102,14 +102,15 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       i = 0;
       while (impstat)
 	{
-	  TRACE_LOG4 ("import[%i] for %s = 0x%x (%s)",
-		      i, impstat->fpr, impstat->status, impstat->result);
+	  TRACE_LOG  ("import[%i] for %s = 0x%x (%s)",
+		      i, impstat->fpr, impstat->status,
+                      gpgme_strerror (impstat->result));
 	  impstat = impstat->next;
 	  i++;
 	}
     }
 
-  TRACE_SUC1 ("result=%p", &opd->result);
+  TRACE_SUC ("result=%p", &opd->result);
   return &opd->result;
 }
 
@@ -290,7 +291,7 @@ gpgme_op_import_start (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
   gpg_error_t err;
 
-  TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_import_start", ctx,
 	      "keydata=%p", keydata);
 
   if (!ctx)
@@ -307,7 +308,7 @@ gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 {
   gpgme_error_t err;
 
-  TRACE_BEG1 (DEBUG_CTX, "gpgme_op_import", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_import", ctx,
 	      "keydata=%p", keydata);
 
   if (!ctx)
@@ -374,7 +375,7 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
 {
   gpg_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys_start", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys_start", ctx, "");
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -385,7 +386,7 @@ gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t *keys)
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+	  TRACE_LOG  ("keys[%i] = %p (%s)", i, keys[i],
 		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
@@ -412,7 +413,7 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
 {
   gpgme_error_t err;
 
-  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys", ctx);
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_import_keys", ctx, "");
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -423,7 +424,7 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+	  TRACE_LOG  ("keys[%i] = %p (%s)", i, keys[i],
 		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;

@@ -1,22 +1,22 @@
 /* data-mem.c - A memory based data object.
-   Copyright (C) 2002, 2003, 2004, 2007 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2002, 2003, 2004, 2007 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -170,14 +170,15 @@ gpgme_error_t
 gpgme_data_new (gpgme_data_t *r_dh)
 {
   gpgme_error_t err;
-  TRACE_BEG (DEBUG_DATA, "gpgme_data_new", r_dh);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new", r_dh, "");
 
   err = _gpgme_data_new (r_dh, &mem_cbs);
 
   if (err)
     return TRACE_ERR (err);
 
-  return TRACE_SUC1 ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }
 
 
@@ -189,8 +190,8 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 			 size_t size, int copy)
 {
   gpgme_error_t err;
-  TRACE_BEG4 (DEBUG_DATA, "gpgme_data_new_from_mem", r_dh,
-	      "buffer=%p, size=%u, copy=%i (%s)", buffer, size,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_mem", r_dh,
+	      "buffer=%p, size=%zu, copy=%i (%s)", buffer, size,
 	      copy, copy ? "yes" : "no");
 
   err = _gpgme_data_new (r_dh, &mem_cbs);
@@ -214,7 +215,8 @@ gpgme_data_new_from_mem (gpgme_data_t *r_dh, const char *buffer,
 
   (*r_dh)->data.mem.size = size;
   (*r_dh)->data.mem.length = size;
-  return TRACE_SUC1 ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }
 
 
@@ -229,7 +231,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
   size_t len;
   int blankout;
 
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_release_and_get_mem", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_release_and_get_mem", dh,
 	      "r_len=%p", r_len);
 
   if (!dh || dh->cbs != &mem_cbs)
@@ -282,13 +284,9 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
   gpgme_data_release (dh);
 
   if (r_len)
-    {
-      TRACE_SUC2 ("buffer=%p, len=%u", str, *r_len);
-    }
+    TRACE_SUC ("buffer=%p, len=%zu", str, *r_len);
   else
-    {
-      TRACE_SUC1 ("buffer=%p", str);
-    }
+    TRACE_SUC ("buffer=%p", str);
   return str;
 }
 
@@ -298,7 +296,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 void
 gpgme_free (void *buffer)
 {
-  TRACE (DEBUG_DATA, "gpgme_free", buffer);
+  TRACE (DEBUG_DATA, "gpgme_free", buffer, "");
 
   if (buffer)
     free (buffer);

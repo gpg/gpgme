@@ -16,8 +16,9 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <https://www.gnu.org/licenses/>.
- **/
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -219,19 +220,19 @@ _gpgme_allow_set_foreground_window (pid_t pid)
 
   if (!pid || pid == (pid_t)(-1))
     {
-      TRACE1 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+      TRACE (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
 	      "no action for pid %d", (int)pid);
     }
   else if (func)
     {
       int rc = func (pid);
-      TRACE2 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+      TRACE (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
 	      "called for pid %d; result=%d", (int)pid, rc);
 
     }
   else
     {
-      TRACE0 (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
+      TRACE (DEBUG_ENGINE, "gpgme:AllowSetForegroundWindow", 0,
 	      "function not available");
     }
 #endif /* HAVE_ALLOW_SET_FOREGROUND_WINDOW */
@@ -267,13 +268,13 @@ _gpgme_w32_cancel_synchronous_io (HANDLE thread)
     {
       if (!func (thread) && GetLastError() != ERROR_NOT_FOUND)
         {
-          TRACE2 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
+          TRACE (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
                   "called for thread %p: ec=%d", thread, GetLastError ());
         }
     }
   else
     {
-      TRACE0 (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
+      TRACE (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", 0,
 	      "function not available");
     }
 }
@@ -531,7 +532,8 @@ _gpgme_get_gpg_path (void)
 
   /* 4. Print a debug message if not found.  */
   if (!gpg)
-    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpg_path: '%s' not found", name);
+    _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                  "_gpgme_get_gpg_path: '%s' not found", name);
 
   return gpg;
 }
@@ -606,7 +608,8 @@ _gpgme_get_gpgconf_path (void)
 
   /* 5. Print a debug message if not found.  */
   if (!gpgconf)
-    _gpgme_debug (DEBUG_ENGINE, "_gpgme_get_gpgconf_path: '%s' not found",name);
+    _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                  "_gpgme_get_gpgconf_path: '%s' not found",name);
 
   return gpgconf;
 }

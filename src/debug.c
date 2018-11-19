@@ -1,23 +1,23 @@
 /* debug.c - helpful output in desperate situations
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
-   MA 02110-1301, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -205,12 +205,13 @@ debug_init (void)
 
   if (debug_level > 0)
     {
-      _gpgme_debug (DEBUG_INIT, "gpgme_debug: level=%d\n", debug_level);
+      _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+                    "gpgme_debug: level=%d\n", debug_level);
 #ifdef HAVE_W32_SYSTEM
       {
         const char *name = _gpgme_get_inst_dir ();
-        _gpgme_debug (DEBUG_INIT, "gpgme_debug: gpgme='%s'\n",
-                      name? name: "?");
+        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+                      "gpgme_debug: gpgme='%s'\n", name? name: "?");
       }
 #endif
     }
@@ -230,7 +231,14 @@ _gpgme_debug_subsystem_init (void)
 
 
 
-/* Log the formatted string FORMAT at debug level LEVEL or higher.
+/* Log the formatted string FORMAT prefixed with additional info
+ * depending on MODE:
+ *
+ * -1 = Do not print any additional args.
+ *  0 = standalone (used by macro TRACE)
+ *  1 = enter a function (used by macro TRACE_BEG)
+ *  2 = debug a function (used by macro TRACE_LOG)
+ *  3 = leave a function (used by macro TRACE_SUC)
  *
  * Returns: 0
  *
@@ -241,15 +249,17 @@ _gpgme_debug_subsystem_init (void)
  * value from the TRACE macros are actually used somewhere.
  */
 int
-_gpgme_debug (int level, const char *format, ...)
+_gpgme_debug (int level, int mode, const char *func, const char *tagname,
+              const char *tagvalue, const char *format, ...)
 {
   va_list arg_ptr;
   int saved_errno;
+  int need_lf;
 
-  saved_errno = errno;
   if (debug_level < level)
     return 0;
 
+  saved_errno = errno;
   va_start (arg_ptr, format);
   LOCK (debug_lock);
   {
@@ -271,9 +281,35 @@ _gpgme_debug (int level, const char *format, ...)
   }
 #endif
 
+  need_lf = 0;
+  switch (mode)
+    {
+    case -1:  /* Do nothing.  */
+      break;
+    case 0:
+      fprintf (errfp, "%s: call: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 1:
+      fprintf (errfp, "%s: enter: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 2:
+      fprintf (errfp, "%s: check: %s=%p ", func, tagname, tagvalue);
+      break;
+    case 3:
+      if (tagname)
+        fprintf (errfp, "%s: leave: %s=%p ", func, tagname, tagvalue);
+      else
+        fprintf (errfp, "%s: leave: ", func);
+      break;
+    default:
+      fprintf (errfp, "%s: ?(mode=%d): %s=%p ", func, mode, tagname, tagvalue);
+      break;
+    }
+  need_lf = (mode != -1 && (!format || !*format));
+
   vfprintf (errfp, format, arg_ptr);
   va_end (arg_ptr);
-  if(format && *format && format[strlen (format) - 1] != '\n')
+  if (need_lf || (format && *format && format[strlen (format) - 1] != '\n'))
     putc ('\n', errfp);
   UNLOCK (debug_lock);
   fflush (errfp);
@@ -346,7 +382,7 @@ _gpgme_debug_end (void **line)
 
   /* The smallest possible level is 1, so force logging here by
      using that.  */
-  _gpgme_debug (1, "%s", *line);
+  _gpgme_debug (1, -1, NULL, NULL, NULL, "%s", (char*)*line);
   gpgrt_free (*line);
   *line = NULL;
 }
@@ -395,6 +431,6 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
       *(strp++) = ' ';
       *(strp2) = '\0';
 
-      _gpgme_debug (lvl, fmt, func, str);
+      _gpgme_debug (lvl, -1, NULL, NULL, NULL, fmt, func, str);
     }
 }

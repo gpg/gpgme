@@ -1,0 +1,5 @@
+{
+    "op": "verify",
+    "data": "Hello world",
+    "signature": "-----BEGIN PGP SIGNATURE-----\n\niHAEABECADAWIQSg/0WQu2Ei7e9uPFQtcnzHaGl3NAUCW+we3RIcYWxwaGFAZXhh\nbXBsZS5uZXQACgkQLXJ8x2hpdzSwIgCfdfk+n6SsYwa9SYfBwr/o4FmWsa8Anj3V\n8p3ahr3rxNbK7cDbSk/p1zD0\n=oS5d\n-----END PGP SIGNATURE-----"
+}

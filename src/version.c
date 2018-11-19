@@ -1,23 +1,23 @@
 /* version.c - Version check routines.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -202,7 +202,7 @@ gpgme_check_version (const char *req_version)
      before using the trace facility.  If we won't the trace would
      automagically initialize the debug system with out the locks
      being initialized and missing the assuan log level setting. */
-  TRACE2 (DEBUG_INIT, "gpgme_check_version", 0,
+  TRACE (DEBUG_INIT, "gpgme_check_version", 0,
 	  "req_version=%s, VERSION=%s",
           req_version? req_version:"(null)", VERSION);
 
@@ -229,15 +229,15 @@ gpgme_check_version_internal (const char *req_version,
     return result;
 
   /* Catch-22, see above.  */
-  TRACE2 (DEBUG_INIT, "gpgme_check_version_internal", 0,
-	  "req_version=%s, offset_sig_validity=%i",
+  TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
+	  "req_version=%s, offset_sig_validity=%zu",
 	  req_version ? req_version : "(null)", offset_sig_validity);
 
   if (offset_sig_validity != offsetof (struct _gpgme_signature, validity))
     {
-      TRACE1 (DEBUG_INIT, "gpgme_check_version_internal", 0,
+      TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
 	      "offset_sig_validity mismatch: expected %i",
-	      offsetof (struct _gpgme_signature, validity));
+             (int)offsetof (struct _gpgme_signature, validity));
       _gpgme_selftest = GPG_ERR_SELFTEST_FAILED;
     }
 

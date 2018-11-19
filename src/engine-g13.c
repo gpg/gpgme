@@ -1,23 +1,23 @@
 /* engine-g13.c - G13 engine.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -486,7 +486,7 @@ status_handler (void *opaque, int fd)
 	{
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (g13->assuan_ctx, "BYE"); */
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", g13,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", g13,
 		  "fd 0x%x: error reading assuan line: %s",
                   fd, gpg_strerror (err));
 	}
@@ -498,7 +498,7 @@ status_handler (void *opaque, int fd)
 	    err = atoi (&line[4]);
 	  if (! err)
 	    err = gpg_error (GPG_ERR_GENERAL);
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", g13,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", g13,
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 
@@ -514,7 +514,7 @@ status_handler (void *opaque, int fd)
 	       && line[0] == 'O' && line[1] == 'K'
 	       && (line[2] == '\0' || line[2] == ' '))
 	{
-          TRACE1 (DEBUG_CTX, "gpgme:status_handler", g13,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", g13,
 		  "fd 0x%x: OK line", fd);
 
 	  _gpgme_io_close (g13->status_cb.fd);
@@ -556,7 +556,7 @@ status_handler (void *opaque, int fd)
           else
             err = 0;
 
-          TRACE2 (DEBUG_CTX, "gpgme:g13_status_handler", g13,
+          TRACE (DEBUG_CTX, "gpgme:g13_status_handler", g13,
 		  "fd 0x%x: D inlinedata; status from cb: %s",
                   fd, (g13->user.data_cb ?
                        (err? gpg_strerror (err):"ok"):"no callback"));
@@ -587,7 +587,7 @@ status_handler (void *opaque, int fd)
           else
             err = 0;
 
-          TRACE3 (DEBUG_CTX, "gpgme:g13_status_handler", g13,
+          TRACE (DEBUG_CTX, "gpgme:g13_status_handler", g13,
 		  "fd 0x%x: S line (%s) - status from cb: %s",
                   fd, line+2, (g13->user.status_cb ?
                                (err? gpg_strerror (err):"ok"):"no callback"));
@@ -638,7 +638,7 @@ add_io_cb (engine_g13_t g13, iocb_data_t *iocbd, gpgme_io_cb_t handler)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_ENGINE, "engine-g13:add_io_cb", g13,
+  TRACE_BEG  (DEBUG_ENGINE, "engine-g13:add_io_cb", g13,
               "fd %d, dir %d", iocbd->fd, iocbd->dir);
   err = (*g13->io_cbs.add) (g13->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
@@ -760,7 +760,7 @@ g13_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_g13_t g13 = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:g13_io_event", g13,
+  TRACE (DEBUG_ENGINE, "gpgme:g13_io_event", g13,
           "event %p, type %d, type_data %p",
           g13->io_cbs.event, type, type_data);
   if (g13->io_cbs.event)

@@ -1,0 +1,16 @@
+{
+    "dec_info":     {
+        "wrong_key_usage":      false,
+            "is_de_vs":     false,
+            "is_mime":      false,
+            "legacy_cipher_nomdc":  false,
+            "recipients":   [{
+                "pubkey_algo_name":     "ELG-E",
+                "status_string":        "Success",
+                "status_code":  0
+            }]
+    },
+    "type": "plaintext",
+    "base64": false,
+    "data": "Hello\n"
+}

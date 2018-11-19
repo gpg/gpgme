@@ -14,11 +14,11 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <https://www.gnu.org/licenses/>.
- * SPDX-License-Identifier: LGPL-2.1+
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
-/* This is tool implements the Native Messaging protocol of web
+/* This tool implements the Native Messaging protocol of web
  * browsers and provides the server part of it.  A Javascript based
  * client can be found in lang/javascript.
  */

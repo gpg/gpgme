@@ -14,7 +14,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #if HAVE_CONFIG_H
@@ -154,7 +155,7 @@ gpgme_op_tofu_policy_start (gpgme_ctx_t ctx,
                             gpgme_key_t key, gpgme_tofu_policy_t policy)
 {
   gpg_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_tofu_policy_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_tofu_policy_start", ctx,
 	      "key=%p, policy=%u", key, (unsigned int)policy);
 
   if (!ctx)
@@ -171,7 +172,7 @@ gpgme_op_tofu_policy (gpgme_ctx_t ctx,
                       gpgme_key_t key, gpgme_tofu_policy_t policy)
 {
   gpgme_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_tofu_policy", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_tofu_policy", ctx,
 	      "key=%p, policy=%u", key, (unsigned int)policy);
 
   if (!ctx)

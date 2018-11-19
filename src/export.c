@@ -1,21 +1,22 @@
 /* export.c - Export a key.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001-2004, 2010, 2014 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001-2004, 2010, 2014 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #if HAVE_CONFIG_H
@@ -175,7 +176,7 @@ gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export_start", ctx,
 	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
 
   if (!ctx)
@@ -193,7 +194,7 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_export", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export", ctx,
 	      "pattern=%s, mode=0x%x, keydata=%p", pattern, mode, keydata);
 
   if (!ctx)
@@ -269,7 +270,7 @@ gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
 
   if (!ctx)
@@ -281,7 +282,7 @@ gpgme_op_export_ext_start (gpgme_ctx_t ctx, const char *pattern[],
 
       while (pattern[i])
 	{
-	  TRACE_LOG2 ("pattern[%i] = %s", i, pattern[i]);
+	  TRACE_LOG  ("pattern[%i] = %s", i, pattern[i]);
 	  i++;
 	}
     }
@@ -298,7 +299,7 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export_ext_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
 
   if (!ctx)
@@ -310,7 +311,7 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
 
       while (pattern[i])
 	{
-	  TRACE_LOG2 ("pattern[%i] = %s", i, pattern[i]);
+	  TRACE_LOG  ("pattern[%i] = %s", i, pattern[i]);
 	  i++;
 	}
     }
@@ -405,7 +406,7 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
 {
   gpg_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export_keys_start", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
 
   if (!ctx)
@@ -417,7 +418,7 @@ gpgme_op_export_keys_start (gpgme_ctx_t ctx,
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+	  TRACE_LOG  ("keys[%i] = %p (%s)", i, keys[i],
 		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;
@@ -436,7 +437,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_export_keys", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_export_keys", ctx,
 	      "mode=0x%x, keydata=%p", mode, keydata);
 
   if (!ctx)
@@ -448,7 +449,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
       while (keys[i])
 	{
-	  TRACE_LOG3 ("keys[%i] = %p (%s)", i, keys[i],
+	  TRACE_LOG  ("keys[%i] = %p (%s)", i, keys[i],
 		      (keys[i]->subkeys && keys[i]->subkeys->fpr) ?
 		      keys[i]->subkeys->fpr : "invalid");
 	  i++;

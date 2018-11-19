@@ -14,7 +14,8 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 /*
@@ -492,13 +493,13 @@ llass_status_handler (void *opaque, int fd)
 	     case, we are done for now.  */
 	  if (gpg_err_code (err) == GPG_ERR_EAGAIN)
 	    {
-	      TRACE1 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+	      TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		      "fd 0x%x: EAGAIN reading assuan line (ignored)", fd);
 	      err = 0;
 	      continue;
 	    }
 
-	  TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+	  TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: error reading assuan line: %s",
                   fd, gpg_strerror (err));
 	}
@@ -529,7 +530,7 @@ llass_status_handler (void *opaque, int fd)
             err = llass->user.data_cb (llass->user.data_cb_value,
                                        src, linelen);
 
-          TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+          TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: D inlinedata; status from cb: %s",
                   fd, (llass->user.data_cb ?
                        (err? gpg_strerror (err):"ok"):"no callback"));
@@ -542,7 +543,7 @@ llass_status_handler (void *opaque, int fd)
           if (llass->user.data_cb)
             err = llass->user.data_cb (llass->user.data_cb_value, NULL, 0);
 
-          TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+          TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: END line; status from cb: %s",
                   fd, (llass->user.data_cb ?
                        (err? gpg_strerror (err):"ok"):"no callback"));
@@ -568,7 +569,7 @@ llass_status_handler (void *opaque, int fd)
             err = llass->user.status_cb (llass->user.status_cb_value,
                                          src, args);
 
-          TRACE3 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+          TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: S line (%s) - status from cb: %s",
                   fd, line+2, (llass->user.status_cb ?
                                (err? gpg_strerror (err):"ok"):"no callback"));
@@ -614,7 +615,7 @@ llass_status_handler (void *opaque, int fd)
 	    err = atoi (line+4);
 	  else
 	    err = gpg_error (GPG_ERR_GENERAL);
-          TRACE2 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+          TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: ERR line: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 
@@ -631,7 +632,7 @@ llass_status_handler (void *opaque, int fd)
 	       && line[0] == 'O' && line[1] == 'K'
 	       && (line[2] == '\0' || line[2] == ' '))
 	{
-          TRACE1 (DEBUG_CTX, "gpgme:llass_status_handler", llass,
+          TRACE (DEBUG_CTX, "gpgme:llass_status_handler", llass,
 		  "fd 0x%x: OK line", fd);
 
 	  llass->last_op_err = 0;
@@ -656,7 +657,7 @@ add_io_cb (engine_llass_t llass, iocb_data_t *iocbd, gpgme_io_cb_t handler)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_ENGINE, "engine-assuan:add_io_cb", llass,
+  TRACE_BEG  (DEBUG_ENGINE, "engine-assuan:add_io_cb", llass,
               "fd %d, dir %d", iocbd->fd, iocbd->dir);
   err = (*llass->io_cbs.add) (llass->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
@@ -783,7 +784,7 @@ llass_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_llass_t llass = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:llass_io_event", llass,
+  TRACE (DEBUG_ENGINE, "gpgme:llass_io_event", llass,
           "event %p, type %d, type_data %p",
           llass->io_cbs.event, type, type_data);
   if (llass->io_cbs.event)

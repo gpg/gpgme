@@ -14,8 +14,9 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General
 # Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program; if not, see <https://gnu.org/licenses/>.
+# SPDX-License-Identifier: LGPL-2.1-or-later
 
 # (Process this file with autoconf to produce a configure script.)
 AC_PREREQ(2.59)
@@ -580,6 +581,7 @@ if test "$GCC" = yes; then
           CFLAGS="$CFLAGS -Wdeclaration-after-statement"
           CFLAGS="$CFLAGS -Wno-missing-field-initializers"
           CFLAGS="$CFLAGS -Wno-sign-compare"
+          CFLAGS="$CFLAGS -Wno-format-zero-length"
         fi
         CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-shadow"
 
@@ -853,6 +855,7 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 tests/gpg/Makefile
                 tests/gpgsm/Makefile
                 tests/opassuan/Makefile
+                tests/json/Makefile
 		doc/Makefile
                 src/versioninfo.rc
                 src/gpgme.pc

@@ -1,23 +1,24 @@
 /* engine-gpg.c - Gpg Engine.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-                 2009, 2010, 2012, 2013 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ *               2009, 2010, 2012, 2013 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -164,7 +165,7 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_gpg_t gpg = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:gpg_io_event", gpg,
+  TRACE (DEBUG_ENGINE, "gpgme:gpg_io_event", gpg,
           "event %p, type %d, type_data %p",
           gpg->io_cbs.event, type, type_data);
   if (gpg->io_cbs.event)
@@ -1312,7 +1313,7 @@ read_status (engine_gpg_t gpg)
 			     received and the next thing will be that
 			     the command handler does its action.  */
 			  if (nread > 1)
-			    TRACE0 (DEBUG_CTX, "gpgme:read_status", 0,
+			    TRACE (DEBUG_CTX, "gpgme:read_status", 0,
 				    "error: unexpected data");
 
 			  add_io_cb (gpg, gpg->cmd.fd, 0,
@@ -1685,7 +1686,7 @@ gpg_decrypt (void *engine,
       if (have_gpg_version (gpg, "2.1.16"))
         {
           gpgme_data_release (gpg->override_session_key);
-          TRACE2 (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
+          TRACE (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
                   override_session_key,
                   strlen (override_session_key));
 

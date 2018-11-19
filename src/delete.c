@@ -130,7 +130,7 @@ gpgme_op_delete_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_delete_start", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", allow_secret);
@@ -151,7 +151,7 @@ gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_delete", ctx,
 	      "key=%p (%s), allow_secret=%i", key,
 	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", allow_secret);
@@ -174,7 +174,7 @@ gpgme_op_delete_ext_start (gpgme_ctx_t ctx, const gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_ext_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_delete_ext_start", ctx,
 	      "key=%p (%s), flags=0x%x", key,
 	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", flags);
@@ -194,7 +194,7 @@ gpgme_op_delete_ext (gpgme_ctx_t ctx, const gpgme_key_t key,
 {
   gpgme_error_t err;
 
-  TRACE_BEG3 (DEBUG_CTX, "gpgme_op_delete_ext", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_delete_ext", ctx,
 	      "key=%p (%s), flags=0x%x", key,
 	      (key->subkeys && key->subkeys->fpr) ?
 	      key->subkeys->fpr : "invalid", flags);

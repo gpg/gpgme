@@ -87,7 +87,7 @@ gpgme_error_t
 gpgme_data_new_from_estream (gpgme_data_t *r_dh, gpgrt_stream_t stream)
 {
   gpgme_error_t err;
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_new_from_estream", r_dh, "estream=%p",
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_estream", r_dh, "estream=%p",
 	      stream);
 
   err = _gpgme_data_new (r_dh, &stream_es_cbs);
@@ -95,5 +95,6 @@ gpgme_data_new_from_estream (gpgme_data_t *r_dh, gpgrt_stream_t stream)
     return TRACE_ERR (err);
 
   (*r_dh)->data.e_stream = stream;
-  return TRACE_SUC1 ("dh=%p", *r_dh);
+  TRACE_SUC ("dh=%p", *r_dh);
+  return 0;
 }

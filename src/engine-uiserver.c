@@ -1,23 +1,23 @@
 /* engine-uiserver.c - Uiserver engine.
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 /* Peculiar: Use special keys from email address for recipient and
    signer (==sender).  Use no data objects with encryption for
@@ -659,7 +659,7 @@ status_handler (void *opaque, int fd)
 	{
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (uiserver->assuan_ctx, "BYE"); */
-          TRACE3 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: error from assuan (%d) getting status line : %s",
                   fd, err, gpg_strerror (err));
 	}
@@ -671,7 +671,7 @@ status_handler (void *opaque, int fd)
 	    err = atoi (&line[4]);
 	  if (! err)
 	    err = gpg_error (GPG_ERR_GENERAL);
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: ERR line - mapped to: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  /* Try our best to terminate the connection friendly.  */
@@ -700,7 +700,7 @@ status_handler (void *opaque, int fd)
               uiserver->colon.any = 0;
               err = uiserver->colon.fnc (uiserver->colon.fnc_value, NULL);
             }
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: OK line - final status: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  _gpgme_io_close (uiserver->status_cb.fd);
@@ -775,7 +775,7 @@ status_handler (void *opaque, int fd)
 		    dst++;
 		}
 	    }
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: D line; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
@@ -818,7 +818,7 @@ status_handler (void *opaque, int fd)
               linelen -= nwritten;
             }
 
-          TRACE2 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: D inlinedata; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
@@ -848,7 +848,7 @@ status_handler (void *opaque, int fd)
 	    }
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
-          TRACE3 (DEBUG_CTX, "gpgme:status_handler", uiserver,
+          TRACE (DEBUG_CTX, "gpgme:status_handler", uiserver,
 		  "fd 0x%x: S line (%s) - final status: %s",
                   fd, line+2, err? gpg_strerror (err):"ok");
 	}
@@ -878,7 +878,7 @@ add_io_cb (engine_uiserver_t uiserver, iocb_data_t *iocbd, gpgme_io_cb_t handler
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_ENGINE, "engine-uiserver:add_io_cb", uiserver,
+  TRACE_BEG  (DEBUG_ENGINE, "engine-uiserver:add_io_cb", uiserver,
               "fd %d, dir %d", iocbd->fd, iocbd->dir);
   err = (*uiserver->io_cbs.add) (uiserver->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
@@ -1395,7 +1395,7 @@ uiserver_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 {
   engine_uiserver_t uiserver = engine;
 
-  TRACE3 (DEBUG_ENGINE, "gpgme:uiserver_io_event", uiserver,
+  TRACE (DEBUG_ENGINE, "gpgme:uiserver_io_event", uiserver,
           "event %p, type %d, type_data %p",
           uiserver->io_cbs.event, type, type_data);
   if (uiserver->io_cbs.event)

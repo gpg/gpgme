@@ -15,7 +15,8 @@
 # Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, see <https://www.gnu.org/licenses/>.
+# License along with this program; if not, see <https://gnu.org/licenses/>.
+# SPDX-License-Identifier: LGPL-2.1-or-later
 
 ## Process this file with automake to produce Makefile.in
 
@@ -34,11 +35,12 @@ noinst_HEADERS = run-support.h
 
 noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
 		  run-verify run-encrypt run-identify run-decrypt run-genkey \
-		  run-keysign run-tofu run-swdb
+		  run-keysign run-tofu run-swdb run-threaded
 
+run_threaded_LDADD = ../src/libgpgme.la -lpthread @GPG_ERROR_LIBS@
 
 if RUN_GPG_TESTS
-gpgtests = gpg
+gpgtests = gpg json
 else
 gpgtests =
 endif

@@ -1,21 +1,21 @@
-
 /* getauditlog.c - Retrieve the audit log.
-   Copyright (C) 2007 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
+ * Copyright (C) 2007 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #if HAVE_CONFIG_H
@@ -71,7 +71,7 @@ gpgme_op_getauditlog_start (gpgme_ctx_t ctx,
                             gpgme_data_t output, unsigned int flags)
 {
   gpg_error_t err;
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_getauditlog_start", ctx,
 	      "output=%p, flags=0x%x", output, flags);
 
   if (!ctx)
@@ -91,7 +91,7 @@ gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, unsigned int flags)
 {
   gpgme_error_t err;
 
-  TRACE_BEG2 (DEBUG_CTX, "gpgme_op_getauditlog", ctx,
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_getauditlog", ctx,
 	      "output=%p, flags=0x%x", output, flags);
 
   if (!ctx)

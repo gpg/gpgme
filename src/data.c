@@ -1,22 +1,22 @@
 /* data.c - An abstraction for data objects.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -178,7 +178,7 @@ _gpgme_data_set_prop (gpgme_data_t dh, uint64_t dserial,
 {
   gpg_error_t err = 0;
   int idx;
-  TRACE_BEG3 (DEBUG_DATA, "gpgme_data_set_prop", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_set_prop", dh,
 	      "dserial=%llu %lu=%d",
               (unsigned long long)dserial,
               (unsigned long)name, value);
@@ -241,7 +241,7 @@ _gpgme_data_get_prop (gpgme_data_t dh, uint64_t dserial,
 {
   gpg_error_t err = 0;
   int idx;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_get_prop", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_get_prop", dh,
 	      "dserial=%llu %lu",
               (unsigned long long)dserial,
               (unsigned long)name);
@@ -352,8 +352,8 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
 {
   gpgme_ssize_t res;
   int blankout;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_read", dh,
-	      "buffer=%p, size=%u", buffer, size);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_read", dh,
+	      "buffer=%p, size=%zu", buffer, size);
 
   if (!dh)
     {
@@ -376,7 +376,7 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
       while (res < 0 && errno == EINTR);
     }
 
-  return TRACE_SYSRES (res);
+  return TRACE_SYSRES ((int)res);
 }
 
 
@@ -387,8 +387,8 @@ gpgme_ssize_t
 gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 {
   gpgme_ssize_t res;
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_write", dh,
-	      "buffer=%p, size=%u", buffer, size);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_write", dh,
+	      "buffer=%p, size=%zu", buffer, size);
 
   if (!dh)
     {
@@ -404,7 +404,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
     res = (*dh->cbs->write) (dh, buffer, size);
   while (res < 0 && errno == EINTR);
 
-  return TRACE_SYSRES (res);
+  return TRACE_SYSRES ((int)res);
 }
 
 
@@ -414,8 +414,8 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
 gpgme_off_t
 gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
 {
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_seek", dh,
-	      "offset=%lli, whence=%i", offset, whence);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_seek", dh,
+	      "offset=%lli, whence=%i", (long long int)offset, whence);
 
   if (!dh)
     {
@@ -437,7 +437,7 @@ gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
   if (offset >= 0)
     dh->pending_len = 0;
 
-  return TRACE_SYSRES (offset);
+  return TRACE_SYSRES ((int)offset);
 }
 
 
@@ -446,7 +446,7 @@ gpgme_error_t
 gpgme_data_rewind (gpgme_data_t dh)
 {
   gpgme_error_t err;
-  TRACE_BEG (DEBUG_DATA, "gpgme_data_rewind", dh);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_rewind", dh, "");
 
   err = ((gpgme_data_seek (dh, 0, SEEK_SET) == -1)
          ? gpg_error_from_syserror () : 0);
@@ -459,7 +459,7 @@ gpgme_data_rewind (gpgme_data_t dh)
 void
 gpgme_data_release (gpgme_data_t dh)
 {
-  TRACE (DEBUG_DATA, "gpgme_data_release", dh);
+  TRACE (DEBUG_DATA, "gpgme_data_release", dh, "");
 
   if (!dh)
     return;
@@ -475,8 +475,8 @@ gpgme_data_release (gpgme_data_t dh)
 gpgme_data_encoding_t
 gpgme_data_get_encoding (gpgme_data_t dh)
 {
-  TRACE1 (DEBUG_DATA, "gpgme_data_get_encoding", dh,
-	  "dh->encoding=%i", dh ? dh->encoding : GPGME_DATA_ENCODING_NONE);
+  TRACE (DEBUG_DATA, "gpgme_data_get_encoding", dh,
+         "dh->encoding=%i", dh ? dh->encoding : GPGME_DATA_ENCODING_NONE);
   return dh ? dh->encoding : GPGME_DATA_ENCODING_NONE;
 }
 
@@ -486,7 +486,7 @@ gpgme_data_get_encoding (gpgme_data_t dh)
 gpgme_error_t
 gpgme_data_set_encoding (gpgme_data_t dh, gpgme_data_encoding_t enc)
 {
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_set_encoding", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_set_encoding", dh,
 	      "encoding=%i", enc);
   if (!dh)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
@@ -502,7 +502,7 @@ gpgme_data_set_encoding (gpgme_data_t dh, gpgme_data_encoding_t enc)
 gpgme_error_t
 gpgme_data_set_file_name (gpgme_data_t dh, const char *file_name)
 {
-  TRACE_BEG1 (DEBUG_DATA, "gpgme_data_set_file_name", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_set_file_name", dh,
 	      "file_name=%s", file_name);
 
   if (!dh)
@@ -531,12 +531,12 @@ gpgme_data_get_file_name (gpgme_data_t dh)
 {
   if (!dh)
     {
-      TRACE (DEBUG_DATA, "gpgme_data_get_file_name", dh);
+      TRACE (DEBUG_DATA, "gpgme_data_get_file_name", dh, "");
       return NULL;
     }
 
-  TRACE1 (DEBUG_DATA, "gpgme_data_get_file_name", dh,
-	  "dh->file_name=%s", dh->file_name);
+  TRACE (DEBUG_DATA, "gpgme_data_get_file_name", dh,
+         "dh->file_name=%s", dh->file_name);
   return dh->file_name;
 }
 
@@ -545,7 +545,7 @@ gpgme_data_get_file_name (gpgme_data_t dh)
 gpg_error_t
 gpgme_data_set_flag (gpgme_data_t dh, const char *name, const char *value)
 {
-  TRACE_BEG2 (DEBUG_DATA, "gpgme_data_set_flag", dh,
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_set_flag", dh,
 	      "%s=%s", name, value);
 
   if (!dh)
@@ -573,7 +573,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
   char buffer[BUFFER_SIZE];
   char *bufp = buffer;
   gpgme_ssize_t buflen;
-  TRACE_BEG1 (DEBUG_CTX, "_gpgme_data_inbound_handler", dh,
+  TRACE_BEG  (DEBUG_CTX, "_gpgme_data_inbound_handler", dh,
 	      "fd=0x%x", fd);
 
   buflen = _gpgme_io_read (fd, buffer, BUFFER_SIZE);
@@ -604,7 +604,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
   struct io_cb_data *data = (struct io_cb_data *) opaque;
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
   gpgme_ssize_t nwritten;
-  TRACE_BEG1 (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
+  TRACE_BEG  (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
 	      "fd=0x%x", fd);
 
   if (!dh->pending_len)

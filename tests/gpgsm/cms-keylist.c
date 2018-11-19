@@ -1,21 +1,22 @@
 /* cms-keylist.c  - Helper to show a key listing.
-   Copyright (C) 2008 g10 Code GmbH
-
-   This file is part of GPGME.
- 
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-   
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-   
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, see <https://www.gnu.org/licenses/>.
-*/
+ * Copyright (C) 2008 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 /* We need to include config.h so that we know whether we are building
    with large file system (LFS) support. */
@@ -40,7 +41,7 @@ nonnull (const char *s)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   gpgme_error_t err;
@@ -68,12 +69,12 @@ main (int argc, char **argv)
 
   err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, 0);
   fail_if_err (err);
-    
+
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       gpgme_user_id_t uid;
       int nuids;
-      
+
       for (nuids=0, uid=key->uids; uid; uid = uid->next)
         nuids++;
 
@@ -95,7 +96,7 @@ main (int argc, char **argv)
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)
         {
           printf ("userid %d: %s\n", nuids, nonnull(uid->uid));
-          printf ("valid  %d: %s\n", nuids, 
+          printf ("valid  %d: %s\n", nuids,
                   uid->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
                   uid->validity == GPGME_VALIDITY_UNDEFINED? "undefined":
                   uid->validity == GPGME_VALIDITY_NEVER? "never":

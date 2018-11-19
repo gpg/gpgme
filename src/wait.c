@@ -1,23 +1,23 @@
 /* wait.c
-   Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
-
-   This file is part of GPGME.
-
-   GPGME is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Lesser General Public License as
-   published by the Free Software Foundation; either version 2.1 of
-   the License, or (at your option) any later version.
-
-   GPGME is distributed in the hope that it will be useful, but
-   WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+ * Copyright (C) 2000 Werner Koch (dd9jn)
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 g10 Code GmbH
+ *
+ * This file is part of GPGME.
+ *
+ * GPGME is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * GPGME is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program; if not, see <https://gnu.org/licenses/>.
+ * SPDX-License-Identifier: LGPL-2.1-or-later
+ */
 
 #if HAVE_CONFIG_H
 #include <config.h>
@@ -136,7 +136,7 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
       return err;
     }
 
-  TRACE3 (DEBUG_CTX, "_gpgme_add_io_cb", ctx,
+  TRACE (DEBUG_CTX, "_gpgme_add_io_cb", ctx,
 	  "fd %d, dir=%d -> tag=%p", fd, dir, tag);
 
   *r_tag = tag;
@@ -159,7 +159,7 @@ _gpgme_remove_io_cb (void *data)
   assert (fdt);
   idx = tag->idx;
 
-  TRACE2 (DEBUG_CTX, "_gpgme_remove_io_cb", data,
+  TRACE (DEBUG_CTX, "_gpgme_remove_io_cb", data,
 	  "setting fd 0x%x (item=%p) done", fdt->fds[idx].fd,
 	  fdt->fds[idx].opaque);
 
@@ -196,7 +196,7 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
       int nr;
       struct io_select_fd_s fds;
 
-      TRACE0 (DEBUG_CTX, "_gpgme_run_io_cb", item, "need to check");
+      TRACE (DEBUG_CTX, "_gpgme_run_io_cb", item, "need to check");
       fds = *an_fds;
       fds.signaled = 0;
       /* Just give it a quick poll.  */
@@ -210,7 +210,7 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
 	return 0;
     }
 
-  TRACE2 (DEBUG_CTX, "_gpgme_run_io_cb", item, "handler (%p, %d)",
+  TRACE (DEBUG_CTX, "_gpgme_run_io_cb", item, "handler (%p, %d)",
           item->handler_value, an_fds->fd);
 
   iocb_data.handler_value = item->handler_value;
