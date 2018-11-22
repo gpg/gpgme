@@ -66,14 +66,15 @@ Additions since GPGME 1.12.0 include:
 
 @itemize
 @item
-An advanced HOWTO on using the bindings with web interfaces,
-specifically Flask.
-@item
 Moving the @emph{What's New} section out of the basic @uref{gpgme-python-howto.org, HOWTO} document and
 into its own file so as to more readily include other documents
 beyond that HOWTO.
 @item
 Moving the preceding, archival, segments into @uref{what-was-new.org, another file}.
+@item
+Added @samp{gpg.version.versionintlist} to make it easier for Python
+developers to check for a specific version number, even with beta
+versions (it will drop the "-betaN" part).
 @end itemize
 
 @bye

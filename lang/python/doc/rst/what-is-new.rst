@@ -33,10 +33,11 @@ New in GPGME 1·13·0
 
 Additions since GPGME 1.12.0 include:
 
--  An advanced HOWTO on using the bindings with web interfaces,
-   specifically Flask.
 -  Moving the *What\'s New* section out of the basic
    `HOWTO <gpgme-python-howto.org>`__ document and into its own file so
    as to more readily include other documents beyond that HOWTO.
 -  Moving the preceding, archival, segments into `another
    file <what-was-new.org>`__.
+-  Added ``gpg.version.versionintlist`` to make it easier for Python
+   developers to check for a specific version number, even with beta
+   versions (it will drop the \"-betaN\" part).

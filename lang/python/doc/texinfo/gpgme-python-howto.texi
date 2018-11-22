@@ -149,6 +149,7 @@ Miscellaneous extras and work-arounds
 
 * Group lines::
 * Keyserver access for Python::
+* GPGME version checking::
 
 Keyserver access for Python
 
@@ -170,14 +171,14 @@ Copyright and Licensing
 @item Version:
 @tab 0.1.4
 @item GPGME Version:
-@tab 1.12.0
+@tab 1.12.1
 @item Author:
 @tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <ben@@gnupg.org>
 @item Author GPG Key:
 @tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 @item Language:
 @tab Australian English, British English
-@item xml:lang:
+@item Language codes:
 @tab en-AU, en-GB, en
 @end multitable
 
@@ -2887,6 +2888,7 @@ especially true of the first of these, dealing with @ref{Group lines, , group li
 @menu
 * Group lines::
 * Keyserver access for Python::
+* GPGME version checking::
 @end menu
 
 @node Group lines
@@ -3005,6 +3007,93 @@ HOWTO and the corresponding executable version of that example is
 available in the @samp{lang/python/examples/howto} directory as normal; the
 executable version is the @samp{import-keys-hkp.py} file.
 
+@node GPGME version checking
+@section GPGME version checking
+
+For various reasons it may be necessary to check which version of
+GPGME the bindings have been built against; including whether a
+minimum required version of GPGME is in use.
+
+For the most part the @samp{gpg.version.versionstr} and
+@samp{gpg.version.versionlist} methods have been quite sufficient.  The
+former returns the same string as @samp{gpgme-config --version}, while the
+latter returns the major, minor and patch values in a list.
+
+To check if the installed bindings have actually been built against
+the current installed libgpgme version, this check can be performed:
+
+@example
+import gpg
+import subprocess
+import sys
+
+gpgme_version_call = subprocess.Popen(["gpgme-config", "--version"],
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.PIPE)
+gpgme_version_str = gpgme_version_call.communicate()
+
+if sys.version_info[0] == 2:
+    gpgme_version = gpgme_version_str[0].strip()
+elif sys.version_info[0] >= 3:
+    gpgme_version = gpgme_version_str[0].decode().strip()
+else:
+    gpgme_version = None
+
+if gpgme_version is not None:
+    if gpgme_version == gpg.version.versionstr:
+        print("The GPGME Python bindings match libgpgme.")
+    else:
+        print("The GPGME Python bindings do NOT match libgpgme.")
+else:
+    print("Upgrade Python and reinstall the GPGME Python bindings.")
+@end example
+
+For many developers, however, the preferred checking means checking
+for a minimum version or point release.  This is now readily available
+via the @samp{gpg.version.versionintlist} method (added in version
+@samp{1.12.1-beta79}).  It is also now possible to easily check whether the
+installed GPGME Python bindings were built from a development or beta
+branch of the GPGME source code.
+
+The following code demonstrates how both of those methods may be used:
+
+@example
+import gpg
+
+try:
+    if gpg.version.is_beta is True:
+        print("The installed GPGME Python bindings were built from beta code.")
+    else:
+        print("The installed GPGME Python bindings are a released version.")
+except Exception as e:
+    print(e)
+
+try:
+    if gpg.version.versionintlist[0] == 1:
+        if gpg.version.versionintlist[1] == 12:
+            if gpg.version.versionintlist[2] == 1:
+                print("This is the minimum version for using versionintlist.")
+            elif gpg.version.versionintlist[2] > 1:
+                print("The versionintlist method is available.")
+            else:
+                pass
+        elif gpg.version.versionintlist[1] > 12:
+            print("The versionintlist method is available.")
+        else:
+            pass
+    elif gpg.version.versionintlist[0] > 1:
+        print("The versionintlist method is available.")
+    else:
+        pass
+except Exception as e:
+    print(e)
+@end example
+
+The points where @samp{pass} is used in the above example will most likely
+also produce an @samp{Exception} error since those results should only
+occur in versions which do not have the @samp{gpgme.version.is_beta} and
+@samp{gpgme.version.versionintlist} methods available.
+
 @node Copyright and Licensing
 @chapter Copyright and Licensing
 
@@ -3044,10 +3133,6 @@ from the author at any of the following URLs:
 @uref{https://files.au.adversary.org/crypto/gpgme-python-howto.rst, GPGME Python Bindings HOWTO draft (reST file AWS S3 SSL)}
 @item
 @uref{http://files.au.adversary.org/crypto/gpgme-python-howto.rst, GPGME Python Bindings HOWTO draft (reST file AWS S3 no SSL)}
-@item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.xml, GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 SSL)}
-@item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.xml, GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no SSL)}
 @end itemize
 
 All of these draft versions except for one have been generated from
@@ -3060,8 +3145,8 @@ using the latest version of Pandoc from the Org mode source file using
 either of the following two commands:
 
 @example
-pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto.org
-pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto
+pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
+pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 @end example
 
 In addition to these there is a significantly less frequently updated

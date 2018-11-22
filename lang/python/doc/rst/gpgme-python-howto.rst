@@ -6,7 +6,7 @@ Introduction
 +-----------------------------------+-----------------------------------+
 | Version:                          | 0.1.4                             |
 +-----------------------------------+-----------------------------------+
-| GPGME Version:                    | 1.12.0                            |
+| GPGME Version:                    | 1.12.1                            |
 +-----------------------------------+-----------------------------------+
 | Author:                           | `Ben                              |
 |                                   | McGinnes <https://gnupg.org/peopl |
@@ -19,7 +19,7 @@ Introduction
 | Language:                         | Australian English, British       |
 |                                   | English                           |
 +-----------------------------------+-----------------------------------+
-| xml:lang:                         | en-AU, en-GB, en                  |
+| Language codes:                   | en-AU, en-GB, en                  |
 +-----------------------------------+-----------------------------------+
 
 This document provides basic instruction in how to use the GPGME Python
@@ -2823,6 +2823,95 @@ executable version of that example is available in the
 ``lang/python/examples/howto`` directory as normal; the executable
 version is the ``import-keys-hkp.py`` file.
 
+.. _gpgme-version-check:
+
+GPGME version checking
+----------------------
+
+For various reasons it may be necessary to check which version of GPGME
+the bindings have been built against; including whether a minimum
+required version of GPGME is in use.
+
+For the most part the ``gpg.version.versionstr`` and
+``gpg.version.versionlist`` methods have been quite sufficient. The
+former returns the same string as ``gpgme-config --version``, while the
+latter returns the major, minor and patch values in a list.
+
+To check if the installed bindings have actually been built against the
+current installed libgpgme version, this check can be performed:
+
+.. code:: python
+
+   import gpg
+   import subprocess
+   import sys
+
+   gpgme_version_call = subprocess.Popen(["gpgme-config", "--version"],
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
+   gpgme_version_str = gpgme_version_call.communicate()
+
+   if sys.version_info[0] == 2:
+       gpgme_version = gpgme_version_str[0].strip()
+   elif sys.version_info[0] >= 3:
+       gpgme_version = gpgme_version_str[0].decode().strip()
+   else:
+       gpgme_version = None
+
+   if gpgme_version is not None:
+       if gpgme_version == gpg.version.versionstr:
+           print("The GPGME Python bindings match libgpgme.")
+       else:
+           print("The GPGME Python bindings do NOT match libgpgme.")
+   else:
+       print("Upgrade Python and reinstall the GPGME Python bindings.")
+
+For many developers, however, the preferred checking means checking for
+a minimum version or point release. This is now readily available via
+the ``gpg.version.versionintlist`` method (added in version
+``1.12.1-beta79``). It is also now possible to easily check whether the
+installed GPGME Python bindings were built from a development or beta
+branch of the GPGME source code.
+
+The following code demonstrates how both of those methods may be used:
+
+.. code:: python
+
+   import gpg
+
+   try:
+       if gpg.version.is_beta is True:
+           print("The installed GPGME Python bindings were built from beta code.")
+       else:
+           print("The installed GPGME Python bindings are a released version.")
+   except Exception as e:
+       print(e)
+
+   try:
+       if gpg.version.versionintlist[0] == 1:
+           if gpg.version.versionintlist[1] == 12:
+               if gpg.version.versionintlist[2] == 1:
+                   print("This is the minimum version for using versionintlist.")
+               elif gpg.version.versionintlist[2] > 1:
+                   print("The versionintlist method is available.")
+               else:
+                   pass
+           elif gpg.version.versionintlist[1] > 12:
+               print("The versionintlist method is available.")
+           else:
+               pass
+       elif gpg.version.versionintlist[0] > 1:
+           print("The versionintlist method is available.")
+       else:
+           pass
+   except Exception as e:
+       print(e)
+
+The points where ``pass`` is used in the above example will most likely
+also produce an ``Exception`` error since those results should only
+occur in versions which do not have the ``gpgme.version.is_beta`` and
+``gpgme.version.versionintlist`` methods available.
+
 .. _copyright-and-license:
 
 Copyright and Licensing
@@ -2859,10 +2948,6 @@ the author at any of the following URLs:
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.rst>`__
 -  `GPGME Python Bindings HOWTO draft (reST file AWS S3 no
    SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.rst>`__
--  `GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3
-   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.xml>`__
--  `GPGME Python Bindings HOWTO draft (Docbook 4.2 AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.xml>`__
 
 All of these draft versions except for one have been generated from this
 document via Emacs `Org mode <https://orgmode.org/>`__ and `GNU
@@ -2878,8 +2963,8 @@ either of the following two commands:
 
 .. code:: shell
 
-   pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto.org
-   pandoc -f org -t rst -o gpgme-python-howto.rst gpgme-python-howto
+   pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
+   pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 
 In addition to these there is a significantly less frequently updated
 version as a HTML `WebHelp
