@@ -28,11 +28,31 @@ productname = 'gpg'
 versionstr = "@VERSION@"
 gpgme_versionstr = gpgme.GPGME_VERSION
 in_tree_build = bool(gpgme.cvar.gpg_in_tree_build)
+is_beta = False
 
 versionlist = versionstr.split(".")
 major = versionlist[0]
 minor = versionlist[1]
 patch = versionlist[2]
+
+versionintlist = []
+versionintlist.append(int(major))
+versionintlist.append(int(minor))
+
+try:
+    int(patch)
+except ValueError as e:
+    is_beta = True
+
+if is_beta is False:
+    versionintlist.append(int(patch))
+else:
+    try:
+        beta_patch = patch.split("-")
+        versionintlist.append(int(beta_patch[0]))
+    except Exception as e:
+        # This should never happen, if it does then lodge a bug report.
+        versionintlist.append(-1)
 
 copyright = """\
 Copyright (C) 2016-2018 g10 Code GmbH
