@@ -262,16 +262,18 @@ significant advantage in some way.
 #. If possible add the following Python modules which are not part of
    the standard library:
    `Requests <http://docs.python-requests.org/en/latest/index.html>`__,
-   `Cython <https://cython.org/>`__ and
-   `hkp4py <https://github.com/Selfnet/hkp4py>`__. Chances are quite
-   high that at least the first one and maybe two of those will already
-   be installed.
+   `Cython <https://cython.org/>`__,
+   `Pendulum <https://pendulum.eustace.io/>`__ and
+   `hkp4py <https://github.com/Selfnet/hkp4py>`__.
 
-Note that, as with Cython, some of the planned additions to the
-`Advanced <#advanced-use>`__ section, will bring with them additional
-requirements. Most of these will be fairly well known and commonly
-installed ones, however, which are in many cases likely to have already
-been installed on many systems or be familiar to Python programmers.
+Chances are quite high that at least the first one and maybe two of
+those will already be installed.
+
+Note that, as with Cython, some of advanced use case scenarios will
+bring with them additional requirements. Most of these will be fairly
+well known and commonly installed ones, however, which are in many cases
+likely to have already been installed on many systems or be familiar to
+Python programmers.
 
 Installation
 ------------
@@ -2568,6 +2570,81 @@ signature which will last a little over a month, do this:
    dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
    key = c.get_key(dmfpr, secret=True)
    c.key_sign(key, uids=uid, expires_in=2764800)
+
+.. _key-sign-verify:
+
+Verifying key certifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+   import gpg
+   import time
+
+   c = gpg.Context()
+   dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+   keys = list(c.keylist(pattern=dmuid, mode=gpg.constants.keylist.mode.SIGS))
+   key = keys[0]
+
+   for user in key.uids:
+       for sig in user.signatures:
+           print("0x{0}".format(sig.keyid), "", time.ctime(sig.timestamp), "",
+                 sig.uid)
+
+Which for Danger Mouse displays the following:
+
+::
+
+   0x92E3F6115435C65A  Thu Mar 15 13:17:44 2018  Danger Mouse <dm@secret.example.net>
+   0x321E4E2373590E5D  Mon Nov 26 12:46:05 2018  Ben McGinnes <ben@adversary.org>
+
+The two key signatures listed are for the self-certification of Danger
+Mouse\'s key made when the key was created in March, 2018; and the
+second is a signature made by the author and set to expire at the end of
+the year. Note that the second signature was made with the following
+code (including the preceding code to display the output of the
+certifications or key signatures):
+
+.. code:: python
+
+   import gpg
+   import math
+   import pendulum
+   import time
+
+   hd = "/home/dm/.gnupg"
+   c = gpg.Context()
+   d = gpg.Context(home_dir=hd)
+   dmfpr = "177B7C25DB99745EE2EE13ED026D2F19E99E63AA"
+   dmuid = "Danger Mouse <dm@secret.example.net>"
+   dkeys = list(c.keylist(pattern=dmuid))
+   dmkey = dkeys[0]
+
+   c.key_import(d.key_export(pattern=None))
+
+   tp = pendulum.period(pendulum.now(tz="local"), pendulum.datetime(2019, 1, 1))
+   ts = tp.total_seconds()
+   total_secs = math.ceil(ts)
+   c.key_sign(dmkey, uids=dmuid, expires_in=total_secs)
+
+   d.key_import(c.key_export(pattern=dmuid))
+   keys = list(c.keylist(pattern=dmuid, mode=gpg.constants.keylist.mode.SIGS))
+   key = keys[0]
+
+   for user in key.uids:
+       for sig in user.signatures:
+           print("0x{0}".format(sig.keyid), "", time.ctime(sig.timestamp), "",
+                 sig.uid)
+
+Note that this final code block includes the use of a module which is
+*not* part of Python\'s standard library, the `pendulum
+module <https://pendulum.eustace.io/>`__. Unlike the standard datetime
+module, pendulum makes working with dates and times significantly easier
+in Python; just as the requests module makes working with HTTP and HTTPS
+easier than the builtin modules do.
+
+Though neither requests nor pendulum are required modules for using the
+GPGME Python bindings, they are both highly recommended more generally.
 
 .. _advanced-use:
 
