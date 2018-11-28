@@ -367,8 +367,8 @@ class Context(GpgmeWrapper):
         GPGMEError	-- as signaled by the underlying library
 
         """
-        sink_result = None
-        verify_sigs = None
+        sink_result = False
+        verify_sigs = False
         plaintext = sink if sink else Data()
 
         if passphrase is not None:
@@ -397,7 +397,7 @@ class Context(GpgmeWrapper):
                 self.op_decrypt(ciphertext, plaintext)
         except errors.GPGMEError as e:
             result = self.op_decrypt_result()
-            if verify is not None and sink_result is None:
+            if verify is not None and not sink_result:
                 verify_result = self.op_verify_result()
             else:
                 verify_result = None
@@ -412,7 +412,7 @@ class Context(GpgmeWrapper):
 
         result = self.op_decrypt_result()
 
-        if verify is not None and sink_result is None:
+        if verify is not None and not sink_result:
             verify_result = self.op_verify_result()
         else:
             verify_result = None
@@ -428,7 +428,7 @@ class Context(GpgmeWrapper):
                    for s in verify_result.signatures):
                 raise errors.BadSignatures(verify_result, results=results)
 
-        if verify_sigs is not None:
+        if verify_sigs:
             missing = []
             for key in verify:
                 ok = False
