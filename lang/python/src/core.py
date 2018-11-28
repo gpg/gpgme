@@ -352,7 +352,8 @@ class Context(GpgmeWrapper):
         Keyword arguments:
         sink		-- write result to sink instead of returning it
         passphrase	-- for symmetric decryption
-        verify		-- check signatures (default True)
+        verify		-- check signatures (boolean or iterable of keys,
+                           see above) (default True)
 
         Returns:
         plaintext	-- the decrypted data (or None if sink is given)
