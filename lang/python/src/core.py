@@ -386,13 +386,9 @@ class Context(GpgmeWrapper):
                     if verify is False:
                         verify = True
                         sink_result = True
-                    else:
-                        pass
                 elif isinstance(verify, list) is True:
                     if len(verify) > 0:
                         verify_sigs = True
-                    else:
-                        pass
                 else:
                     verify = True
                 self.op_decrypt_verify(ciphertext, plaintext)
@@ -447,29 +443,8 @@ class Context(GpgmeWrapper):
                 if not ok:
                     missing.append(key)
             if missing:
-                try:
-                    raise errors.MissingSignatures(verify_result, missing,
-                                                   results=results)
-                except errors.MissingSignatures as e:
-                    raise e
-                    # mse = e
-                    # mserr = "gpg.errors.MissingSignatures:"
-                    # print(mserr, miss_e, "\n")
-                    # # The full details can then be found in mse.results,
-                    # # mse.result, mse.missing if necessary.
-                    # mse_list = []
-                    # msp = "Missing signatures from: \n".format()
-                    # print(msp)
-                    # for key in mse.missing:
-                    #     mse_list.append(key.fpr)
-                    #     msl = []
-                    #     msl.append(key.fpr)
-                    #     for user in key.uids:
-                    #         msl.append(user.name)
-                    #         msl.append(user.email)
-                    #         # msl.append(user.uid)
-                    #     print(" ".join(msl))
-                    # raise mse
+                raise errors.MissingSignatures(verify_result, missing,
+                                               results=results)
 
         return results
 
