@@ -21,7 +21,6 @@
 | Author GPG Key: | [[https://hkps.pool.sks-keyservers.net/pks/lookup?search=0xDB4724E6FA4286C92B4E55C4321E4E2373590E5D&exact=on&op=get][DB4724E6FA4286C92B4E55C4321E4E2373590E5D]] |
 | Language:       | Australian English, British English      |
 | Language codes: | en-AU, en-GB, en                         |
-#+TBLFM: 
 
 This document provides basic instruction in how to use the GPGME
 Python bindings to programmatically leverage the GPGME library.

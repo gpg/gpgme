@@ -78,6 +78,9 @@ decryption, verification, validation, trust levels and so on.
 Any wanted features lacking in the Python bindings are usually lacking
 because they are missing from GPGME itself (e.g. revoking keys via the
 API) and in such cases they are usually deliberately excluded. More
+discussion of these issues can be found in the archives of the
+`gnupg-devel mailing
+list <https://lists.gnupg.org/mailman/listinfo/gnupg-devel>`__.
 
 Any features existing in the dynamically generated layer for which
 people want a specific, higher level function included to make it more
