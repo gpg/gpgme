@@ -30,50 +30,50 @@ import subprocess
 import sys
 
 # Out-of-tree build of the gpg bindings.
-gpg_error_config = ["gpg-error-config"]
-gpgme_config_flags = ["--thread=pthread"]
-gpgme_config = ["gpgme-config"] + gpgme_config_flags
-gpgme_h = ""
+gpg_error_config = ['gpg-error-config']
+gpgme_config_flags = ['--thread=pthread']
+gpgme_config = ['gpgme-config'] + gpgme_config_flags
+gpgme_h = ''
 include_dirs = [os.getcwd()]
 library_dirs = []
 in_tree = False
 extra_swig_opts = []
 extra_macros = dict()
 
-top_builddir = os.environ.get("top_builddir")
+top_builddir = os.environ.get('top_builddir')
 if top_builddir:
     # In-tree build.
     in_tree = True
-    gpgme_config = [os.path.join(top_builddir, "src/gpgme-config")
+    gpgme_config = [os.path.join(top_builddir, 'src/gpgme-config')
                     ] + gpgme_config_flags
-    gpgme_h = os.path.join(top_builddir, "src/gpgme.h")
+    gpgme_h = os.path.join(top_builddir, 'src/gpgme.h')
     library_dirs = [os.path.join(top_builddir,
-                                 "src/.libs")]  # XXX uses libtool internals
+                                 'src/.libs')]  # XXX uses libtool internals
     extra_macros.update(
         HAVE_CONFIG_H=1,
         HAVE_DATA_H=1,
         IN_TREE_BUILD=1,
     )
 
-if hasattr(subprocess, "DEVNULL"):
+if hasattr(subprocess, 'DEVNULL'):
     devnull = subprocess.DEVNULL
 else:
-    devnull = open(os.devnull, "w")
+    devnull = open(os.devnull, 'w')
 
 try:
     subprocess.check_call(gpgme_config + ['--version'], stdout=devnull)
 except:
-    sys.exit("Could not find gpgme-config.  " +
-             "Please install the libgpgme development package.")
+    sys.exit('Could not find gpgme-config.  ' +
+             'Please install the libgpgme development package.')
 
 
 def getconfig(what, config=gpgme_config):
     confdata = subprocess.Popen(
-        config + ["--%s" % what], stdout=subprocess.PIPE).communicate()[0]
+        config + ['--%s' % what], stdout=subprocess.PIPE).communicate()[0]
     return [x for x in confdata.decode('utf-8').split() if x != '']
 
 
-version = version_raw = getconfig("version")[0]
+version = version_raw = getconfig('version')[0]
 if '-' in version:
     version = version.split('-')[0]
 major, minor, patch = map(int, version.split('.'))
@@ -82,31 +82,31 @@ if not (major > 1 or (major == 1 and minor >= 7)):
     sys.exit('Need at least GPGME version 1.7, found {}.'.format(version_raw))
 
 if not gpgme_h:
-    gpgme_h = os.path.join(getconfig("prefix")[0], "include", "gpgme.h")
+    gpgme_h = os.path.join(getconfig('prefix')[0], 'include', 'gpgme.h')
 
 define_macros = []
 libs = getconfig('libs')
 
 # Define extra_macros for both the SWIG and C code
 for k, v in extra_macros.items():
-    extra_swig_opts.append("-D{0}={1}".format(k, v))
+    extra_swig_opts.append('-D{0}={1}'.format(k, v))
     define_macros.append((k, str(v)))
 
 for item in getconfig('cflags'):
-    if item.startswith("-I"):
+    if item.startswith('-I'):
         include_dirs.append(item[2:])
-    elif item.startswith("-D"):
-        defitem = item[2:].split("=", 1)
+    elif item.startswith('-D'):
+        defitem = item[2:].split('=', 1)
         if len(defitem) == 2:
             define_macros.append((defitem[0], defitem[1]))
         else:
             define_macros.append((defitem[0], None))
 
 # Adjust include and library locations in case of win32
-uname_s = os.popen("uname -s").read()
-if uname_s.startswith("MINGW32"):
+uname_s = os.popen('uname -s').read()
+if uname_s.startswith('MINGW32'):
     mnts = [
-        x.split()[0:3:2] for x in os.popen("mount").read().split("\n") if x
+        x.split()[0:3:2] for x in os.popen('mount').read().split('\n') if x
     ]
     tmplist = sorted([(len(x[1]), x[1], x[0]) for x in mnts])
     tmplist.reverse()
@@ -120,7 +120,7 @@ if uname_s.startswith("MINGW32"):
                 extra_dirs.append(os.path.join(tgt, item))
                 break
     include_dirs += extra_dirs
-    for item in [x[2:] for x in libs if x.startswith("-L")]:
+    for item in [x[2:] for x in libs if x.startswith('-L')]:
         for ln, mnt, tgt in tmplist:
             if item.startswith(mnt):
                 item = os.path.normpath(item[ln:])
@@ -131,7 +131,7 @@ if uname_s.startswith("MINGW32"):
 
 
 def in_srcdir(name):
-    return os.path.join(os.environ.get("srcdir", ""), name)
+    return os.path.join(os.environ.get('srcdir', ''), name)
 
 
 def up_to_date(source, target):
@@ -160,9 +160,9 @@ def up_to_date(source, target):
 
 class BuildExtFirstHack(build):
     def _read_header(self, header, cflags):
-        tmp_include = self._in_build_base("include1.h")
+        tmp_include = self._in_build_base('include1.h')
         with open(tmp_include, 'w') as f:
-            f.write("#include <%s>" % header)
+            f.write('#include <%s>' % header)
         return subprocess.check_output(
             os.environ.get('CPP', 'cc -E').split() + cflags +
             [tmp_include]).decode('utf-8')
@@ -173,11 +173,11 @@ class BuildExtFirstHack(build):
                 if f.read() == content:
                     return
 
-        with open(target, "w") as sink:
+        with open(target, 'w') as sink:
             sink.write(content)
 
     def _generate_gpgme_h(self, source_name, sink_name):
-        print("Using gpgme.h from {}".format(source_name))
+        print('Using gpgme.h from {}'.format(source_name))
         shutil.copy2(source_name, sink_name)
 
     def _generate_errors_i(self):
@@ -186,11 +186,11 @@ class BuildExtFirstHack(build):
             subprocess.check_call(
                 gpg_error_config + ['--version'], stdout=devnull)
         except:
-            sys.exit("Could not find gpg-error-config.  " +
-                     "Please install the libgpg-error development package.")
+            sys.exit('Could not find gpg-error-config.  ' +
+                     'Please install the libgpg-error development package.')
 
         gpg_error_content = self._read_header(
-            "gpg-error.h", getconfig("cflags", config=gpg_error_config))
+            'gpg-error.h', getconfig('cflags', config=gpg_error_config))
 
         filter_re = re.compile(r'GPG_ERR_[^ ]* =')
         rewrite_re = re.compile(r' *(.*) = .*')
@@ -203,7 +203,7 @@ class BuildExtFirstHack(build):
                 r'%constant long \1 = \1;' + '\n', line.strip())
 
         self._write_if_unchanged(
-            self._in_build_base("errors.i"), errors_i_content)
+            self._in_build_base('errors.i'), errors_i_content)
 
     def _in_build_base(self, name):
         return os.path.join(self.build_base, name)
@@ -213,7 +213,7 @@ class BuildExtFirstHack(build):
         if not os.path.exists(self.build_base):
             os.makedirs(self.build_base)
 
-        self._generate_gpgme_h(gpgme_h, self._in_build_base("gpgme.h"))
+        self._generate_gpgme_h(gpgme_h, self._in_build_base('gpgme.h'))
         self._generate_errors_i()
 
         # Copy due to https://bugs.python.org/issue2624
@@ -225,9 +225,9 @@ class BuildExtFirstHack(build):
                 shutil.copy2(source, target)
 
         # Append generated files via build_base
-        if not os.path.exists(os.path.join(self.build_lib, "gpg")):
-            os.makedirs(os.path.join(self.build_lib, "gpg"))
-        shutil.copy2("version.py", os.path.join(self.build_lib, "gpg"))
+        if not os.path.exists(os.path.join(self.build_lib, 'gpg')):
+            os.makedirs(os.path.join(self.build_lib, 'gpg'))
+        shutil.copy2('version.py', os.path.join(self.build_lib, 'gpg'))
 
     def run(self):
         self._generate()
@@ -248,7 +248,7 @@ py3 = [] if sys.version_info.major < 3 else ['-py3']
 swig_sources = []
 swig_opts = ['-threads'] + py3 + extra_swig_opts
 swige = Extension(
-    "gpg._gpgme",
+    'gpg._gpgme',
     sources=swig_sources,
     swig_opts=swig_opts,
     include_dirs=include_dirs,
@@ -257,12 +257,34 @@ swige = Extension(
     extra_link_args=libs)
 
 setup(
-    name="gpg",
+    name='gpg',
     cmdclass={'build': BuildExtFirstHack},
-    version="@VERSION@",
-    description='Python bindings for GPGME GnuPG cryptography library',
-    # TODO: add a long description
-    # long_description=long_description,
+    version='@VERSION@',
+    # Note: description appears as Summary in egg-info file.
+    description='Python bindings to the GPGME API of the GnuPG cryptography library.',
+    # Note: long-description appears as Description in egg-info file.
+    long_description='''Dynamically generated bindings to the C API of the GNU Privacy Guard.
+
+The GPG Made Easy (GPGME) library provides a high-level API in C to all the
+component software and libraries in the GnuPG Project, including GPG itself
+(the GnuPG OpenPGP implementation), libgcrypt, libgpg-error, libassuan and
+more.
+
+The official CPython bindings to GPGME are generated during the compiling
+process of GPGME itself and built for the specific C header and include files
+produced when GPGME is compiled using SWIG.  This provides access to over two
+thousand functions, methods and values via both the lower level dynamically
+generated bindings and a more intuitively pythonic higher level layer.
+
+While the lower level, dynamically generated bindings provide access to
+everything which GPGME itself provides; the higher level layer is easier to use
+by Python developers, provides access to the vast majority of functionality
+developers would want from GnuPG and is extensively documented.
+
+GPGME and these bindings is available here:
+
+    https://gnupg.org/software/gpgme/index.html
+''',
     author='The GnuPG hackers',
     author_email='gnupg-devel@gnupg.org',
     url='https://www.gnupg.org',
@@ -271,7 +293,7 @@ setup(
         'gpg', 'gpg.constants', 'gpg.constants.data', 'gpg.constants.keylist',
         'gpg.constants.sig', 'gpg.constants.tofu'
     ],
-    license="LGPL2.1+ (the library), GPL2+ (tests and examples)",
+    license='LGPL2.1+ (the library), GPL2+ (tests and examples)',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

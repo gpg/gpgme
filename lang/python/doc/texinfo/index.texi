@@ -47,6 +47,10 @@ GPGME Python Bindings
 @uref{short-history, A short history of the project}
 @item
 @uref{what-is-new, What's New}
+@itemize
+@item
+@uref{maintenance-mode, Maintenance Mode} (from January, 2019)
+@end itemize
 @item
 @uref{what-was-new, What Was New}
 @item

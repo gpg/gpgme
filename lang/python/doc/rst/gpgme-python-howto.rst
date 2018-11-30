@@ -13,8 +13,11 @@ Introduction
 |                                   | e/index.html#sec-1-5>`__          |
 |                                   | <ben@gnupg.org>                   |
 +-----------------------------------+-----------------------------------+
-| Author GPG Key:                   | DB4724E6FA4286C92B4E55C4321E4E237 |
-|                                   | 3590E5D                           |
+| Author GPG Key:                   | `DB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D <https://hkps.pool.sks-k |
+|                                   | eyservers.net/pks/lookup?search=0 |
+|                                   | xDB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D&exact=on&op=get>`__      |
 +-----------------------------------+-----------------------------------+
 | Language:                         | Australian English, British       |
 |                                   | English                           |
@@ -3009,34 +3012,37 @@ Draft Editions of this HOWTO
 Draft editions of this HOWTO may be periodically available directly from
 the author at any of the following URLs:
 
--  `GPGME Python Bindings HOWTO draft (XHTML AWS S3
+-  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
--  `GPGME Python Bindings HOWTO draft (XHTML AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
--  `GPGME Python Bindings HOWTO draft (Texinfo file AWS S3
-   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.texi>`__
--  `GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.texi>`__
--  `GPGME Python Bindings HOWTO draft (Info file AWS S3
-   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.info>`__
--  `GPGME Python Bindings HOWTO draft (Info file AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.info>`__
--  `GPGME Python Bindings HOWTO draft (reST file AWS S3
-   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.rst>`__
--  `GPGME Python Bindings HOWTO draft (reST file AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.rst>`__
+-  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no
+   SS) <http://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
+-  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3
+   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html>`__
+-  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no
+   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html>`__
 
 All of these draft versions except for one have been generated from this
-document via Emacs `Org mode <https://orgmode.org/>`__ and `GNU
+document via GNU Emacs `Org mode <https://orgmode.org/>`__ and `GNU
 Texinfo <https://www.gnu.org/software/texinfo/>`__. Though it is likely
 that the specific
 `file <https://files.au.adversary.org/crypto/gpgme-python-howto>`__
 `version <http://files.au.adversary.org/crypto/gpgme-python-howto.org>`__
 used will be on the same server with the generated output formats.
 
-The one exception is the reStructuredText version, which was converted
-using the latest version of Pandoc from the Org mode source file using
-either of the following two commands:
+The GNU Texinfo and reStructured Text versions ship with the software,
+while the GNU Emacs Info verseion is generated from the Texinfo version
+using GNU Texinfo or GNU Makeinfo. The Texinfo format is generated from
+the original Org mode source file in Org mode itself either within GNU
+Emacs or via the command line by invoking Emacs in batch mode:
+
+.. code:: shell
+
+   emacs gpgme-python-howto.org --batch -f org-texinfo-export-to-texinfo --kill
+   emacs gpgme-python-howto --batch -f org-texinfo-export-to-texinfo --kill
+
+The reStructuredText format is also generated from the Org-mode source
+file, except it is generated using `Pandoc <https://pandoc.org>`__ with
+either of the following commands:
 
 .. code:: shell
 

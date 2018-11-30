@@ -171,15 +171,15 @@ Copyright and Licensing
 @node Introduction
 @chapter Introduction
 
-@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @item Version:
 @tab 0.1.4
 @item GPGME Version:
 @tab 1.12.1
 @item Author:
-@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <ben@@gnupg.org>
+@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <@email{ben@@gnupg.org, ben@@gnupg.org}>
 @item Author GPG Key:
-@tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
+@tab @uref{https://hkps.pool.sks-keyservers.net/pks/lookup?search=0xDB4724E6FA4286C92B4E55C4321E4E2373590E5D&exact=on&op=get, DB4724E6FA4286C92B4E55C4321E4E2373590E5D}
 @item Language:
 @tab Australian English, British English
 @item Language codes:
@@ -3200,31 +3200,35 @@ from the author at any of the following URLs:
 
 @itemize
 @item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML AWS S3 SSL)}
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML AWS S3 no SSL)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no SS)}
 @item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.texi, GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 SSL)}
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.texi, GPGME Python Bindings HOWTO draft (Texinfo file AWS S3 no SSL)}
-@item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.info, GPGME Python Bindings HOWTO draft (Info file AWS S3 SSL)}
-@item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.info, GPGME Python Bindings HOWTO draft (Info file AWS S3 no SSL)}
-@item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.rst, GPGME Python Bindings HOWTO draft (reST file AWS S3 SSL)}
-@item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.rst, GPGME Python Bindings HOWTO draft (reST file AWS S3 no SSL)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no SSL)}
 @end itemize
 
 All of these draft versions except for one have been generated from
-this document via Emacs @uref{https://orgmode.org/, Org mode} and @uref{https://www.gnu.org/software/texinfo/, GNU Texinfo}.  Though it is likely
-that the specific @uref{https://files.au.adversary.org/crypto/gpgme-python-howto, file} @uref{http://files.au.adversary.org/crypto/gpgme-python-howto.org, version} used will be on the same server with
-the generated output formats.
+this document via GNU Emacs @uref{https://orgmode.org/, Org mode} and @uref{https://www.gnu.org/software/texinfo/, GNU Texinfo}.  Though it is
+likely that the specific @uref{https://files.au.adversary.org/crypto/gpgme-python-howto, file} @uref{http://files.au.adversary.org/crypto/gpgme-python-howto.org, version} used will be on the same server
+with the generated output formats.
 
-The one exception is the reStructuredText version, which was converted
-using the latest version of Pandoc from the Org mode source file using
-either of the following two commands:
+The GNU Texinfo and reStructured Text versions ship with the software,
+while the GNU Emacs Info verseion is generated from the Texinfo
+version using GNU Texinfo or GNU Makeinfo.  The Texinfo format is
+generated from the original Org mode source file in Org mode itself
+either within GNU Emacs or via the command line by invoking Emacs in
+batch mode:
+
+@example
+emacs gpgme-python-howto.org --batch -f org-texinfo-export-to-texinfo --kill
+emacs gpgme-python-howto --batch -f org-texinfo-export-to-texinfo --kill
+@end example
+
+The reStructuredText format is also generated from the Org-mode source
+file, except it is generated using @uref{https://pandoc.org, Pandoc} with either of the following
+commands:
 
 @example
 pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org

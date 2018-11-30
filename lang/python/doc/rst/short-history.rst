@@ -1,6 +1,28 @@
 Overview
 ========
 
++-----------------------------------+-----------------------------------+
+| Version:                          | 0.0.1-draft                       |
++-----------------------------------+-----------------------------------+
+| GPGME Version:                    | 1.13.0                            |
++-----------------------------------+-----------------------------------+
+| Author:                           | `Ben                              |
+|                                   | McGinnes <https://gnupg.org/peopl |
+|                                   | e/index.html#sec-1-5>`__          |
+|                                   | <ben@gnupg.org>                   |
++-----------------------------------+-----------------------------------+
+| Author GPG Key:                   | `DB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D <https://hkps.pool.sks-k |
+|                                   | eyservers.net/pks/lookup?search=0 |
+|                                   | xDB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D&exact=on&op=get>`__      |
++-----------------------------------+-----------------------------------+
+| Language:                         | Australian English, British       |
+|                                   | English                           |
++-----------------------------------+-----------------------------------+
+| xml:lang:                         | en-AU, en-GB, en                  |
++-----------------------------------+-----------------------------------+
+
 The GPGME Python bindings passed through many hands and numerous phases
 before, after a fifteen year journey, coming full circle to return to
 the source. This is a short explanation of that journey.

@@ -17,15 +17,13 @@
 
 | Version:        | 0.0.1-draft                              |
 | GPGME Version:  | 1.13.0                                   |
-| Author:         | [[https://gnupg.org/people/index.html#sec-1-5][Ben McGinnes]] <ben@gnupg.org>             |
-| Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
+| Author:         | [[https://gnupg.org/people/index.html#sec-1-5][Ben McGinnes]] <[[mailto:ben@gnupg.org][ben@gnupg.org]]>             |
+| Author GPG Key: | [[https://hkps.pool.sks-keyservers.net/pks/lookup?search=0xDB4724E6FA4286C92B4E55C4321E4E2373590E5D&exact=on&op=get][DB4724E6FA4286C92B4E55C4321E4E2373590E5D]] |
 | Language:       | Australian English, British English      |
 | xml:lang:       | en-AU, en-GB, en                         |
 
 Last time the most obviously new thing was adding the /What's New/
-section to the HOWTO.  Now it's moving it out of the HOWTO.  Not to
-mention expanding on the documentation both generally and
-considerably.
+section to the HOWTO.  Now it's moving it out of the HOWTO.
 
 
 ** New in GPGME 1·13·0
@@ -42,3 +40,4 @@ Additions since GPGME 1.12.0 include:
 - Added =gpg.version.versionintlist= to make it easier for Python
   developers to check for a specific version number, even with beta
   versions (it will drop the "-betaN" part).
+- Bindings enter [[file:maintenance-mode][maintenance mode]] from January, 2019.

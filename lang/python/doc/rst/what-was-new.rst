@@ -13,8 +13,11 @@ What Was New
 |                                   | e/index.html#sec-1-5>`__          |
 |                                   | <ben@gnupg.org>                   |
 +-----------------------------------+-----------------------------------+
-| Author GPG Key:                   | DB4724E6FA4286C92B4E55C4321E4E237 |
-|                                   | 3590E5D                           |
+| Author GPG Key:                   | `DB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D <https://hkps.pool.sks-k |
+|                                   | eyservers.net/pks/lookup?search=0 |
+|                                   | xDB4724E6FA4286C92B4E55C4321E4E23 |
+|                                   | 73590E5D&exact=on&op=get>`__      |
 +-----------------------------------+-----------------------------------+
 | Language:                         | Australian English, British       |
 |                                   | English                           |
