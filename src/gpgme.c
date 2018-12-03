@@ -320,6 +320,8 @@ _gpgme_release_result (gpgme_ctx_t ctx)
 }
 
 
+/* Note that setting the protocol will intentionally not fail if the
+ * engine is not available.  */
 gpgme_error_t
 gpgme_set_protocol (gpgme_ctx_t ctx, gpgme_protocol_t protocol)
 {
