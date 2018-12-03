@@ -129,7 +129,7 @@ static QGpgMESignJob::result_type sign_qba(Context *ctx,
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return sign(ctx, 0, signers, buffer, std::shared_ptr<QIODevice>(), mode, outputIsBsse64Encoded);
+    return sign(ctx, nullptr, signers, buffer, std::shared_ptr<QIODevice>(), mode, outputIsBsse64Encoded);
 }
 
 Error QGpgMESignJob::start(const std::vector<Key> &signers, const QByteArray &plainText, SignatureMode mode)

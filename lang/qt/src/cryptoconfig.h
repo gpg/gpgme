@@ -382,8 +382,8 @@ public:
     CryptoConfigEntry *entry(const QString &componentName, const QString &groupName, const QString &entryName) const
     {
         const QGpgME::CryptoConfigComponent *comp = component(componentName);
-        const QGpgME::CryptoConfigGroup *group = comp ? comp->group(groupName) : 0;
-        return group ? group->entry(entryName) : 0;
+        const QGpgME::CryptoConfigGroup *group = comp ? comp->group(groupName) : nullptr;
+        return group ? group->entry(entryName) : nullptr;
     }
 
     /**

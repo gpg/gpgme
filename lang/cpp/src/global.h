@@ -165,7 +165,7 @@ GPGMEPP_EXPORT bool hasFeature(unsigned long feature, unsigned long feature2);
     struct __safe_bool_dummy__ { void nonnull() {} }; \
     typedef void ( __safe_bool_dummy__::*unspecified_bool_type )(); \
     public: \
-    operator unspecified_bool_type() const { return ( Cond ) ? &__safe_bool_dummy__::nonnull : 0 ; }
+    operator unspecified_bool_type() const { return ( Cond ) ? &__safe_bool_dummy__::nonnull : nullptr; }
 # endif
 
 inline int _gpgmepp_strcmp(const char *s1, const char *s2)

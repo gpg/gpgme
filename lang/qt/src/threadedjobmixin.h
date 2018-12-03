@@ -148,7 +148,7 @@ protected:
                   "Last result type not a GpgME::Error");
 
     explicit ThreadedJobMixin(GpgME::Context *ctx)
-        : T_base(0), m_ctx(ctx), m_thread(), m_auditLog(), m_auditLogError()
+        : T_base(nullptr), m_ctx(ctx), m_thread(), m_auditLog(), m_auditLogError()
     {
     }
 

@@ -40,7 +40,7 @@ using namespace GpgME;
 class VfsMountResult::Private
 {
 public:
-    explicit Private(const gpgme_vfs_mount_result_t r) : mountDir(0)
+    explicit Private(const gpgme_vfs_mount_result_t r) : mountDir(nullptr)
     {
         if (r && r->mount_dir) {
             mountDir = strdup(r->mount_dir);
@@ -81,7 +81,7 @@ const char *VfsMountResult::mountDir() const
     if (d) {
         return d->mountDir;
     }
-    return 0;
+    return nullptr;
 }
 
 std::ostream &GpgME::operator<<(std::ostream &os, const VfsMountResult &result)

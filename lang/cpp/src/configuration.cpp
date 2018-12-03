@@ -64,7 +64,7 @@ std::vector<Component> Component::load(Error &returnedError)
     //
     // 1. get a context:
     //
-    gpgme_ctx_t ctx_native = 0;
+    gpgme_ctx_t ctx_native = nullptr;
     if (const gpgme_error_t err = gpgme_new(&ctx_native)) {
         returnedError = Error(err);
         return std::vector<Component>();
@@ -74,7 +74,7 @@ std::vector<Component> Component::load(Error &returnedError)
     //
     // 2. load the config:
     //
-    gpgme_conf_comp_t conf_list_native = 0;
+    gpgme_conf_comp_t conf_list_native = nullptr;
     if (const gpgme_error_t err = gpgme_op_conf_load(ctx_native, &conf_list_native)) {
         returnedError = Error(err);
         return std::vector<Component>();
@@ -94,7 +94,7 @@ std::vector<Component> Component::load(Error &returnedError)
         }
 
         // now prevent double-free of next.get() and following:
-        head->next = 0;
+        head->next = nullptr;
 
         // now add a new Component to 'result' (may throw):
         result.resize(result.size() + 1);
@@ -115,7 +115,7 @@ Error Component::save() const
     //
     // 1. get a context:
     //
-    gpgme_ctx_t ctx_native = 0;
+    gpgme_ctx_t ctx_native = nullptr;
     if (const gpgme_error_t err = gpgme_new(&ctx_native)) {
         return Error(err);
     }
@@ -129,22 +129,22 @@ Error Component::save() const
 
 const char *Component::name() const
 {
-    return comp ? comp->name : 0 ;
+    return comp ? comp->name : nullptr;
 }
 
 const char *Component::description() const
 {
-    return comp ? comp->description : 0 ;
+    return comp ? comp->description : nullptr ;
 }
 
 const char *Component::programName() const
 {
-    return comp ? comp->program_name : 0 ;
+    return comp ? comp->program_name : nullptr ;
 }
 
 Option Component::option(unsigned int idx) const
 {
-    gpgme_conf_opt_t opt = 0;
+    gpgme_conf_opt_t opt = nullptr;
     if (comp) {
         opt = comp->options;
     }
@@ -160,7 +160,7 @@ Option Component::option(unsigned int idx) const
 
 Option Component::option(const char *name) const
 {
-    gpgme_conf_opt_t opt = 0;
+    gpgme_conf_opt_t opt = nullptr;
     if (comp) {
         opt = comp->options;
     }
@@ -177,7 +177,7 @@ Option Component::option(const char *name) const
 unsigned int Component::numOptions() const
 {
     unsigned int result = 0;
-    for (gpgme_conf_opt_t opt = comp ? comp->options : 0 ; opt ; opt = opt->next) {
+    for (gpgme_conf_opt_t opt = comp ? comp->options : nullptr ; opt ; opt = opt->next) {
         ++result;
     }
     return result;
@@ -186,7 +186,7 @@ unsigned int Component::numOptions() const
 std::vector<Option> Component::options() const
 {
     std::vector<Option> result;
-    for (gpgme_conf_opt_t opt = comp ? comp->options : 0 ; opt ; opt = opt->next) {
+    for (gpgme_conf_opt_t opt = comp ? comp->options : nullptr ; opt ; opt = opt->next) {
         result.push_back(Option(comp, opt));
     }
     return result;
@@ -194,17 +194,17 @@ std::vector<Option> Component::options() const
 
 static gpgme_conf_arg_t mygpgme_conf_arg_copy(gpgme_conf_arg_t other, gpgme_conf_type_t type)
 {
-    gpgme_conf_arg_t result = 0, last = 0;
+    gpgme_conf_arg_t result = nullptr, last = nullptr;
     for (gpgme_conf_arg_t a = other ; a ; a = a->next) {
-        gpgme_conf_arg_t arg = 0;
+        gpgme_conf_arg_t arg = nullptr;
         const gpgme_error_t err
             = gpgme_conf_arg_new(&arg, type,
-                                 a->no_arg                 ? 0 :
+                                 a->no_arg                 ? nullptr :
                                  type == GPGME_CONF_STRING ? a->value.string :
                                  /* else */                  static_cast<void *>(&a->value));
         if (err) {
             gpgme_conf_arg_release(result, type);
-            return 0;
+            return nullptr;
         }
         assert(arg);
         if (result) {
@@ -234,17 +234,17 @@ Level Option::level() const
 
 const char *Option::name() const
 {
-    return isNull() ? 0 : opt->name ;
+    return isNull() ? nullptr : opt->name ;
 }
 
 const char *Option::description() const
 {
-    return isNull() ? 0 : opt->description ;
+    return isNull() ? nullptr : opt->description ;
 }
 
 const char *Option::argumentName() const
 {
-    return isNull() ? 0 : opt->argname ;
+    return isNull() ? nullptr : opt->argname ;
 }
 
 Type Option::type() const
@@ -420,7 +420,7 @@ Argument Option::defaultValue() const
 
 const char *Option::defaultDescription() const
 {
-    return isNull() ? 0 : opt->default_description ;
+    return isNull() ? nullptr : opt->default_description ;
 }
 
 Argument Option::noArgumentValue() const
@@ -434,7 +434,7 @@ Argument Option::noArgumentValue() const
 
 const char *Option::noArgumentDescription() const
 {
-    return isNull() ? 0 : opt->no_arg_description ;
+    return isNull() ? nullptr : opt->no_arg_description ;
 }
 
 Argument Option::activeValue() const
@@ -501,7 +501,7 @@ Error Option::resetToActiveValue()
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     } else {
-        return Error(gpgme_conf_opt_change(opt, 1, 0));
+        return Error(gpgme_conf_opt_change(opt, 1, nullptr));
     }
 }
 
@@ -510,15 +510,15 @@ Error Option::resetToDefaultValue()
     if (isNull()) {
         return Error(make_error(GPG_ERR_INV_ARG));
     } else {
-        return Error(gpgme_conf_opt_change(opt, 0, 0));
+        return Error(gpgme_conf_opt_change(opt, 0, nullptr));
     }
 }
 
 static gpgme_conf_arg_t make_argument(gpgme_conf_type_t type, const void *value)
 {
-    gpgme_conf_arg_t arg = 0;
+    gpgme_conf_arg_t arg = nullptr;
     if (const gpgme_error_t err = gpgme_conf_arg_new(&arg, type, value)) {
-        return 0;
+        return nullptr;
     } else {
         return arg;
     }
@@ -594,8 +594,8 @@ const void *to_void_star(const unsigned int &i)
 template <typename T>
 gpgme_conf_arg_t make_argument(gpgme_conf_type_t type, const std::vector<T> &value)
 {
-    gpgme_conf_arg_t result = 0;
-    gpgme_conf_arg_t last = 0;
+    gpgme_conf_arg_t result = nullptr;
+    gpgme_conf_arg_t last = nullptr;
     for (typename std::vector<T>::const_iterator it = value.begin(), end = value.end() ; it != end ; ++it) {
         if (gpgme_conf_arg_t arg = make_argument(type, to_void_star(*it))) {
             if (last) {
@@ -693,14 +693,14 @@ unsigned int Argument::numElements() const
 const char *Argument::stringValue(unsigned int idx) const
 {
     if (isNull() || opt->alt_type != GPGME_CONF_STRING) {
-        return 0;
+        return nullptr;
     }
     gpgme_conf_arg_t a = arg;
     while (a && idx) {
         a = a->next;
         --idx;
     }
-    return a ? a->value.string : 0 ;
+    return a ? a->value.string : nullptr ;
 }
 
 int Argument::intValue(unsigned int idx) const

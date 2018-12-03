@@ -52,8 +52,8 @@
 #include <assert.h>
 
 QGpgME::QGpgMESecretKeyExportJob::QGpgMESecretKeyExportJob(bool armour, const QString &charset)
-    : ExportJob(0),
-      mProcess(0),
+    : ExportJob(nullptr),
+      mProcess(nullptr),
       mError(0),
       mArmour(armour),
       mCharset(charset)
@@ -114,7 +114,7 @@ void QGpgME::QGpgMESecretKeyExportJob::slotCancel()
     if (mProcess) {
         mProcess->kill();
     }
-    mProcess = 0;
+    mProcess = nullptr;
     mError = GpgME::Error::fromCode(GPG_ERR_CANCELED, GPG_ERR_SOURCE_GPGSM);
 }
 

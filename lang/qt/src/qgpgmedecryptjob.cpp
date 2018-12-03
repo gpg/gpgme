@@ -100,7 +100,7 @@ static QGpgMEDecryptJob::result_type decrypt_qba(Context *ctx, const QByteArray 
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return decrypt(ctx, 0, buffer, std::shared_ptr<QIODevice>());
+    return decrypt(ctx, nullptr, buffer, std::shared_ptr<QIODevice>());
 }
 
 Error QGpgMEDecryptJob::start(const QByteArray &cipherText)

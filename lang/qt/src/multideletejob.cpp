@@ -47,9 +47,9 @@
 #include <assert.h>
 
 QGpgME::MultiDeleteJob::MultiDeleteJob(const Protocol *protocol)
-    : Job(0),
+    : Job(nullptr),
       mProtocol(protocol),
-      mJob(0)
+      mJob(nullptr)
 {
     assert(protocol);
 }
@@ -83,7 +83,7 @@ void QGpgME::MultiDeleteJob::slotCancel()
 
 void QGpgME::MultiDeleteJob::slotResult(const GpgME::Error &err)
 {
-    mJob = 0;
+    mJob = nullptr;
     GpgME::Error error = err;
     if (error ||  // error in last op
             mIt == mKeys.end() || // (shouldn't happen)

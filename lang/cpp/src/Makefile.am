@@ -66,7 +66,8 @@ libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
                         $(interface_headers) $(private_gpgmepp_headers)
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
-              -DBUILDING_GPGMEPP
+              -DBUILDING_GPGMEPP -Wsuggest-override \
+              -Wzero-as-null-pointer-constant
 
 libgpgmepp_la_LIBADD = ../../../src/libgpgme.la @LIBASSUAN_LIBS@
 libgpgmepp_la_LDFLAGS = -no-undefined -version-info \

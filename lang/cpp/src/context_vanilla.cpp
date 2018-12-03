@@ -30,10 +30,10 @@
 
 GIOChannel *GpgME::getGIOChannel(int)
 {
-    return 0;
+    return nullptr;
 }
 
 QIODevice *GpgME::getQIODevice(int)
 {
-    return 0;
+    return nullptr;
 }

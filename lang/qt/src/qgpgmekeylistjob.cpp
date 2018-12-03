@@ -69,7 +69,7 @@ static KeyListResult do_list_keys(Context *ctx, const QStringList &pats, std::ve
     const _detail::PatternConverter pc(pats);
 
     if (const Error err = ctx->startKeyListing(pc.patterns(), secretOnly)) {
-        return KeyListResult(0, err);
+        return KeyListResult(nullptr, err);
     }
 
     Error err;

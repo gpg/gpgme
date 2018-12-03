@@ -40,8 +40,8 @@ public:
     ~GpgSetOwnerTrustEditInteractor();
 
 private:
-    /* reimp */ const char *action(Error &err) const;
-    /* reimp */ unsigned int nextState(unsigned int statusCode, const char *args, Error &err) const;
+    const char *action(Error &err) const override;
+    unsigned int nextState(unsigned int statusCode, const char *args, Error &err) const override;
 
 private:
     const Key::OwnerTrust m_ownertrust;

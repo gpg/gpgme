@@ -53,7 +53,7 @@ public:
             if (ik->fpr) {
                 copy->fpr = strdup(ik->fpr);
             }
-            copy->next = 0;
+            copy->next = nullptr;
             invalid.push_back(copy);
         }
     }
@@ -61,7 +61,7 @@ public:
     {
         for (std::vector<gpgme_invalid_key_t>::iterator it = invalid.begin() ; it != invalid.end() ; ++it) {
             std::free((*it)->fpr);
-            delete *it; *it = 0;
+            delete *it; *it = nullptr;
         }
     }
 
@@ -132,7 +132,7 @@ bool GpgME::InvalidRecipient::isNull() const
 
 const char *GpgME::InvalidRecipient::fingerprint() const
 {
-    return isNull() ? 0 : d->invalid[idx]->fpr ;
+    return isNull() ? nullptr : d->invalid[idx]->fpr ;
 }
 
 GpgME::Error GpgME::InvalidRecipient::reason() const

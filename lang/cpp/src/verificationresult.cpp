@@ -68,9 +68,9 @@ public:
                 scopy->pka_address = strdup(is->pka_address);
             }
 # else
-            scopy->pka_address = 0;
+            scopy->pka_address = nullptr;
 # endif
-            scopy->next = 0;
+            scopy->next = nullptr;
             sigs.push_back(scopy);
             // copy keys
             if (scopy->key) {
@@ -80,7 +80,7 @@ public:
             }
             // copy notations:
             nota.push_back(std::vector<Nota>());
-            purls.push_back(0);
+            purls.push_back(nullptr);
             for (gpgme_sig_notation_t in = is->notations ; in ; in = in->next) {
                 if (!in->name) {
                     if (in->value) {
@@ -88,7 +88,7 @@ public:
                     }
                     continue;
                 }
-                Nota n = { 0, 0, in->flags };
+                Nota n = { nullptr, nullptr, in->flags };
                 n.name = strdup(in->name);
                 if (in->value) {
                     n.value = strdup(in->value);
@@ -102,12 +102,12 @@ public:
         for (std::vector<gpgme_signature_t>::iterator it = sigs.begin() ; it != sigs.end() ; ++it) {
             std::free((*it)->fpr);
             std::free((*it)->pka_address);
-            delete *it; *it = 0;
+            delete *it; *it = nullptr;
         }
         for (std::vector< std::vector<Nota> >::iterator it = nota.begin() ; it != nota.end() ; ++it) {
             for (std::vector<Nota>::iterator jt = it->begin() ; jt != it->end() ; ++jt) {
-                std::free(jt->name);  jt->name = 0;
-                std::free(jt->value); jt->value = 0;
+                std::free(jt->name);  jt->name = nullptr;
+                std::free(jt->value); jt->value = nullptr;
             }
         }
         std::for_each(purls.begin(), purls.end(), &std::free);
@@ -159,7 +159,7 @@ make_standard_stuff(VerificationResult)
 
 const char *GpgME::VerificationResult::fileName() const
 {
-    return d ? d->file_name.c_str() : 0 ;
+    return d ? d->file_name.c_str() : nullptr ;
 }
 
 unsigned int GpgME::VerificationResult::numSignatures() const
@@ -245,7 +245,7 @@ GpgME::Signature::Summary GpgME::Signature::summary() const
 
 const char *GpgME::Signature::fingerprint() const
 {
-    return isNull() ? 0 : d->sigs[idx]->fpr ;
+    return isNull() ? nullptr : d->sigs[idx]->fpr ;
 }
 
 GpgME::Error GpgME::Signature::status() const
@@ -296,7 +296,7 @@ const char *GpgME::Signature::pkaAddress() const
     if (!isNull()) {
         return d->sigs[idx]->pka_address;
     }
-    return 0;
+    return nullptr;
 }
 
 GpgME::Signature::Validity GpgME::Signature::validity() const
@@ -349,7 +349,7 @@ const char *GpgME::Signature::publicKeyAlgorithmAsString() const
     if (!isNull()) {
         return gpgme_pubkey_algo_name(d->sigs[idx]->pubkey_algo);
     }
-    return 0;
+    return nullptr;
 }
 
 unsigned int GpgME::Signature::hashAlgorithm() const
@@ -365,12 +365,12 @@ const char *GpgME::Signature::hashAlgorithmAsString() const
     if (!isNull()) {
         return gpgme_hash_algo_name(d->sigs[idx]->hash_algo);
     }
-    return 0;
+    return nullptr;
 }
 
 const char *GpgME::Signature::policyURL() const
 {
-    return isNull() ? 0 : d->purls[idx] ;
+    return isNull() ? nullptr : d->purls[idx] ;
 }
 
 GpgME::Notation GpgME::Signature::notation(unsigned int nidx) const
@@ -429,14 +429,14 @@ GpgME::Key GpgME::Signature::key(bool search, bool update) const
 class GpgME::Notation::Private
 {
 public:
-    Private() : d(), sidx(0), nidx(0), nota(0) {}
+    Private() : d(), sidx(0), nidx(0), nota(nullptr) {}
     Private(const std::shared_ptr<VerificationResult::Private> &priv, unsigned int sindex, unsigned int nindex)
-        : d(priv), sidx(sindex), nidx(nindex), nota(0)
+        : d(priv), sidx(sindex), nidx(nindex), nota(nullptr)
     {
 
     }
     Private(gpgme_sig_notation_t n)
-        : d(), sidx(0), nidx(0), nota(n ? new _gpgme_sig_notation(*n) : 0)
+        : d(), sidx(0), nidx(0), nota(n ? new _gpgme_sig_notation(*n) : nullptr)
     {
         if (nota && nota->name) {
             nota->name = strdup(nota->name);
@@ -456,8 +456,8 @@ public:
     ~Private()
     {
         if (nota) {
-            std::free(nota->name);  nota->name = 0;
-            std::free(nota->value); nota->value = 0;
+            std::free(nota->name);  nota->name = nullptr;
+            std::free(nota->value); nota->value = nullptr;
             delete nota;
         }
     }
@@ -495,24 +495,24 @@ bool GpgME::Notation::isNull() const
 const char *GpgME::Notation::name() const
 {
     return
-        isNull() ? 0 :
+        isNull() ? nullptr :
         d->d ? d->d->nota[d->sidx][d->nidx].name :
-        d->nota ? d->nota->name : 0 ;
+        d->nota ? d->nota->name : nullptr ;
 }
 
 const char *GpgME::Notation::value() const
 {
     return
-        isNull() ? 0 :
+        isNull() ? nullptr :
         d->d ? d->d->nota[d->sidx][d->nidx].value :
-        d->nota ? d->nota->value : 0 ;
+        d->nota ? d->nota->value : nullptr ;
 }
 
 GpgME::Notation::Flags GpgME::Notation::flags() const
 {
     return
         convert_from_gpgme_sig_notation_flags_t(
-            isNull() ? 0 :
+            isNull() ? 0:
             d->d ? d->d->nota[d->sidx][d->nidx].flags :
             d->nota ? d->nota->flags : 0);
 }

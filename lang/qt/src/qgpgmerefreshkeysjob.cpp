@@ -53,8 +53,8 @@
 #include <assert.h>
 
 QGpgME::QGpgMERefreshKeysJob::QGpgMERefreshKeysJob()
-    : RefreshKeysJob(0),
-      mProcess(0),
+    : RefreshKeysJob(nullptr),
+      mProcess(nullptr),
       mError(0)
 {
 
@@ -142,7 +142,7 @@ void QGpgME::QGpgMERefreshKeysJob::slotCancel()
     if (mProcess) {
         mProcess->kill();
     }
-    mProcess = 0;
+    mProcess = nullptr;
     mError = GpgME::Error::fromCode(GPG_ERR_CANCELED, GPG_ERR_SOURCE_GPGSM);
 }
 

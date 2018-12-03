@@ -33,10 +33,10 @@
 class GpgME::EngineInfo::Private
 {
 public:
-    Private(gpgme_engine_info_t engine = 0) : info(engine) {}
+    Private(gpgme_engine_info_t engine = nullptr) : info(engine) {}
     ~Private()
     {
-        info = 0;
+        info = nullptr;
     }
 
     gpgme_engine_info_t info;
@@ -70,12 +70,12 @@ GpgME::Protocol GpgME::EngineInfo::protocol() const
 
 const char *GpgME::EngineInfo::fileName() const
 {
-    return isNull() ? 0 : d->info->file_name;
+    return isNull() ? nullptr : d->info->file_name;
 }
 
 const char *GpgME::EngineInfo::version() const
 {
-    return isNull() ? 0 : d->info->version;
+    return isNull() ? nullptr : d->info->version;
 }
 
 GpgME::EngineInfo::Version GpgME::EngineInfo::engineVersion() const
@@ -85,10 +85,10 @@ GpgME::EngineInfo::Version GpgME::EngineInfo::engineVersion() const
 
 const char *GpgME::EngineInfo::requiredVersion() const
 {
-    return isNull() ? 0 : d->info->req_version;
+    return isNull() ? nullptr : d->info->req_version;
 }
 
 const char *GpgME::EngineInfo::homeDirectory() const
 {
-    return isNull() ? 0 : d->info->home_dir;
+    return isNull() ? nullptr : d->info->home_dir;
 }

@@ -67,7 +67,7 @@ TrustItem::~TrustItem()
     if (d->item) {
         gpgme_trust_item_unref(d->item);
     }
-    delete d; d = 0;
+    delete d; d = nullptr;
 }
 
 bool TrustItem::isNull() const
@@ -82,22 +82,22 @@ gpgme_trust_item_t TrustItem::impl() const
 
 const char *TrustItem::keyID() const
 {
-    return d->item ? d->item->keyid : 0 ;
+    return d->item ? d->item->keyid : nullptr ;
 }
 
 const char *TrustItem::userID() const
 {
-    return d->item ? d->item->name : 0 ;
+    return d->item ? d->item->name : nullptr ;
 }
 
 const char *TrustItem::ownerTrustAsString() const
 {
-    return d->item ? d->item->owner_trust : 0 ;
+    return d->item ? d->item->owner_trust : nullptr ;
 }
 
 const char *TrustItem::validityAsString() const
 {
-    return d->item ? d->item->validity : 0 ;
+    return d->item ? d->item->validity : nullptr ;
 }
 
 int TrustItem::trustLevel() const

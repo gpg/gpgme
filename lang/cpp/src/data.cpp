@@ -48,11 +48,11 @@ GpgME::Data::Data()
 {
     gpgme_data_t data;
     const gpgme_error_t e = gpgme_data_new(&data);
-    d.reset(new Private(e ? 0 : data));
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(const Null &)
-    : d(new Private(0))
+    : d(new Private(nullptr))
 {
 
 }
@@ -70,14 +70,14 @@ GpgME::Data::Data(const char *buffer, size_t size, bool copy)
     std::string sizestr = std::to_string(size);
     // Ignore errors as this is optional
     gpgme_data_set_flag(data, "size-hint", sizestr.c_str());
-    d.reset(new Private(e ? 0 : data));
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(const char *filename)
 {
     gpgme_data_t data;
     const gpgme_error_t e = gpgme_data_new(&data);
-    d.reset(new Private(e ? 0 : data));
+    d.reset(new Private(e ? nullptr : data));
     if (!e) {
         setFileName(filename);
     }
@@ -86,29 +86,29 @@ GpgME::Data::Data(const char *filename)
 GpgME::Data::Data(const char *filename, off_t offset, size_t length)
 {
     gpgme_data_t data;
-    const gpgme_error_t e = gpgme_data_new_from_filepart(&data, filename, 0, offset, length);
-    d.reset(new Private(e ? 0 : data));
+    const gpgme_error_t e = gpgme_data_new_from_filepart(&data, filename, nullptr, offset, length);
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(FILE *fp)
 {
     gpgme_data_t data;
     const gpgme_error_t e = gpgme_data_new_from_stream(&data, fp);
-    d.reset(new Private(e ? 0 : data));
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(FILE *fp, off_t offset, size_t length)
 {
     gpgme_data_t data;
-    const gpgme_error_t e = gpgme_data_new_from_filepart(&data, 0, fp, offset, length);
-    d.reset(new Private(e ? 0 : data));
+    const gpgme_error_t e = gpgme_data_new_from_filepart(&data, nullptr, fp, offset, length);
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(int fd)
 {
     gpgme_data_t data;
     const gpgme_error_t e = gpgme_data_new_from_fd(&data, fd);
-    d.reset(new Private(e ? 0 : data));
+    d.reset(new Private(e ? nullptr : data));
 }
 
 GpgME::Data::Data(DataProvider *dp)
@@ -118,20 +118,20 @@ GpgME::Data::Data(DataProvider *dp)
         return;
     }
     if (!dp->isSupported(DataProvider::Read)) {
-        d->cbs.read = 0;
+        d->cbs.read = nullptr;
     }
     if (!dp->isSupported(DataProvider::Write)) {
-        d->cbs.write = 0;
+        d->cbs.write = nullptr;
     }
     if (!dp->isSupported(DataProvider::Seek)) {
-        d->cbs.seek = 0;
+        d->cbs.seek = nullptr;
     }
     if (!dp->isSupported(DataProvider::Release)) {
-        d->cbs.release = 0;
+        d->cbs.release = nullptr;
     }
     const gpgme_error_t e = gpgme_data_new_from_cbs(&d->data, &d->cbs, dp);
     if (e) {
-        d->data = 0;
+        d->data = nullptr;
     }
     if (dp->isSupported(DataProvider::Seek)) {
         off_t size = seek(0, SEEK_END);

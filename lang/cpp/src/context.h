@@ -70,7 +70,7 @@ public:
     static Context *createForProtocol(Protocol proto);
     /** Same as above but returning a unique ptr. */
     static std::unique_ptr<Context> create(Protocol proto);
-    static std::unique_ptr<Context> createForEngine(Engine engine, Error *err = 0);
+    static std::unique_ptr<Context> createForEngine(Engine engine, Error *err = nullptr);
     virtual ~Context();
 
     //
@@ -161,7 +161,7 @@ public:
     // Key Listing
     //
 
-    GpgME::Error startKeyListing(const char *pattern = 0, bool secretOnly = false);
+    GpgME::Error startKeyListing(const char *pattern = nullptr, bool secretOnly = false);
     GpgME::Error startKeyListing(const char *patterns[], bool secretOnly = false);
 
     Key nextKey(GpgME::Error &e);

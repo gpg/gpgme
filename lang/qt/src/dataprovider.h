@@ -51,14 +51,14 @@ public:
 private:
     // these shall only be accessed through the dataprovider
     // interface, where they're public:
-    bool isSupported(Operation) const
+    bool isSupported(Operation) const override
     {
         return true;
     }
-    ssize_t read(void *buffer, size_t bufSize);
-    ssize_t write(const void *buffer, size_t bufSize);
-    off_t seek(off_t offset, int whence);
-    void release();
+    ssize_t read(void *buffer, size_t bufSize) override;
+    ssize_t write(const void *buffer, size_t bufSize) override;
+    off_t seek(off_t offset, int whence) override;
+    void release() override;
 
 private:
     QByteArray mArray;
@@ -79,11 +79,11 @@ public:
 private:
     // these shall only be accessed through the dataprovider
     // interface, where they're public:
-    bool isSupported(Operation) const;
-    ssize_t read(void *buffer, size_t bufSize);
-    ssize_t write(const void *buffer, size_t bufSize);
-    off_t seek(off_t offset, int whence);
-    void release();
+    bool isSupported(Operation) const override;
+    ssize_t read(void *buffer, size_t bufSize) override;
+    ssize_t write(const void *buffer, size_t bufSize) override;
+    off_t seek(off_t offset, int whence) override;
+    void release() override;
 
 private:
     const std::shared_ptr<QIODevice> mIO;
