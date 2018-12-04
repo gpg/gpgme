@@ -143,10 +143,10 @@ const char *GpgGenCardKeyInteractor::action(Error &err) const
     case GOT_SERIAL:
     case BACKUP_KEY_CREATED:
     case ERROR:
-        return 0;
+        return nullptr;
     default:
         err = Error::fromCode(GPG_ERR_GENERAL);
-        return 0;
+        return nullptr;
     }
 }
 

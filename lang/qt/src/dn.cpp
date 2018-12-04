@@ -256,7 +256,7 @@ parse_dn(const unsigned char *string)
             break;    /* ready */
         }
 
-        DnPair pair = { 0, 0 };
+        DnPair pair = { nullptr, nullptr };
         string = parse_dn_part(&pair, string);
         if (!string) {
             goto failure;

@@ -69,7 +69,7 @@ public:
         EndMarker
     };
 
-    Private(gpgme_ctx_t c = 0);
+    Private(gpgme_ctx_t c = nullptr);
     ~Private();
 
     gpgme_ctx_t ctx;

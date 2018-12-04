@@ -77,10 +77,10 @@ public:
 
 const gpgme_io_cbs EventLoopInteractor::Private::iocbs = {
     &EventLoopInteractor::Private::registerIOCb,
-    0,
+    nullptr,
     &EventLoopInteractor::Private::removeIOCb,
     &EventLoopInteractor::Private::eventIOCb,
-    0
+    nullptr
 };
 
 //
@@ -114,7 +114,7 @@ void EventLoopInteractor::Private::removeIOCb(void *tag)
             it != instance()->d->mCallbacks.end() ; ++it) {
         if (*it == tag) {
             instance()->unregisterWatcher((*it)->externalTag);
-            delete *it; *it = 0;
+            delete *it; *it = nullptr;
             instance()->d->mCallbacks.erase(it);
             return;
         }
@@ -159,7 +159,7 @@ void EventLoopInteractor::Private::eventIOCb(void *data, gpgme_event_io_t type, 
 // EventLoopInteractor Implementation
 //
 
-EventLoopInteractor *EventLoopInteractor::mSelf = 0;
+EventLoopInteractor *EventLoopInteractor::mSelf = nullptr;
 
 EventLoopInteractor::EventLoopInteractor() : d(new Private)
 {
@@ -170,7 +170,7 @@ EventLoopInteractor::EventLoopInteractor() : d(new Private)
 EventLoopInteractor::~EventLoopInteractor()
 {
     // warn if there are still callbacks registered
-    mSelf = 0;
+    mSelf = nullptr;
     delete d;
 }
 

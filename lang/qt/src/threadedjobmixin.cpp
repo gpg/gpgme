@@ -164,13 +164,13 @@ static QList<QByteArray> single(const QByteArray &ba)
 }
 
 _detail::PatternConverter::PatternConverter(const QByteArray &ba)
-    : m_list(single(ba)), m_patterns(0) {}
+    : m_list(single(ba)), m_patterns(nullptr) {}
 _detail::PatternConverter::PatternConverter(const QString &s)
-    : m_list(single(s.toUtf8())), m_patterns(0) {}
+    : m_list(single(s.toUtf8())), m_patterns(nullptr) {}
 _detail::PatternConverter::PatternConverter(const QList<QByteArray> &lba)
-    : m_list(lba), m_patterns(0) {}
+    : m_list(lba), m_patterns(nullptr) {}
 _detail::PatternConverter::PatternConverter(const QStringList &sl)
-    :  m_list(from_sl(sl)), m_patterns(0) {}
+    :  m_list(from_sl(sl)), m_patterns(nullptr) {}
 
 const char **_detail::PatternConverter::patterns() const
 {
@@ -178,7 +178,7 @@ const char **_detail::PatternConverter::patterns() const
         m_patterns = new const char *[ m_list.size() + 1 ];
         const char **end = std::transform(m_list.begin(), m_list.end(), m_patterns,
                                           std::mem_fn(&QByteArray::constData));
-        *end = 0;
+        *end = nullptr;
     }
     return m_patterns;
 }

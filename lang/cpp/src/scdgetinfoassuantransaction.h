@@ -59,10 +59,10 @@ public:
     std::vector<std::string> applicationList() const;
 
 private:
-    /* reimp */ const char *command() const;
-    /* reimp */ Error data(const char *data, size_t datalen);
-    /* reimp */ Data inquire(const char *name, const char *args, Error &err);
-    /* reimp */ Error status(const char *status, const char *args);
+    const char *command() const;
+    Error data(const char *data, size_t datalen) override;
+    Data inquire(const char *name, const char *args, Error &err) override;
+    Error status(const char *status, const char *args) override;
 
 private:
     void makeCommand() const;

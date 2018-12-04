@@ -2461,9 +2461,9 @@ the context @var{ctx} to @var{proto}.  All crypto operations will be
 performed by the crypto engine configured for that protocol.
 @xref{Protocols and Engines}.
 
-Setting the protocol with @code{gpgme_set_protocol} does not check if
-the crypto engine for that protocol is available and installed
-correctly.  @xref{Engine Version Check}.
+Setting the protocol with @code{gpgme_set_protocol} does intentionally
+not check if the crypto engine for that protocol is available and
+installed correctly.  @xref{Engine Version Check}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 protocol could be set successfully, and @code{GPG_ERR_INV_VALUE} if

@@ -233,7 +233,7 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
     //TODO
     case SET_TRUST_REGEXP:
         //TODO
-        return 0;
+        return nullptr;
     case SET_CHECK_LEVEL:
         return check_level_strings[d->checkLevel];
     case CONFIRM2:
@@ -253,7 +253,7 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
     // fall through
     case ERROR:
         err = Error::fromCode(GPG_ERR_GENERAL);
-        return 0;
+        return nullptr;
     }
 }
 

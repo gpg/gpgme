@@ -99,7 +99,7 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque_qba(Context *ctx, const 
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return verify_opaque(ctx, 0, buffer, std::shared_ptr<QIODevice>());
+    return verify_opaque(ctx, nullptr, buffer, std::shared_ptr<QIODevice>());
 }
 
 Error QGpgMEVerifyOpaqueJob::start(const QByteArray &signedData)

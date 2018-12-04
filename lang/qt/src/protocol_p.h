@@ -93,14 +93,14 @@ public:
 
     QGpgME::SpecialJob *specialJob(const char *, const QMap<QString, QVariant> &) const Q_DECL_OVERRIDE
     {
-        return 0;
+        return nullptr;
     }
 
     QGpgME::KeyListJob *keyListJob(bool remote, bool includeSigs, bool validate) const Q_DECL_OVERRIDE
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         unsigned int mode = context->keyListMode();
@@ -125,7 +125,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         unsigned int mode = context->keyListMode();
@@ -152,7 +152,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setArmor(armor);
@@ -164,7 +164,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEDecryptJob(context);
     }
@@ -173,7 +173,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setArmor(armor);
@@ -185,7 +185,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setTextMode(textMode);
@@ -196,7 +196,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setTextMode(textMode);
@@ -207,7 +207,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEKeyGenerationJob(context);
     }
@@ -216,7 +216,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEImportJob(context);
     }
@@ -225,7 +225,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEImportFromKeyserverJob(context);
     }
@@ -234,7 +234,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setArmor(armor);
@@ -244,7 +244,7 @@ public:
     QGpgME::ExportJob *secretKeyExportJob(bool armor, const QString &charset) const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::CMS) { // fixme: add support for gpg, too
-            return 0;
+            return nullptr;
         }
 
         // this operation is not supported by gpgme, so we have to call gpgsm ourselves:
@@ -254,7 +254,7 @@ public:
     QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::CMS) { // fixme: add support for gpg, too
-            return 0;
+            return nullptr;
         }
 
         // this operation is not supported by gpgme, so we have to call gpgsm ourselves:
@@ -265,7 +265,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setArmor(armor);
@@ -278,7 +278,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEDeleteJob(context);
     }
@@ -287,7 +287,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setArmor(armor);
@@ -299,7 +299,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
 
         context->setTextMode(textMode);
@@ -309,12 +309,12 @@ public:
     QGpgME::ChangeExpiryJob *changeExpiryJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return 0;    // only supported by gpg
+            return nullptr;    // only supported by gpg
         }
 
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEChangeExpiryJob(context);
     }
@@ -322,11 +322,11 @@ public:
     QGpgME::ChangePasswdJob *changePasswdJob() const Q_DECL_OVERRIDE
     {
         if (!GpgME::hasFeature(GpgME::PasswdFeature, 0)) {
-            return 0;
+            return nullptr;
         }
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEChangePasswdJob(context);
     }
@@ -334,12 +334,12 @@ public:
     QGpgME::SignKeyJob *signKeyJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return 0;    // only supported by gpg
+            return nullptr;    // only supported by gpg
         }
 
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMESignKeyJob(context);
     }
@@ -347,12 +347,12 @@ public:
     QGpgME::ChangeOwnerTrustJob *changeOwnerTrustJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return 0;    // only supported by gpg
+            return nullptr;    // only supported by gpg
         }
 
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEChangeOwnerTrustJob(context);
     }
@@ -360,12 +360,12 @@ public:
     QGpgME::AddUserIDJob *addUserIDJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return 0;    // only supported by gpg
+            return nullptr;    // only supported by gpg
         }
 
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return 0;
+            return nullptr;
         }
         return new QGpgME::QGpgMEAddUserIDJob(context);
     }
@@ -373,11 +373,11 @@ public:
     QGpgME::KeyListJob *locateKeysJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         context->setKeyListMode(GpgME::Extern | GpgME::Local | GpgME::Signatures | GpgME::Validate);
         return new QGpgME::QGpgMEKeyListJob(context);
@@ -387,7 +387,7 @@ public:
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         return new QGpgME::QGpgMEKeyForMailboxJob(context);
     }
@@ -395,11 +395,11 @@ public:
     QGpgME::WKSPublishJob *wksPublishJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         auto context = GpgME::Context::createForEngine(GpgME::SpawnEngine);
         if (!context) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         return new QGpgME::QGpgMEWKSPublishJob(context.release());
     }
@@ -407,11 +407,11 @@ public:
     QGpgME::TofuPolicyJob *tofuPolicyJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         return new QGpgME::QGpgMETofuPolicyJob(context);
     }
@@ -419,11 +419,11 @@ public:
     QGpgME::QuickJob *quickJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::OpenPGP) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
-            return Q_NULLPTR;
+            return nullptr;
         }
         return new QGpgME::QGpgMEQuickJob(context);
     }

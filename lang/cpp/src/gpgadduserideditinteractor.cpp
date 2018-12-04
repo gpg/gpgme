@@ -105,10 +105,10 @@ const char *GpgAddUserIDEditInteractor::action(Error &err) const
         return "Y";
     case START:
     case ERROR:
-        return 0;
+        return nullptr;
     default:
         err = Error::fromCode(GPG_ERR_GENERAL);
-        return 0;
+        return nullptr;
     }
 }
 

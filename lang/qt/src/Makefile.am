@@ -219,7 +219,8 @@ libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_head
 
 AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
-              -DBUILDING_QGPGME
+              -DBUILDING_QGPGME -Wsuggest-override \
+              -Wzero-as-null-pointer-constant
 
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
                        @LIBASSUAN_LIBS@ @GPGME_QT_LIBS@

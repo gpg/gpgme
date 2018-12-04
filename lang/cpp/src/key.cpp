@@ -165,7 +165,7 @@ Protocol Key::protocol() const
 
 const char *Key::protocolAsString() const
 {
-    return key ? gpgme_get_protocol_name(key->protocol) : 0 ;
+    return key ? gpgme_get_protocol_name(key->protocol) : nullptr ;
 }
 
 bool Key::isRevoked() const
@@ -252,26 +252,26 @@ bool Key::isDeVs() const
 
 const char *Key::issuerSerial() const
 {
-    return key ? key->issuer_serial : 0 ;
+    return key ? key->issuer_serial : nullptr ;
 }
 const char *Key::issuerName() const
 {
-    return key ? key->issuer_name : 0 ;
+    return key ? key->issuer_name : nullptr ;
 }
 const char *Key::chainID() const
 {
-    return key ? key->chain_id : 0 ;
+    return key ? key->chain_id : nullptr ;
 }
 
 const char *Key::keyID() const
 {
-    return key && key->subkeys ? key->subkeys->keyid : 0 ;
+    return key && key->subkeys ? key->subkeys->keyid : nullptr ;
 }
 
 const char *Key::shortKeyID() const
 {
     if (!key || !key->subkeys || !key->subkeys->keyid) {
-        return 0;
+        return nullptr;
     }
     const int len = strlen(key->subkeys->keyid);
     if (len > 8) {
@@ -299,7 +299,7 @@ const char *Key::primaryFingerprint() const
 
 unsigned int Key::keyListMode() const
 {
-    return key ? convert_from_gpgme_keylist_mode_t(key->keylist_mode) : 0 ;
+    return key ? convert_from_gpgme_keylist_mode_t(key->keylist_mode) : 0;
 }
 
 const Key &Key::mergeWith(const Key &other)
@@ -410,7 +410,7 @@ gpgme_sub_key_t find_subkey(const shared_gpgme_key_t &key, unsigned int idx)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 gpgme_sub_key_t verify_subkey(const shared_gpgme_key_t &key, gpgme_sub_key_t subkey)
@@ -422,10 +422,10 @@ gpgme_sub_key_t verify_subkey(const shared_gpgme_key_t &key, gpgme_sub_key_t sub
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
-Subkey::Subkey() : key(), subkey(0) {}
+Subkey::Subkey() : key(), subkey(nullptr) {}
 
 Subkey::Subkey(const shared_gpgme_key_t &k, unsigned int idx)
     : key(k), subkey(find_subkey(k, idx))
@@ -446,12 +446,12 @@ Key Subkey::parent() const
 
 const char *Subkey::keyID() const
 {
-    return subkey ? subkey->keyid : 0 ;
+    return subkey ? subkey->keyid : nullptr ;
 }
 
 const char *Subkey::fingerprint() const
 {
-    return subkey ? subkey->fpr : 0 ;
+    return subkey ? subkey->fpr : nullptr ;
 }
 
 Subkey::PubkeyAlgo Subkey::publicKeyAlgorithm() const
@@ -589,7 +589,7 @@ gpgme_user_id_t find_uid(const shared_gpgme_key_t &key, unsigned int idx)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 gpgme_user_id_t verify_uid(const shared_gpgme_key_t &key, gpgme_user_id_t uid)
@@ -601,10 +601,10 @@ gpgme_user_id_t verify_uid(const shared_gpgme_key_t &key, gpgme_user_id_t uid)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
-UserID::UserID() : key(), uid(0) {}
+UserID::UserID() : key(), uid(nullptr) {}
 
 UserID::UserID(const shared_gpgme_key_t &k, gpgme_user_id_t u)
     : key(k), uid(verify_uid(k, u))
@@ -656,22 +656,22 @@ std::vector<UserID::Signature> UserID::signatures() const
 
 const char *UserID::id() const
 {
-    return uid ? uid->uid : 0 ;
+    return uid ? uid->uid : nullptr ;
 }
 
 const char *UserID::name() const
 {
-    return uid ? uid->name : 0 ;
+    return uid ? uid->name : nullptr ;
 }
 
 const char *UserID::email() const
 {
-    return uid ? uid->email : 0 ;
+    return uid ? uid->email : nullptr ;
 }
 
 const char *UserID::comment() const
 {
-    return uid ? uid->comment : 0 ;
+    return uid ? uid->comment : nullptr ;
 }
 
 UserID::Validity UserID::validity() const
@@ -739,7 +739,7 @@ gpgme_key_sig_t find_signature(gpgme_user_id_t uid, unsigned int idx)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
 gpgme_key_sig_t verify_signature(gpgme_user_id_t uid, gpgme_key_sig_t sig)
@@ -751,10 +751,10 @@ gpgme_key_sig_t verify_signature(gpgme_user_id_t uid, gpgme_key_sig_t sig)
             }
         }
     }
-    return 0;
+    return nullptr;
 }
 
-UserID::Signature::Signature() : key(), uid(0), sig(0) {}
+UserID::Signature::Signature() : key(), uid(nullptr), sig(nullptr) {}
 
 UserID::Signature::Signature(const shared_gpgme_key_t &k, gpgme_user_id_t u, unsigned int idx)
     : key(k), uid(verify_uid(k, u)), sig(find_signature(uid, idx))
@@ -775,7 +775,7 @@ UserID UserID::Signature::parent() const
 
 const char *UserID::Signature::signerKeyID() const
 {
-    return sig ? sig->keyid : 0 ;
+    return sig ? sig->keyid : nullptr ;
 }
 
 const char *UserID::Signature::algorithmAsString() const
@@ -825,22 +825,22 @@ bool UserID::Signature::isExportable() const
 
 const char *UserID::Signature::signerUserID() const
 {
-    return sig ? sig->uid : 0 ;
+    return sig ? sig->uid : nullptr ;
 }
 
 const char *UserID::Signature::signerName() const
 {
-    return sig ? sig->name : 0 ;
+    return sig ? sig->name : nullptr ;
 }
 
 const char *UserID::Signature::signerEmail() const
 {
-    return sig ? sig->email : 0 ;
+    return sig ? sig->email : nullptr ;
 }
 
 const char *UserID::Signature::signerComment() const
 {
-    return sig ? sig->comment : 0 ;
+    return sig ? sig->comment : nullptr ;
 }
 
 unsigned int UserID::Signature::certClass() const
@@ -923,14 +923,14 @@ std::vector<Notation> UserID::Signature::notations() const
 const char *UserID::Signature::policyURL() const
 {
     if (!sig) {
-        return 0;
+        return nullptr;
     }
     for (gpgme_sig_notation_t nota = sig->notations ; nota ; nota = nota->next) {
         if (!nota->name) {
             return nota->value;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 std::string UserID::addrSpecFromString(const char *userid)

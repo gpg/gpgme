@@ -145,7 +145,7 @@ private:
 class GPGMEPP_EXPORT Option
 {
 public:
-    Option() : comp(), opt(0) {}
+    Option() : comp(), opt(nullptr) {}
     Option(const shared_gpgme_conf_comp_t &gpgme_comp, gpgme_conf_opt_t gpgme_opt)
         : comp(gpgme_comp), opt(gpgme_opt) {}
 
@@ -228,7 +228,7 @@ class GPGMEPP_EXPORT Argument
     friend class ::GpgME::Configuration::Option;
     Argument(const shared_gpgme_conf_comp_t &comp, gpgme_conf_opt_t opt, gpgme_conf_arg_t arg, bool owns);
 public:
-    Argument() : comp(), opt(0), arg(0) {}
+    Argument() : comp(), opt(nullptr), arg(nullptr) {}
     //Argument( const shared_gpgme_conf_comp_t & comp, gpgme_conf_opt_t opt, gpgme_conf_arg_t arg );
     Argument(const Argument &other);
     ~Argument();

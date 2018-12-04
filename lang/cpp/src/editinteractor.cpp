@@ -176,7 +176,7 @@ EditInteractor::Private::Private(EditInteractor *qq)
     : q(qq),
       state(StartState),
       error(),
-      debug(0)
+      debug(nullptr)
 {
 
 }

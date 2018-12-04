@@ -59,22 +59,22 @@ public:
         for (gpgme_recipient_t r = res.recipients ; r ; r = r->next) {
             recipients.push_back(*r);
         }
-        res.recipients = 0;
+        res.recipients = nullptr;
     }
     ~Private()
     {
         if (res.unsupported_algorithm) {
             std::free(res.unsupported_algorithm);
         }
-        res.unsupported_algorithm = 0;
+        res.unsupported_algorithm = nullptr;
         if (res.file_name) {
             std::free(res.file_name);
         }
-        res.file_name = 0;
+        res.file_name = nullptr;
         if (res.symkey_algo) {
             std::free(res.symkey_algo);
         }
-        res.symkey_algo = 0;
+        res.symkey_algo = nullptr;
     }
 
     _gpgme_op_decrypt_result res;
@@ -109,7 +109,7 @@ make_standard_stuff(DecryptionResult)
 
 const char *GpgME::DecryptionResult::unsupportedAlgorithm() const
 {
-    return d ? d->res.unsupported_algorithm : 0 ;
+    return d ? d->res.unsupported_algorithm : nullptr ;
 }
 
 bool GpgME::DecryptionResult::isWrongKeyUsage() const
@@ -124,7 +124,7 @@ bool GpgME::DecryptionResult::isDeVs() const
 
 const char *GpgME::DecryptionResult::fileName() const
 {
-    return d ? d->res.file_name : 0 ;
+    return d ? d->res.file_name : nullptr ;
 }
 
 unsigned int GpgME::DecryptionResult::numRecipients() const
@@ -208,7 +208,7 @@ const char *GpgME::DecryptionResult::Recipient::keyID() const
     if (d) {
         return d->_keyid;
     }
-    return 0;
+    return nullptr;
 }
 
 const char *GpgME::DecryptionResult::Recipient::shortKeyID() const
@@ -217,7 +217,7 @@ const char *GpgME::DecryptionResult::Recipient::shortKeyID() const
     if (d) {
         return d->_keyid + 8;
     }
-    return 0;
+    return nullptr;
 }
 
 unsigned int GpgME::DecryptionResult::Recipient::publicKeyAlgorithm() const
@@ -233,7 +233,7 @@ const char *GpgME::DecryptionResult::Recipient::publicKeyAlgorithmAsString() con
     if (d) {
         return gpgme_pubkey_algo_name(d->pubkey_algo);
     }
-    return 0;
+    return nullptr;
 }
 
 GpgME::Error GpgME::DecryptionResult::Recipient::status() const

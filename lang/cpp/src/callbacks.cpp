@@ -76,7 +76,7 @@ gpgme_error_t passphrase_callback(void *opaque, const char *uid_hint, const char
     PassphraseProvider *provider = static_cast<PassphraseProvider *>(opaque);
     bool canceled = false;
     gpgme_error_t err = GPG_ERR_NO_ERROR;
-    char *passphrase = provider ? provider->getPassphrase(uid_hint, desc, prev_was_bad, canceled) : 0 ;
+    char *passphrase = provider ? provider->getPassphrase(uid_hint, desc, prev_was_bad, canceled) : nullptr ;
     if (canceled) {
         err = make_error(GPG_ERR_CANCELED);
     } else {

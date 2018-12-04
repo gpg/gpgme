@@ -64,9 +64,9 @@ QGpgMEListAllKeysJob::~QGpgMEListAllKeysJob() {}
 static KeyListResult do_list_keys(Context *ctx, std::vector<Key> &keys, bool secretOnly)
 {
 
-    const char **pat = 0;
+    const char **pat = nullptr;
     if (const Error err = ctx->startKeyListing(pat, secretOnly)) {
-        return KeyListResult(0, err);
+        return KeyListResult(nullptr, err);
     }
 
     Error err;

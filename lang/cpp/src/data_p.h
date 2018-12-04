@@ -31,7 +31,7 @@
 class GpgME::Data::Private
 {
 public:
-    explicit Private(gpgme_data_t d = 0)
+    explicit Private(gpgme_data_t d = nullptr)
         : data(d), cbs(data_provider_callbacks) {}
     ~Private();
 

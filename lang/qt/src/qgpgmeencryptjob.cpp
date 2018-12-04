@@ -118,7 +118,7 @@ static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return encrypt(ctx, 0, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded);
+    return encrypt(ctx, nullptr, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded);
 }
 
 Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)

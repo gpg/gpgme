@@ -52,18 +52,18 @@ const char QGpgME::QGpgMEBackend::SMIME[] = "SMIME";
 
 
 QGpgME::QGpgMEBackend::QGpgMEBackend()
-    : mCryptoConfig(0),
-      mOpenPGPProtocol(0),
-      mSMIMEProtocol(0)
+    : mCryptoConfig(nullptr),
+      mOpenPGPProtocol(nullptr),
+      mSMIMEProtocol(nullptr)
 {
     GpgME::initializeLibrary();
 }
 
 QGpgME::QGpgMEBackend::~QGpgMEBackend()
 {
-    delete mCryptoConfig; mCryptoConfig = 0;
-    delete mOpenPGPProtocol; mOpenPGPProtocol = 0;
-    delete mSMIMEProtocol; mSMIMEProtocol = 0;
+    delete mCryptoConfig; mCryptoConfig = nullptr;
+    delete mOpenPGPProtocol; mOpenPGPProtocol = nullptr;
+    delete mSMIMEProtocol; mSMIMEProtocol = nullptr;
 }
 
 QString QGpgME::QGpgMEBackend::name() const
@@ -163,7 +163,7 @@ QGpgME::Protocol *QGpgME::QGpgMEBackend::protocol(const char *name) const
     if (qstricmp(name, SMIME) == 0) {
         return smime();
     }
-    return 0;
+    return nullptr;
 }
 
 bool QGpgME::QGpgMEBackend::supportsProtocol(const char *name) const
@@ -176,7 +176,7 @@ const char *QGpgME::QGpgMEBackend::enumerateProtocols(int i) const
     switch (i) {
     case 0: return OpenPGP;
     case 1: return SMIME;
-    default: return 0;
+    default: return nullptr;
     }
 }
 

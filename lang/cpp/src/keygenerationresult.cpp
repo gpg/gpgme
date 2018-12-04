@@ -50,7 +50,7 @@ public:
         if (res.fpr) {
             std::free(res.fpr);
         }
-        res.fpr = 0;
+        res.fpr = nullptr;
     }
 
     _gpgme_op_genkey_result res;
@@ -94,5 +94,5 @@ bool GpgME::KeyGenerationResult::isSubkeyGenerated() const
 
 const char *GpgME::KeyGenerationResult::fingerprint() const
 {
-    return d ? d->res.fpr : 0 ;
+    return d ? d->res.fpr : nullptr ;
 }

@@ -46,16 +46,16 @@ public:
         for (gpgme_import_status_t is = r.imports ; is ; is = is->next) {
             gpgme_import_status_t copy = new _gpgme_import_status(*is);
             copy->fpr = strdup(is->fpr);
-            copy->next = 0;
+            copy->next = nullptr;
             imports.push_back(copy);
         }
-        res.imports = 0;
+        res.imports = nullptr;
     }
     ~Private()
     {
         for (std::vector<gpgme_import_status_t>::iterator it = imports.begin() ; it != imports.end() ; ++it) {
             std::free((*it)->fpr);
-            delete *it; *it = 0;
+            delete *it; *it = nullptr;
         }
     }
 
@@ -192,7 +192,7 @@ bool GpgME::Import::isNull() const
 
 const char *GpgME::Import::fingerprint() const
 {
-    return isNull() ? 0 : d->imports[idx]->fpr ;
+    return isNull() ? nullptr : d->imports[idx]->fpr ;
 }
 
 GpgME::Error GpgME::Import::error() const

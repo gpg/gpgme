@@ -53,9 +53,9 @@ public:
     }
 
 private:
-    /* reimp */ Error data(const char *data, size_t datalen);
-    /* reimp */ Data inquire(const char *name, const char *args, Error &err);
-    /* reimp */ Error status(const char *status, const char *args);
+    Error data(const char *data, size_t datalen) override;
+    Data inquire(const char *name, const char *args, Error &err) override;
+    Error status(const char *status, const char *args) override;
 
 private:
     std::vector< std::pair<std::string, std::string> > m_status;
