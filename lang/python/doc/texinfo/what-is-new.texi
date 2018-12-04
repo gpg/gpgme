@@ -35,15 +35,15 @@ What's New
 @node What's New
 @chapter What's New
 
-@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @item Version:
-@tab 0.0.1-draft
+@tab 0.0.1
 @item GPGME Version:
 @tab 1.13.0
 @item Author:
-@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <@email{ben@@gnupg.org, ben@@gnupg.org}>
+@tab Ben McGinnes <ben@@gnupg.org>
 @item Author GPG Key:
-@tab @uref{https://hkps.pool.sks-keyservers.net/pks/lookup?search=0xDB4724E6FA4286C92B4E55C4321E4E2373590E5D&exact=on&op=get, DB4724E6FA4286C92B4E55C4321E4E2373590E5D}
+@tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 @item Language:
 @tab Australian English, British English
 @item xml:lang:
@@ -73,6 +73,9 @@ Moving the preceding, archival, segments into @uref{what-was-new.org, another fi
 Added @samp{gpg.version.versionintlist} to make it easier for Python
 developers to check for a specific version number, even with beta
 versions (it will drop the "-betaN" part).
+@item
+Added expanded detail on issues pertaining to installing for Windows
+users.
 @item
 Bindings enter @uref{maintenance-mode, maintenance mode} from January, 2019.
 @end itemize

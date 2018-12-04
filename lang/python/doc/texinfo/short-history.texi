@@ -49,15 +49,15 @@ The Perils of PyPI
 @node Overview
 @chapter Overview
 
-@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
+@multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @item Version:
-@tab 0.0.1-draft
+@tab 0.0.1
 @item GPGME Version:
 @tab 1.13.0
 @item Author:
-@tab @uref{https://gnupg.org/people/index.html#sec-1-5, Ben McGinnes} <@email{ben@@gnupg.org, ben@@gnupg.org}>
+@tab Ben McGinnes <ben@@gnupg.org>
 @item Author GPG Key:
-@tab @uref{https://hkps.pool.sks-keyservers.net/pks/lookup?search=0xDB4724E6FA4286C92B4E55C4321E4E2373590E5D&exact=on&op=get, DB4724E6FA4286C92B4E55C4321E4E2373590E5D}
+@tab DB4724E6FA4286C92B4E55C4321E4E2373590E5D
 @item Language:
 @tab Australian English, British English
 @item xml:lang:

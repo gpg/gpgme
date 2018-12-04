@@ -3,27 +3,19 @@
 Introduction
 ============
 
-+-----------------------------------+-----------------------------------+
-| Version:                          | 0.1.4                             |
-+-----------------------------------+-----------------------------------+
-| GPGME Version:                    | 1.12.1                            |
-+-----------------------------------+-----------------------------------+
-| Author:                           | `Ben                              |
-|                                   | McGinnes <https://gnupg.org/peopl |
-|                                   | e/index.html#sec-1-5>`__          |
-|                                   | <ben@gnupg.org>                   |
-+-----------------------------------+-----------------------------------+
-| Author GPG Key:                   | `DB4724E6FA4286C92B4E55C4321E4E23 |
-|                                   | 73590E5D <https://hkps.pool.sks-k |
-|                                   | eyservers.net/pks/lookup?search=0 |
-|                                   | xDB4724E6FA4286C92B4E55C4321E4E23 |
-|                                   | 73590E5D&exact=on&op=get>`__      |
-+-----------------------------------+-----------------------------------+
-| Language:                         | Australian English, British       |
-|                                   | English                           |
-+-----------------------------------+-----------------------------------+
-| Language codes:                   | en-AU, en-GB, en                  |
-+-----------------------------------+-----------------------------------+
++-----------------+------------------------------------------+
+| Version:        | 0.1.4                                    |
++-----------------+------------------------------------------+
+| GPGME Version:  | 1.12.1                                   |
++-----------------+------------------------------------------+
+| Author:         | Ben McGinnes <ben@gnupg.org>             |
++-----------------+------------------------------------------+
+| Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
++-----------------+------------------------------------------+
+| Language:       | Australian English, British English      |
++-----------------+------------------------------------------+
+| Language codes: | en-AU, en-GB, en                         |
++-----------------+------------------------------------------+
 
 This document provides basic instruction in how to use the GPGME Python
 bindings to programmatically leverage the GPGME library.
@@ -468,11 +460,12 @@ around far longer than it should have been.
 There are two theoretical solutions to this issue:
 
 #. Compile and install the GnuPG stack, including GPGME and the Python
-   bibdings using the same version of Microsoft Visual Studio used by
+   bindings using the same version of Microsoft Visual Studio used by
    the Python Foundation to compile the version of Python installed.
 
    If there are multiple versions of Python then this will need to be
-   done with each different version of Visual Studio used.
+   done with each different version of Visual Studio used for those
+   versions of Python.
 
 #. Compile and install Python using the same tools used by choice, such
    as MinGW or Msys2.
@@ -487,6 +480,89 @@ Visual Studio to compile and build all of it, no matter what.
 
 Investigations into the extent or the limitations of this issue are
 ongoing.
+
+The following table lists the version of Microsoft Visual Studio which
+needs to be used when compiling GPGME and the Python bindings with each
+version of the CPython binary released `for
+Windows <https://www.python.org/downloads/windows/>`__:
+
++---------+------------------------+------------------+
+| CPython | Microsoft product name | runtime filename |
++---------+------------------------+------------------+
+| 2.7.6   | Visual Studio 2008     | MSVCR90.DLL      |
++---------+------------------------+------------------+
+| 3.4.0   | Visual Studio 2010     | MSVCR100.DLL     |
++---------+------------------------+------------------+
+| 3.5.0   | Visual Studio 2015     | **see below**    |
++---------+------------------------+------------------+
+| 3.6.0   | Visual Studio 2015     | **see below**    |
++---------+------------------------+------------------+
+| 3.7.0   | Visual Studio 2017\*   | **see below**    |
++---------+------------------------+------------------+
+
+It is important to note that MingW and Msys2 ship with the Visual C
+runtime from Microsoft Visual Studio 2005 and are thus **incompatible**
+with all the versions of CPython which can be used with the GPGME Python
+bindings.
+
+It is also important to note that from CPython 3.5 onwards, the Python
+Foundation has adopted the reworking of the Visual C runtime which was
+performed for Visual Studio 2015 and aimed at resolving many of these
+kinds of issues. Much greater detail on these issues and the correct
+file(s) to link to are available from Matthew Brett\'s invaluable page,
+`Using Microsoft Visual C with
+Python <https://matthew-brett.github.io/pydagogue/python_msvc.html>`__.
+It is also worth reading the Microsoft Developer Network blog post on
+`the universal
+CRT <http://blogs.msdn.com/b/vcblog/archive/2015/03/03/introducing-the-universal-crt.aspx>`__
+and Steve Dower\'s blog posts on Python extensions (`part
+1 <http://stevedower.id.au/blog/building-for-python-3-5>`__ and `part
+2 <http://stevedower.id.au/blog/building-for-python-3-5-part-two>`__).
+
+The second of those two posts by Steve Dower contains the details of
+specific configuration options required for compiling anything to be
+used with official CPython releases. In addition to those configuration
+and compiler settings to use, the versions of Visual Studio prior to
+Visual Studio 2015 did not support 64-bit systems by default. So
+compiling a 64-bit version of these bindings for a 64-bit version of
+CPython 2.7 or 3.4 requires additional work.
+
+In addition to the blog posts, the `Windows
+compilers <https://wiki.python.org/moin/WindowsCompilers>`__ wiki page
+on the CPython wiki is another essential reference on the relevant
+versions of Visual Studio to use and the degree of compatibility with
+CPython releases.
+
+Eventually someone will ask why there isn\'t an installable binary for
+Windows, which the GPGME of the licenses do not preclude as long as the
+source code is available in conjunction with such a release.
+
+The sheer number of versions of Visual Studio in conjunction with
+differing configuration options depending on the target Windows version
+and whether the architecture is 64-bit or 32-bit makes it difficult to
+provide a correct binary installer for Windows users. At the bare
+minimum doing so would require the GnuPG project compile ten different
+versions of the bindings with each release; both 32-bit and 64-bit
+versions for CPython 2.7 and 3.4, with 64-bit versions for both x86-64
+(i.e. Intel and AMD) and ARM architectures for CPython 3.5, 3.6, 3.7 and
+later releases. That\'s the bare **minimum**, it\'d probably be higher.
+
+Considering all of that, what do we recommend?
+
+#. Use a recent version of CPython; at least 3.5, but ideally 3.6 or
+   later.
+
+#. Use Visual Studio 2015 or the standalone build tools for Visual
+   Studio 2017 (or later).
+
+#. Compile both CPython and GPGME with these bindings using the tools
+   selected in step 2.
+
+#. Ignore MingW, Msys2 and the official CPython binary installers.
+
+#. Be thankful the answer to this question wasn\'t simply to say
+   something like, "install Linux" or "install FreeBSD" (or even
+   Apple\'s OS X).
 
 .. _snafu-cffi:
 

@@ -3,27 +3,19 @@
 What\'s New
 ===========
 
-+-----------------------------------+-----------------------------------+
-| Version:                          | 0.0.1-draft                       |
-+-----------------------------------+-----------------------------------+
-| GPGME Version:                    | 1.13.0                            |
-+-----------------------------------+-----------------------------------+
-| Author:                           | `Ben                              |
-|                                   | McGinnes <https://gnupg.org/peopl |
-|                                   | e/index.html#sec-1-5>`__          |
-|                                   | <ben@gnupg.org>                   |
-+-----------------------------------+-----------------------------------+
-| Author GPG Key:                   | `DB4724E6FA4286C92B4E55C4321E4E23 |
-|                                   | 73590E5D <https://hkps.pool.sks-k |
-|                                   | eyservers.net/pks/lookup?search=0 |
-|                                   | xDB4724E6FA4286C92B4E55C4321E4E23 |
-|                                   | 73590E5D&exact=on&op=get>`__      |
-+-----------------------------------+-----------------------------------+
-| Language:                         | Australian English, British       |
-|                                   | English                           |
-+-----------------------------------+-----------------------------------+
-| xml:lang:                         | en-AU, en-GB, en                  |
-+-----------------------------------+-----------------------------------+
++-----------------+------------------------------------------+
+| Version:        | 0.0.1                                    |
++-----------------+------------------------------------------+
+| GPGME Version:  | 1.13.0                                   |
++-----------------+------------------------------------------+
+| Author:         | Ben McGinnes <ben@gnupg.org>             |
++-----------------+------------------------------------------+
+| Author GPG Key: | DB4724E6FA4286C92B4E55C4321E4E2373590E5D |
++-----------------+------------------------------------------+
+| Language:       | Australian English, British English      |
++-----------------+------------------------------------------+
+| xml:lang:       | en-AU, en-GB, en                         |
++-----------------+------------------------------------------+
 
 Last time the most obviously new thing was adding the *What\'s New*
 section to the HOWTO. Now it\'s moving it out of the HOWTO.
@@ -43,5 +35,7 @@ Additions since GPGME 1.12.0 include:
 -  Added ``gpg.version.versionintlist`` to make it easier for Python
    developers to check for a specific version number, even with beta
    versions (it will drop the \"-betaN\" part).
+-  Added expanded detail on issues pertaining to installing for Windows
+   users.
 -  Bindings enter `maintenance mode <maintenance-mode>`__ from January,
    2019.
