@@ -342,7 +342,10 @@ class Context(GpgmeWrapper):
 
         Decrypt the given ciphertext and verify any signatures.  If
         VERIFY is an iterable of keys, the ciphertext must be signed
-        by all those keys, otherwise an error is raised.
+        by all those keys, otherwise an error is raised.  Note: if
+        VERIFY is an empty iterable, that is treated the same as
+        passing verify=True (that is, do verify signatures, but no
+        specific keys are required).
 
         If the ciphertext is symmetrically encrypted using a
         passphrase, that passphrase can be given as parameter, using a
