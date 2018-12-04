@@ -427,6 +427,10 @@ class Context(GpgmeWrapper):
                                               results=results)
 
         if verify:
+            # FIXME: should we really throw BadSignature, even if
+            # we've encountered some good signatures?  as above, once
+            # we hit this error, there is no way to accept it and
+            # continue to process the remaining signatures.
             if any(s.status != errors.NO_ERROR
                    for s in verify_result.signatures):
                 raise errors.BadSignatures(verify_result, results=results)
