@@ -370,8 +370,8 @@ class Context(GpgmeWrapper):
         GPGMEError	-- as signaled by the underlying library
 
         """
-        sink_result = False
-        verify_sigs = False
+        do_sig_verification = False
+        required_keys = None
         plaintext = sink if sink else Data()
 
         if passphrase is not None:
@@ -385,22 +385,25 @@ class Context(GpgmeWrapper):
             self.set_passphrase_cb(passphrase_cb)
 
         try:
-            if verify is not None:
-                if isinstance(verify, bool) is True:
-                    if verify is False:
-                        verify = True
-                        sink_result = True
-                elif isinstance(verify, list) is True:
-                    if len(verify) > 0:
-                        verify_sigs = True
-                else:
-                    verify = True
+            if isinstance(verify, bool):
+                do_sig_verification = verify
+            elif verify is None:
+                warnings.warn(
+                    "ctx.decrypt called with verify=None, should be bool or iterable (treating as False).",
+                    category=DeprecationWarning)
+                do_sig_verification = False
+            else:
+                # we hope this is an iterable:
+                required_keys = verify
+                do_sig_verification = True
+
+            if do_sig_verification:
                 self.op_decrypt_verify(ciphertext, plaintext)
             else:
                 self.op_decrypt(ciphertext, plaintext)
         except errors.GPGMEError as e:
             result = self.op_decrypt_result()
-            if verify is not None and not sink_result:
+            if do_sig_verification:
                 verify_result = self.op_verify_result()
             else:
                 verify_result = None
@@ -415,7 +418,7 @@ class Context(GpgmeWrapper):
 
         result = self.op_decrypt_result()
 
-        if verify is not None and not sink_result:
+        if do_sig_verification:
             verify_result = self.op_verify_result()
         else:
             verify_result = None
@@ -426,7 +429,7 @@ class Context(GpgmeWrapper):
             raise errors.UnsupportedAlgorithm(result.unsupported_algorithm,
                                               results=results)
 
-        if verify:
+        if do_sig_verification:
             # FIXME: should we really throw BadSignature, even if
             # we've encountered some good signatures?  as above, once
             # we hit this error, there is no way to accept it and
@@ -434,25 +437,24 @@ class Context(GpgmeWrapper):
             if any(s.status != errors.NO_ERROR
                    for s in verify_result.signatures):
                 raise errors.BadSignatures(verify_result, results=results)
-
-        if verify_sigs:
-            missing = []
-            for key in verify:
-                ok = False
-                for subkey in key.subkeys:
-                    for sig in verify_result.signatures:
-                        if sig.summary & constants.SIGSUM_VALID == 0:
-                            continue
-                        if subkey.can_sign and subkey.fpr == sig.fpr:
-                            ok = True
+            if required_keys is not None:
+                missing = []
+                for key in required_keys:
+                    ok = False
+                    for subkey in key.subkeys:
+                        for sig in verify_result.signatures:
+                            if sig.summary & constants.SIGSUM_VALID == 0:
+                                continue
+                            if subkey.can_sign and subkey.fpr == sig.fpr:
+                                ok = True
                             break
-                    if ok:
-                        break
-                if not ok:
-                    missing.append(key)
-            if missing:
-                raise errors.MissingSignatures(verify_result, missing,
-                                               results=results)
+                        if ok:
+                            break
+                    if not ok:
+                        missing.append(key)
+                if missing:
+                    raise errors.MissingSignatures(verify_result, missing,
+                                                   results=results)
 
         return results
 
