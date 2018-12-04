@@ -547,6 +547,14 @@ versions for CPython 2.7 and 3.4, with 64-bit versions for both x86-64
 (i.e. Intel and AMD) and ARM architectures for CPython 3.5, 3.6, 3.7 and
 later releases. That\'s the bare **minimum**, it\'d probably be higher.
 
+Additionally, with only a binary installation used in conjunction with
+the CPython installer from ``python.org`` the advanced options available
+which utilise `Cython <#cython>`__ will not be able to be used at all.
+Cython depends on being able to compile the C code it generates and that
+too would need to utilise a matching runtime to both the installed
+version of CPython and these bindings in order to work with the
+bindings.
+
 Considering all of that, what do we recommend?
 
 #. Use a recent version of CPython; at least 3.5, but ideally 3.6 or

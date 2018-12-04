@@ -747,6 +747,13 @@ x86-64 (i.e. Intel and AMD) and ARM architectures for CPython 3.5,
 3.6, 3.7 and later releases.  That's the bare @strong{minimum}, it'd probably
 be higher.
 
+Additionally, with only a binary installation used in conjunction with
+the CPython installer from @samp{python.org} the advanced options available
+which utilise @ref{C plus Python plus SWIG plus Cython, , Cython} will not be able to be used at all.  Cython
+depends on being able to compile the C code it generates and that too
+would need to utilise a matching runtime to both the installed version
+of CPython and these bindings in order to work with the bindings.
+
 Considering all of that, what do we recommend?
 
 @enumerate
