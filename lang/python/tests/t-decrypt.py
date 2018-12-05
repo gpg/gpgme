@@ -38,7 +38,7 @@ support.print_data(sink)
 
 # Idiomatic interface.
 with gpg.Context() as c:
-    plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-1.asc")))
+    plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-1.asc")), verify=False)
     assert len(plaintext) > 0
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
         'Plaintext not found'

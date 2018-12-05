@@ -342,7 +342,10 @@ class Context(GpgmeWrapper):
 
         Decrypt the given ciphertext and verify any signatures.  If
         VERIFY is an iterable of keys, the ciphertext must be signed
-        by all those keys, otherwise an error is raised.
+        by all those keys, otherwise an error is raised.  Note: if
+        VERIFY is an empty iterable, that is treated the same as
+        passing verify=True (that is, do verify signatures, but no
+        specific keys are required).
 
         If the ciphertext is symmetrically encrypted using a
         passphrase, that passphrase can be given as parameter, using a
@@ -352,7 +355,8 @@ class Context(GpgmeWrapper):
         Keyword arguments:
         sink		-- write result to sink instead of returning it
         passphrase	-- for symmetric decryption
-        verify		-- check signatures (default True)
+        verify		-- check signatures (boolean or iterable of keys,
+                           see above) (default True)
 
         Returns:
         plaintext	-- the decrypted data (or None if sink is given)
@@ -366,8 +370,8 @@ class Context(GpgmeWrapper):
         GPGMEError	-- as signaled by the underlying library
 
         """
-        sink_result = None
-        verify_sigs = None
+        do_sig_verification = False
+        required_keys = None
         plaintext = sink if sink else Data()
 
         if passphrase is not None:
@@ -381,26 +385,25 @@ class Context(GpgmeWrapper):
             self.set_passphrase_cb(passphrase_cb)
 
         try:
-            if verify is not None:
-                if isinstance(verify, bool) is True:
-                    if verify is False:
-                        verify = True
-                        sink_result = True
-                    else:
-                        pass
-                elif isinstance(verify, list) is True:
-                    if len(verify) > 0:
-                        verify_sigs = True
-                    else:
-                        pass
-                else:
-                    verify = True
+            if isinstance(verify, bool):
+                do_sig_verification = verify
+            elif verify is None:
+                warnings.warn(
+                    "ctx.decrypt called with verify=None, should be bool or iterable (treating as False).",
+                    category=DeprecationWarning)
+                do_sig_verification = False
+            else:
+                # we hope this is an iterable:
+                required_keys = verify
+                do_sig_verification = True
+
+            if do_sig_verification:
                 self.op_decrypt_verify(ciphertext, plaintext)
             else:
                 self.op_decrypt(ciphertext, plaintext)
         except errors.GPGMEError as e:
             result = self.op_decrypt_result()
-            if verify is not None and sink_result is None:
+            if do_sig_verification:
                 verify_result = self.op_verify_result()
             else:
                 verify_result = None
@@ -415,7 +418,7 @@ class Context(GpgmeWrapper):
 
         result = self.op_decrypt_result()
 
-        if verify is not None and sink_result is None:
+        if do_sig_verification:
             verify_result = self.op_verify_result()
         else:
             verify_result = None
@@ -426,50 +429,32 @@ class Context(GpgmeWrapper):
             raise errors.UnsupportedAlgorithm(result.unsupported_algorithm,
                                               results=results)
 
-        if verify:
+        if do_sig_verification:
+            # FIXME: should we really throw BadSignature, even if
+            # we've encountered some good signatures?  as above, once
+            # we hit this error, there is no way to accept it and
+            # continue to process the remaining signatures.
             if any(s.status != errors.NO_ERROR
                    for s in verify_result.signatures):
                 raise errors.BadSignatures(verify_result, results=results)
-
-        if verify_sigs is not None:
-            missing = []
-            for key in verify:
-                ok = False
-                for subkey in key.subkeys:
-                    for sig in verify_result.signatures:
-                        if sig.summary & constants.SIGSUM_VALID == 0:
-                            continue
-                        if subkey.can_sign and subkey.fpr == sig.fpr:
-                            ok = True
+            if required_keys is not None:
+                missing = []
+                for key in required_keys:
+                    ok = False
+                    for subkey in key.subkeys:
+                        for sig in verify_result.signatures:
+                            if sig.summary & constants.SIGSUM_VALID == 0:
+                                continue
+                            if subkey.can_sign and subkey.fpr == sig.fpr:
+                                ok = True
                             break
-                    if ok:
-                        break
-                if not ok:
-                    missing.append(key)
-            if missing:
-                try:
+                        if ok:
+                            break
+                    if not ok:
+                        missing.append(key)
+                if missing:
                     raise errors.MissingSignatures(verify_result, missing,
                                                    results=results)
-                except errors.MissingSignatures as e:
-                    raise e
-                    # mse = e
-                    # mserr = "gpg.errors.MissingSignatures:"
-                    # print(mserr, miss_e, "\n")
-                    # # The full details can then be found in mse.results,
-                    # # mse.result, mse.missing if necessary.
-                    # mse_list = []
-                    # msp = "Missing signatures from: \n".format()
-                    # print(msp)
-                    # for key in mse.missing:
-                    #     mse_list.append(key.fpr)
-                    #     msl = []
-                    #     msl.append(key.fpr)
-                    #     for user in key.uids:
-                    #         msl.append(user.name)
-                    #         msl.append(user.email)
-                    #         # msl.append(user.uid)
-                    #     print(" ".join(msl))
-                    # raise mse
 
         return results
 
