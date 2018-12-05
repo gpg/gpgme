@@ -28,7 +28,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) \
 	srcdir=$(srcdir) \
 	LD_LIBRARY_PATH="../../../src/.libs:$(LD_LIBRARY_PATH)"
 
-py_tests = t-wrapper.py \
+py_tests ?= t-wrapper.py \
 	t-callbacks.py \
 	t-data.py \
 	t-encrypt.py \
