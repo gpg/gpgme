@@ -52,7 +52,7 @@ elif os.path.exists(homedir) is True:
 else:
     pass
 
-if len(uid_cmnt) > 0:
+if uid_cmnt:
     userid = "{0} ({1}) <{2}>".format(uid_name, uid_cmnt, uid_email)
 else:
     userid = "{0} <{2}>".format(uid_name, uid_email)

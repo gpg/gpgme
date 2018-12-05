@@ -53,11 +53,11 @@ else:
 fpr = "".join(fpr0.split())
 key = c.get_key(fpr, secret=False)
 
-if len(userid) > 0 and sig_type.lower() == "local":
+if userid and sig_type.lower() == "local":
     c.key_sign(key, uids=userid, local=True)
-elif len(userid) > 0 and sig_type.lower() != "local":
+elif userid and sig_type.lower() != "local":
     c.key_sign(key, uids=userid)
-elif len(userid) == 0 and sig_type.lower() == "local":
+elif not userid and sig_type.lower() == "local":
     c.key_sign(key, local=True)
 else:
     c.key_sign(key)

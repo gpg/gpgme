@@ -49,7 +49,7 @@ else:
     logrus = input("Enter the UID matching the key(s) to export: ")
     homedir = input("Enter the GPG configuration directory path (optional): ")
 
-if len(homedir) == 0:
+if not homedir:
     homedir = None
 elif homedir.startswith("~"):
     userdir = os.path.expanduser(homedir)
@@ -73,7 +73,7 @@ if homedir is not None:
 else:
     pass
 
-if len(logrus) > 0:
+if logrus:
     try:
         export_result = c.key_export(pattern=logrus)
     except Exception as e:
