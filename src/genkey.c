@@ -290,7 +290,7 @@ gpgme_op_genkey_start (gpgme_ctx_t ctx, const char *parms,
 	      "pubkey=%p, seckey=%p", pubkey, seckey);
   TRACE_LOGBUF (parms, parms? strlen (parms):0);
 
-  if (!ctx || parms)
+  if (!ctx || !parms)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
 
   err = genkey_start (ctx, 0, parms, pubkey, seckey);
