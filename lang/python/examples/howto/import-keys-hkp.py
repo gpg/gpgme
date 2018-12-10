@@ -44,18 +44,51 @@ elif len(sys.argv) == 2:
 else:
     pattern = input("Enter the pattern to search for keys or user IDs: ")
 
+
 if pattern is not None:
     try:
         key = server.search(hex(int(pattern, 16)))
-    except ValueError as e:
+        keyed = True
+    except ValueError as ve:
         key = server.search(pattern)
-    keys.append(key[0])
+        keyed = False
+
+    if key is not None:
+        keys.append(key[0])
+        if keyed is True:
+            try:
+                fob = server.search(pattern)
+            except:
+                fob = None
+            if fob is not None:
+                keys.append(fob[0])
+        else:
+            pass
+    else:
+        pass
+
     for logrus in pattern.split():
         try:
             key = server.search(hex(int(logrus, 16)))
-        except ValueErrer as ve:
+            hexed = True
+        except ValueError as ve:
             key = server.search(logrus)
-        keys.append(key[0])
+            hexed = False
+
+        if key is not None:
+            keys.append(key[0])
+            if hexed is True:
+                try:
+                    fob = server.search(logrus)
+                except:
+                    fob = None
+                if fob is not None:
+                    keys.append(fob[0])
+            else:
+                pass
+        else:
+            pass
+
 
 if len(keys) > 0:
     for key in keys:
@@ -90,4 +123,4 @@ The key IDs for all considered keys were:
             print(result.imports[i].fpr)
         print("")
     else:
-        pass
+        print("No keys were imported or found.")

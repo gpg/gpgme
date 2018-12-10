@@ -963,6 +963,14 @@ relative ease by which such key IDs can be reproduced, as demonstrated
 by the Evil32 Project in 2014 (which was subsequently exploited in
 2016).
 
+Testing for whether a string in any given search is or may be a
+hexadecimal value which may be missing the leading =0x= is a simple
+matter of using a try/except statement which attempts to convert the
+string as hex to an integer and then back to hex; then using that to
+search with.  Raising a ValueError simply results in treating the
+string as a string.  This is the method and logic utilised in the
+=import-keys-hkp.py= script (see below).
+
 
 *** Working with ProtonMail
     :PROPERTIES:
@@ -1097,6 +1105,7 @@ import sys
 c = gpg.Context()
 server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
 results = []
+keys = []
 
 if len(sys.argv) > 2:
     pattern = " ".join(sys.argv[1:])
@@ -1105,22 +1114,56 @@ elif len(sys.argv) == 2:
 else:
     pattern = input("Enter the pattern to search for keys or user IDs: ")
 
-try:
-    keys = server.search(pattern)
-    print("Found {0} key(s).".format(len(keys)))
-except Exception as e:
-    keys = []
-    for logrus in pattern.split():
-        if logrus.startswith("0x") is True:
-            key = server.search(logrus)
-        else:
-            key = server.search("0x{0}".format(logrus))
-        keys.append(key[0])
-    print("Found {0} key(s).".format(len(keys)))
 
-for key in keys:
-    import_result = c.key_import(key.key_blob)
-    results.append(import_result)
+if pattern is not None:
+    try:
+        key = server.search(hex(int(pattern, 16)))
+        keyed = True
+    except ValueError as ve:
+        key = server.search(pattern)
+        keyed = False
+
+    if key is not None:
+        keys.append(key[0])
+        if keyed is True:
+            try:
+                fob = server.search(pattern)
+            except:
+                fob = None
+            if fob is not None:
+                keys.append(fob[0])
+        else:
+            pass
+    else:
+        pass
+
+    for logrus in pattern.split():
+        try:
+            key = server.search(hex(int(logrus, 16)))
+            hexed = True
+        except ValueError as ve:
+            key = server.search(logrus)
+            hexed = False
+
+        if key is not None:
+            keys.append(key[0])
+            if hexed is True:
+                try:
+                    fob = server.search(logrus)
+                except:
+                    fob = None
+                if fob is not None:
+                    keys.append(fob[0])
+            else:
+                pass
+        else:
+            pass
+
+
+if len(keys) > 0:
+    for key in keys:
+        import_result = c.key_import(key.key_blob)
+        results.append(import_result)
 
 for result in results:
     if result is not None and hasattr(result, "considered") is False:
