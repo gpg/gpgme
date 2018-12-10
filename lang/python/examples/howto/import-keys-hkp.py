@@ -58,32 +58,37 @@ if pattern is not None:
         if keyed is True:
             try:
                 fob = server.search(pattern)
-            except:
+            except Exception as e:
                 fob = None
             if fob is not None:
                 keys.append(fob[0])
+            else:
+                pass
         else:
             pass
-    else:
-        pass
 
     for logrus in pattern.split():
-        try:
-            key = server.search(hex(int(logrus, 16)))
-            hexed = True
-        except ValueError as ve:
-            key = server.search(logrus)
-            hexed = False
+        if logrus != pattern:
+            try:
+                key = server.search(hex(int(logrus, 16)))
+                hexed = True
+            except ValueError as ve:
+                key = server.search(logrus)
+                hexed = False
 
-        if key is not None:
-            keys.append(key[0])
-            if hexed is True:
-                try:
-                    fob = server.search(logrus)
-                except:
-                    fob = None
-                if fob is not None:
-                    keys.append(fob[0])
+            if key is not None:
+                keys.append(key[0])
+                if hexed is True:
+                    try:
+                        fob = server.search(logrus)
+                    except Exception as e:
+                        fob = None
+                    if fob is not None:
+                        keys.append(fob[0])
+                    else:
+                        pass
+                else:
+                    pass
             else:
                 pass
         else:
