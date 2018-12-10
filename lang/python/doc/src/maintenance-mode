@@ -93,3 +93,43 @@ basis.  Expediting such a request would require funding that request.
 Those with a commercial interest in expediting such a feature request
 already know how to [[https://gnupg.org/cgi-bin/procdonate.cgi?mode=preset][expedite it]] (use the message field to state what
 feature is being requested).
+
+
+** Documentation formats
+   :PROPERTIES:
+   :CUSTOM_ID: docs
+   :END:
+
+The documentation has been written in Org mode for GNU Emacs, with
+both Texinfo and reStructuredText formats generated from that.  The
+Texinfo files are intended for use with the rest of the GnuPG
+documentation; while the reStructuredText files are intended for use
+with Docutils and Sphinx, as with other Python projects.
+
+
+*** Cautionary Notes regarding Sphinx and EPUB
+    :PROPERTIES:
+    :CUSTOM_ID: sphinx-made-epubs-suck
+    :END:
+
+Though Python's Docutils in conjunction with Sphinx is capable of
+generating some very useful HTML sites, as proven by [[https://readthedocs.org/][Read the Docs]] and
+the [[https://docs.python.org/][Python documentation]], there are a number of output formats it does
+not handle well.  At the top of the list of things it manages to break
+so atrociously as to be embarassing is the [[http://idpf.org/epub][EPUB 3]] format.
+
+The automatically generated EPUB of the CPython documentation always
+contains hundreds of validation errors and even the modest amount of
+documentation here [[https://files.au.adversary.org.s3.amazonaws.com/crypto/gpgme-python/rst/epub/GPGMEPythonBindings.epub][produced a file]] with approximately thirty
+validation errors.  As the volume of documentation content increases,
+so does the induced errors.  Whereas Texinfo doesn't produce EPUB
+output at all, nor does Org-mode.
+
+Should there ever be genuine demand for this format, lodge a [[https://dev.gnupg.org/maniphest/task/edit/form/4/][feature
+request]] case marked for [[https://dev.gnupg.org/p/BenM/][my]] attention.  The means of generating such
+files flawlessly is already available, but is not yet part of the
+GnuPG build system.  Nor is it integrated with a means of converting
+Org mode input files to the relevant base format automatically, as can
+already be done when converting Org to reStructuredText or Org to
+Texinfo.  As a certain amount of work would be required to get it
+done, there would need to be clear demand for that work to be done.

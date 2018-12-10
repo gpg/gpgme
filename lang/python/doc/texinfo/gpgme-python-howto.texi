@@ -2255,6 +2255,10 @@ content as a byte object, the recipient key IDs and algorithms in
 @samp{result} and the results of verifying any signatures of the data in
 @samp{verify_result}.
 
+If @samp{gpg.Context().decrypt(cfile, verify=False)} is called instead,
+then @samp{verify_result} will be returned as @samp{None} and the rest remains
+as described here.
+
 @node Signing text and files
 @section Signing text and files
 
@@ -3301,11 +3305,11 @@ from the author at any of the following URLs:
 @item
 @uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no SS)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no SSL)}
 @item
 @uref{https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no SSL)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no SSL)}
 @end itemize
 
 All of these draft versions except for one have been generated from
@@ -3335,9 +3339,15 @@ pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 @end example
 
 In addition to these there is a significantly less frequently updated
-version as a HTML @uref{https://files.au.adversary.org/crypto/gpgme-python-howto/webhelp/index.html, WebHelp site} (AWS S3 SSL); generated from DITA XML
+version as a HTML @uref{https://files.au.adversary.org/crypto/gpgme-python/dita/webhelp/index.html, WebHelp site} (AWS S3 SSL); generated from DITA XML
 source files, which can be found in @uref{https://dev.gnupg.org/source/gpgme/browse/ben%252Fhowto-dita/, an alternative branch} of the GPGME
 git repository.
+
+Various generated output formats may occasionally be found in
+subdirectories of the @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python, gpgme-python} directory.  In particular within
+the @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/dita, DITA}, @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/rst, reStructuredText} and @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/texinfo, Texinfo} subdirectories.  The @samp{rst}
+directory contains output files generated with Sphix and may include a
+considerable number of its possible output formats.
 
 These draft editions are not official documents and the version of
 documentation in the master branch or which ships with released

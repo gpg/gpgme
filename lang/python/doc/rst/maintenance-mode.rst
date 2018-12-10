@@ -88,3 +88,46 @@ Those with a commercial interest in expediting such a feature request
 already know how to `expedite
 it <https://gnupg.org/cgi-bin/procdonate.cgi?mode=preset>`__ (use the
 message field to state what feature is being requested).
+
+.. _docs:
+
+Documentation formats
+---------------------
+
+The documentation has been written in Org mode for GNU Emacs, with both
+Texinfo and reStructuredText formats generated from that. The Texinfo
+files are intended for use with the rest of the GnuPG documentation;
+while the reStructuredText files are intended for use with Docutils and
+Sphinx, as with other Python projects.
+
+.. _sphinx-made-epubs-suck:
+
+Cautionary Notes regarding Sphinx and EPUB
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Though Python\'s Docutils in conjunction with Sphinx is capable of
+generating some very useful HTML sites, as proven by `Read the
+Docs <https://readthedocs.org/>`__ and the `Python
+documentation <https://docs.python.org/>`__, there are a number of
+output formats it does not handle well. At the top of the list of things
+it manages to break so atrociously as to be embarassing is the `EPUB
+3 <http://idpf.org/epub>`__ format.
+
+The automatically generated EPUB of the CPython documentation always
+contains hundreds of validation errors and even the modest amount of
+documentation here `produced a
+file <https://files.au.adversary.org.s3.amazonaws.com/crypto/gpgme-python/rst/epub/GPGMEPythonBindings.epub>`__
+with approximately thirty validation errors. As the volume of
+documentation content increases, so does the induced errors. Whereas
+Texinfo doesn\'t produce EPUB output at all, nor does Org-mode.
+
+Should there ever be genuine demand for this format, lodge a `feature
+request <https://dev.gnupg.org/maniphest/task/edit/form/4/>`__ case
+marked for `my <https://dev.gnupg.org/p/BenM/>`__ attention. The means
+of generating such files flawlessly is already available, but is not yet
+part of the GnuPG build system. Nor is it integrated with a means of
+converting Org mode input files to the relevant base format
+automatically, as can already be done when converting Org to
+reStructuredText or Org to Texinfo. As a certain amount of work would be
+required to get it done, there would need to be clear demand for that
+work to be done.

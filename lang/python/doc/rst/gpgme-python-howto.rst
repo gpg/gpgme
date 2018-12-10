@@ -2048,6 +2048,10 @@ content as a byte object, the recipient key IDs and algorithms in
 ``result`` and the results of verifying any signatures of the data in
 ``verify_result``.
 
+If ``gpg.Context().decrypt(cfile, verify=False)`` is called instead,
+then ``verify_result`` will be returned as ``None`` and the rest remains
+as described here.
+
 .. _howto-basic-signing:
 
 Signing text and files
@@ -3099,11 +3103,11 @@ the author at any of the following URLs:
 -  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
 -  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no
-   SS) <http://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
+   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
 -  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html>`__
 -  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no
-   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html>`__
+   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto/index.html>`__
 
 All of these draft versions except for one have been generated from this
 document via GNU Emacs `Org mode <https://orgmode.org/>`__ and `GNU
@@ -3135,11 +3139,23 @@ either of the following commands:
 
 In addition to these there is a significantly less frequently updated
 version as a HTML `WebHelp
-site <https://files.au.adversary.org/crypto/gpgme-python-howto/webhelp/index.html>`__
+site <https://files.au.adversary.org/crypto/gpgme-python/dita/webhelp/index.html>`__
 (AWS S3 SSL); generated from DITA XML source files, which can be found
 in `an alternative
 branch <https://dev.gnupg.org/source/gpgme/browse/ben%252Fhowto-dita/>`__
 of the GPGME git repository.
+
+Various generated output formats may occasionally be found in
+subdirectories of the
+`gpgme-python <https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python>`__
+directory. In particular within the
+`DITA <https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/dita>`__,
+`reStructuredText <https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/rst>`__
+and
+`Texinfo <https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/texinfo>`__
+subdirectories. The ``rst`` directory contains output files generated
+with Sphix and may include a considerable number of its possible output
+formats.
 
 These draft editions are not official documents and the version of
 documentation in the master branch or which ships with released versions
