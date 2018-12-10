@@ -35,6 +35,7 @@ This script imports one or more public keys from the SKS keyservers.
 c = gpg.Context()
 server = hkp4py.KeyServer("hkps://hkps.pool.sks-keyservers.net")
 results = []
+keys = []
 
 if len(sys.argv) > 2:
     pattern = " ".join(sys.argv[1:])
@@ -43,23 +44,20 @@ elif len(sys.argv) == 2:
 else:
     pattern = input("Enter the pattern to search for keys or user IDs: ")
 
-try:
-    keys = server.search(pattern)
-    if keys is not None:
-        print("Found {0} key(s).".format(len(keys)))
-    else:
-        pass
-except Exception as e:
-    keys = []
+if pattern is not None:
+    try:
+        key = server.search(hex(int(pattern, 16)))
+    except ValueError as e:
+        key = server.search(pattern)
+    keys.append(key[0])
     for logrus in pattern.split():
-        if logrus.startswith("0x") is True:
+        try:
+            key = server.search(hex(int(logrus, 16)))
+        except ValueErrer as ve:
             key = server.search(logrus)
-        else:
-            key = server.search("0x{0}".format(logrus))
         keys.append(key[0])
-    print("Found {0} key(s).".format(len(keys)))
 
-if keys is not None:
+if len(keys) > 0:
     for key in keys:
         import_result = c.key_import(key.key_blob)
         results.append(import_result)
