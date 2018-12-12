@@ -39,3 +39,12 @@ Additions since GPGME 1.12.0 include:
    users.
 -  Bindings enter `maintenance mode <maintenance-mode>`__ from January,
    2019.
+-  Added documentation on maintenance mode and what changes can be made
+   to the code when in that status. Essentially that boils down to bug
+   fixes only and no feature requests.
+-  The import-keys-hkp.py example script, which uses the ``hkp4py``
+   module to search the SKS servers for a key, has been tightened up to
+   search for both hexadecimal key IDs and user ID strings with reduced
+   chance of unnecessary repitition. There may still be some repetition
+   if a key includes a user ID matching the hexadecimal value of a key
+   ID.

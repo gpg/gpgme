@@ -78,6 +78,17 @@ Added expanded detail on issues pertaining to installing for Windows
 users.
 @item
 Bindings enter @uref{maintenance-mode, maintenance mode} from January, 2019.
+@item
+Added documentation on maintenance mode and what changes can be made
+to the code when in that status.  Essentially that boils down to bug
+fixes only and no feature requests.
+@item
+The import-keys-hkp.py example script, which uses the @samp{hkp4py}
+module to search the SKS servers for a key, has been tightened up to
+search for both hexadecimal key IDs and user ID strings with reduced
+chance of unnecessary repitition.  There may still be some
+repetition if a key includes a user ID matching the hexadecimal
+value of a key ID.
 @end itemize
 
 @bye
