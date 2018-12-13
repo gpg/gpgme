@@ -110,6 +110,12 @@ for k in ksearch:
         new_uids = result.new_user_ids
         new_scrt = result.secret_imported
         nochange = result.unchanged
+
+        def knom():
+            for ki in result.imports:
+                for ku in c.get_key(ki.fpr).uids:
+                    return ku.uid
+
         print("""
 The total number of keys considered for import was:  {0}
 
@@ -125,7 +131,7 @@ Number of new secret keys:  {6}
  Number of unchanged keys:  {7}
 
 The key IDs for all considered keys were:
-""".format(num_keys, k, new_revs, new_sigs, new_subs, new_uids, new_scrt,
+""".format(num_keys, knom(), new_revs, new_sigs, new_subs, new_uids, new_scrt,
            nochange))
         for i in range(num_keys):
             print(result.imports[i].fpr)
