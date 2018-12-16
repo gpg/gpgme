@@ -37,21 +37,17 @@ if sys.platform == "win32":
 else:
     gpgconfcmd = "gpgconf --list-options gpg"
 
-try:
-    lines = subprocess.getoutput(gpgconfcmd).splitlines()
-except:
-    process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
-    procom = process.communicate()
-    if sys.version_info[0] == 2:
-        lines = procom[0].splitlines()
-    else:
-        lines = procom[0].decode().splitlines()
+process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
+procom = process.communicate()
 
-for i in range(len(lines)):
-    if lines[i].startswith("group") is True:
-        line = lines[i]
-    else:
-        pass
+if sys.version_info[0] == 2:
+    lines = procom[0].splitlines()
+else:
+    lines = procom[0].decode().splitlines()
+
+for line in lines:
+    if line.startswith("group") is True:
+        break
 
 groups = line.split(":")[-1].replace('"', '').split(',')
 

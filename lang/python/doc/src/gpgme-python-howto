@@ -397,7 +397,7 @@ both by and in order to create, the bindings (including both the
 If specifying a selected number of languages to create bindings for,
 try to leave Python last.  Currently the majority of the other
 language bindings are also preceding Python of either version when
-listed alphabetically and so that just happens by default currently.
+listed alphabetically (not counting the Qt bindings).
 
 If Python is set to precede one of the other languages then it is
 possible that the errors described here may interrupt the build
@@ -405,6 +405,12 @@ process before generating bindings for those other languages.  In
 these cases it may be preferable to configure all preferred language
 bindings separately with alternative =configure= steps for GPGME using
 the =--enable-languages=$LANGUAGE= option.
+
+Alternatively =make= (or =gmake=, depending on your platform) may be
+run with the the =-k= option, which tells make to keep going even if
+errors are encountered.  In that case the failure of one language's
+set of bindings to build should not hamper another language's bindings
+to build.
 
 
 *** Reinstalling Responsibly
@@ -3000,21 +3006,17 @@ if sys.platform == "win32":
 else:
     gpgconfcmd = "gpgconf --list-options gpg"
 
-try:
-    lines = subprocess.getoutput(gpgconfcmd).splitlines()
-except:
-    process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
-    procom = process.communicate()
-    if sys.version_info[0] == 2:
-        lines = procom[0].splitlines()
-    else:
-        lines = procom[0].decode().splitlines()
+process = subprocess.Popen(gpgconfcmd.split(), stdout=subprocess.PIPE)
+procom = process.communicate()
 
-for i in range(len(lines)):
-    if lines[i].startswith("group") is True:
-        line = lines[i]
-    else:
-        pass
+if sys.version_info[0] == 2:
+    lines = procom[0].splitlines()
+else:
+    lines = procom[0].decode().splitlines()
+
+for line in lines:
+    if line.startswith("group") is True:
+        break
 
 groups = line.split(":")[-1].replace('"', '').split(',')
 
