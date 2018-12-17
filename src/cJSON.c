@@ -352,12 +352,15 @@ parse_string (cJSON * item, const char *str, const char **ep)
 		case 4:
 		  *--ptr2 = ((uc | 0x80) & 0xBF);
 		  uc >>= 6;
+                  /*FALLTHRU*/
 		case 3:
 		  *--ptr2 = ((uc | 0x80) & 0xBF);
 		  uc >>= 6;
+                  /*FALLTHRU*/
 		case 2:
 		  *--ptr2 = ((uc | 0x80) & 0xBF);
 		  uc >>= 6;
+                  /*FALLTHRU*/
 		case 1:
 		  *--ptr2 = (uc | firstByteMark[len]);
 		}

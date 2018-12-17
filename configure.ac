@@ -582,6 +582,8 @@ if test "$GCC" = yes; then
           CFLAGS="$CFLAGS -Wno-missing-field-initializers"
           CFLAGS="$CFLAGS -Wno-sign-compare"
           CFLAGS="$CFLAGS -Wno-format-zero-length"
+          CFLAGS="$CFLAGS -Wno-format-truncation"
+          CFLAGS="$CFLAGS -Wno-sizeof-pointer-div"
         fi
         CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-shadow"
 

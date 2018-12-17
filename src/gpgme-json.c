@@ -3861,7 +3861,7 @@ main (int argc, char *argv[])
         {
         case CMD_INTERACTIVE:
           opt_interactive = 1;
-          /* Fall trough.  */
+          /*FALLTHROUGH*/
         case CMD_SINGLE:
         case CMD_LIBVERSION:
           cmd = pargs.r_opt;
