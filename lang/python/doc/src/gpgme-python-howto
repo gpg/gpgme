@@ -3200,8 +3200,6 @@ occur in versions which do not have the =gpgme.version.is_beta= and
 
 Copyright © The GnuPG Project, 2018.
 
-Copyright (C) The GnuPG Project, 2018.
-
 
 ** Draft Editions of this HOWTO
    :PROPERTIES:
@@ -3211,18 +3209,27 @@ Copyright (C) The GnuPG Project, 2018.
 Draft editions of this HOWTO may be periodically available directly
 from the author at any of the following URLs:
 
-- [[https://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 SSL)]]
-- [[http://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no SSL)]]
-- [[https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html][GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 SSL)]]
-- [[http://files.au.adversary.org/crypto/gpgme-python-howto/index.html][GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no SSL)]]
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.html][GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no SSL)]]
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html][GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto/index.html][GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3 no SSL)]]
 
-All of these draft versions except for one have been generated from
-this document via GNU Emacs [[https://orgmode.org/][Org mode]] and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]].  Though it is
+These draft versions have been generated from this document via GNU
+Emacs [[https://orgmode.org/][Org mode]] to =.texi= and [[https://www.gnu.org/software/texinfo/][GNU Texinfo]] to HTML.  Though it is
 likely that the specific [[https://files.au.adversary.org/crypto/gpgme-python-howto][file]] [[http://files.au.adversary.org/crypto/gpgme-python-howto.org][version]] used will be on the same server
-with the generated output formats.
+with the generated output formats.  Occasionally I may include the Org
+mode generated XHTML versions:
+
+- [[https://files.au.adversary.org/crypto/gpgme-python-howto.xhtml][GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 SSL)]]
+- [[http://files.au.adversary.org/crypto/gpgme-python-howto.xhtml][GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no SSL)]]
+
+That XHTML version, however, is exported in a way which inherits a
+colour scheme from [[https://github.com/holomorph/emacs-zenburn][the author's Emacs theme]] (which is a higher contrast
+version of [[http://kippura.org/zenburnpage/][Zenburn]] ported by [[https://github.com/holomorph][Holomorph]]).  So it's fine for people who
+prefer dark themed web pages, but not so great for everyone else.
 
 The GNU Texinfo and reStructured Text versions ship with the software,
-while the GNU Emacs Info verseion is generated from the Texinfo
+while the GNU Emacs Info version is generated from the Texinfo
 version using GNU Texinfo or GNU Makeinfo.  The Texinfo format is
 generated from the original Org mode source file in Org mode itself
 either within GNU Emacs or via the command line by invoking Emacs in
@@ -3233,14 +3240,19 @@ batch mode:
   emacs gpgme-python-howto --batch -f org-texinfo-export-to-texinfo --kill
 #+END_SRC
 
-The reStructuredText format is also generated from the Org-mode source
+The reStructuredText format is also generated from the Org mode source
 file, except it is generated using [[https://pandoc.org][Pandoc]] with either of the following
-commands:
+commands (depending on the filename):
 
 #+BEGIN_SRC shell
   pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
   pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 #+END_SRC
+
+Note that the Org mode source files are identified as such via a mode
+line at the top of each file and have had their =.org= file extensions
+dropped in order to make scripted generation of output formats easier
+and not require renaming files post-conversion.
 
 In addition to these there is a significantly less frequently updated
 version as a HTML [[https://files.au.adversary.org/crypto/gpgme-python/dita/webhelp/index.html][WebHelp site]] (AWS S3 SSL); generated from DITA XML
@@ -3250,8 +3262,9 @@ git repository.
 Various generated output formats may occasionally be found in
 subdirectories of the [[https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python][gpgme-python]] directory.  In particular within
 the [[https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/dita][DITA]], [[https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/rst][reStructuredText]] and [[https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/texinfo][Texinfo]] subdirectories.  The =rst=
-directory contains output files generated with Sphix and may include a
-considerable number of its possible output formats.
+directory contains output files generated with Sphinx and may include a
+considerable number of its possible output formats, but there are no
+guarantees as to how recent these are or even if they are present.
 
 These draft editions are not official documents and the version of
 documentation in the master branch or which ships with released
