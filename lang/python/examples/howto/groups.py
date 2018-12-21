@@ -54,9 +54,9 @@ groups = line.split(":")[-1].replace('"', '').split(',')
 group_lines = []
 group_lists = []
 
-for i in range(len(groups)):
-    group_lines.append(groups[i].split("="))
-    group_lists.append(groups[i].split("="))
+for group in groups:
+    group_lines.append(group.split("="))
+    group_lists.append(group.split("="))
 
-for i in range(len(group_lists)):
-    group_lists[i][1] = group_lists[i][1].split()
+for glist in group_lists:
+    glist[1] = glist[1].split()
