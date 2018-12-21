@@ -2962,12 +2962,12 @@ information in Python.
    group_lines = []
    group_lists = []
 
-   for i in range(len(groups)):
-       group_lines.append(groups[i].split("="))
-       group_lists.append(groups[i].split("="))
+   for group in groups:
+       group_lines.append(group.split("="))
+       group_lists.append(group.split("="))
 
-   for i in range(len(group_lists)):
-       group_lists[i][1] = group_lists[i][1].split()
+   for glist in group_lists:
+       glist[1] = glist[1].split()
 
 The result of that code is that ``group_lines`` is a list of lists where
 ``group_lines[i][0]`` is the name of the group and ``group_lines[i][1]``
@@ -3135,8 +3135,6 @@ Copyright
 
 Copyright © The GnuPG Project, 2018.
 
-Copyright (C) The GnuPG Project, 2018.
-
 .. _draft-editions:
 
 Draft Editions of this HOWTO
@@ -3145,25 +3143,39 @@ Draft Editions of this HOWTO
 Draft editions of this HOWTO may be periodically available directly from
 the author at any of the following URLs:
 
--  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3
+-  `GPGME Python Bindings HOWTO draft (HTML single file, AWS S3
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
--  `GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no
+-  `GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no
    SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.html>`__
--  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3
+-  `GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3
    SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html>`__
--  `GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no
+-  `GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3 no
    SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto/index.html>`__
 
-All of these draft versions except for one have been generated from this
-document via GNU Emacs `Org mode <https://orgmode.org/>`__ and `GNU
-Texinfo <https://www.gnu.org/software/texinfo/>`__. Though it is likely
-that the specific
+These draft versions have been generated from this document via GNU
+Emacs `Org mode <https://orgmode.org/>`__ to ``.texi`` and `GNU
+Texinfo <https://www.gnu.org/software/texinfo/>`__ to HTML. Though it is
+likely that the specific
 `file <https://files.au.adversary.org/crypto/gpgme-python-howto>`__
 `version <http://files.au.adversary.org/crypto/gpgme-python-howto.org>`__
 used will be on the same server with the generated output formats.
+Occasionally I may include the Org mode generated XHTML versions:
+
+-  `GPGME Python Bindings HOWTO draft (HTML single file, AWS S3
+   SSL) <https://files.au.adversary.org/crypto/gpgme-python-howto.xhtml>`__
+-  `GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no
+   SSL) <http://files.au.adversary.org/crypto/gpgme-python-howto.xhtml>`__
+
+That XHTML version, however, is exported in a way which inherits a
+colour scheme from `the author\'s Emacs
+theme <https://github.com/holomorph/emacs-zenburn>`__ (which is a higher
+contrast version of `Zenburn <http://kippura.org/zenburnpage/>`__ ported
+by `Holomorph <https://github.com/holomorph>`__). So it\'s fine for
+people who prefer dark themed web pages, but not so great for everyone
+else.
 
 The GNU Texinfo and reStructured Text versions ship with the software,
-while the GNU Emacs Info verseion is generated from the Texinfo version
+while the GNU Emacs Info version is generated from the Texinfo version
 using GNU Texinfo or GNU Makeinfo. The Texinfo format is generated from
 the original Org mode source file in Org mode itself either within GNU
 Emacs or via the command line by invoking Emacs in batch mode:
@@ -3173,14 +3185,50 @@ Emacs or via the command line by invoking Emacs in batch mode:
    emacs gpgme-python-howto.org --batch -f org-texinfo-export-to-texinfo --kill
    emacs gpgme-python-howto --batch -f org-texinfo-export-to-texinfo --kill
 
-The reStructuredText format is also generated from the Org-mode source
+The reStructuredText format is also generated from the Org mode source
 file, except it is generated using `Pandoc <https://pandoc.org>`__ with
-either of the following commands:
+either of the following commands (depending on the filename):
 
 .. code:: shell
 
    pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
    pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
+
+Note that the Org mode source files are identified as such via a mode
+line at the top of each file and have had their ``.org`` file extensions
+dropped in order to make scripted generation of output formats easier
+and not require renaming files post-conversion.
+
+Due to a bug in Org mode\'s texinfo conversion method, the recommended
+steps for generating the Texinfo files for all the files in the
+``lang/python/doc/src/`` directory are as follows:
+
+.. code:: shell
+
+   for x in * ; do
+       emacs $x --batch -f org-texinfo-export-to-texinfo --kill
+       cat $x.texi | sed -e 's/@documentencoding UTF-8/@documentencoding utf-8/g' > ../texinfo/$x.texi
+       pandoc -f org -t rst+smart -o ../rst/$x.rst $x
+   done ;
+   rm -fv *.texi
+   cd ../texinfo
+   mkdir info
+   mkdir html
+   for x in *.texi ; do
+       makeinfo -v $x
+       makeinfo --html --no-split $x
+   done ;
+   mv *.info info/
+   mv *.html html/
+
+This code snippet includes the generation of the reStructuredText files
+and would be expected to be run from the ``doc/src/`` directory
+containing the Org mode source files. It also assumes that the commands
+are being run on POSIX compliant systems with basic tools like sed, the
+Bourne shell and GNU Emacs [6]_ available. The code snippet also
+includes the steps for generating the Emacs Info files and HTML files
+from the Texinfo files. Using reStructuredText files with Sphinx is best
+left for the documentation of that project.
 
 In addition to these there is a significantly less frequently updated
 version as a HTML `WebHelp
@@ -3199,8 +3247,9 @@ directory. In particular within the
 and
 `Texinfo <https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/texinfo>`__
 subdirectories. The ``rst`` directory contains output files generated
-with Sphix and may include a considerable number of its possible output
-formats.
+with Sphinx and may include a considerable number of its possible output
+formats, but there are no guarantees as to how recent these are or even
+if they are present.
 
 These draft editions are not official documents and the version of
 documentation in the master branch or which ships with released versions
@@ -3258,3 +3307,9 @@ Footnotes
    HKP or HKPS end points must still be identified as as HKP or HKPS
    within the Python Code. The ``hkp4py`` module will rewrite these
    appropriately when the connection is made to the server.
+
+.. [6]
+   Okay, Emacs might not necessarily qualify as a basic tool, but it is
+   common enough that having it installed on a system isn\'t too great
+   an expectation, nor is it difficult to add to most POSIX systems,
+   even if the users of those systems do not personally use it.

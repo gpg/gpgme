@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename short-history.info
 @settitle A Short History of the GPGME bindings for Python
-@documentencoding UTF-8
+@documentencoding utf-8
 @documentlanguage en
 @c %**end of header
 

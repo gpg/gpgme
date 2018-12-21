@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename gpgme-python-howto.info
 @settitle GNU Privacy Guard (GnuPG) Made Easy Python Bindings HOWTO (English)
-@documentencoding UTF-8
+@documentencoding utf-8
 @documentlanguage en
 @c %**end of header
 
@@ -3162,12 +3162,12 @@ groups = line.split(":")[-1].replace('"', '').split(',')
 group_lines = []
 group_lists = []
 
-for i in range(len(groups)):
-    group_lines.append(groups[i].split("="))
-    group_lists.append(groups[i].split("="))
+for group in groups:
+    group_lines.append(group.split("="))
+    group_lists.append(group.split("="))
 
-for i in range(len(group_lists)):
-    group_lists[i][1] = group_lists[i][1].split()
+for glist in group_lists:
+    glist[1] = glist[1].split()
 @end example
 
 The result of that code is that @samp{group_lines} is a list of lists where
@@ -3338,8 +3338,6 @@ occur in versions which do not have the @samp{gpgme.version.is_beta} and
 
 Copyright © The GnuPG Project, 2018.
 
-Copyright (C) The GnuPG Project, 2018.
-
 @node Draft Editions of this HOWTO
 @section Draft Editions of this HOWTO
 
@@ -3348,22 +3346,35 @@ from the author at any of the following URLs:
 
 @itemize
 @item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 SSL)}
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (XHTML single file, AWS S3 no SSL)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.html, GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no SSL)}
 @item
-@uref{https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 SSL)}
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto-split/index.html, GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3 SSL)}
 @item
-@uref{http://files.au.adversary.org/crypto/gpgme-python-howto/index.html, GPGME Python Bindings HOWTO draft (XHTML multiple files, AWS S3 no SSL)}
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto/index.html, GPGME Python Bindings HOWTO draft (HTML multiple files, AWS S3 no SSL)}
 @end itemize
 
-All of these draft versions except for one have been generated from
-this document via GNU Emacs @uref{https://orgmode.org/, Org mode} and @uref{https://www.gnu.org/software/texinfo/, GNU Texinfo}.  Though it is
+These draft versions have been generated from this document via GNU
+Emacs @uref{https://orgmode.org/, Org mode} to @samp{.texi} and @uref{https://www.gnu.org/software/texinfo/, GNU Texinfo} to HTML.  Though it is
 likely that the specific @uref{https://files.au.adversary.org/crypto/gpgme-python-howto, file} @uref{http://files.au.adversary.org/crypto/gpgme-python-howto.org, version} used will be on the same server
-with the generated output formats.
+with the generated output formats.  Occasionally I may include the Org
+mode generated XHTML versions:
+
+@itemize
+@item
+@uref{https://files.au.adversary.org/crypto/gpgme-python-howto.xhtml, GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 SSL)}
+@item
+@uref{http://files.au.adversary.org/crypto/gpgme-python-howto.xhtml, GPGME Python Bindings HOWTO draft (HTML single file, AWS S3 no SSL)}
+@end itemize
+
+That XHTML version, however, is exported in a way which inherits a
+colour scheme from @uref{https://github.com/holomorph/emacs-zenburn, the author's Emacs theme} (which is a higher contrast
+version of @uref{http://kippura.org/zenburnpage/, Zenburn} ported by @uref{https://github.com/holomorph, Holomorph}).  So it's fine for people who
+prefer dark themed web pages, but not so great for everyone else.
 
 The GNU Texinfo and reStructured Text versions ship with the software,
-while the GNU Emacs Info verseion is generated from the Texinfo
+while the GNU Emacs Info version is generated from the Texinfo
 version using GNU Texinfo or GNU Makeinfo.  The Texinfo format is
 generated from the original Org mode source file in Org mode itself
 either within GNU Emacs or via the command line by invoking Emacs in
@@ -3374,14 +3385,53 @@ emacs gpgme-python-howto.org --batch -f org-texinfo-export-to-texinfo --kill
 emacs gpgme-python-howto --batch -f org-texinfo-export-to-texinfo --kill
 @end example
 
-The reStructuredText format is also generated from the Org-mode source
+The reStructuredText format is also generated from the Org mode source
 file, except it is generated using @uref{https://pandoc.org, Pandoc} with either of the following
-commands:
+commands (depending on the filename):
 
 @example
 pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto.org
 pandoc -f org -t rst+smart -o gpgme-python-howto.rst gpgme-python-howto
 @end example
+
+Note that the Org mode source files are identified as such via a mode
+line at the top of each file and have had their @samp{.org} file extensions
+dropped in order to make scripted generation of output formats easier
+and not require renaming files post-conversion.
+
+Due to a bug in Org mode's texinfo conversion method, the recommended
+steps for generating the Texinfo files for all the files in the
+@samp{lang/python/doc/src/} directory are as follows:
+
+@example
+for x in * ; do
+    emacs $x --batch -f org-texinfo-export-to-texinfo --kill
+    cat $x.texi | sed -e 's/@@documentencoding UTF-8/@@documentencoding utf-8/g' > ../texinfo/$x.texi
+    pandoc -f org -t rst+smart -o ../rst/$x.rst $x
+done ;
+rm -fv *.texi
+cd ../texinfo
+mkdir info
+mkdir html
+for x in *.texi ; do
+    makeinfo -v $x
+    makeinfo --html --no-split $x
+done ;
+mv *.info info/
+mv *.html html/
+@end example
+
+This code snippet includes the generation of the reStructuredText
+files and would be expected to be run from the @samp{doc/src/} directory
+containing the Org mode source files.  It also assumes that the
+commands are being run on POSIX compliant systems with basic tools
+like sed, the Bourne shell and GNU Emacs@footnote{Okay, Emacs might not necessarily qualify as a basic tool, but
+it is common enough that having it installed on a system isn't too
+great an expectation, nor is it difficult to add to most POSIX
+systems, even if the users of those systems do not personally use it.} available.  The code
+snippet also includes the steps for generating the Emacs Info files
+and HTML files from the Texinfo files.  Using reStructuredText files
+with Sphinx is best left for the documentation of that project.
 
 In addition to these there is a significantly less frequently updated
 version as a HTML @uref{https://files.au.adversary.org/crypto/gpgme-python/dita/webhelp/index.html, WebHelp site} (AWS S3 SSL); generated from DITA XML
@@ -3391,8 +3441,9 @@ git repository.
 Various generated output formats may occasionally be found in
 subdirectories of the @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python, gpgme-python} directory.  In particular within
 the @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/dita, DITA}, @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/rst, reStructuredText} and @uref{https://s3.amazonaws.com/files.au.adversary.org/crypto/gpgme-python/texinfo, Texinfo} subdirectories.  The @samp{rst}
-directory contains output files generated with Sphix and may include a
-considerable number of its possible output formats.
+directory contains output files generated with Sphinx and may include a
+considerable number of its possible output formats, but there are no
+guarantees as to how recent these are or even if they are present.
 
 These draft editions are not official documents and the version of
 documentation in the master branch or which ships with released
