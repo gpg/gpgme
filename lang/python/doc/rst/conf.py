@@ -15,6 +15,8 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
+import hashlib
+import time
 
 
 # -- Project information -----------------------------------------------------
@@ -101,7 +103,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'GPGMEPythonBindingsdoc'
+htmlhelp_basename = 'GPGMEPythonBindings'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -114,6 +116,7 @@ latex_elements = {
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
+    'pointsize': '12pt'
 
     # Additional stuff for the LaTeX preamble.
     #
@@ -128,7 +131,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'GPGMEPythonBindings.tex', 'GPGME Python Bindings Documentation',
+    (master_doc, 'GPGMEPythonBindings.tex',
+     'GPGME Python Bindings Documentation',
      'The GnuPG Hackers', 'manual'),
 ]
 
@@ -150,8 +154,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'GPGMEPythonBindings', 'GPGME Python Bindings Documentation',
-     author, 'GPGMEPythonBindings', 'One line description of project.',
-     'Miscellaneous'),
+     author, 'GPGMEPythonBindings',
+     'Python Bindings to the GNU Privacy Guard API.', 'Miscellaneous'),
 ]
 
 
@@ -160,14 +164,21 @@ texinfo_documents = [
 # Bibliographic Dublin Core info.
 epub_title = project
 
-# The unique identifier of the text. This can be a ISBN number
+# The unique identifier of the text. This can be an ISBN number
 # or the project homepage.
 #
 # epub_identifier = ''
+epub_identifier = 'org.gnupg.gpgme.python'
 
 # A unique identification for the text.
 #
 # epub_uid = ''
+stt = str(time.time())
+epub_seed = "{0} {1}".format(epub_identifier, tt)
+# SHA1 would be more than fine for this, but since the dimmest always panic
+# about any use of SHA1 with GnuPG, we'll use SHA256.
+epub_hash = hashlib.sha256(epub_seed).hexdigest()
+epub_uid = 'sha256:{0}'.format(epub_hash)
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
