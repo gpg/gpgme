@@ -16,10 +16,10 @@
 # along with this program; if not, see <https://www.gnu.org/licenses/>.
 """A decryption filter
 
-This demonstrates decryption using gpg3 in three lines of code.  To
+This demonstrates decryption using gpg in three lines of code.  To
 be used like this:
 
-./decryption-filter.py <message.gpg >message.plain
+./decryption-filter.py < message.gpg > message.plain
 
 """
 
