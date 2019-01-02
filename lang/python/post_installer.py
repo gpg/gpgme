@@ -122,11 +122,6 @@ help:
         @$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 """)
 
-print("""
-You may now generate your preferred documentation format with either Sphinx 
-or Texinfo.
-""")
-
 info_path = os.path.realpath(sysconfig._PREFIX + "/share/info")
 info_paths = os.environ["INFOPATH"].split(":")
 
@@ -141,18 +136,12 @@ for ipath in info_paths:
     else:
         pass
 
-# This will very likely require root or sudo access, so running this script
-# with the same access as used to install the bindings in the first place is
-# highly recommended.
-#
-# bash variant (run in lang/python/doc/texinfo/):
-#
-# for x in *.texi:
-#     makeinfo -v --no-split $x
-# done ;
-#
-# Or to generate HTML:
-#
-# for x in *.texi:
-#     makeinfo -v --no-split --html $x
-# done ;
+print("""
+You may now build your preferred documentation format using either:
+
+ 1. Sphinx in the doc/rst/ directory; and/or
+ 2. Texinfo or Makeinfo in the doc/texinfo/ directory.
+
+Alternatively the original Org mode source files can be found in the doc/src/
+directory.
+""")
