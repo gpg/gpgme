@@ -125,6 +125,20 @@ main (int argc, char **argv)
       gpgme_data_release (data);
     }
 
+  if (verbose)
+    {
+      gpgme_data_t log;
+      char *buf;
+      size_t len;
+
+      gpgme_data_new (&log);
+      err = gpgme_op_getauditlog (ctx, log, GPGME_AUDITLOG_DIAG);
+      fail_if_err (err);
+      buf = gpgme_data_release_and_get_mem (log, &len);
+      printf ("\nDiagnostic output:\n%.*s\n", len, buf);
+      free (buf);
+    }
+
   gpgme_release (ctx);
   return 0;
 }
