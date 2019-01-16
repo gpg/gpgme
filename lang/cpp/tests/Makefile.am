@@ -22,7 +22,7 @@ AM_LDFLAGS = -no-install
 
 LDADD = ../../cpp/src/libgpgmepp.la \
         ../../../src/libgpgme.la @GPG_ERROR_LIBS@ \
-        -lstdc++
+        @LDADD_FOR_TESTS_KLUDGE@ -lstdc++
 
 AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
               @GPG_ERROR_CFLAGS@ @GPG_ERROR_CFLAGS@ \

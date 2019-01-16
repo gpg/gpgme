@@ -29,7 +29,7 @@ EXTRA_DIST = start-stop-agent t-data-1.txt t-data-2.txt ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
-LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@
+LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@ @LDADD_FOR_TESTS_KLUDGE@
 
 noinst_HEADERS = run-support.h
 
@@ -37,7 +37,8 @@ noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
 		  run-verify run-encrypt run-identify run-decrypt run-genkey \
 		  run-keysign run-tofu run-swdb run-threaded
 
-run_threaded_LDADD = ../src/libgpgme.la -lpthread @GPG_ERROR_LIBS@
+run_threaded_LDADD = ../src/libgpgme.la -lpthread @GPG_ERROR_LIBS@ \
+		     @LDADD_FOR_TESTS_KLUDGE@
 
 if RUN_GPG_TESTS
 gpgtests = gpg json

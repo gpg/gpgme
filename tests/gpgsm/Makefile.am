@@ -38,7 +38,7 @@ EXTRA_DIST = cert_dfn_pca01.der cert_dfn_pca15.der cert_g10code_test1.der \
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
-LDADD = ../../src/libgpgme.la
+LDADD = ../../src/libgpgme.la @LDADD_FOR_TESTS_KLUDGE@
 
 # We don't run t-genkey in the test suite, because it takes too long
 # and needs a working pinentry.

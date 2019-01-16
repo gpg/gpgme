@@ -65,11 +65,11 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
-LDADD = ../../src/libgpgme.la
-t_thread1_LDADD = ../../src/libgpgme.la -lpthread
-t_thread_keylist_LDADD = ../../src/libgpgme.la -lpthread
-t_thread_keylist_verify_LDADD = ../../src/libgpgme.la -lpthread
-t_cancel_LDADD = ../../src/libgpgme.la -lpthread
+LDADD = ../../src/libgpgme.la @LDADD_FOR_TESTS_KLUDGE@
+t_thread1_LDADD = ../../src/libgpgme.la -lpthread @LDADD_FOR_TESTS_KLUDGE@
+t_thread_keylist_LDADD = ../../src/libgpgme.la -lpthread @LDADD_FOR_TESTS_KLUDGE@
+t_thread_keylist_verify_LDADD = ../../src/libgpgme.la -lpthread @LDADD_FOR_TESTS_KLUDGE@
+t_cancel_LDADD = ../../src/libgpgme.la -lpthread @LDADD_FOR_TESTS_KLUDGE@
 
 # We don't run t-genkey and t-cancel in the test suite, because it
 # takes too long

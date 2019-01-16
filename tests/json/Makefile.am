@@ -67,8 +67,9 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
 t_json_SOURCES = t-json.c
 AM_LDFLAGS = -no-install
-LDADD = ../../src/libgpgme.la
-t_json_LDADD = ../../src/cJSON.o -lm ../../src/libgpgme.la @GPG_ERROR_LIBS@
+LDADD = ../../src/libgpgme.la @LDADD_FOR_TESTS_KLUDGE@
+t_json_LDADD = ../../src/cJSON.o -lm ../../src/libgpgme.la @GPG_ERROR_LIBS@ \
+	       @LDADD_FOR_TESTS_KLUDGE@
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 

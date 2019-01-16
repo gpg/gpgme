@@ -27,7 +27,7 @@ TESTS =
 EXTRA_DIST =
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
-LDADD = ../../src/libgpgme.la
+LDADD = ../../src/libgpgme.la @LDADD_FOR_TESTS_KLUDGE@
 
 noinst_PROGRAMS = $(TESTS) t-command
 
