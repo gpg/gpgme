@@ -1022,7 +1022,7 @@ subkey_to_json (gpgme_subkey_t sub)
 
   tmp = gpgme_pubkey_algo_string (sub);
   xjson_AddStringToObject0 (result, "pubkey_algo_string", tmp);
-  xfree (tmp);
+  gpgme_free (tmp);
 
   xjson_AddStringToObject0 (result, "keyid", sub->keyid);
   xjson_AddStringToObject0 (result, "card_number", sub->card_number);
