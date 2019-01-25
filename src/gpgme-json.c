@@ -1003,6 +1003,7 @@ static cjson_t
 subkey_to_json (gpgme_subkey_t sub)
 {
   cjson_t result = xjson_CreateObject ();
+  char *tmp;
 
   xjson_AddBoolToObject (result, "revoked", sub->revoked);
   xjson_AddBoolToObject (result, "expired", sub->expired);
@@ -1016,11 +1017,13 @@ subkey_to_json (gpgme_subkey_t sub)
   xjson_AddBoolToObject (result, "is_qualified", sub->is_qualified);
   xjson_AddBoolToObject (result, "is_cardkey", sub->is_cardkey);
   xjson_AddBoolToObject (result, "is_de_vs", sub->is_de_vs);
-
   xjson_AddStringToObject0 (result, "pubkey_algo_name",
                             gpgme_pubkey_algo_name (sub->pubkey_algo));
-  xjson_AddStringToObject0 (result, "pubkey_algo_string",
-                            gpgme_pubkey_algo_string (sub));
+
+  tmp = gpgme_pubkey_algo_string (sub);
+  xjson_AddStringToObject0 (result, "pubkey_algo_string", tmp);
+  xfree (tmp);
+
   xjson_AddStringToObject0 (result, "keyid", sub->keyid);
   xjson_AddStringToObject0 (result, "card_number", sub->card_number);
   xjson_AddStringToObject0 (result, "curve", sub->curve);
@@ -2925,7 +2928,7 @@ op_config (cjson_t request, cjson_t result)
   gpgme_conf_comp_t comp = NULL;
   cjson_t j_tmp;
   char *comp_name = NULL;
-  cjson_t j_comps = xjson_CreateArray ();
+  cjson_t j_comps;
 
   ctx = get_context (GPGME_PROTOCOL_GPGCONF);
 
@@ -2947,6 +2950,7 @@ op_config (cjson_t request, cjson_t result)
       goto leave;
     }
 
+  j_comps = xjson_CreateArray ();
   comp = conf;
   for (comp = conf; comp; comp = comp->next)
     {
@@ -2959,7 +2963,7 @@ op_config (cjson_t request, cjson_t result)
     }
   xjson_AddItemToObject (result, "components", j_comps);
 
-leave:
+ leave:
   gpgme_conf_release (conf);
   release_context (ctx);
 
@@ -3563,7 +3567,11 @@ interactive_repl (void)
           if (!request)
             request = xstrdup (line);
           else
-            request = xstrconcat (request, "\n", line, NULL);
+            {
+              char *tmp = xstrconcat (request, "\n", line, NULL);
+              xfree (request);
+              request = tmp;
+            }
         }
 
       if (!line)
