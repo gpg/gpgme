@@ -683,6 +683,21 @@ on the system and version of Python in use. Another option is to run the
 command ``python3 -m virtualenv /path/to/install/virtual/thingy``
 instead.
 
+.. _snafu-docs:
+
+Post installation
+~~~~~~~~~~~~~~~~~
+
+Following installation it is recommended to move the
+``post_installer.py`` script from the ``lang/python/examples/howto/``
+directory to the ``lang/python/`` directory and run it. This will fix or
+restore files needed by Sphinx which may be removed during a
+distribution build for release. It will also generate reST files from
+Org mode files with Pandoc and generate Texinfo files from Org mode
+files with GNU Emacs and Org mode (in batch mode). Additionally it will
+fix the UTF-8 declaration line in the Texinfo files (Emacs expects
+\"UTF-8\" to be \"utf-8\").
+
 .. _howto-fund-a-mental:
 
 Fundamentals

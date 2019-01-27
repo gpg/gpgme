@@ -7,7 +7,7 @@ GPGME Python Bindings
 =====================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
 Contents
@@ -20,11 +20,3 @@ Contents
 
 -  `What Was New <what-was-new>`__
 -  `GPGME Python Bindings HOWTO <gpgme-python-howto>`__
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
