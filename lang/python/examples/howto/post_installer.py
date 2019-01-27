@@ -136,6 +136,10 @@ for ipath in info_paths:
     else:
         pass
 
+# Remove the old generated .texi files from the org source directory.
+for texifile in doctexi2:
+    os.remove(texifile)
+
 print("""
 You may now build your preferred documentation format using either:
 
