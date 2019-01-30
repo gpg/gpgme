@@ -174,9 +174,9 @@ Copyright and Licensing
 
 @multitable {aaaaaaaaaaaaaaa} {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}
 @item Version:
-@tab 0.1.4
+@tab 0.1.5
 @item GPGME Version:
-@tab 1.12.1
+@tab 1.13.0
 @item Author:
 @tab Ben McGinnes <ben@@gnupg.org>
 @item Author GPG Key:
