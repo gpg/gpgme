@@ -408,6 +408,7 @@ verify (const char *fname, gpgme_protocol_t proto)
   gpgme_release (ctx);
 
   random_data_close (data);
+  free (msg);
 }
 
 
