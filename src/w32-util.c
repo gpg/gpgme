@@ -601,7 +601,7 @@ _gpgme_get_gpgconf_path (void)
   /* 5. Try to find gpgconf.exe relative to us.  */
   if (!gpgconf && inst_dir)
     {
-      char *dir = _gpgme_strconcat (inst_dir, "\\..\\..\\GnuPG\\bin");
+      char *dir = _gpgme_strconcat (inst_dir, "\\..\\..\\GnuPG\\bin", NULL);
       gpgconf = find_program_in_dir (dir, name);
       free (dir);
     }
