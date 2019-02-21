@@ -256,6 +256,8 @@ std::vector<GpgME::Key> GpgME::Data::toKeys(Protocol proto) const
     while (!gpgme_op_keylist_next (ctx->impl()->ctx, &key)) {
         ret.push_back(GpgME::Key(key, false));
     }
+    gpgme_data_seek (d->data, 0, SEEK_SET);
+
     delete ctx;
     return ret;
 }
