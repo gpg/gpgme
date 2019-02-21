@@ -129,7 +129,10 @@ private:
     unsigned int idx;
 };
 
-}
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const ImportResult &irs);
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Import &imp);
+
+} // namespace GpgME
 
 GPGMEPP_MAKE_STD_SWAP_SPECIALIZATION(ImportResult)
 GPGMEPP_MAKE_STD_SWAP_SPECIALIZATION(Import)

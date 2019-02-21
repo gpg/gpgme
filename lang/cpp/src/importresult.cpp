@@ -35,6 +35,9 @@
 #include <cstring>
 
 #include <string.h>
+#include <strings.h>
+#include <istream>
+#include <iterator>
 
 class GpgME::ImportResult::Private
 {
@@ -223,4 +226,43 @@ GpgME::Import::Status GpgME::Import::status() const
         result |= ContainedSecretKey;
     }
     return static_cast<Status>(result);
+}
+
+std::ostream &GpgME::operator<<(std::ostream &os,
+                                const GpgME::ImportResult &result)
+{
+    os << "GpgME::ImportResult(";
+    if (!result.isNull()) {
+        os << "\n considered:          " << result.numConsidered()
+           << "\n without UID:         " << result.numKeysWithoutUserID()
+           << "\n imported:            " << result.numImported()
+           << "\n RSA Imported:        " << result.numRSAImported()
+           << "\n unchanged:           " << result.numUnchanged()
+           << "\n newUserIDs:          " << result.newUserIDs()
+           << "\n newSubkeys:          " << result.newSubkeys()
+           << "\n newSignatures:       " << result.newSignatures()
+           << "\n newRevocations:      " << result.newRevocations()
+           << "\n numSecretKeysConsidered: " << result.numSecretKeysConsidered()
+           << "\n numSecretKeysImported:   " << result.numSecretKeysImported()
+           << "\n numSecretKeysUnchanged:  " << result.numSecretKeysUnchanged()
+           << "\n"
+           << "\n notImported:         " << result.notImported()
+           << "\n numV3KeysSkipped:    " << result.numV3KeysSkipped()
+           << "\n imports:\n";
+        const std::vector<Import> imp = result.imports();
+        std::copy(imp.begin(), imp.end(),
+                  std::ostream_iterator<Import>(os, "\n"));
+    }
+    return os << ')';
+}
+
+std::ostream &GpgME::operator<<(std::ostream &os, const GpgME::Import &imp)
+{
+    os << "GpgME::Import(";
+    if (!imp.isNull()) {
+        os << "\n fpr:       " << (imp.fingerprint() ? imp.fingerprint() : "null")
+           << "\n status:    " << imp.status()
+           << "\n err:       " << imp.error();
+    }
+    return os << ')';
 }
