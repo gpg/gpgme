@@ -52,6 +52,9 @@
 /* Only use calloc. */
 #define CALLOC_ONLY 1
 
+/* Maximum recursion depth */
+#define MAX_DEPTH 512
+
 /* To avoid that a compiler optimizes certain memset calls away, these
    macros may be used instead. */
 #define wipememory2(_ptr,_set,_len) do { \
@@ -462,13 +465,13 @@ print_string (cJSON * item)
 
 /* Predeclare these prototypes. */
 static const char *parse_value (cJSON * item, const char *value,
-                                const char **ep);
+                                const char **ep, size_t depth);
 static char *print_value (cJSON * item, int depth, int fmt);
 static const char *parse_array (cJSON * item, const char *value,
-                                const char **ep);
+                                const char **ep, size_t depth);
 static char *print_array (cJSON * item, int depth, int fmt);
 static const char *parse_object (cJSON * item, const char *value,
-                                 const char **ep);
+                                 const char **ep, size_t depth);
 static char *print_object (cJSON * item, int depth, int fmt);
 
 /* Utility to jump whitespace and cr/lf */
@@ -496,7 +499,7 @@ cJSON_ParseWithOpts (const char *value, const char **return_parse_end,
   if (!c)
     return NULL; /* memory fail */
 
-  end = parse_value (c, skip (value), &ep);
+  end = parse_value (c, skip (value), &ep, 0);
   if (!end)
     {
       cJSON_Delete (c);
@@ -548,8 +551,15 @@ cJSON_PrintUnformatted (cJSON * item)
 
 /* Parser core - when encountering text, process appropriately. */
 static const char *
-parse_value (cJSON * item, const char *value, const char **ep)
+parse_value (cJSON * item, const char *value, const char **ep,
+             size_t depth)
 {
+  if (depth > MAX_DEPTH)
+    {
+      *ep = value;
+      return 0;
+    }
+
   if (!value)
     return 0;			/* Fail on null. */
   if (!strncmp (value, "null", 4))
@@ -578,11 +588,11 @@ parse_value (cJSON * item, const char *value, const char **ep)
     }
   if (*value == '[')
     {
-      return parse_array (item, value, ep);
+      return parse_array (item, value, ep, depth + 1);
     }
   if (*value == '{')
     {
-      return parse_object (item, value, ep);
+      return parse_object (item, value, ep, depth + 1);
     }
 
   *ep = value;
@@ -625,9 +635,17 @@ print_value (cJSON * item, int depth, int fmt)
 
 /* Build an array from input text. */
 static const char *
-parse_array (cJSON * item, const char *value, const char **ep)
+parse_array (cJSON * item, const char *value, const char **ep,
+             size_t depth)
 {
   cJSON *child;
+
+  if (depth > MAX_DEPTH)
+    {
+      *ep = value;
+      return 0;
+    }
+
   if (*value != '[')
     {
       *ep = value;
@@ -643,7 +661,8 @@ parse_array (cJSON * item, const char *value, const char **ep)
   if (!item->child)
     return 0;			/* memory fail */
   /* skip any spacing, get the value. */
-  value = skip (parse_value (child, skip (value), ep));
+  value = skip (parse_value (child, skip (value), ep,
+                             depth + 1));
   if (!value)
     return 0;
 
@@ -655,7 +674,8 @@ parse_array (cJSON * item, const char *value, const char **ep)
       child->next = new_item;
       new_item->prev = child;
       child = new_item;
-      value = skip (parse_value (child, skip (value + 1), ep));
+      value = skip (parse_value (child, skip (value + 1), ep,
+                                 depth + 1));
       if (!value)
 	return 0;		/* memory fail */
     }
@@ -747,9 +767,16 @@ print_array (cJSON * item, int depth, int fmt)
 
 /* Build an object from the text. */
 static const char *
-parse_object (cJSON * item, const char *value, const char **ep)
+parse_object (cJSON * item, const char *value, const char **ep,
+              size_t depth)
 {
   cJSON *child;
+  if (depth > MAX_DEPTH)
+    {
+      *ep = value;
+      return 0;
+    }
+
   if (*value != '{')
     {
       *ep = value;
@@ -775,7 +802,8 @@ parse_object (cJSON * item, const char *value, const char **ep)
       return 0;
     }				/* fail! */
   /* skip any spacing, get the value. */
-  value = skip (parse_value (child, skip (value + 1), ep));
+  value = skip (parse_value (child, skip (value + 1), ep,
+                             depth + 1));
   if (!value)
     return 0;
 
@@ -798,7 +826,7 @@ parse_object (cJSON * item, const char *value, const char **ep)
 	  return 0;
 	}			/* fail! */
       /* skip any spacing, get the value. */
-      value = skip (parse_value (child, skip (value + 1), ep));
+      value = skip (parse_value (child, skip (value + 1), ep, depth + 1));
       if (!value)
 	return 0;
     }
