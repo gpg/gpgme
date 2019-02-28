@@ -135,7 +135,7 @@ main (int argc, char **argv)
       err = gpgme_op_getauditlog (ctx, log, GPGME_AUDITLOG_DIAG);
       fail_if_err (err);
       buf = gpgme_data_release_and_get_mem (log, &len);
-      printf ("\nDiagnostic output:\n%.*s\n", len, buf);
+      printf ("\nDiagnostic output:\n%.*s\n", (int)len, buf);
       free (buf);
     }
 

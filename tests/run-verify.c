@@ -159,9 +159,10 @@ print_result (gpgme_verify_result_t result)
               sig->pka_trust == 0? "n/a" :
               sig->pka_trust == 1? "bad" :
               sig->pka_trust == 2? "okay": "RFU");
-      printf ("  other flags:%s%s\n",
+      printf ("  other flags:%s%s%s\n",
               sig->wrong_key_usage? " wrong-key-usage":"",
-              sig->chain_model? " chain-model":""
+              sig->chain_model? " chain-model":"",
+              sig->is_de_vs? " de-vs":""
               );
       for (nt = sig->notations; nt; nt = nt->next)
         {
