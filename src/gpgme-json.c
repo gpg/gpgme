@@ -3758,7 +3758,7 @@ native_messaging_repl (void)
           log_error ("error writing request header: %s\n", gpg_strerror (err));
           break;
         }
-      if (n != sizeof nrequest)
+      if (n != sizeof nresponse)
         {
           log_error ("error writing request header: short write\n");
           break;
