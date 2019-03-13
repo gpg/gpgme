@@ -155,7 +155,7 @@ int Error::toErrno() const
 // static
 bool Error::hasSystemError()
 {
-    return gpgme_err_code_from_syserror() == GPG_ERR_MISSING_ERRNO ;
+    return gpgme_err_code_from_syserror() != GPG_ERR_MISSING_ERRNO ;
 }
 
 // static
