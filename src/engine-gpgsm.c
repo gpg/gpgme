@@ -82,6 +82,7 @@ struct engine_gpgsm
   iocb_data_t output_cb;
 
   iocb_data_t message_cb;
+  iocb_data_t diag_cb;
 
   struct
   {
@@ -109,6 +110,9 @@ struct engine_gpgsm
   char request_origin[10];
 
   struct gpgme_io_cbs io_cbs;
+
+  /* Memory data containing diagnostics (--logger-fd) of gpgsm */
+  gpgme_data_t diagnostics;
 };
 
 typedef struct engine_gpgsm *engine_gpgsm_t;
@@ -146,6 +150,13 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->status_cb.tag);
       gpgsm->status_cb.fd = -1;
       gpgsm->status_cb.tag = NULL;
+      /* Because the server keeps on running as long as the
+       * gpgme_ctx_t is valid the diag fd will not receive a close and
+       * thus the operation gets stuck trying to read the diag fd.
+       * The status fd however is closed right after it received the
+       * "OK" from the command.  So we use this event to also close
+       * the diag fd.  */
+      _gpgme_io_close (gpgsm->diag_cb.fd);
     }
   else if (gpgsm->input_cb.fd == fd)
     {
@@ -177,6 +188,13 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->message_cb.tag);
       gpgsm->message_cb.fd = -1;
       gpgsm->message_cb.tag = NULL;
+    }
+  else if (gpgsm->diag_cb.fd == fd)
+    {
+      if (gpgsm->diag_cb.tag)
+	(*gpgsm->io_cbs.remove) (gpgsm->diag_cb.tag);
+      gpgsm->diag_cb.fd = -1;
+      gpgsm->diag_cb.tag = NULL;
     }
 }
 
@@ -213,6 +231,8 @@ gpgsm_cancel (void *engine)
     _gpgme_io_close (gpgsm->output_cb.fd);
   if (gpgsm->message_cb.fd != -1)
     _gpgme_io_close (gpgsm->message_cb.fd);
+  if (gpgsm->diag_cb.fd != -1)
+    _gpgme_io_close (gpgsm->diag_cb.fd);
 
   if (gpgsm->assuan_ctx)
     {
@@ -234,6 +254,8 @@ gpgsm_release (void *engine)
 
   gpgsm_cancel (engine);
 
+  gpgme_data_release (gpgsm->diagnostics);
+
   free (gpgsm->colon.attic.line);
   free (gpgsm);
 }
@@ -246,17 +268,18 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   gpgme_error_t err = 0;
   engine_gpgsm_t gpgsm;
   const char *pgmname;
-  const char *argv[5];
+  const char *argv[7];
+  char *diag_fd_str = NULL;
   int argc;
-#if !USE_DESCRIPTOR_PASSING
   int fds[2];
-  int child_fds[4];
-#endif
+  int child_fds[5];
+  int nchild_fds;
   char *dft_display = NULL;
   char dft_ttyname[64];
   char *env_tty = NULL;
   char *dft_ttytype = NULL;
   char *optstr;
+  unsigned int connect_flags;
 
   (void)version; /* Not yet used.  */
 
@@ -284,6 +307,11 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   gpgsm->message_cb.tag = 0;
   gpgsm->message_cb.server_fd = -1;
   *gpgsm->message_cb.server_fd_str = 0;
+  gpgsm->diag_cb.fd = -1;
+  gpgsm->diag_cb.dir = 1;
+  gpgsm->diag_cb.tag = 0;
+  gpgsm->diag_cb.server_fd = -1;
+  *gpgsm->diag_cb.server_fd_str = 0;
 
   gpgsm->status.fnc = 0;
   gpgsm->colon.fnc = 0;
@@ -300,7 +328,20 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   gpgsm->io_cbs.event = NULL;
   gpgsm->io_cbs.event_priv = NULL;
 
-#if !USE_DESCRIPTOR_PASSING
+  if (_gpgme_io_pipe (fds, 1) < 0)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  gpgsm->diag_cb.fd = fds[0];
+  gpgsm->diag_cb.server_fd = fds[1];
+
+#if USE_DESCRIPTOR_PASSING
+  child_fds[0] = gpgsm->diag_cb.server_fd;
+  child_fds[1] = -1;
+  nchild_fds = 2;
+  connect_flags = ASSUAN_PIPE_CONNECT_FDPASSING;
+#else /*!USE_DESCRIPTOR_PASSING*/
   if (_gpgme_io_pipe (fds, 0) < 0)
     {
       err = gpg_error_from_syserror ();
@@ -328,8 +369,11 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   child_fds[0] = gpgsm->input_cb.server_fd;
   child_fds[1] = gpgsm->output_cb.server_fd;
   child_fds[2] = gpgsm->message_cb.server_fd;
-  child_fds[3] = -1;
-#endif
+  child_fds[3] = gpgsm->diag_cb.server_fd;
+  child_fds[4] = -1;
+  nchild_fds = 5;
+  connect_flags = 0;
+#endif  /*!USE_DESCRIPTOR_PASSING*/
 
   pgmname = file_name ? file_name : _gpgme_get_default_gpgsm_name ();
 
@@ -340,6 +384,18 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
       argv[argc++] = "--homedir";
       argv[argc++] = home_dir;
     }
+  /* Set up diagnostics */
+  err = gpgme_data_new (&gpgsm->diagnostics);
+  if (err)
+    goto leave;
+  gpgsm->diag_cb.data = gpgsm->diagnostics;
+  argv[argc++] = "--logger-fd";
+  if (gpgrt_asprintf (&diag_fd_str, "%i", gpgsm->diag_cb.server_fd) == -1)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  argv[argc++] = diag_fd_str;
   argv[argc++] = "--server";
   argv[argc++] = NULL;
 
@@ -350,26 +406,24 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
     goto leave;
   assuan_ctx_set_system_hooks (gpgsm->assuan_ctx, &_gpgme_assuan_system_hooks);
 
-#if USE_DESCRIPTOR_PASSING
-  err = assuan_pipe_connect (gpgsm->assuan_ctx, pgmname, argv,
-                             NULL, NULL, NULL, ASSUAN_PIPE_CONNECT_FDPASSING);
-#else
   {
-    assuan_fd_t achild_fds[4];
+    assuan_fd_t achild_fds[5];
     int i;
 
     /* For now... */
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < nchild_fds; i++)
       achild_fds[i] = (assuan_fd_t) child_fds[i];
 
     err = assuan_pipe_connect (gpgsm->assuan_ctx, pgmname, argv,
-                               achild_fds, NULL, NULL, 0);
+                               achild_fds, NULL, NULL, connect_flags);
 
-    /* For now... */
-    for (i = 0; i < 4; i++)
+    /* FIXME: Check whether our Windows code still updates the list.*/
+    for (i = 0; i < nchild_fds; i++)
       child_fds[i] = (int) achild_fds[i];
   }
 
+
+#if !USE_DESCRIPTOR_PASSING
   /* On Windows, handles are inserted in the spawned process with
      DuplicateHandle, and child_fds contains the server-local names
      for the inserted handles when assuan_pipe_connect returns.  */
@@ -387,6 +441,8 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 		sizeof gpgsm->output_cb.server_fd_str, "%d", child_fds[1]);
       snprintf (gpgsm->message_cb.server_fd_str,
 		sizeof gpgsm->message_cb.server_fd_str, "%d", child_fds[2]);
+      snprintf (gpgsm->diag_cb.server_fd_str,
+		sizeof gpgsm->diag_cb.server_fd_str, "%d", child_fds[3]);
     }
 #endif
   if (err)
@@ -493,12 +549,20 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 	  || _gpgme_io_set_close_notify (gpgsm->output_cb.fd,
 					 close_notify_handler, gpgsm)
 	  || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
+					 close_notify_handler, gpgsm)
+	  || _gpgme_io_set_close_notify (gpgsm->diag_cb.fd,
 					 close_notify_handler, gpgsm)))
     {
       err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 #endif
+  if (!err && _gpgme_io_set_close_notify (gpgsm->diag_cb.fd,
+                                          close_notify_handler, gpgsm))
+    {
+      err = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
 
  leave:
   /* Close the server ends of the pipes (because of this, we must use
@@ -511,13 +575,15 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
     _gpgme_io_close (gpgsm->output_cb.server_fd);
   if (gpgsm->message_cb.server_fd != -1)
     _gpgme_io_close (gpgsm->message_cb.server_fd);
+  if (gpgsm->diag_cb.server_fd != -1)
+    _gpgme_io_close (gpgsm->diag_cb.server_fd);
 #endif
 
   if (err)
     gpgsm_release (gpgsm);
   else
     *engine = gpgsm;
-
+  free (diag_fd_str);
   return err;
 }
 
@@ -1139,6 +1205,8 @@ start (engine_gpgsm_t gpgsm, const char *command)
     err = add_io_cb (gpgsm, &gpgsm->output_cb, _gpgme_data_inbound_handler);
   if (!err && gpgsm->message_cb.fd != -1)
     err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
+  if (!err && gpgsm->diag_cb.fd != -1)
+    err = add_io_cb (gpgsm, &gpgsm->diag_cb, _gpgme_data_inbound_handler);
 
   if (!err)
     err = assuan_write_line (gpgsm->assuan_ctx, command);
@@ -2069,11 +2137,39 @@ gpgsm_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
 
+
   if (!gpgsm || !output)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if ((flags & GPGME_AUDITLOG_DIAG))
+  if ((flags & GPGME_AUDITLOG_DIAG) && (flags & GPGME_AUDITLOG_HTML))
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  if ((flags & GPGME_AUDITLOG_DIAG))
+    {
+      char buf[BUFFER_SIZE];
+      int nread;
+      int any_written = 0;
+      gpgme_data_rewind (gpgsm->diagnostics);
+
+      while ((nread = gpgme_data_read (gpgsm->diagnostics,
+                                       buf, BUFFER_SIZE)) > 0)
+        {
+          any_written = 1;
+          if (gpgme_data_write (output, buf, nread) == -1)
+            return gpg_error_from_syserror ();
+        }
+      if (!any_written)
+        return gpg_error (GPG_ERR_NO_DATA);
+
+      if (nread == -1)
+        return gpg_error_from_syserror ();
+
+      gpgme_data_rewind (output);
+      return 0;
+    }
+
+  if (!gpgsm->assuan_ctx)
+    return gpg_error (GPG_ERR_INV_VALUE);
 
 #if USE_DESCRIPTOR_PASSING
   gpgsm->output_cb.data = output;
