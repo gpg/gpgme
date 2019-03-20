@@ -132,7 +132,13 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
     }
 
     if (ctx->protocol() == CMS) {
-        if ((err = ctx->lastError()) || (err = ctx->getAuditLog(data, CMSAuditLogFlags))) {
+        if ((err = ctx->lastError())) {
+            if ((err = ctx->getAuditLog(data, Context::DiagnosticAuditLog))) {
+                return QString::fromLocal8Bit(err.asString());
+            }
+            const QByteArray ba = dp.data();
+            return markupDiagnostics(stringFromGpgOutput(ba));
+        } else if ((err = ctx->getAuditLog(data, CMSAuditLogFlags))) {
             return QString::fromLocal8Bit(err.asString());
         }
         const QByteArray ba = dp.data();
