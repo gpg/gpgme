@@ -158,7 +158,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 	  void (*atfork) (void *opaque, int reserved),
 	  void *atforkvalue, unsigned int flags)
 {
-  int err;
+  int err = 0;
   struct spawn_fd_item_s *fd_items;
   int i;
 
@@ -209,10 +209,58 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
   fd_items[i].fd = -1;
   fd_items[i].dup_to = -1;
 
-  err = _gpgme_io_spawn (name, (char*const*)argv,
-                         (IOSPAWN_FLAG_NOCLOSE | IOSPAWN_FLAG_DETACHED),
-			 fd_items, atfork, atforkvalue, r_pid);
-  if (! err)
+#ifdef HAVE_W32_SYSTEM
+  /* Fix up a potential logger fd so that on windows the fd
+   * translation can work through gpgme-w32spawn.
+   *
+   * We do this here as a hack because we would
+   * otherwise have to change assuan_api and the current
+   * plan in 2019 is to change away from this to gpgrt
+   * based IPC. */
+  if (argv)
+    {
+      int loc = 0;
+      while (argv[loc])
+        {
+          if (!strcmp ("--logger-fd", argv[loc]))
+            {
+              long logger_fd = -1;
+              char *tail;
+              int k = 0;
+              loc++;
+              if (!argv[loc])
+                {
+                  err = GPG_ERR_INV_ARG;
+                  break;
+                }
+              logger_fd = strtoul (argv[loc], &tail, 10);
+              if (tail == argv[loc] || logger_fd <= 0)
+                {
+                  err = GPG_ERR_INV_ARG;
+                  break;
+                }
+              while (fd_items[k++].fd != -1)
+                {
+                  if (fd_items[k].fd == logger_fd)
+                    {
+                      fd_items[k].arg_loc = loc;
+                      break;
+                    }
+                }
+              break;
+            }
+          loc++;
+        }
+    }
+#endif
+
+  if (!err)
+    {
+      err = _gpgme_io_spawn (name, (char*const*)argv,
+                             (IOSPAWN_FLAG_NOCLOSE | IOSPAWN_FLAG_DETACHED),
+                             fd_items, atfork, atforkvalue, r_pid);
+    }
+  if (!err)
     {
       i = 0;
 
