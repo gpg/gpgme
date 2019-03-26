@@ -1,14 +1,56 @@
-Noteworthy changes in version 1.12.1 (unreleased)
+Noteworthy changes in version 1.13.0 (2019-03-26)
 -------------------------------------------------
+
+ * Support GPGME_AUDITLOG_DIAG for gpgsm.  [#4426]
+
+ * New context flag "trust-model".
+
+ * Removed support for WindowsCE and Windows ME.
+
+ * Aligned the gpgrt-config code with our other libaries.
+
+ * Auto-check for all installed Python versions.  [#3354]
+
+ * Fixed generating card key in the C++ bindings.  [#4428]
+
+ * Fixed a segv due to bad parameters in genkey.  [#4192]
+
+ * Fixed crash if the plaintext is ignored in a CMS verify.
+
+ * Fixed memleak on Windows.  [T4238]
+
+ * Tweaked the Windows I/O code.
+
+ * Fixed random crashes on Windows due to closing an arbitrary
+   handle.  [#4237]
+
+ * Fixed a segv on Windows.  [#4369]
+
+ * Fixed test suite problems related to dtags.  [#4298]
+
+ * Fixed bunch of python bugs.  [#4242,commit 9de1c96ac3cf]
+
+ * Several fixes to the Common Lisp bindings.
+
+ * Fixed minor bugs in gpgme-json.  [#4331,#4341,#4342,#4343
+
+ * Require trace level 8 to dump all I/O data.
+
+ * The compiler must now support variadic macros.
 
  * Interface changes relative to the 1.12.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_set_ctx_flag               EXTENDED: New flag 'trust-model'.
  cpp: Context::create                       NEW.
  cpp: Key::isBad                            NEW.
  cpp: Subkey::isBad                         NEW.
  cpp: UserID::isBad                         NEW.
  cpp: UserID::Signature::isBad              NEW.
  cpp: GenCardKeyInteractor::setAlgo         NEW.
+
+ [c=C33/A22/R0 cpp=C15/A9/R0 qt=C10/A3/R3]
+
+ Release-info: https://dev.gnupg.org/T4376
 
 
 Noteworthy changes in version 1.12.0 (2018-10-08)
