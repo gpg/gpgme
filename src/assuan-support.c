@@ -233,7 +233,7 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
                   err = GPG_ERR_INV_ARG;
                   break;
                 }
-              logger_fd = strtoul (argv[loc], &tail, 10);
+              logger_fd = strtol (argv[loc], &tail, 10);
               if (tail == argv[loc] || logger_fd <= 0)
                 {
                   err = GPG_ERR_INV_ARG;
