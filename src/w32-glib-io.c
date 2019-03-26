@@ -421,12 +421,13 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
       return TRACE_SYSRES (-1);
     }
 
-  return TRACE_SUC ("read=0x%x/%p, write=0x%x/%p, channel=%p",
-		     filedes[0],
-		     (HANDLE) _get_osfhandle (giochannel_table[filedes[0]].fd),
-		     filedes[1],
-		     (HANDLE) _get_osfhandle (giochannel_table[filedes[1]].fd),
-		     giochannel_table[1 - inherit_idx].chan);
+  TRACE_SUC ("read=0x%x/%p, write=0x%x/%p, channel=%p",
+	     filedes[0],
+	     (HANDLE) _get_osfhandle (giochannel_table[filedes[0]].fd),
+	     filedes[1],
+	     (HANDLE) _get_osfhandle (giochannel_table[filedes[1]].fd),
+	     giochannel_table[1 - inherit_idx].chan);
+  return 0;
 }
 
 
@@ -1081,5 +1082,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       return TRACE_SYSRES (-1);
     }
 
-  return TRACE_SUC ("");
+  TRACE_SUC ("");
+
+  return 0;
 }
