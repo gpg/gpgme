@@ -36,11 +36,12 @@ using namespace GpgME;
 class GpgGenCardKeyInteractor::Private
 {
 public:
-    Private() : keysize("2048"), backup(false)
+    Private() : keysize("2048"), backup(false), algo(RSA)
     {
 
     }
     std::string name, email, backupFileName, expiry, serial, keysize;
+    Algo algo;
     bool backup;
 };
 
@@ -82,6 +83,11 @@ std::string GpgGenCardKeyInteractor::backupFileName() const
     return d->backupFileName;
 }
 
+void GpgGenCardKeyInteractor::setAlgo(Algo algo)
+{
+    d->algo = algo;
+}
+
 namespace GpgGenCardKeyInteractor_Private
 {
 enum {
@@ -104,6 +110,14 @@ enum {
     QUIT,
     SAVE,
 
+    KEY_ATTR,
+    KEY_ALGO1,
+    KEY_ALGO2,
+    KEY_ALGO3,
+    KEY_CURVE1,
+    KEY_CURVE2,
+    KEY_CURVE3,
+
     ERROR = EditInteractor::ErrorState
 };
 }
@@ -118,6 +132,16 @@ const char *GpgGenCardKeyInteractor::action(Error &err) const
         return "admin";
     case COMMAND:
         return "generate";
+    case KEY_ATTR:
+        return "key-attr";
+    case KEY_ALGO1:
+    case KEY_ALGO2:
+    case KEY_ALGO3:
+        return d->algo == RSA ? "1" : "2";
+    case KEY_CURVE1:
+    case KEY_CURVE2:
+    case KEY_CURVE3:
+        return "1"; // Only cv25519 supported.
     case NAME:
         return d->name.c_str();
     case EMAIL:
@@ -193,10 +217,90 @@ unsigned int GpgGenCardKeyInteractor::nextState(unsigned int status, const char 
     case DO_ADMIN:
         if (status == GPGME_STATUS_GET_LINE &&
                 strcmp(args, "cardedit.prompt") == 0) {
+            return KEY_ATTR;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    // Handling for key-attr subcommand
+    case KEY_ATTR:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            // Happens if key attr is not yet supported.
+            return COMMAND;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO1;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    case KEY_ALGO1:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.size") == 0) {
+            return SIZE;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "keygen.curve") == 0) {
+            return KEY_CURVE1;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    case KEY_ALGO2:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.size") == 0) {
+            return SIZE2;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "keygen.curve") == 0) {
+            return KEY_CURVE2;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    case KEY_ALGO3:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.size") == 0) {
+            return SIZE3;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "keygen.curve") == 0) {
+            return KEY_CURVE3;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    case KEY_CURVE1:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO2;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
             return COMMAND;
         }
         err = GENERAL_ERROR;
         return ERROR;
+    case KEY_CURVE2:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO3;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            return COMMAND;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    case KEY_CURVE3:
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO3;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            return COMMAND;
+        }
+        err = GENERAL_ERROR;
+        return ERROR;
+    // End key-attr handling
     case COMMAND:
         if (status == GPGME_STATUS_GET_LINE &&
                 strcmp(args, "cardedit.genkeys.backup_enc") == 0) {
@@ -213,13 +317,20 @@ unsigned int GpgGenCardKeyInteractor::nextState(unsigned int status, const char 
                 strcmp(args, "cardedit.genkeys.size") == 0) {
             return SIZE;
         }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "keygen.valid") == 0) {
+            return EXPIRE;
+        }
         err = GENERAL_ERROR;
         return ERROR;
     case REPLACE:
         if (status == GPGME_STATUS_GET_LINE &&
                 strcmp(args, "cardedit.genkeys.size") == 0) {
-            printf("Moving to SIZE\n");
             return SIZE;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "keygen.valid") == 0) {
+            return EXPIRE;
         }
         err = GENERAL_ERROR;
         return ERROR;
@@ -232,6 +343,14 @@ unsigned int GpgGenCardKeyInteractor::nextState(unsigned int status, const char 
                 strcmp(args, "keygen.valid") == 0) {
             return EXPIRE;
         }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO2;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            return COMMAND;
+        }
         err = GENERAL_ERROR;
         return ERROR;
     case SIZE2:
@@ -243,12 +362,24 @@ unsigned int GpgGenCardKeyInteractor::nextState(unsigned int status, const char 
                 strcmp(args, "keygen.valid") == 0) {
             return EXPIRE;
         }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.genkeys.algo") == 0) {
+            return KEY_ALGO3;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            return COMMAND;
+        }
         err = GENERAL_ERROR;
         return ERROR;
     case SIZE3:
         if (status == GPGME_STATUS_GET_LINE &&
                 strcmp(args, "keygen.valid") == 0) {
             return EXPIRE;
+        }
+        if (status == GPGME_STATUS_GET_LINE &&
+                strcmp(args, "cardedit.prompt") == 0) {
+            return COMMAND;
         }
         err = GENERAL_ERROR;
         return ERROR;

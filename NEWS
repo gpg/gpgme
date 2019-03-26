@@ -8,6 +8,7 @@ Noteworthy changes in version 1.12.1 (unreleased)
  cpp: Subkey::isBad                         NEW.
  cpp: UserID::isBad                         NEW.
  cpp: UserID::Signature::isBad              NEW.
+ cpp: GenCardKeyInteractor::setAlgo         NEW.
 
 
 Noteworthy changes in version 1.12.0 (2018-10-08)

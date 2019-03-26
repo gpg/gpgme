@@ -56,6 +56,12 @@ public:
     void setDoBackup(bool value);
     void setExpiry(const std::string &timeString);
 
+    enum Algo {
+        RSA = 1,
+        ECC = 2
+    };
+    void setAlgo(Algo algo);
+
     std::string backupFileName() const;
 
 private:
