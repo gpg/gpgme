@@ -255,6 +255,8 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
   va_list arg_ptr;
   int saved_errno;
   int need_lf;
+  char *output;
+  int out_len;
 
   if (debug_level < level)
     return 0;
@@ -307,7 +309,12 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
     }
   need_lf = (mode != -1 && (!format || !*format));
 
-  vfprintf (errfp, format, arg_ptr);
+  out_len = gpgrt_vasprintf (&output, format, arg_ptr);
+  if (out_len >= 0)
+    {
+      fwrite (output, out_len, 1, errfp);
+      free (output);
+    }
   va_end (arg_ptr);
   if (need_lf || (format && *format && format[strlen (format) - 1] != '\n'))
     putc ('\n', errfp);
