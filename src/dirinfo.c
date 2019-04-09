@@ -260,7 +260,7 @@ get_gpgconf_item (int what)
       char *pgmname;
 
       pgmname = dirinfo.disable_gpgconf? NULL : _gpgme_get_gpgconf_path ();
-      if (pgmname && access (pgmname, F_OK))
+      if (pgmname && _gpgme_access (pgmname, F_OK))
         {
           _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
                         "gpgme-dinfo: gpgconf='%s' [not installed]\n", pgmname);

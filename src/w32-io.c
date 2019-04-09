@@ -1481,16 +1481,16 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       free (tmp_name);
       return TRACE_SYSRES (-1);
     }
-  if (!CreateProcessA (spawnhelper,
-		       arg_string,
-		       &sec_attr,     /* process security attributes */
-		       &sec_attr,     /* thread security attributes */
-		       FALSE,         /* inherit handles */
-		       cr_flags,      /* creation flags */
-		       NULL,          /* environment */
-		       NULL,          /* use current drive/directory */
-		       &si,           /* startup information */
-		       &pi))          /* returns process information */
+  if (!_gpgme_create_process_utf8 (spawnhelper,
+                                   arg_string,
+                                   &sec_attr, /* process security attributes */
+                                   &sec_attr, /* thread security attributes */
+                                   FALSE,     /* inherit handles */
+                                   cr_flags,  /* creation flags */
+                                   NULL,      /* environment */
+                                   NULL,      /* use current drive/directory */
+                                   &si,       /* startup information */
+                                   &pi))      /* returns process information */
     {
       int lasterr = (int)GetLastError ();
       TRACE_LOG  ("CreateProcess failed: ec=%d", lasterr);

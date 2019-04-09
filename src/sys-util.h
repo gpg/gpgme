@@ -28,9 +28,22 @@ int _gpgme_set_override_inst_dir (const char *dir);
 char *_gpgme_get_gpg_path (void);
 char *_gpgme_get_gpgconf_path (void);
 
+int _gpgme_access (const char *path_utf8, int mode);
+
 #ifdef HAVE_W32_SYSTEM
 const char *_gpgme_get_inst_dir (void);
 void _gpgme_w32_cancel_synchronous_io (HANDLE thread);
+/* See CreateProcessA returns true on success */
+int _gpgme_create_process_utf8 (const char *application_name_utf8,
+                                char *command_line_utf8,
+                                LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                                LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                                BOOL bInheritHandles,
+                                DWORD dwCreationFlags,
+                                void *lpEnvironment,
+                                char *working_directory_utf8,
+                                LPSTARTUPINFOA lpStartupInfo,
+                                LPPROCESS_INFORMATION lpProcessInformation);
 #endif
 
 #endif /* SYS_UTIL_H */

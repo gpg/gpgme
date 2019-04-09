@@ -157,3 +157,10 @@ _gpgme_allow_set_foreground_window (pid_t pid)
   (void)pid;
   /* Not needed.  */
 }
+
+/* See w32-util.c */
+int
+_gpgme_access (const char *path, int mode)
+{
+  return access (path, mode);
+}

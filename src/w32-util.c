@@ -168,6 +168,48 @@ wchar_to_utf8 (const wchar_t *string)
 }
 
 
+/* Return a malloced wide char string from an UTF-8 encoded input
+   string STRING.  Caller must free this value. On failure returns
+   NULL; caller may use GetLastError to get the actual error number.
+   Calling this function with STRING set to NULL is not defined. */
+static wchar_t *
+utf8_to_wchar (const char *string)
+{
+  int n;
+  wchar_t *result;
+
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, NULL, 0);
+  if (n < 0)
+    return NULL;
+
+  result = (wchar_t *) malloc ((n+1) * sizeof *result);
+  if (!result)
+    return NULL;
+
+  n = MultiByteToWideChar (CP_UTF8, 0, string, -1, result, n);
+  if (n < 0)
+    {
+      free (result);
+      return NULL;
+    }
+  return result;
+}
+
+
+/* Same as utf8_to_wchar but calling it with NULL returns
+   NULL.  So a return value of NULL only indicates failure
+   if STRING is not set to NULL. */
+static wchar_t *
+utf8_to_wchar0 (const char *string)
+{
+  if (!string)
+    return NULL;
+
+  return utf8_to_wchar (string);
+}
+
+
 /* Replace all forward slashes by backslashes.  */
 static void
 replace_slashes (char *string)
@@ -395,7 +437,7 @@ find_program_in_dir (const char *dir, const char *name)
   if (!result)
     return NULL;
 
-  if (access (result, F_OK))
+  if (_gpgme_access (result, F_OK))
     {
       free (result);
       return NULL;
@@ -408,7 +450,7 @@ find_program_in_dir (const char *dir, const char *name)
 static char *
 find_program_at_standard_place (const char *name)
 {
-  char path[MAX_PATH];
+  wchar_t path[MAX_PATH];
   char *result = NULL;
 
   /* See https://wiki.tcl-lang.org/page/Getting+Windows+%22special+folders%22+with+Ffidl for details on compatibility.
@@ -416,20 +458,24 @@ find_program_at_standard_place (const char *name)
      We First try the generic place and then fallback to the x86
      (i.e. 32 bit) place.  This will prefer a 64 bit of the program
      over a 32 bit version on 64 bit Windows if installed.  */
-  if (SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILES, 0))
+  if (SHGetSpecialFolderPathW (NULL, path, CSIDL_PROGRAM_FILES, 0))
     {
-      result = _gpgme_strconcat (path, "\\", name, NULL);
-      if (result && access (result, F_OK))
+      char *utf8_path = wchar_to_utf8 (path);
+      result = _gpgme_strconcat (utf8_path, "\\", name, NULL);
+      free (utf8_path);
+      if (result && _gpgme_access (result, F_OK))
         {
           free (result);
           result = NULL;
         }
     }
   if (!result
-      && SHGetSpecialFolderPathA (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
+      && SHGetSpecialFolderPathW (NULL, path, CSIDL_PROGRAM_FILESX86, 0))
     {
-      result = _gpgme_strconcat (path, "\\", name, NULL);
-      if (result && access (result, F_OK))
+      char *utf8_path = wchar_to_utf8 (path);
+      result = _gpgme_strconcat (utf8_path, "\\", name, NULL);
+      free (utf8_path);
+      if (result && _gpgme_access (result, F_OK))
         {
           free (result);
           result = NULL;
@@ -781,6 +827,49 @@ _gpgme_mkstemp (int *fd, char **name)
 }
 
 
+/* Like access but using windows _waccess */
+int
+_gpgme_access (const char *path, int mode)
+{
+  wchar_t *u16 = utf8_to_wchar0 (path);
+  int r = _waccess (u16, F_OK);
+
+  free(u16);
+  return r;
+}
+
+/* Like CreateProcessA but mapping the arguments to wchar API */
+int _gpgme_create_process_utf8 (const char *application_name_utf8,
+                                char *command_line_utf8,
+                                LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                                LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                                BOOL bInheritHandles,
+                                DWORD dwCreationFlags,
+                                void *lpEnvironment,
+                                char *working_directory_utf8,
+                                LPSTARTUPINFOA lpStartupInfo,
+                                LPPROCESS_INFORMATION lpProcessInformation)
+{
+  BOOL ret;
+  wchar_t *application_name = utf8_to_wchar0 (application_name_utf8);
+  wchar_t *command_line = utf8_to_wchar0 (command_line_utf8);
+  wchar_t *working_directory = utf8_to_wchar0 (working_directory_utf8);
+
+  ret = CreateProcessW (application_name,
+                        command_line,
+                        lpProcessAttributes,
+                        lpThreadAttributes,
+                        bInheritHandles,
+                        dwCreationFlags,
+                        lpEnvironment,
+                        working_directory,
+                        lpStartupInfo,
+                        lpProcessInformation);
+  free (application_name);
+  free (command_line);
+  free (working_directory);
+  return ret;
+}
 
 /* Entry point called by the DLL loader.  */
 #ifdef DLL_EXPORT
