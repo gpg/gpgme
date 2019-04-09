@@ -832,11 +832,12 @@ int
 _gpgme_access (const char *path, int mode)
 {
   wchar_t *u16 = utf8_to_wchar0 (path);
-  int r = _waccess (u16, F_OK);
+  int r = _waccess (u16, mode);
 
   free(u16);
   return r;
 }
+
 
 /* Like CreateProcessA but mapping the arguments to wchar API */
 int _gpgme_create_process_utf8 (const char *application_name_utf8,
@@ -847,13 +848,34 @@ int _gpgme_create_process_utf8 (const char *application_name_utf8,
                                 DWORD dwCreationFlags,
                                 void *lpEnvironment,
                                 char *working_directory_utf8,
-                                LPSTARTUPINFOA lpStartupInfo,
+                                LPSTARTUPINFOA si,
                                 LPPROCESS_INFORMATION lpProcessInformation)
 {
   BOOL ret;
   wchar_t *application_name = utf8_to_wchar0 (application_name_utf8);
   wchar_t *command_line = utf8_to_wchar0 (command_line_utf8);
   wchar_t *working_directory = utf8_to_wchar0 (working_directory_utf8);
+
+  STARTUPINFOW siw;
+  memset (&siw, 0, sizeof siw);
+  if (si)
+    {
+      siw.cb = sizeof (siw);
+      siw.dwFlags = si->dwFlags;
+      siw.wShowWindow = si->wShowWindow;
+      siw.hStdInput = si->hStdInput;
+      siw.hStdOutput = si->hStdOutput;
+      siw.hStdError = si->hStdError;
+      siw.dwX = si->dwX;
+      siw.dwY = si->dwY;
+      siw.dwXSize = si->dwXSize;
+      siw.dwYSize = si->dwYSize;
+      siw.dwXCountChars = si->dwXCountChars;
+      siw.dwYCountChars = si->dwYCountChars;
+      siw.dwFillAttribute = si->dwFillAttribute;
+      siw.lpDesktop = utf8_to_wchar0 (si->lpDesktop);
+      siw.lpTitle = utf8_to_wchar0 (si->lpTitle);
+    }
 
   ret = CreateProcessW (application_name,
                         command_line,
@@ -863,7 +885,7 @@ int _gpgme_create_process_utf8 (const char *application_name_utf8,
                         dwCreationFlags,
                         lpEnvironment,
                         working_directory,
-                        lpStartupInfo,
+                        si ? &siw : NULL,
                         lpProcessInformation);
   free (application_name);
   free (command_line);
