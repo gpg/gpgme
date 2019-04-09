@@ -887,6 +887,8 @@ int _gpgme_create_process_utf8 (const char *application_name_utf8,
                         working_directory,
                         si ? &siw : NULL,
                         lpProcessInformation);
+  free (siw.lpTitle);
+  free (siw.lpDesktop);
   free (application_name);
   free (command_line);
   free (working_directory);
