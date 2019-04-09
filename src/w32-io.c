@@ -1389,6 +1389,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int tmp_fd;
   char *tmp_name;
   const char *spawnhelper;
+  static int spawn_warning_shown = 0;
 
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_spawn", path,
 	      "path=%s", path);
@@ -1456,20 +1457,24 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
          up their installation this should also be properly communicated
          as otherwise calls to gnupg will result in unsupported protocol
          errors that do not explain a lot. */
-      char *msg;
-      gpgrt_asprintf (&msg, "gpgme-w32spawn.exe was not found in the "
-                            "detected installation directory of GpgME"
-                            "\n\t\"%s\"\n\n"
-                            "Crypto operations will not work.\n\n"
-                            "If you see this it indicates a problem "
-                            "with your installation.\n"
-                            "Please report the problem to your "
-                            "distributor of GpgME.\n\n"
-                            "Developer's Note: The install dir can be "
-                            "manually set with: gpgme_set_global_flag",
-                            _gpgme_get_inst_dir ());
-      MessageBoxA (NULL, msg, "GpgME not installed correctly", MB_OK);
-      gpgrt_free (msg);
+      if (!spawn_warning_shown)
+        {
+          char *msg;
+          gpgrt_asprintf (&msg, "gpgme-w32spawn.exe was not found in the "
+                                "detected installation directory of GpgME"
+                                "\n\t\"%s\"\n\n"
+                                "Crypto operations will not work.\n\n"
+                                "If you see this it indicates a problem "
+                                "with your installation.\n"
+                                "Please report the problem to your "
+                                "distributor of GpgME.\n\n"
+                                "Developer's Note: The install dir can be "
+                                "manually set with: gpgme_set_global_flag",
+                                _gpgme_get_inst_dir ());
+          MessageBoxA (NULL, msg, "GpgME not installed correctly", MB_OK);
+          gpgrt_free (msg);
+          spawn_warning_shown = 1;
+        }
       gpg_err_set_errno (EIO);
       close (tmp_fd);
       DeleteFileA (tmp_name);
