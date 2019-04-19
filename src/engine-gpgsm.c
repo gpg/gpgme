@@ -549,8 +549,6 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 	  || _gpgme_io_set_close_notify (gpgsm->output_cb.fd,
 					 close_notify_handler, gpgsm)
 	  || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
-					 close_notify_handler, gpgsm)
-	  || _gpgme_io_set_close_notify (gpgsm->diag_cb.fd,
 					 close_notify_handler, gpgsm)))
     {
       err = gpg_error (GPG_ERR_GENERAL);
