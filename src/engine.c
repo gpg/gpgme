@@ -461,6 +461,7 @@ _gpgme_set_engine_info (gpgme_engine_info_t info, gpgme_protocol_t proto,
         {
           free (new_file_name);
           free (new_home_dir);
+          return gpg_error_from_syserror ();
         }
     }
 
