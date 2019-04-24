@@ -1791,3 +1791,8 @@ bool GpgME::hasFeature(unsigned long features, unsigned long features2)
            && features2 == (features2 & supported_features2)
            ;
 }
+
+int GpgME::setGlobalFlag(const char *name, const char *value)
+{
+    return gpgme_set_global_flag(name, value);
+}

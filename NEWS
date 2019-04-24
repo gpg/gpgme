@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.13.1 (unreleased)
 -------------------------------------------------
 
+ * Interface changes relative to the 1.13.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: setGlobalFlag                         NEW.
 
 Noteworthy changes in version 1.13.0 (2019-03-26)
 -------------------------------------------------

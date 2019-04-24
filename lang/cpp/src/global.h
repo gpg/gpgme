@@ -98,6 +98,9 @@ GPGMEPP_EXPORT const char *dirInfo(const char *what);
 GPGMEPP_EXPORT Error checkEngine(Protocol proto);
 GPGMEPP_EXPORT Error checkEngine(Engine engine);
 
+/* Wrapper for gpgme_set_global_flag */
+GPGMEPP_EXPORT int setGlobalFlag(const char *name, const char *value);
+
 GPGMEPP_EXPORT GIOChannel *getGIOChannel(int fd);
 GPGMEPP_EXPORT QIODevice   *getQIODevice(int fd);
 
