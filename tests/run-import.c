@@ -44,6 +44,8 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] FILENAMEs\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
+         "  --openpgp        use the OpenPGP protocol (default)\n"
+         "  --cms            use the CMS protocol\n"
          "  --url            import from given URLs\n"
          "  -0               URLs are delimited by a nul\n"
          , stderr);
@@ -60,6 +62,7 @@ main (int argc, char **argv)
   int nul_mode = 0;
   gpgme_import_result_t impres;
   gpgme_data_t data;
+  gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
 
   if (argc)
     { argc--; argv++; }
@@ -88,6 +91,16 @@ main (int argc, char **argv)
           nul_mode = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--openpgp"))
+        {
+          protocol = GPGME_PROTOCOL_OpenPGP;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cms"))
+        {
+          protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -96,11 +109,11 @@ main (int argc, char **argv)
   if (!argc)
     show_usage (1);
 
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+  init_gpgme (protocol);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
-  gpgme_set_protocol (ctx, GPGME_PROTOCOL_OpenPGP);
+  gpgme_set_protocol (ctx, protocol);
 
   for (; argc; argc--, argv++)
     {
