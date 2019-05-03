@@ -41,8 +41,8 @@ public:
 
     }
     std::string name, email, backupFileName, expiry, serial, keysize;
-    Algo algo;
     bool backup;
+    Algo algo;
 };
 
 GpgGenCardKeyInteractor::~GpgGenCardKeyInteractor() {}
