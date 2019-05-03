@@ -84,5 +84,6 @@ with gpg.Context() as c:
 
     plaintext, _, verify_result = c.decrypt(open(support.make_filename("cipher-3.asc")))
     assert len(plaintext) > 0
+    assert len(verify_result.signatures) == 1
     assert plaintext.find(b'Reenact Studied Thermos Bonehead Unclasp Opposing') >= 0, \
         'second Plaintext not found'
