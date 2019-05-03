@@ -599,27 +599,30 @@ AM_SUBST_NOTMAKE(API__SSIZE_T)
 # Checks for compiler features.
 if test "$GCC" = yes; then
     CFLAGS="$CFLAGS -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-    if test "$USE_MAINTAINER_MODE" = "yes"; then
-        CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
+    CFLAGS="$CFLAGS -Wno-format-y2k"
 
-        # If -Wno-missing-field-initializers is supported we can enable a
-        # a bunch of really useful warnings.
-        AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
-        _gcc_cflags_save=$CFLAGS
-        CFLAGS="-Wno-missing-field-initializers"
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
-        AC_MSG_RESULT($_gcc_wopt)
-        CFLAGS=$_gcc_cflags_save;
+    # If -Wno-missing-field-initializers is supported we can expect a
+    # a larger set of warning options.
+    AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
+    _gcc_cflags_save=$CFLAGS
+    CFLAGS="-Wno-missing-field-initializers"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
+    AC_MSG_RESULT($_gcc_wopt)
+    CFLAGS=$_gcc_cflags_save;
+    if test x"$_gcc_wopt" = xyes ; then
+      CFLAGS="$CFLAGS -Wno-missing-field-initializers"
+      CFLAGS="$CFLAGS -Wno-sign-compare"
+      CFLAGS="$CFLAGS -Wno-format-zero-length"
+      CFLAGS="$CFLAGS -Wno-format-truncation"
+      CFLAGS="$CFLAGS -Wno-sizeof-pointer-div"
+    fi
+    if test "$USE_MAINTAINER_MODE" = "yes"; then
         if test x"$_gcc_wopt" = xyes ; then
           CFLAGS="$CFLAGS -W -Wextra -Wbad-function-cast"
           CFLAGS="$CFLAGS -Wwrite-strings"
           CFLAGS="$CFLAGS -Wdeclaration-after-statement"
-          CFLAGS="$CFLAGS -Wno-missing-field-initializers"
-          CFLAGS="$CFLAGS -Wno-sign-compare"
-          CFLAGS="$CFLAGS -Wno-format-zero-length"
-          CFLAGS="$CFLAGS -Wno-format-truncation"
-          CFLAGS="$CFLAGS -Wno-sizeof-pointer-div"
         fi
+        CFLAGS="$CFLAGS -Wformat -Wformat-security"
         CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-shadow"
 
         AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
