@@ -342,10 +342,12 @@ class Context(GpgmeWrapper):
 
         Decrypt the given ciphertext and verify any signatures.  If
         VERIFY is an iterable of keys, the ciphertext must be signed
-        by all those keys, otherwise an error is raised.  Note: if
-        VERIFY is an empty iterable, that is treated the same as
-        passing verify=True (that is, do verify signatures, but no
-        specific keys are required).
+        by all those keys, otherwise a MissingSignatures error is
+        raised.  Note: if VERIFY is an empty iterable, that is treated
+        the same as passing verify=True (that is, verify signatures
+        and return data about any valid signatures found, but no
+        signatures are required and no MissingSignatures error will be
+        raised).
 
         If the ciphertext is symmetrically encrypted using a
         passphrase, that passphrase can be given as parameter, using a
@@ -361,11 +363,10 @@ class Context(GpgmeWrapper):
         Returns:
         plaintext	-- the decrypted data (or None if sink is given)
         result		-- additional information about the decryption
-        verify_result	-- additional information about the signature(s)
+        verify_result	-- additional information about the valid signature(s) found
 
         Raises:
         UnsupportedAlgorithm -- if an unsupported algorithm was used
-        BadSignatures	-- if a bad signature is encountered
         MissingSignatures -- if expected signatures are missing or bad
         GPGMEError	-- as signaled by the underlying library
 
@@ -430,13 +431,8 @@ class Context(GpgmeWrapper):
                                               results=results)
 
         if do_sig_verification:
-            # FIXME: should we really throw BadSignature, even if
-            # we've encountered some good signatures?  as above, once
-            # we hit this error, there is no way to accept it and
-            # continue to process the remaining signatures.
-            if any(s.status != errors.NO_ERROR
-                   for s in verify_result.signatures):
-                raise errors.BadSignatures(verify_result, results=results)
+            # filter out all invalid signatures
+            verify_result.signatures = list(filter(lambda s: s.status == errors.NO_ERROR, verify_result.signatures))
             if required_keys is not None:
                 missing = []
                 for key in required_keys:

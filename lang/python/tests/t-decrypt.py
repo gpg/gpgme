@@ -42,3 +42,13 @@ with gpg.Context() as c:
     assert len(plaintext) > 0
     assert plaintext.find(b'Wenn Sie dies lesen k') >= 0, \
         'Plaintext not found'
+
+    plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-3.asc")), verify=False)
+    assert len(plaintext) > 0
+    assert plaintext.find(b'Reenact Studied Thermos Bonehead Unclasp Opposing') >= 0, \
+        'second Plaintext not found'
+
+    plaintext, _, _ = c.decrypt(open(support.make_filename("cipher-no-sig.asc")), verify=False)
+    assert len(plaintext) > 0
+    assert plaintext.find(b'Viscosity Dispersal Thimble Saturday Flaxseed Deflected') >= 0, \
+        'third Plaintext was not found'
