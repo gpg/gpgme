@@ -355,20 +355,21 @@ class Context(GpgmeWrapper):
         pinentry.
 
         Keyword arguments:
-        sink		-- write result to sink instead of returning it
-        passphrase	-- for symmetric decryption
-        verify		-- check signatures (boolean or iterable of keys,
+        sink            -- write result to sink instead of returning it
+        passphrase      -- for symmetric decryption
+        verify          -- check signatures (boolean or iterable of keys,
                            see above) (default True)
 
         Returns:
-        plaintext	-- the decrypted data (or None if sink is given)
-        result		-- additional information about the decryption
-        verify_result	-- additional information about the valid signature(s) found
+        plaintext       -- the decrypted data (or None if sink is given)
+        result          -- additional information about the decryption
+        verify_result   -- additional information about the valid
+                           signature(s) found
 
         Raises:
         UnsupportedAlgorithm -- if an unsupported algorithm was used
-        MissingSignatures -- if expected signatures are missing or bad
-        GPGMEError	-- as signaled by the underlying library
+        MissingSignatures    -- if expected signatures are missing or bad
+        GPGMEError           -- as signaled by the underlying library
 
         """
         do_sig_verification = False
