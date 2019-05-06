@@ -21,12 +21,9 @@ EXTRA_DIST = \
 	README \
 	MANIFEST.in \
 	gpgme.i \
-	helpers.c helpers.h private.h \
-	examples \
-	doc \
-	src
+	helpers.c helpers.h private.h
 
-SUBDIRS = . tests
+SUBDIRS = . tests examples doc src
 
 .PHONY: prepare
 prepare: copystamp

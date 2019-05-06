@@ -922,7 +922,10 @@ AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
 AC_CONFIG_FILES(lang/qt/doc/Makefile)
 AC_CONFIG_FILES([lang/python/Makefile
 		 lang/python/version.py
-		 lang/python/tests/Makefile])
+		 lang/python/tests/Makefile
+		 lang/python/src/Makefile
+		 lang/python/examples/Makefile
+		 lang/python/doc/Makefile])
 AC_CONFIG_FILES([lang/python/setup.py], [chmod a+x lang/python/setup.py])
 AC_OUTPUT
 
