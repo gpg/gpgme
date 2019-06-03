@@ -1458,7 +1458,7 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (!recp)
+  if (!recp && !recpstring) /* Symmetric only */
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if ((flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
