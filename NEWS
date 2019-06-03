@@ -1,6 +1,28 @@
 Noteworthy changes in version 1.13.1 (unreleased)
 -------------------------------------------------
 
+ * Python: No longer raises BadSignatures from
+   decrypt(verify=True).  [4276]
+
+ * cpp: gpgme_set_global_flag is now wrapped.
+   [#4471]
+
+ * Fixed a crash introduced in 1.13.0 when working
+   with S/MIME.  [#4456]
+
+ * w32: Improved handling of unicode install paths.
+   [#4453]
+
+ * w32: The gpgme_io_spawn error message is now
+   only shown once.  [#4453]
+
+ * w32: Fixed format string errors introduced in
+   1.13.0 that could cause crashes.  [#4440]
+
+ * w32: Fixed an error in the new diagnostic
+   gpgsm support introduced in 1.13.0 that caused
+   crashes in low fd scenarios.  [#4439]
+
  * Interface changes relative to the 1.13.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: setGlobalFlag                         NEW.
