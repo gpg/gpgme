@@ -163,13 +163,13 @@ class InvalidRecipients(EncryptionError):
                          for r in self.recipients)
 
 
-class DeryptionError(GpgError):
+class DecryptionError(GpgError):
     pass
 
 
-class UnsupportedAlgorithm(DeryptionError):
+class UnsupportedAlgorithm(DecryptionError):
     def __init__(self, algorithm, **kwargs):
-        DeryptionError.__init__(self, **kwargs)
+        DecryptionError.__init__(self, **kwargs)
         self.algorithm = algorithm
 
     def __str__(self):

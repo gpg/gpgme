@@ -1,8 +1,10 @@
 Noteworthy changes in version 1.13.1 (unreleased)
 -------------------------------------------------
 
+ * Python: Fix DecryptionError Exception.  [#4478]
+
  * Python: No longer raises BadSignatures from
-   decrypt(verify=True).  [4276]
+   decrypt(verify=True).  [#4276]
 
  * cpp: gpgme_set_global_flag is now wrapped.
    [#4471]
