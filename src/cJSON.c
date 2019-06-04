@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <float.h>
 #include <limits.h>
 #include <ctype.h>
@@ -146,8 +147,13 @@ cJSON_Delete (cJSON * c)
 static const char *
 parse_number (cJSON * item, const char *num)
 {
-  double n = 0, sign = 1, scale = 0;
-  int subscale = 0, signsubscale = 1;
+  int subscale = 0;
+  int signsubscale = 1;
+  double n = 0;
+  double sign = 1;
+  double scale = 0;
+  double dblmin = INT32_MIN;
+  double dblmax = INT32_MAX;
 
   if (*num == '-')
     sign = -1, num++;		/* Has sign? */
@@ -169,17 +175,37 @@ parse_number (cJSON * item, const char *num)
       num++;
       if (*num == '+')
 	num++;
-      else if (*num == '-')
-	signsubscale = -1, num++;	/* With sign? */
+      else if (*num == '-')       /* With sign? */
+	signsubscale = -1, num++;
       while (*num >= '0' && *num <= '9')
-	subscale = (subscale * 10) + (*num++ - '0');	/* Number? */
+        {
+          if ((10 * (double)subscale) > dblmax)
+            break;
+          subscale = (subscale * 10) + (*num++ - '0');
+        }
     }
 
   /* number = +/- number.fraction * 10^+/- exponent */
   n = sign * n * pow (10.0, (scale + subscale * signsubscale));
 
-  item->valuedouble = n;
-  item->valueint = (int) n;
+  /* For NAN set both parts to 0.  For out of range values let the
+   * integer part be 0.  */
+  if (isnan (n) || isinf (n))
+    {
+      item->valuedouble = 0;
+      item->valueint = 0;
+    }
+  else if (n > dblmax || n < dblmin)
+    {
+      item->valuedouble = n;
+      item->valueint = 0;
+    }
+  else
+    {
+      item->valuedouble = n;
+      item->valueint = (int)n;
+    }
+
   item->type = cJSON_Number;
   return num;
 }
