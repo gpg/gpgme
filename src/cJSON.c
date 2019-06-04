@@ -216,6 +216,8 @@ print_number (cJSON * item)
 {
   char *str;
   double d = item->valuedouble;
+  int i;
+
   if (fabs (((double) item->valueint) - d) <= DBL_EPSILON && d <= INT_MAX
       && d >= INT_MIN)
     {
@@ -229,7 +231,11 @@ print_number (cJSON * item)
       str = xtrymalloc (64);	/* This is a nice tradeoff. */
       if (str)
 	{
-	  if (fabs (floor (d) - d) <= DBL_EPSILON && fabs (d) < 1.0e60)
+          if (isnan (d))
+            strcpy (str, "nan");
+          else if ((i = isinf (d)))
+            strcpy (str, i > 0? "inf" : ":-inf");
+	  else if (fabs (floor (d) - d) <= DBL_EPSILON && fabs (d) < 1.0e60)
 	    sprintf (str, "%.0f", d);
 	  else if (fabs (d) < 1.0e-6 || fabs (d) > 1.0e9)
 	    sprintf (str, "%e", d);
