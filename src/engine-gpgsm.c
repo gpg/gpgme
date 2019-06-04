@@ -1407,11 +1407,12 @@ set_recipients_from_string (engine_gpgsm_t gpgsm, const char *string)
 {
   gpg_error_t err = 0;
   char *line = NULL;
-  int no_pubkey = 0;
+  int ignore = 0;
+  int any = 0;
   const char *s;
   int n;
 
-  for (;;)
+  do
     {
       while (*string == ' ' || *string == '\t')
         string++;
@@ -1426,25 +1427,32 @@ set_recipients_from_string (engine_gpgsm_t gpgsm, const char *string)
       while (n && (string[n-1] == ' ' || string[n-1] == '\t'))
         n--;
 
-      gpgrt_free (line);
-      if (gpgrt_asprintf (&line, "RECIPIENT %.*s", n, string) < 0)
+      if (!ignore && n == 2 && !memcmp (string, "--", 2))
+        ignore = 1;
+      else if (!ignore && n > 2 && !memcmp (string, "--", 2))
+        err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
+      else if (n) /* Not empty - use it.  */
         {
-          err = gpg_error_from_syserror ();
-          break;
+          gpgrt_free (line);
+          if (gpgrt_asprintf (&line, "RECIPIENT %.*s", n, string) < 0)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              err = gpgsm_assuan_simple_command (gpgsm, line, gpgsm->status.fnc,
+                                                 gpgsm->status.fnc_value);
+              if (!err)
+                any = 1;
+            }
         }
+
       string += n + !!s;
-
-      err = gpgsm_assuan_simple_command (gpgsm, line, gpgsm->status.fnc,
-					 gpgsm->status.fnc_value);
-
-      /* Fixme: Improve error reporting.  */
-      if (gpg_err_code (err) == GPG_ERR_NO_PUBKEY)
-	no_pubkey++;
-      else if (err)
-        break;
     }
+  while (!err);
+
+  if (!err && !any)
+    err = gpg_error (GPG_ERR_MISSING_KEY);
   gpgrt_free (line);
-  return err? err : no_pubkey? gpg_error (GPG_ERR_NO_PUBKEY) : 0;
+  return err;
 }
 
 

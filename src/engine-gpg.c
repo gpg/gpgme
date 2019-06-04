@@ -2075,6 +2075,8 @@ append_args_from_recipients_string (engine_gpg_t gpg,
           file = 0;
           flags = orig_flags;
         }
+      else if (!ignore && n > 2 && !memcmp (string, "--", 2))
+        err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
       else if (n) /* Not empty - use it.  */
         {
           err = add_arg (gpg, file? (hidden? "-F":"-f") : (hidden? "-R":"-r"));
