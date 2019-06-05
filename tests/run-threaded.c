@@ -453,6 +453,32 @@ decrypt (const char *fname, gpgme_protocol_t proto)
   random_data_close (data);
 }
 
+void
+import (const char *fname, gpgme_protocol_t proto)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  data_t data = random_data_new (fname);
+
+  log ("Starting import on: %s", fname);
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  err = gpgme_set_protocol (ctx, proto);
+  fail_if_err (err);
+
+  gpgme_set_offline (ctx, 1);
+
+  err = gpgme_op_import (ctx, data->dh);
+  fail_if_err (err);
+
+  gpgme_release (ctx);
+
+  log ("Import completed.");
+
+  random_data_close (data);
+}
 
 static THREAD_RET
 do_data_op (void *file_name)
@@ -500,6 +526,16 @@ do_data_op (void *file_name)
       case GPGME_DATA_TYPE_CMS_ENCRYPTED:
         {
           decrypt (fname, GPGME_PROTOCOL_CMS);
+          break;
+        }
+      case GPGME_DATA_TYPE_PGP_KEY:
+        {
+          import (fname, GPGME_PROTOCOL_OpenPGP);
+          break;
+        }
+      case GPGME_DATA_TYPE_X509_CERT:
+        {
+          import (fname, GPGME_PROTOCOL_CMS);
           break;
         }
       default:
