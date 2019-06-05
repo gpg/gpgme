@@ -504,8 +504,8 @@ do_data_op (void *file_name)
         }
       default:
         {
-          fprintf (stderr, "Unhandled data type 0x%x for '%s'", type, fname);
-          exit(1);
+          out ("Unhandled data type 0x%x for '%s'\n", type, fname);
+          errpoint;
         }
     }
 
