@@ -56,12 +56,14 @@ static int mem_only;
 static void
 create_thread (THREAD_RET (*func) (void *), void *arg)
 {
-  running_threads++;
-  if (CloseHandle (CreateThread (NULL, 0, func, arg, 0, NULL)))
+  HANDLE hd = CreateThread (NULL, 0, func, arg, 0, NULL);
+  if (hd == INVALID_HANDLE_VALUE)
     {
       fprintf (stderr, "Failed to create thread!\n");
       exit (1);
     }
+  running_threads++;
+  CloseHandle (hd);
 }
 
 #else
