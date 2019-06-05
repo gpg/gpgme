@@ -378,7 +378,7 @@ verify (const char *fname, gpgme_protocol_t proto)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
-  gpgme_data_t out;
+  gpgme_data_t output;
   char *msg;
   size_t msg_len;
   data_t data = random_data_new (fname);
@@ -386,7 +386,7 @@ verify (const char *fname, gpgme_protocol_t proto)
   log ("Starting verify on: %s with protocol %s", fname,
        proto == GPGME_PROTOCOL_CMS ? "CMS" : "OpenPGP");
 
-  gpgme_data_new (&out);
+  gpgme_data_new (&output);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -394,13 +394,13 @@ verify (const char *fname, gpgme_protocol_t proto)
   err = gpgme_set_protocol (ctx, proto);
   fail_if_err (err);
 
-  err = gpgme_op_verify (ctx, data->dh, NULL, out);
+  err = gpgme_op_verify (ctx, data->dh, NULL, output);
   out ("Data: %p, %i %p %p %p", data->dh,
        data->fd, data->file, data->stream,
        data->mem);
   fail_if_err (err);
 
-  msg = gpgme_data_release_and_get_mem (out, &msg_len);
+  msg = gpgme_data_release_and_get_mem (output, &msg_len);
 
   if (msg_len)
     {
@@ -423,14 +423,14 @@ decrypt (const char *fname, gpgme_protocol_t proto)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
-  gpgme_data_t out;
+  gpgme_data_t output;
   char *msg;
   size_t msg_len;
   data_t data = random_data_new (fname);
 
   log ("Starting decrypt on: %s", fname);
 
-  gpgme_data_new (&out);
+  gpgme_data_new (&output);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
@@ -438,12 +438,12 @@ decrypt (const char *fname, gpgme_protocol_t proto)
   err = gpgme_set_protocol (ctx, proto);
   fail_if_err (err);
 
-  err = gpgme_op_decrypt (ctx, data->dh, out);
+  err = gpgme_op_decrypt (ctx, data->dh, output);
   fail_if_err (err);
 
   gpgme_release (ctx);
 
-  msg = gpgme_data_release_and_get_mem (out, &msg_len);
+  msg = gpgme_data_release_and_get_mem (output, &msg_len);
 
   if (msg_len)
     {
