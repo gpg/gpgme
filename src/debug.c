@@ -1,6 +1,6 @@
 /* debug.c - helpful output in desperate situations
  * Copyright (C) 2000 Werner Koch (dd9jn)
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009 g10 Code GmbH
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2019 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -50,10 +50,6 @@
 #include "debug.h"
 
 
-/* Lock to serialize initialization of the debug output subsystem and
-   output of actual debug messages.  */
-DEFINE_STATIC_LOCK (debug_lock);
-
 /* The amount of detail requested by the user, per environment
    variable GPGME_DEBUG.  */
 static int debug_level;
@@ -135,7 +131,6 @@ debug_init (void)
 {
   static int initialized;
 
-  LOCK (debug_lock);
   if (!initialized)
     {
       gpgme_error_t err;
@@ -152,10 +147,7 @@ debug_init (void)
         {
           err = _gpgme_getenv ("GPGME_DEBUG", &e);
           if (err)
-            {
-              UNLOCK (debug_lock);
-              return;
-            }
+            return;
         }
 
       initialized = 1;
@@ -201,7 +193,6 @@ debug_init (void)
 	  free (e);
         }
     }
-  UNLOCK (debug_lock);
 
   if (debug_level > 0)
     {
@@ -219,9 +210,9 @@ debug_init (void)
 
 
 
-/* This should be called as soon as the locks are initialized.  It is
-   required so that the assuan logging gets conncted to the gpgme log
-   stream as early as possible.  */
+/* This should be called as soon as possible.  It is required so that
+ * the assuan logging gets connected to the gpgme log stream as early
+ * as possible.  */
 void
 _gpgme_debug_subsystem_init (void)
 {
@@ -255,72 +246,81 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
   va_list arg_ptr;
   int saved_errno;
   int need_lf;
-  char *output;
-  int out_len;
+  int indent;
+  char *prefix, *stdinfo, *userinfo;
+  int no_stdinfo = 0;
 
   if (debug_level < level)
     return 0;
 
+#ifdef FRAME_NR
+    indent = frame_nr > 0? (2 * (frame_nr - 1)):0;
+#else
+    indent = 0;
+#endif
+
   saved_errno = errno;
   va_start (arg_ptr, format);
-  LOCK (debug_lock);
   {
     struct tm *tp;
     time_t atime = time (NULL);
 
     tp = localtime (&atime);
-    fprintf (errfp, "GPGME %04d-%02d-%02d %02d:%02d:%02d <0x%04llx>  ",
-	     1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-	     tp->tm_hour, tp->tm_min, tp->tm_sec,
-	     (unsigned long long) ath_self ());
+    prefix = gpgrt_bsprintf ("GPGME %04d%02d%02dT%02d%02d%02d %04llX  %*s",
+                             1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                             tp->tm_hour, tp->tm_min, tp->tm_sec,
+                             (unsigned long long) ath_self (),
+                             indent < 40? indent : 40, "");
   }
-#ifdef FRAME_NR
-  {
-    int indent;
 
-    indent = frame_nr > 0? (2 * (frame_nr - 1)):0;
-    fprintf (errfp, "%*s", indent < 40? indent : 40, "");
-  }
-#endif
-
-  need_lf = 0;
   switch (mode)
     {
     case -1:  /* Do nothing.  */
+      stdinfo = NULL;
+      no_stdinfo = 1;
       break;
     case 0:
-      fprintf (errfp, "%s: call: %s=%p ", func, tagname, tagvalue);
+      stdinfo = gpgrt_bsprintf ("%s: call: %s=%p ", func, tagname, tagvalue);
       break;
     case 1:
-      fprintf (errfp, "%s: enter: %s=%p ", func, tagname, tagvalue);
+      stdinfo = gpgrt_bsprintf ("%s: enter: %s=%p ", func, tagname, tagvalue);
       break;
     case 2:
-      fprintf (errfp, "%s: check: %s=%p ", func, tagname, tagvalue);
+      stdinfo = gpgrt_bsprintf ("%s: check: %s=%p ", func, tagname, tagvalue);
       break;
     case 3:
       if (tagname)
-        fprintf (errfp, "%s: leave: %s=%p ", func, tagname, tagvalue);
+        stdinfo = gpgrt_bsprintf ("%s: leave: %s=%p ", func, tagname, tagvalue);
       else
-        fprintf (errfp, "%s: leave: ", func);
+        stdinfo = gpgrt_bsprintf ("%s: leave: ", func);
       break;
     default:
-      fprintf (errfp, "%s: ?(mode=%d): %s=%p ", func, mode, tagname, tagvalue);
+      stdinfo = gpgrt_bsprintf ("%s: ?(mode=%d): %s=%p ",
+                                func, mode, tagname, tagvalue);
       break;
     }
-  need_lf = (mode != -1 && (!format || !*format));
 
-  out_len = gpgrt_vasprintf (&output, format, arg_ptr);
-  if (out_len >= 0)
-    {
-      fwrite (output, out_len, 1, errfp);
-      free (output);
-    }
+  userinfo = gpgrt_vbsprintf (format, arg_ptr);
   va_end (arg_ptr);
-  if (need_lf || (format && *format && format[strlen (format) - 1] != '\n'))
-    putc ('\n', errfp);
-  UNLOCK (debug_lock);
+
+  if (mode != -1 && (!format || !*format))
+    need_lf = 1;
+  else if (userinfo && *userinfo && userinfo[strlen (userinfo) - 1] != '\n')
+    need_lf = 1;
+  else
+    need_lf = 0;
+
+
+  fprintf (errfp, "%s%s%s%s",
+           prefix? prefix : "GPGME out-of-core ",
+           no_stdinfo? "" : stdinfo? stdinfo : "out-of-core ",
+           userinfo? userinfo : "out-of-core",
+           need_lf? "\n":"");
   fflush (errfp);
 
+  gpgrt_free (userinfo);
+  gpgrt_free (stdinfo);
+  gpgrt_free (prefix);
   gpg_err_set_errno (saved_errno);
   return 0;
 }
