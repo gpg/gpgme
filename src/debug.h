@@ -25,6 +25,7 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#include <errno.h>
 
 #include "gpgme.h"  /* Required for gpgme_error stuff.  */
 
@@ -151,7 +152,7 @@ _trace_sysres (int res, int lvl, const char *func, int line)
   else
     _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL,
                   "%s:%d: error: %s (%d)\n",
-                  func, line,  strerror (res), res);
+                  func, line,  strerror (errno), errno);
   _gpgme_debug_frame_end ();
   return res;
 }

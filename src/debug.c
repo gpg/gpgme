@@ -254,6 +254,7 @@ _gpgme_debug (void **line, int level, int mode,
   int indent;
   char *prefix, *stdinfo, *userinfo;
   const char *modestr;
+  int no_userinfo = 0;
 
   if (debug_level < level)
     return 0;
@@ -295,7 +296,13 @@ _gpgme_debug (void **line, int level, int mode,
   else
     stdinfo = gpgrt_bsprintf ("%s: %s: ", func, modestr);
 
-  userinfo = gpgrt_vbsprintf (format, arg_ptr);
+  if (format && *format)
+    userinfo = gpgrt_vbsprintf (format, arg_ptr);
+  else
+    {
+      userinfo = NULL;
+      no_userinfo = 1;
+    }
   va_end (arg_ptr);
 
   if (mode != -1 && (!format || !*format))
@@ -317,7 +324,7 @@ _gpgme_debug (void **line, int level, int mode,
                prefix? prefix : "GPGME out-of-core ",
                !modestr? "" : stdinfo? stdinfo :
                (!format || !*format)? "" :"out-of-core ",
-               userinfo? userinfo : "out-of-core",
+               userinfo? userinfo : no_userinfo? "" : "out-of-core",
                need_lf? "\n":"");
       fflush (errfp);
     }
@@ -365,12 +372,16 @@ _gpgme_debug_add (void **line, const char *format, ...)
 void
 _gpgme_debug_end (void **line)
 {
+  const char *string;
+
   if (!*line)
     return;
+  string = *line;
 
-  /* The smallest possible level is 1, so force logging here by
-     using that.  */
-  _gpgme_debug (NULL, 1, -1, NULL, NULL, NULL, "%s", (char*)*line);
+  fprintf (errfp, "%s%s",
+           string,
+           (*string && string[strlen (string)-1] != '\n')? "\n":"");
+  fflush (errfp);
   gpgrt_free (*line);
   *line = NULL;
 }
