@@ -202,7 +202,7 @@ gpgme_check_version (const char *req_version)
      before using the trace facility.  If we won't the trace would
      automagically initialize the debug system with out the locks
      being initialized and missing the assuan log level setting. */
-  TRACE (DEBUG_INIT, "gpgme_check_version", 0,
+  TRACE (DEBUG_INIT, "gpgme_check_version", NULL,
 	  "req_version=%s, VERSION=%s",
           req_version? req_version:"(null)", VERSION);
 
@@ -229,13 +229,13 @@ gpgme_check_version_internal (const char *req_version,
     return result;
 
   /* Catch-22, see above.  */
-  TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
+  TRACE (DEBUG_INIT, "gpgme_check_version_internal", NULL,
 	  "req_version=%s, offset_sig_validity=%zu",
 	  req_version ? req_version : "(null)", offset_sig_validity);
 
   if (offset_sig_validity != offsetof (struct _gpgme_signature, validity))
     {
-      TRACE (DEBUG_INIT, "gpgme_check_version_internal", 0,
+      TRACE (DEBUG_INIT, "gpgme_check_version_internal", NULL,
 	      "offset_sig_validity mismatch: expected %i",
              (int)offsetof (struct _gpgme_signature, validity));
       _gpgme_selftest = GPG_ERR_SELFTEST_FAILED;

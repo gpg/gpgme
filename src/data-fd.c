@@ -75,7 +75,7 @@ gpgme_error_t
 gpgme_data_new_from_fd (gpgme_data_t *r_dh, int fd)
 {
   gpgme_error_t err;
-  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_fd", r_dh, "fd=0x%x", fd);
+  TRACE_BEG  (DEBUG_DATA, "gpgme_data_new_from_fd", r_dh, "fd=%d", fd);
 
   err = _gpgme_data_new (r_dh, &fd_cbs);
   if (err)

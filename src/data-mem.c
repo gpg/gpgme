@@ -296,7 +296,7 @@ gpgme_data_release_and_get_mem (gpgme_data_t dh, size_t *r_len)
 void
 gpgme_free (void *buffer)
 {
-  TRACE (DEBUG_DATA, "gpgme_free", buffer, "");
+  TRACE (DEBUG_DATA, "gpgme_free", NULL, "p=%p", buffer);
 
   if (buffer)
     free (buffer);

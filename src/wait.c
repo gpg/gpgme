@@ -137,7 +137,7 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
     }
 
   TRACE (DEBUG_CTX, "_gpgme_add_io_cb", ctx,
-	  "fd %d, dir=%d -> tag=%p", fd, dir, tag);
+	  "fd=%d, dir=%d -> tag=%p", fd, dir, tag);
 
   *r_tag = tag;
   return 0;

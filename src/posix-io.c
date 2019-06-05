@@ -109,8 +109,8 @@ int
 _gpgme_io_read (int fd, void *buffer, size_t count)
 {
   int nread;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", fd,
-	      "buffer=%p, count=%zu", buffer, count);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", NULL,
+	      "fd=%d buffer=%p count=%zu", fd, buffer, count);
 
   do
     {
@@ -127,8 +127,8 @@ int
 _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   int nwritten;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", fd,
-	      "buffer=%p, count=%zu", buffer, count);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", NULL,
+	      "fd=%d buffer=%p count=%zu", fd, buffer, count);
   TRACE_LOGBUFX (buffer, count);
 
   do
@@ -146,7 +146,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
   int saved_errno;
   int err;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_pipe", filedes,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_pipe", NULL,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
@@ -166,7 +166,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   if (err)
     return TRACE_SYSRES (err);
 
-  TRACE_SUC ("read=0x%x, write=0x%x", filedes[0], filedes[1]);
+  TRACE_SUC ("read fd=%d write fd=%d", filedes[0], filedes[1]);
   return 0;
 }
 
@@ -179,7 +179,7 @@ _gpgme_io_close (int fd)
   void *handler_value;
   int idx;
 
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", fd, "");
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", NULL, "fd=%d", fd);
 
   if (fd == -1)
     {
@@ -221,8 +221,8 @@ _gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
   int res = 0;
   int idx;
 
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_set_close_notify", fd,
-	      "close_handler=%p/%p", handler, value);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_set_close_notify", NULL,
+	      "fd=%d close_handler=%p/%p", fd, handler, value);
 
   assert (fd != -1);
 
@@ -272,7 +272,7 @@ _gpgme_io_set_nonblocking (int fd)
 {
   int flags;
   int res;
-  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", fd, "");
+  TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_set_nonblocking", NULL, "fd=%d", fd);
 
   flags = fcntl (fd, F_GETFL, 0);
   if (flags == -1)
@@ -428,7 +428,7 @@ get_max_fds (void)
     }
 #endif
 
-  TRACE (DEBUG_SYSIO, "gpgme:max_fds", 0, "max fds=%ld (%s)", fds, source);
+  TRACE (DEBUG_SYSIO, "gpgme:max_fds", NULL, "max fds=%ld (%s)", fds, source);
   return fds;
 }
 
@@ -474,7 +474,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
   int status;
   int signo;
 
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_spawn", path,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_spawn", NULL,
 	      "path=%s", path);
   i = 0;
   while (argv[i])
@@ -654,7 +654,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   /* Use a 1s timeout.  */
   struct timeval timeout = { 1, 0 };
   void *dbg_help = NULL;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", NULL,
 	      "nfds=%zu, nonblock=%u", nfds, nonblock);
 
   FD_ZERO (&readfds);
@@ -682,7 +682,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	  FD_SET (fds[i].fd, &readfds);
 	  if (fds[i].fd > max_fd)
 	    max_fd = fds[i].fd;
-	  TRACE_ADD1 (dbg_help, "r0x%x ", fds[i].fd);
+	  TRACE_ADD1 (dbg_help, "r=%d ", fds[i].fd);
 	  any = 1;
         }
       else if (fds[i].for_write)
@@ -697,7 +697,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	  FD_SET (fds[i].fd, &writefds);
 	  if (fds[i].fd > max_fd)
 	    max_fd = fds[i].fd;
-	  TRACE_ADD1 (dbg_help, "w0x%x ", fds[i].fd);
+	  TRACE_ADD1 (dbg_help, "w=%d ", fds[i].fd);
 	  any = 1;
         }
       fds[i].signaled = 0;
@@ -721,9 +721,9 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       for (i = 0; i <= max_fd; i++)
 	{
 	  if (FD_ISSET (i, &readfds))
-	    TRACE_ADD1 (dbg_help, "r0x%x ", i);
+	    TRACE_ADD1 (dbg_help, "r=%d ", i);
 	  if (FD_ISSET (i, &writefds))
-	    TRACE_ADD1 (dbg_help, "w0x%x ", i);
+	    TRACE_ADD1 (dbg_help, "w=%d ", i);
         }
       TRACE_END (dbg_help, "]");
     }
@@ -760,8 +760,8 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
   int nread;
   int saved_errno;
   struct iovec *iov;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_recvmsg", fd,
-	      "msg=%p, flags=%i", msg, flags);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_recvmsg", NULL,
+	      "fd=%d msg=%p flags=%i", fd, msg, flags);
 
   nread = 0;
   iov = msg->msg_iov;
@@ -802,8 +802,8 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 {
   int nwritten;
   struct iovec *iov;
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_sendmsg", fd,
-	      "msg=%p, flags=%i", msg, flags);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_sendmsg", NULL,
+	      "fd=%d msg=%p flags=%i", fd, msg, flags);
 
   nwritten = 0;
   iov = msg->msg_iov;
@@ -841,7 +841,7 @@ _gpgme_io_dup (int fd)
     new_fd = dup (fd);
   while (new_fd == -1 && errno == EINTR);
 
-  TRACE (DEBUG_SYSIO, "_gpgme_io_dup", fd, "new fd==%i", new_fd);
+  TRACE (DEBUG_SYSIO, "_gpgme_io_dup", NULL, "fd=%d -> fd=%d", fd, new_fd);
 
   return new_fd;
 }
@@ -852,8 +852,8 @@ _gpgme_io_socket (int domain, int type, int proto)
 {
   int res;
 
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_socket", domain,
-	      "type=%i, proto=%i", type, proto);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_socket", NULL,
+	      "domain=%d type=%i proto=%i", domain, type, proto);
 
   res = socket (domain, type, proto);
 
@@ -866,8 +866,8 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 {
   int res;
 
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_connect", fd,
-	      "addr=%p, addrlen=%i", addr, addrlen);
+  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_connect", NULL,
+	      "fd=%d addr=%p addrlen=%i", fd, addr, addrlen);
 
   do
     res = ath_connect (fd, addr, addrlen);

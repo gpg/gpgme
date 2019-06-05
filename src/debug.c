@@ -196,12 +196,12 @@ debug_init (void)
 
   if (debug_level > 0)
     {
-      _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+      _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                     "gpgme_debug: level=%d\n", debug_level);
 #ifdef HAVE_W32_SYSTEM
       {
         const char *name = _gpgme_get_inst_dir ();
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme_debug: gpgme='%s'\n", name? name: "?");
       }
 #endif
@@ -231,6 +231,10 @@ _gpgme_debug_subsystem_init (void)
  *  2 = debug a function (used by macro TRACE_LOG)
  *  3 = leave a function (used by macro TRACE_SUC)
  *
+ * If LINE is not NULL the output will be stored in that variabale but
+ * without a LF.  _gpgme_debug_add can be used to add more and
+ * _gpgme_debug_end to finally output it.
+ *
  * Returns: 0
  *
  * Note that we always return 0 because the old TRACE macro evaluated
@@ -240,7 +244,8 @@ _gpgme_debug_subsystem_init (void)
  * value from the TRACE macros are actually used somewhere.
  */
 int
-_gpgme_debug (int level, int mode, const char *func, const char *tagname,
+_gpgme_debug (void **line, int level, int mode,
+              const char *func, const char *tagname,
               const char *tagvalue, const char *format, ...)
 {
   va_list arg_ptr;
@@ -248,7 +253,7 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
   int need_lf;
   int indent;
   char *prefix, *stdinfo, *userinfo;
-  int no_stdinfo = 0;
+  const char *modestr;
 
   if (debug_level < level)
     return 0;
@@ -275,30 +280,20 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
 
   switch (mode)
     {
-    case -1:  /* Do nothing.  */
-      stdinfo = NULL;
-      no_stdinfo = 1;
-      break;
-    case 0:
-      stdinfo = gpgrt_bsprintf ("%s: call: %s=%p ", func, tagname, tagvalue);
-      break;
-    case 1:
-      stdinfo = gpgrt_bsprintf ("%s: enter: %s=%p ", func, tagname, tagvalue);
-      break;
-    case 2:
-      stdinfo = gpgrt_bsprintf ("%s: check: %s=%p ", func, tagname, tagvalue);
-      break;
-    case 3:
-      if (tagname)
-        stdinfo = gpgrt_bsprintf ("%s: leave: %s=%p ", func, tagname, tagvalue);
-      else
-        stdinfo = gpgrt_bsprintf ("%s: leave: ", func);
-      break;
-    default:
-      stdinfo = gpgrt_bsprintf ("%s: ?(mode=%d): %s=%p ",
-                                func, mode, tagname, tagvalue);
-      break;
+    case -1: modestr = NULL; break; /* Do nothing.  */
+    case 0: modestr = "call"; break;
+    case 1: modestr = "enter"; break;
+    case 2: modestr = "check"; break;
+    case 3: modestr = "leave"; break;
+    default: modestr = "mode?"; break;
     }
+
+  if (!modestr)
+    stdinfo = NULL;
+  else if (tagname && strcmp (tagname, XSTRINGIFY (NULL)))
+    stdinfo = gpgrt_bsprintf ("%s: %s: %s=%p ", func,modestr,tagname,tagvalue);
+  else
+    stdinfo = gpgrt_bsprintf ("%s: %s: ", func, modestr);
 
   userinfo = gpgrt_vbsprintf (format, arg_ptr);
   va_end (arg_ptr);
@@ -310,42 +305,28 @@ _gpgme_debug (int level, int mode, const char *func, const char *tagname,
   else
     need_lf = 0;
 
-
-  fprintf (errfp, "%s%s%s%s",
-           prefix? prefix : "GPGME out-of-core ",
-           no_stdinfo? "" : stdinfo? stdinfo : "out-of-core ",
-           userinfo? userinfo : "out-of-core",
-           need_lf? "\n":"");
-  fflush (errfp);
+  if (line)
+    *line = gpgrt_bsprintf ("%s%s%s",
+                            prefix? prefix : "GPGME out-of-core ",
+                            !modestr? "" : stdinfo? stdinfo :
+                            (!format || !*format)? "" :"out-of-core ",
+                            userinfo? userinfo : "out-of-core");
+  else
+    {
+      fprintf (errfp, "%s%s%s%s",
+               prefix? prefix : "GPGME out-of-core ",
+               !modestr? "" : stdinfo? stdinfo :
+               (!format || !*format)? "" :"out-of-core ",
+               userinfo? userinfo : "out-of-core",
+               need_lf? "\n":"");
+      fflush (errfp);
+    }
 
   gpgrt_free (userinfo);
   gpgrt_free (stdinfo);
   gpgrt_free (prefix);
   gpg_err_set_errno (saved_errno);
   return 0;
-}
-
-
-/* Start a new debug line in *LINE, logged at level LEVEL or higher,
-   and starting with the formatted string FORMAT.  */
-void
-_gpgme_debug_begin (void **line, int level, const char *format, ...)
-{
-  va_list arg_ptr;
-  int res;
-
-  if (debug_level < level)
-    {
-      /* Disable logging of this line.  */
-      *line = NULL;
-      return;
-    }
-
-  va_start (arg_ptr, format);
-  res = gpgrt_vasprintf ((char **) line, format, arg_ptr);
-  va_end (arg_ptr);
-  if (res < 0)
-    *line = NULL;
 }
 
 
@@ -389,7 +370,7 @@ _gpgme_debug_end (void **line)
 
   /* The smallest possible level is 1, so force logging here by
      using that.  */
-  _gpgme_debug (1, -1, NULL, NULL, NULL, "%s", (char*)*line);
+  _gpgme_debug (NULL, 1, -1, NULL, NULL, NULL, "%s", (char*)*line);
   gpgrt_free (*line);
   *line = NULL;
 }
@@ -438,6 +419,6 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
       *(strp++) = ' ';
       *(strp2) = '\0';
 
-      _gpgme_debug (lvl, -1, NULL, NULL, NULL, fmt, func, str);
+      _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL, fmt, func, str);
     }
 }

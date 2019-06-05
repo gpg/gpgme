@@ -658,7 +658,7 @@ add_io_cb (engine_llass_t llass, iocb_data_t *iocbd, gpgme_io_cb_t handler)
   gpgme_error_t err;
 
   TRACE_BEG  (DEBUG_ENGINE, "engine-assuan:add_io_cb", llass,
-              "fd %d, dir %d", iocbd->fd, iocbd->dir);
+              "fd=%d, dir %d", iocbd->fd, iocbd->dir);
   err = (*llass->io_cbs.add) (llass->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
 			      handler, iocbd->data, &iocbd->tag);

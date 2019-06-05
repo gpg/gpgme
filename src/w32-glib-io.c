@@ -324,7 +324,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
   chan = find_channel (fd);
   if (!chan)
     {
-      TRACE_LOG ("fd %d: no channel registered");
+      TRACE_LOG ("fd=%d: no channel registered");
       errno = EINVAL;
       return -1;
     }
@@ -1067,7 +1067,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
       return TRACE_SYSRES (-1);
     }
 
-  TRACE_LOG  ("connect sockfd=0x%x", sockfd);
+  TRACE_LOG  ("connect socket fd=%d", sockfd);
   res = connect (sockfd, addr, addrlen);
 
   /* FIXME: Error ignored here.  */

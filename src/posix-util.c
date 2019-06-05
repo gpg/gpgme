@@ -114,7 +114,7 @@ walk_path (const char *pgm)
       path = s + 1;
     }
 
-  _gpgme_debug (DEBUG_ENGINE, -1, NULL, NULL, NULL,
+  _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
                 "gpgme-walk_path: '%s' not found in '%s'",
                 pgm, orig_path);
 

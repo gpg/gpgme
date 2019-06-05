@@ -574,7 +574,7 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
   char *bufp = buffer;
   gpgme_ssize_t buflen;
   TRACE_BEG  (DEBUG_CTX, "_gpgme_data_inbound_handler", dh,
-	      "fd=0x%x", fd);
+	      "fd=%d", fd);
 
   buflen = _gpgme_io_read (fd, buffer, BUFFER_SIZE);
   if (buflen < 0)
@@ -605,7 +605,7 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
   gpgme_ssize_t nwritten;
   TRACE_BEG  (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
-	      "fd=0x%x", fd);
+	      "fd=%d", fd);
 
   if (!dh->pending_len)
     {

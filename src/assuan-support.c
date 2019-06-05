@@ -54,7 +54,7 @@ _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
   if (msg == NULL)
     return 1;
 
-  _gpgme_debug (DEBUG_ASSUAN, -1, NULL, NULL, NULL, "%s", msg);
+  _gpgme_debug (NULL, DEBUG_ASSUAN, -1, NULL, NULL, NULL, "%s", msg);
   return 0;
 }
 

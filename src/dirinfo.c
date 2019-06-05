@@ -262,13 +262,13 @@ get_gpgconf_item (int what)
       pgmname = dirinfo.disable_gpgconf? NULL : _gpgme_get_gpgconf_path ();
       if (pgmname && _gpgme_access (pgmname, F_OK))
         {
-          _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+          _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                         "gpgme-dinfo: gpgconf='%s' [not installed]\n", pgmname);
           free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo: gpgconf='%s'\n",
                       pgmname? pgmname : "[null]");
       if (!pgmname)
@@ -295,35 +295,35 @@ get_gpgconf_item (int what)
          allocated.  */
       dirinfo.valid = 1;
       if (dirinfo.gpg_name)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:     gpg='%s'\n",
                       dirinfo.gpg_name);
       if (dirinfo.g13_name)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:     g13='%s'\n",
                       dirinfo.g13_name);
       if (dirinfo.gpgsm_name)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:   gpgsm='%s'\n",
                       dirinfo.gpgsm_name);
       if (dirinfo.homedir)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo: homedir='%s'\n",
                       dirinfo.homedir);
       if (dirinfo.agent_socket)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL,DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:   agent='%s'\n",
                       dirinfo.agent_socket);
       if (dirinfo.agent_ssh_socket)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:     ssh='%s'\n",
                       dirinfo.agent_ssh_socket);
       if (dirinfo.dirmngr_socket)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo: dirmngr='%s'\n",
                       dirinfo.dirmngr_socket);
       if (dirinfo.uisrv_socket)
-        _gpgme_debug (DEBUG_INIT, -1, NULL, NULL, NULL,
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:   uisrv='%s'\n",
                       dirinfo.uisrv_socket);
     }

@@ -160,7 +160,7 @@ gpgme_error_to_errno (gpgme_error_t err)
 	  break;
 	}
     }
-  TRACE (DEBUG_DATA, "gpgme:gpgme_error_to_errno", 0,
+  TRACE (DEBUG_DATA, "gpgme:gpgme_error_to_errno", NULL,
 	  "mapping %s <%s> to: %s", gpgme_strerror (err),
 	  gpgme_strsource (err), strerror (res));
   gpg_err_set_errno (res);
