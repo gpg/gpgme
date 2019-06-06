@@ -179,7 +179,8 @@ _gpgme_remove_io_cb (void *data)
    own event loops could compensate for that, but the external event
    loops cannot.  FIXME: We may still want to optimize this a bit when
    we are called from our own event loops.  So if CHECKED is 1, the
-   check is skipped.  */
+   check is skipped.  FIXME: Give an example on how the status of other
+   fds can be influenced.  */
 gpgme_error_t
 _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
 		  gpgme_error_t *op_err)
@@ -203,11 +204,13 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
       nr = _gpgme_io_select (&fds, 1, 1);
       assert (nr <= 1);
       if (nr < 0)
-	return errno;
+	return gpg_error_from_syserror ();
       else if (nr == 0)
-	/* The status changed in the meantime, there is nothing left
-	   to do.  */
-	return 0;
+        {
+          /* The status changed in the meantime, there is nothing left
+           * to do.  */
+          return 0;
+        }
     }
 
   TRACE (DEBUG_CTX, "_gpgme_run_io_cb", item, "handler (%p, %d)",
