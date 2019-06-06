@@ -126,6 +126,7 @@ show_usage (int ex)
          "Options:\n"
          "  --verbose     run in verbose mode\n"
          "  --no-list     do not do keylistings\n"
+         "  --allow-del   allow to delete keys after import\n"
          "  --data-type   mem function to use one of:\n"
          "                    1: fstream\n"
          "                    2: posix fd\n"
@@ -172,6 +173,8 @@ struct keylist_args_s
 typedef struct keylist_args_s *keylist_args_t;
 
 static volatile int keylists;
+
+static int allow_del;
 
 static THREAD_RET
 do_keylist (void *keylist_args)
@@ -454,6 +457,67 @@ decrypt (const char *fname, gpgme_protocol_t proto)
 }
 
 void
+delete_key (gpgme_key_t key)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  gpgme_set_protocol (ctx, key->protocol);
+
+  err = gpgme_op_delete (ctx, key, 0);
+  fail_if_err (err);
+
+  gpgme_release (ctx);
+}
+
+/* Get the key for the fpr in protocol and call delete_key
+   on it. */
+void
+delete_fpr (const char *fpr, gpgme_protocol_t proto)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_key_t key = NULL;
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  gpgme_set_protocol (ctx, proto);
+
+  err = gpgme_get_key (ctx, fpr, &key, 0);
+  fail_if_err (err);
+
+  if (!key)
+    {
+      errpoint;
+    }
+  delete_key (key);
+
+  log ("deleted key %s", fpr);
+  gpgme_key_unref (key);
+  gpgme_release (ctx);
+}
+
+void
+delete_impres (gpgme_import_result_t r, gpgme_protocol_t proto)
+{
+  gpgme_import_status_t st;
+
+  if (!r)
+    {
+      errpoint;
+    }
+
+  for (st=r->imports; st; st = st->next)
+    {
+      delete_fpr (st->fpr, proto);
+    }
+}
+
+void
 import (const char *fname, gpgme_protocol_t proto)
 {
   gpgme_ctx_t ctx;
@@ -472,6 +536,11 @@ import (const char *fname, gpgme_protocol_t proto)
 
   err = gpgme_op_import (ctx, data->dh);
   fail_if_err (err);
+
+  if (allow_del)
+    {
+      delete_impres (gpgme_op_import_result (ctx), proto);
+    }
 
   gpgme_release (ctx);
 
@@ -605,6 +674,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--no-list"))
         {
           no_list = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--allow-del"))
+        {
+          allow_del = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--mem-only"))
