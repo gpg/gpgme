@@ -62,6 +62,70 @@
 #include "debug.h"
 
 
+#ifdef USE_LINUX_GETDENTS
+/* This is not declared in public headers; getdents64(2) says that we must
+ * define it ourselves.  */
+struct linux_dirent64
+{
+  ino64_t d_ino;
+  off64_t d_off;
+  unsigned short d_reclen;
+  unsigned char d_type;
+  char d_name[];
+};
+
+# define DIR_BUF_SIZE 1024
+#endif /*USE_LINUX_GETDENTS*/
+
+
+/* Return true if FD is valid file descriptor.  */
+#if 0
+int
+_gpgme_is_fd_valid (int fd)
+{
+  int dir_fd;
+  char dir_buf[DIR_BUF_SIZE];
+  struct linux_dirent64 *dir_entry;
+  int r, pos, x;
+  const char *s;
+  int result = 0;
+
+  dir_fd = open ("/proc/self/fd", O_RDONLY | O_DIRECTORY);
+  if (dir_fd != -1)
+    {
+      for (;;)
+        {
+          r = syscall(SYS_getdents64, dir_fd, dir_buf, DIR_BUF_SIZE);
+          if (r == -1)
+            break;  /* Ooops */
+          if (r == 0)
+            break;
+
+          for (pos = 0; pos < r; pos += dir_entry->d_reclen)
+            {
+              dir_entry = (struct linux_dirent64 *) (dir_buf + pos);
+              s = dir_entry->d_name;
+              if (*s < '0' || *s > '9')
+                continue;
+              /* atoi is not guaranteed to be async-signal-safe.  */
+              for (x = 0; *s >= '0' && *s <= '9'; s++)
+                x = x * 10 + (*s - '0');
+              if (*s)
+                continue;  /* Does not look like a file descriptor.  */
+              if (x == fd)
+                {
+                  result = 1;
+                  goto leave;
+                }
+            }
+        }
+    leave:
+      close (dir_fd);
+    }
+  return result;
+}
+#endif /*0*/
+
 
 void
 _gpgme_io_subsystem_init (void)
@@ -283,22 +347,6 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
-#ifdef USE_LINUX_GETDENTS
-/* This is not declared in public headers; getdents64(2) says that we must
- * define it ourselves.  */
-struct linux_dirent64
-{
-  ino64_t d_ino;
-  off64_t d_off;
-  unsigned short d_reclen;
-  unsigned char d_type;
-  char d_name[];
-};
-
-# define DIR_BUF_SIZE 1024
-#endif /*USE_LINUX_GETDENTS*/
-
-
 static long int
 get_max_fds (void)
 {
@@ -483,10 +531,12 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       i++;
     }
   for (i = 0; fd_list[i].fd != -1; i++)
-    if (fd_list[i].dup_to == -1)
-      TRACE_LOG  ("fd[%i] = 0x%x", i, fd_list[i].fd);
-    else
-      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd, fd_list[i].dup_to);
+    {
+      if (fd_list[i].dup_to == -1)
+        TRACE_LOG  ("fd[%i] = 0x%x", i, fd_list[i].fd);
+      else
+        TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x", i,fd_list[i].fd,fd_list[i].dup_to);
+    }
 
   pid = fork ();
   if (pid == -1)
@@ -683,7 +733,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 	  if (fds[i].fd > max_fd)
 	    max_fd = fds[i].fd;
 	  TRACE_ADD1 (dbg_help, "r=%d ", fds[i].fd);
-	  any = 1;
+          any = 1;
         }
       else if (fds[i].for_write)
 	{
