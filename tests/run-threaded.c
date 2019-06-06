@@ -284,6 +284,9 @@ random_data_new (const char *fname)
 {
   data_t ret = calloc (1, sizeof (struct data_s));
   int data_rand;
+
+  ret->fd = -1;
+
   if (data_type)
     {
       data_rand = data_type;
@@ -357,7 +360,8 @@ random_data_close (data_t data)
     {
       gpgme_data_release (data->dh);
     }
-  if (data->fd)
+
+  if (data->fd != -1)
     {
       close (data->fd);
     }
