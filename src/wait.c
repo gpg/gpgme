@@ -136,8 +136,8 @@ _gpgme_add_io_cb (void *data, int fd, int dir, gpgme_io_cb_t fnc,
       return err;
     }
 
-  TRACE (DEBUG_CTX, "_gpgme_add_io_cb", ctx,
-	  "fd=%d, dir=%d -> tag=%p", fd, dir, tag);
+  TRACE (DEBUG_CTX, "_gpgme_add_io_cb", NULL,
+         "ctx=%lu fd=%d dir=%d -> tag=%p", CTXSERIAL (ctx), fd, dir, tag);
 
   *r_tag = tag;
   return 0;
@@ -159,9 +159,11 @@ _gpgme_remove_io_cb (void *data)
   assert (fdt);
   idx = tag->idx;
 
-  TRACE (DEBUG_CTX, "_gpgme_remove_io_cb", data,
-	  "setting fd 0x%x (item=%p) done", fdt->fds[idx].fd,
-	  fdt->fds[idx].opaque);
+  TRACE (DEBUG_CTX, "_gpgme_remove_io_cb", NULL,
+         "ctx=%lu setting fd=%d (item=%p data=%p) done",
+         CTXSERIAL (ctx),
+         fdt->fds[idx].fd,
+         fdt->fds[idx].opaque, data);
 
   free (fdt->fds[idx].opaque);
   free (tag);

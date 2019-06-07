@@ -21,6 +21,8 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
+#include <stdint.h>
+
 #include "gpgme.h"
 #include "engine.h"
 #include "wait.h"
@@ -77,6 +79,12 @@ typedef struct ctx_op_data *ctx_op_data_t;
 struct gpgme_context
 {
   DECLARE_LOCK (lock);
+
+  /* The unique serial number of this context object.  This is used
+   * for a weak reference of the context.  Using the address of the
+   * context is not always possible becuase it might have already been
+   * freed and reused.  */
+  uint64_t serial;
 
   /* True if the context was canceled asynchronously.  */
   int canceled;
@@ -185,5 +193,10 @@ struct gpgme_context
   struct fd_table fdt;
   struct gpgme_io_cbs io_cbs;
 };
+
+
+/* Macro to retrieve the serial number.  Returns 0 if CTX is NULL.  */
+#define CTXSERIAL(ctx) (ctx? (unsigned long)ctx->serial : 0)
+
 
 #endif	/* CONTEXT_H */
