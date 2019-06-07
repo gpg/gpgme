@@ -84,7 +84,7 @@ static gpgme_error_t engspawn_cancel (void *engine);
 
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_spawn_t esp = opaque;
@@ -110,6 +110,7 @@ close_notify_handler (int fd, void *opaque)
             }
         }
     }
+  return 0;
 }
 
 
@@ -180,8 +181,10 @@ build_fd_data_map (engine_spawn_t esp)
           esp->fd_data_map = NULL;
           return gpg_error_from_syserror ();
         }
-      if (_gpgme_io_set_close_notify (fds[0], close_notify_handler, esp)
-          || _gpgme_io_set_close_notify (fds[1], close_notify_handler, esp))
+      if (_gpgme_fdtable_add_close_notify (fds[0],
+                                            close_notify_handler, esp)
+          || _gpgme_fdtable_add_close_notify (fds[1],
+                                               close_notify_handler, esp))
         {
           /* FIXME: Need error cleanup.  */
           return gpg_error (GPG_ERR_GENERAL);

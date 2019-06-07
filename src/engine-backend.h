@@ -21,6 +21,7 @@
 #define ENGINE_BACKEND_H
 
 #include "engine.h"
+#include "fdtable.h"
 
 struct engine_ops
 {

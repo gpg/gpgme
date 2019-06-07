@@ -145,7 +145,7 @@ llass_get_req_version (void)
 }
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_llass_t llass = opaque;
@@ -158,6 +158,7 @@ close_notify_handler (int fd, void *opaque)
       llass->status_cb.fd = -1;
       llass->status_cb.tag = NULL;
     }
+  return 0;
 }
 
 
@@ -720,8 +721,8 @@ start (engine_llass_t llass, const char *command)
   if (llass->status_cb.fd < 0)
     return gpg_error_from_syserror ();
 
-  if (_gpgme_io_set_close_notify (llass->status_cb.fd,
-				  close_notify_handler, llass))
+  if (_gpgme_fdtable_add_close_notify (llass->status_cb.fd,
+                                        close_notify_handler, llass))
     {
       _gpgme_io_close (llass->status_cb.fd);
       llass->status_cb.fd = -1;

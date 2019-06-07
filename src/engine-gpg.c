@@ -173,7 +173,7 @@ gpg_io_event (void *engine, gpgme_event_io_t type, void *type_data)
 }
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_gpg_t gpg = opaque;
@@ -217,6 +217,7 @@ close_notify_handler (int fd, void *opaque)
             }
         }
     }
+  return 0;
 }
 
 /* If FRONT is true, push at the front of the list.  Use this for
@@ -525,10 +526,10 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
       rc = gpg_error_from_syserror ();
       goto leave;
     }
-  if (_gpgme_io_set_close_notify (gpg->status.fd[0],
-				  close_notify_handler, gpg)
-      || _gpgme_io_set_close_notify (gpg->status.fd[1],
-				     close_notify_handler, gpg))
+  if (_gpgme_fdtable_add_close_notify (gpg->status.fd[0],
+                                        close_notify_handler, gpg)
+      || _gpgme_fdtable_add_close_notify (gpg->status.fd[1],
+                                           close_notify_handler, gpg))
     {
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
@@ -778,9 +779,10 @@ gpg_set_colon_line_handler (void *engine, engine_colon_line_handler_t fnc,
       gpg->colon.buffer = NULL;
       return saved_err;
     }
-  if (_gpgme_io_set_close_notify (gpg->colon.fd[0], close_notify_handler, gpg)
-      || _gpgme_io_set_close_notify (gpg->colon.fd[1],
-				     close_notify_handler, gpg))
+  if (_gpgme_fdtable_add_close_notify (gpg->colon.fd[0],
+                                       close_notify_handler, gpg)
+      || _gpgme_fdtable_add_close_notify (gpg->colon.fd[1],
+                                          close_notify_handler, gpg))
     return gpg_error (GPG_ERR_GENERAL);
   gpg->colon.eof = 0;
   gpg->colon.fnc = fnc;
@@ -1112,11 +1114,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 		free_argv (argv);
 		return saved_err;
 	      }
-	    if (_gpgme_io_set_close_notify (fds[0],
-					    close_notify_handler, gpg)
-		|| _gpgme_io_set_close_notify (fds[1],
-					       close_notify_handler,
-					       gpg))
+	    if (_gpgme_fdtable_add_close_notify (fds[0],
+                                                 close_notify_handler, gpg)
+		|| _gpgme_fdtable_add_close_notify (fds[1],
+                                                    close_notify_handler,
+                                                    gpg))
 	      {
                 /* We leak fd_data_map and the fds.  This is not easy
                    to avoid and given that we reach this here only

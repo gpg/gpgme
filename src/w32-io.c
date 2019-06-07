@@ -143,7 +143,7 @@ static struct
   /* The context of an associated writer object or NULL.  */
   struct writer_context_s *writer;
 
-  /* A notification handler.  Noet that we current support only one
+  /* A notification handler.  Note that we current support only one
    * callback per fd.  */
   struct {
     _gpgme_close_notify_handler_t handler;

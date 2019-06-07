@@ -111,7 +111,7 @@ g13_get_req_version (void)
 }
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_g13_t g13 = opaque;
@@ -124,6 +124,7 @@ close_notify_handler (int fd, void *opaque)
       g13->status_cb.fd = -1;
       g13->status_cb.tag = NULL;
     }
+  return 0;
 }
 
 
@@ -686,8 +687,8 @@ start (engine_g13_t g13, const char *command)
   if (g13->status_cb.fd < 0)
     return gpg_error_from_syserror ();
 
-  if (_gpgme_io_set_close_notify (g13->status_cb.fd,
-				  close_notify_handler, g13))
+  if (_gpgme_fdtable_add_close_notify (g13->status_cb.fd,
+                                        close_notify_handler, g13))
     {
       _gpgme_io_close (g13->status_cb.fd);
       g13->status_cb.fd = -1;

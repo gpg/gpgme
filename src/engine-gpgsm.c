@@ -138,11 +138,13 @@ gpgsm_get_req_version (void)
 }
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_gpgsm_t gpgsm = opaque;
 
+  TRACE_BEG (DEBUG_SYSIO, "gpgsm:close_notify_handler", NULL,
+             "fd=%d", fd);
   assert (fd != -1);
   if (gpgsm->status_cb.fd == fd)
     {
@@ -156,6 +158,7 @@ close_notify_handler (int fd, void *opaque)
        * The status fd however is closed right after it received the
        * "OK" from the command.  So we use this event to also close
        * the diag fd.  */
+      TRACE_LOG  ("closing diag fd");
       _gpgme_io_close (gpgsm->diag_cb.fd);
     }
   else if (gpgsm->input_cb.fd == fd)
@@ -174,6 +177,7 @@ close_notify_handler (int fd, void *opaque)
           free (gpgsm->input_helper_memory);
           gpgsm->input_helper_memory = NULL;
         }
+      TRACE_LOG  ("ready with input_fd");
     }
   else if (gpgsm->output_cb.fd == fd)
     {
@@ -181,6 +185,7 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->output_cb.tag);
       gpgsm->output_cb.fd = -1;
       gpgsm->output_cb.tag = NULL;
+      TRACE_LOG  ("ready with output_fd");
     }
   else if (gpgsm->message_cb.fd == fd)
     {
@@ -188,6 +193,7 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->message_cb.tag);
       gpgsm->message_cb.fd = -1;
       gpgsm->message_cb.tag = NULL;
+      TRACE_LOG  ("ready with message_fd");
     }
   else if (gpgsm->diag_cb.fd == fd)
     {
@@ -195,7 +201,10 @@ close_notify_handler (int fd, void *opaque)
 	(*gpgsm->io_cbs.remove) (gpgsm->diag_cb.tag);
       gpgsm->diag_cb.fd = -1;
       gpgsm->diag_cb.tag = NULL;
+      TRACE_LOG  ("ready with diag_fd");
     }
+  TRACE_SUC ("");
+  return 0;
 }
 
 
@@ -544,19 +553,19 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 
 #if !USE_DESCRIPTOR_PASSING
   if (!err
-      && (_gpgme_io_set_close_notify (gpgsm->input_cb.fd,
-				      close_notify_handler, gpgsm)
-	  || _gpgme_io_set_close_notify (gpgsm->output_cb.fd,
-					 close_notify_handler, gpgsm)
-	  || _gpgme_io_set_close_notify (gpgsm->message_cb.fd,
-					 close_notify_handler, gpgsm)))
+      && (_gpgme_fdtable_add_close_notify (gpgsm->input_cb.fd,
+                                            close_notify_handler, gpgsm)
+	  || _gpgme_fdtable_add_close_notify (gpgsm->output_cb.fd,
+                                               close_notify_handler, gpgsm)
+	  || _gpgme_fdtable_add_close_notify (gpgsm->message_cb.fd,
+                                               close_notify_handler, gpgsm)))
     {
       err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
 #endif
-  if (!err && _gpgme_io_set_close_notify (gpgsm->diag_cb.fd,
-                                          close_notify_handler, gpgsm))
+  if (!err && _gpgme_fdtable_add_close_notify (gpgsm->diag_cb.fd,
+                                                close_notify_handler, gpgsm))
     {
       err = gpg_error (GPG_ERR_GENERAL);
       goto leave;
@@ -816,8 +825,8 @@ gpgsm_set_fd (engine_gpgsm_t gpgsm, fd_type_t fd_type, const char *opt)
       iocb_data->fd = dir ? fds[0] : fds[1];
       iocb_data->server_fd = dir ? fds[1] : fds[0];
 
-      if (_gpgme_io_set_close_notify (iocb_data->fd,
-				      close_notify_handler, gpgsm))
+      if (_gpgme_fdtable_add_close_notify (iocb_data->fd,
+                                            close_notify_handler, gpgsm))
 	{
 	  err = gpg_error (GPG_ERR_GENERAL);
 	  goto leave_set_fd;
@@ -1188,8 +1197,8 @@ start (engine_gpgsm_t gpgsm, const char *command)
   if (gpgsm->status_cb.fd < 0)
     return gpg_error_from_syserror ();
 
-  if (_gpgme_io_set_close_notify (gpgsm->status_cb.fd,
-				  close_notify_handler, gpgsm))
+  if (_gpgme_fdtable_add_close_notify (gpgsm->status_cb.fd,
+                                        close_notify_handler, gpgsm))
     {
       _gpgme_io_close (gpgsm->status_cb.fd);
       gpgsm->status_cb.fd = -1;

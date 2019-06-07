@@ -59,6 +59,7 @@
 #include "priv-io.h"
 #include "sema.h"
 #include "ath.h"
+#include "fdtable.h"
 #include "debug.h"
 
 
@@ -153,22 +154,6 @@ _gpgme_io_fd2str (char *buf, int buflen, int fd)
 }
 
 
-/* The table to hold notification handlers.  We use a linear search
-   and extend the table as needed.  */
-struct notify_table_item_s
-{
-  int fd;  /* -1 indicates an unused entry.  */
-  _gpgme_close_notify_handler_t handler;
-  void *value;
-};
-typedef struct notify_table_item_s *notify_table_item_t;
-
-static notify_table_item_t notify_table;
-static size_t notify_table_size;
-DEFINE_STATIC_LOCK (notify_table_lock);
-
-
-
 int
 _gpgme_io_read (int fd, void *buffer, size_t count)
 {
@@ -208,27 +193,43 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 int
 _gpgme_io_pipe (int filedes[2], int inherit_idx)
 {
+  gpg_error_t err;
+  int res;
   int saved_errno;
-  int err;
+  int i;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_pipe", NULL,
 	      "inherit_idx=%i (GPGME uses it for %s)",
 	      inherit_idx, inherit_idx ? "reading" : "writing");
 
-  err = pipe (filedes);
-  if (err < 0)
-    return TRACE_SYSRES (err);
+  res = pipe (filedes);
+  if (res < 0)
+    return TRACE_SYSRES (res);
 
   /* FIXME: Should get the old flags first.  */
-  err = fcntl (filedes[1 - inherit_idx], F_SETFD, FD_CLOEXEC);
+  res = fcntl (filedes[1 - inherit_idx], F_SETFD, FD_CLOEXEC);
   saved_errno = errno;
-  if (err < 0)
+  if (res < 0)
     {
       close (filedes[0]);
       close (filedes[1]);
     }
   errno = saved_errno;
-  if (err)
-    return TRACE_SYSRES (err);
+  if (res)
+    return TRACE_SYSRES (res);
+
+  for (i=0; i < 2; i++)
+    {
+      err = _gpgme_fdtable_insert (filedes[i]);
+      if (err)
+        {
+          TRACE_LOG ("fdtable_insert failed for fd=%d: %s\n",
+                     filedes[i], gpg_strerror (err));
+          close (filedes[0]);
+          close (filedes[1]);
+          gpg_err_set_errno (EIO);
+          return TRACE_SYSRES (-1);
+        }
+    }
 
   TRACE_SUC ("read fd=%d write fd=%d", filedes[0], filedes[1]);
   return 0;
@@ -238,95 +239,27 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
 int
 _gpgme_io_close (int fd)
 {
+  gpg_error_t err;
   int res;
-  _gpgme_close_notify_handler_t handler = NULL;
-  void *handler_value;
-  int idx;
 
   TRACE_BEG (DEBUG_SYSIO, "_gpgme_io_close", NULL, "fd=%d", fd);
-
   if (fd == -1)
-    {
-      errno = EINVAL;
-      return TRACE_SYSRES (-1);
-    }
+    return TRACE_SYSRES (0);  /* Igore invalid FDs.  */
 
-  /* First call the notify handler.  */
-  LOCK (notify_table_lock);
-  for (idx=0; idx < notify_table_size; idx++)
+  /* First remove from the table which also runs the close handlers.
+   * Having the FD not (yet) in the table is possible and thus we
+   * ignore that error code.  */
+  err = _gpgme_fdtable_remove (fd);
+  if (err && gpg_err_code (err) != GPG_ERR_NO_KEY)
     {
-      if (notify_table[idx].fd == fd)
-        {
-	  handler       = notify_table[idx].handler;
-	  handler_value = notify_table[idx].value;
-	  notify_table[idx].handler = NULL;
-	  notify_table[idx].value = NULL;
-	  notify_table[idx].fd = -1; /* Mark slot as free.  */
-          break;
-        }
-    }
-  UNLOCK (notify_table_lock);
-  if (handler)
-    {
-      TRACE_LOG  ("invoking close handler %p/%p", handler, handler_value);
-      handler (fd, handler_value);
+      TRACE_LOG ("fdtable_remove failed for fd=%d: %s\n",
+                 fd, gpg_strerror (err));
+      gpg_err_set_errno (EINVAL);
+      return TRACE_SYSRES (-1);
     }
 
   /* Then do the close.  */
   res = close (fd);
-  return TRACE_SYSRES (res);
-}
-
-
-int
-_gpgme_io_set_close_notify (int fd, _gpgme_close_notify_handler_t handler,
-			    void *value)
-{
-  int res = 0;
-  int idx;
-
-  TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_set_close_notify", NULL,
-	      "fd=%d close_handler=%p/%p", fd, handler, value);
-
-  assert (fd != -1);
-
-  LOCK (notify_table_lock);
-  for (idx=0; idx < notify_table_size; idx++)
-    if (notify_table[idx].fd == -1)
-      break;
-  if (idx == notify_table_size)
-    {
-      /* We need to increase the size of the table.  The approach we
-         take is straightforward to minimize the risk of bugs.  */
-      notify_table_item_t newtbl;
-      size_t newsize = notify_table_size + 64;
-
-      newtbl = calloc (newsize, sizeof *newtbl);
-      if (!newtbl)
-        {
-          res = -1;
-          goto leave;
-        }
-      for (idx=0; idx < notify_table_size; idx++)
-        newtbl[idx] = notify_table[idx];
-      for (; idx < newsize; idx++)
-        {
-          newtbl[idx].fd = -1;
-          newtbl[idx].handler = NULL;
-          newtbl[idx].value = NULL;
-        }
-      free (notify_table);
-      notify_table = newtbl;
-      idx = notify_table_size;
-      notify_table_size = newsize;
-    }
-  notify_table[idx].fd = fd;
-  notify_table[idx].handler = handler;
-  notify_table[idx].value = value;
-
- leave:
-  UNLOCK (notify_table_lock);
-
   return TRACE_SYSRES (res);
 }
 
@@ -885,16 +818,28 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 int
 _gpgme_io_dup (int fd)
 {
+  gpg_error_t err;
   int new_fd;
 
   do
     new_fd = dup (fd);
   while (new_fd == -1 && errno == EINTR);
 
-  TRACE (DEBUG_SYSIO, "_gpgme_io_dup", NULL, "fd=%d -> fd=%d", fd, new_fd);
+  TRACE (DEBUG_SYSIO, __func__, NULL, "fd=%d -> fd=%d", fd, new_fd);
+  err = _gpgme_fdtable_insert (new_fd);
+  if (err)
+    {
+      TRACE (DEBUG_SYSIO, __func__, NULL,
+             "fdtable_insert failed for fd=%d: %s\n",
+             new_fd, gpg_strerror (err));
+      close (new_fd);
+      new_fd = -1;
+      gpg_err_set_errno (EIO);
+    }
 
   return new_fd;
 }
+
 
 
 int

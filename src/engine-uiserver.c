@@ -135,7 +135,7 @@ uiserver_get_req_version (void)
 }
 
 
-static void
+static gpg_error_t
 close_notify_handler (int fd, void *opaque)
 {
   engine_uiserver_t uiserver = opaque;
@@ -179,6 +179,8 @@ close_notify_handler (int fd, void *opaque)
       uiserver->message_cb.fd = -1;
       uiserver->message_cb.tag = NULL;
     }
+
+  return 0;
 }
 
 
@@ -585,8 +587,8 @@ uiserver_set_fd (engine_uiserver_t uiserver, fd_type_t fd_type, const char *opt)
       iocb_data->fd = dir ? fds[0] : fds[1];
       iocb_data->server_fd = dir ? fds[1] : fds[0];
 
-      if (_gpgme_io_set_close_notify (iocb_data->fd,
-				      close_notify_handler, uiserver))
+      if (_gpgme_fdtable_add_close_notify (iocb_data->fd,
+                                            close_notify_handler, uiserver))
 	{
 	  err = gpg_error (GPG_ERR_GENERAL);
 	  goto leave_set_fd;
@@ -921,8 +923,8 @@ start (engine_uiserver_t uiserver, const char *command)
   if (uiserver->status_cb.fd < 0)
     return gpg_error_from_syserror ();
 
-  if (_gpgme_io_set_close_notify (uiserver->status_cb.fd,
-				  close_notify_handler, uiserver))
+  if (_gpgme_fdtable_add_close_notify (uiserver->status_cb.fd,
+                                        close_notify_handler, uiserver))
     {
       _gpgme_io_close (uiserver->status_cb.fd);
       uiserver->status_cb.fd = -1;
