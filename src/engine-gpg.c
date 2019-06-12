@@ -3278,6 +3278,8 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	err = add_arg (gpg, "-");
       if (!err)
         err = add_input_size_hint (gpg, sig);
+      if (!err && have_gpg_version (gpg, "2.1.16"))
+        err = add_arg (gpg, "--verify");
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
