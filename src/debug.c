@@ -403,33 +403,65 @@ _gpgme_debug_buffer (int lvl, const char *const fmt,
   if (!buffer)
     return;
 
-  while (idx < len)
+  if (lvl > 9)
     {
-      char str[51];
-      char *strp = str;
-      char *strp2 = &str[34];
+      while (idx < len)
+        {
+          char str[51];
+          char *strp = str;
+          char *strp2 = &str[34];
 
-      for (j = 0; j < 16; j++)
-	{
-	  unsigned char val;
-	  if (idx < len)
-	    {
-	      val = buffer[idx++];
-	      *(strp++) = TOHEX (val >> 4);
-	      *(strp++) = TOHEX (val % 16);
-	      *(strp2++) = isprint (val) ? val : '.';
-	    }
-	  else
-	    {
-	      *(strp++) = ' ';
-	      *(strp++) = ' ';
-	    }
-	  if (j == 7)
-	    *(strp++) = ' ';
-	}
-      *(strp++) = ' ';
-      *(strp2) = '\0';
+          for (j = 0; j < 16; j++)
+            {
+              unsigned char val;
+              if (idx < len)
+                {
+                  val = buffer[idx++];
+                  *(strp++) = TOHEX (val >> 4);
+                  *(strp++) = TOHEX (val % 16);
+                  *(strp2++) = isprint (val)? val : '.';
+                }
+              else
+                {
+                  *(strp++) = ' ';
+                  *(strp++) = ' ';
+                }
+              if (j == 7)
+                *(strp++) = ' ';
+            }
+          *(strp++) = ' ';
+          *(strp2) = '\0';
 
-      _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL, fmt, func, str);
+          _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL, fmt, func, str);
+        }
+    }
+  else
+    {
+      while (idx < len)
+        {
+          char str[48+4+1];
+          char *strp = str;
+
+          for (j = 0; j < 48; j++)
+            {
+              unsigned char val;
+              if (idx < len)
+                {
+                  val = buffer[idx++];
+                  if (val == '\n')
+                    {
+                      *strp++ = '<';
+                      *strp++ = 'L';
+                      *strp++ = 'F';
+                      *strp++ = '>';
+                      break;
+                    }
+                  *strp++ = (val > 31 && val < 127)? val : '.';
+                }
+            }
+          *strp = 0;
+
+          _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL, fmt, func, str);
+        }
     }
 }
