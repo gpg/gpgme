@@ -1,7 +1,7 @@
 /* gpgme.c - GnuPG Made Easy.
  * Copyright (C) 2000 Werner Koch (dd9jn)
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2012,
- *               2014, 2015 g10 Code GmbH
+ *               2014, 2015, 2019 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -42,25 +42,31 @@
 #include "mbox-util.h"
 
 
-/* The default locale and its lock.  This lock is also used for the
- * context serial number.  */
-DEFINE_STATIC_LOCK (def_lc_lock);
+/* The lock used to protect access to the default locale, the global
+ * serial counter, and the list of context objects.  */
+DEFINE_STATIC_LOCK (context_list_lock);
+
+/* The default locale.  Access is protected by CONTEXT_LIST_LOCK.  */
 static char *def_lc_ctype;
 static char *def_lc_messages;
 
 /* A serial number to identify a context.  To make debugging easier by
  * distinguishing this from the data object s/n we initialize it with
  * an arbitrary offset.  Debug output of this should be done using
- * decimal notation.  Updates are protected by the DEF_LC_LOCK.  */
+ * decimal notation.  Updates are protected by CONTEXT_LIST_LOCK.  */
 static uint64_t last_ctx_serial = 200000;
 
+/* A linked list of all context objects.  Protected by
+ * CONTEXT_LIST_LOCK.  */
+static gpgme_ctx_t context_list;
 
-
 gpgme_error_t _gpgme_selftest = GPG_ERR_NOT_OPERATIONAL;
 
 /* Protects all reference counters in result structures.  All other
-   accesses to a result structure are read only.  */
+ * accesses to a result structure are read only.  */
 DEFINE_STATIC_LOCK (result_ref_lock);
+
+
 
 
 /* Set the global flag NAME to VALUE.  Return 0 on success.  Note that
@@ -131,14 +137,14 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   ctx->sub_protocol = GPGME_PROTOCOL_DEFAULT;
   _gpgme_fd_table_init (&ctx->fdt);
 
-  LOCK (def_lc_lock);
+  LOCK (context_list_lock);
   if (def_lc_ctype)
     {
       ctx->lc_ctype = strdup (def_lc_ctype);
       if (!ctx->lc_ctype)
 	{
           int saved_err = gpg_error_from_syserror ();
-	  UNLOCK (def_lc_lock);
+	  UNLOCK (context_list_lock);
 	  _gpgme_engine_info_release (ctx->engine_info);
 	  free (ctx);
 	  return TRACE_ERR (saved_err);
@@ -153,7 +159,7 @@ gpgme_new (gpgme_ctx_t *r_ctx)
       if (!ctx->lc_messages)
 	{
           int saved_err = gpg_error_from_syserror ();
-	  UNLOCK (def_lc_lock);
+	  UNLOCK (context_list_lock);
 	  if (ctx->lc_ctype)
 	    free (ctx->lc_ctype);
 	  _gpgme_engine_info_release (ctx->engine_info);
@@ -166,7 +172,11 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 
   ctx->serial = ++last_ctx_serial;
 
-  UNLOCK (def_lc_lock);
+  /* Put the object itno a list.  */
+  ctx->next_ctx = context_list;
+  context_list = ctx;
+
+  UNLOCK (context_list_lock);
 
   *r_ctx = ctx;
 
@@ -175,6 +185,39 @@ gpgme_new (gpgme_ctx_t *r_ctx)
 }
 
 
+/* Check the status of the context described by SERIAL.
+ * Returns:
+ *   0                  - All fine
+ *   GPG_ERR_CANCELED   - Context operation has been canceled.
+ *   GPG_ERR_NO_OBJ     - Context ist not anymore known.
+ * If R_CTX is not NULl and the context exists, it is stored there.
+ */
+gpg_error_t
+_gpgme_get_ctx (uint64_t serial, gpgme_ctx_t *r_ctx)
+{
+  gpg_error_t err;
+  gpgme_ctx_t ctx = NULL;
+
+  LOCK (context_list_lock);
+  for (ctx = context_list; ctx; ctx = ctx->next_ctx)
+    if (ctx->serial == serial)
+      break;
+  UNLOCK (context_list_lock);
+  if (ctx)
+    {
+      /* FIXME: The lock is only used for the canceled flag.  We
+       * should remove it and rely on the global
+       * context_list_lock.  */
+      LOCK (ctx->lock);
+      err = ctx->canceled? gpg_error (GPG_ERR_CANCELED) : 0;
+      UNLOCK (ctx->lock);
+    }
+  else
+    err = gpg_error (GPG_ERR_NO_OBJ);
+  if (r_ctx)
+    *r_ctx = ctx;
+  return err;
+}
 gpgme_error_t
 _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
 			gpg_error_t op_err)
@@ -251,6 +294,26 @@ gpgme_release (gpgme_ctx_t ctx)
 
   if (!ctx)
     return;
+
+  LOCK (context_list_lock);
+  if (context_list == ctx)
+    {
+      context_list = ctx->next_ctx;
+      ctx->next_ctx = NULL;
+    }
+  else
+    {
+      gpgme_ctx_t tmpctx;
+
+      for (tmpctx = context_list; tmpctx; tmpctx = tmpctx->next_ctx)
+        if (tmpctx->next_ctx == ctx)
+          {
+            tmpctx->next_ctx = ctx->next_ctx;
+            ctx->next_ctx = NULL;
+            break;
+          }
+    }
+  UNLOCK (context_list_lock);
 
   _gpgme_engine_release (ctx->engine);
   ctx->engine = NULL;
@@ -1054,7 +1117,7 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
     }
 
   if (!ctx)
-    LOCK (def_lc_lock);
+    LOCK (context_list_lock);
 #ifdef LC_CTYPE
   SET_ONE_LOCALE (ctype, CTYPE);
 #endif
@@ -1062,7 +1125,7 @@ gpgme_set_locale (gpgme_ctx_t ctx, int category, const char *value)
   SET_ONE_LOCALE (messages, MESSAGES);
 #endif
   if (!ctx)
-    UNLOCK (def_lc_lock);
+    UNLOCK (context_list_lock);
 
   return TRACE_ERR (0);
 }

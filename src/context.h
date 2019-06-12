@@ -73,9 +73,10 @@ struct ctx_op_data
 };
 typedef struct ctx_op_data *ctx_op_data_t;
 
+
 
 /* The context defines an environment in which crypto operations can
-   be performed (sequentially).  */
+ * be performed (sequentially).  */
 struct gpgme_context
 {
   DECLARE_LOCK (lock);
@@ -85,6 +86,11 @@ struct gpgme_context
    * context is not always possible becuase it might have already been
    * freed and reused.  */
   uint64_t serial;
+
+  /* A link to the next context.  We keep all contex object in the
+   * linked list to so that we are abale to find a context by its
+   * serial number.  */
+  gpgme_ctx_t next_ctx;
 
   /* True if the context was canceled asynchronously.  */
   int canceled;
@@ -197,6 +203,14 @@ struct gpgme_context
 
 /* Macro to retrieve the serial number.  Returns 0 if CTX is NULL.  */
 #define CTXSERIAL(ctx) (ctx? (unsigned long)ctx->serial : 0)
+
+/*-- gpgme.c --*/
+
+gpg_error_t _gpgme_get_ctx (uint64_t serial, gpgme_ctx_t *r_ctx);
+
+gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
+                                      gpg_error_t op_err);
+
 
 
 #endif	/* CONTEXT_H */
