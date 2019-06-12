@@ -1305,6 +1305,7 @@ gpgsm_delete (void *engine, gpgme_key_t key, unsigned int flags)
     }
   length++;
 
+  /* Fixme: Ugly quoting code below - use some standard function.  */
   line = malloc (length);
   if (!line)
     return gpg_error_from_syserror ();
@@ -1360,6 +1361,7 @@ set_recipients (engine_gpgsm_t gpgsm, gpgme_key_t recp[])
   int invalid_recipients = 0;
   int i;
 
+  /* FIXME: Uyse a membuf etc to build up LINE.  */
   linelen = 10 + 40 + 1;	/* "RECIPIENT " + guess + '\0'.  */
   line = malloc (10 + 40 + 1);
   if (!line)
@@ -1517,6 +1519,7 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err = 0;
   char *cmd;
+  const char *s1, *s2;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1524,20 +1527,19 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   if (!pattern)
     pattern = "";
 
-  cmd = malloc (7 + 9 + 9 + strlen (pattern) + 1);
-  if (!cmd)
-    return gpg_error_from_syserror ();
-
-  strcpy (cmd, "EXPORT ");
+  s1 = s2 = "";
   if ((mode & GPGME_EXPORT_MODE_SECRET))
     {
-      strcat (cmd, "--secret ");
+      s1 = "--secret ";
       if ((mode & GPGME_EXPORT_MODE_RAW))
-        strcat (cmd, "--raw ");
+        s2 = "--raw ";
       else if ((mode & GPGME_EXPORT_MODE_PKCS12))
-        strcat (cmd, "--pkcs12 ");
+        s2 = "--pkcs12 ";
     }
-  strcat (cmd, pattern);
+
+  cmd = _gpgme_strconcat ("EXPORT ", s1, s2, pattern, NULL);
+  if (!cmd)
+    return gpg_error_from_syserror ();
 
   gpgsm->output_cb.data = keydata;
   err = gpgsm_set_fd (gpgsm, OUTPUT_FD, use_armor ? "--armor"
@@ -1568,6 +1570,7 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  /*FIXME: Replace by membuf and a quoting function.  */
   if (pattern && *pattern)
     {
       const char **pat = pattern;
@@ -1868,21 +1871,12 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                "OPTION offline=0" ,
                                NULL, NULL);
 
-
-  /* Length is "LISTSECRETKEYS " + p + '\0'.  */
-  line = malloc (15 + strlen (pattern) + 1);
+  if (secret_only)
+    line = _gpgme_strconcat ("LISTSECRETKEYS ", pattern, NULL);
+  else
+    line = _gpgme_strconcat ("LISTKEYS ", pattern, NULL);
   if (!line)
     return gpg_error_from_syserror ();
-  if (secret_only)
-    {
-      strcpy (line, "LISTSECRETKEYS ");
-      strcpy (&line[15], pattern);
-    }
-  else
-    {
-      strcpy (line, "LISTKEYS ");
-      strcpy (&line[9], pattern);
-    }
 
   gpgsm_clear_fd (gpgsm, INPUT_FD);
   gpgsm_clear_fd (gpgsm, OUTPUT_FD);
@@ -1943,6 +1937,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
                                "OPTION offline=0" ,
                                NULL, NULL);
 
+  /* FIXME: Repalce by membuf and quoting function.  */
   if (pattern && *pattern)
     {
       const char **pat = pattern;
