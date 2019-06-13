@@ -1,33 +1,33 @@
-Noteworthy changes in version 1.13.1 (unreleased)
+Noteworthy changes in version 1.13.1 (2019-06-13)
 -------------------------------------------------
 
- * Python: Fix DecryptionError Exception.  [#4478]
+ * cpp: gpgme_set_global_flag is now wrapped.  [#4471]
 
- * Python: No longer raises BadSignatures from
-   decrypt(verify=True).  [#4276]
+ * w32: Improved handling of unicode install paths.  [#4453]
 
- * cpp: gpgme_set_global_flag is now wrapped.
-   [#4471]
+ * w32: The gpgme_io_spawn error message is now only shown once. [#4453]
 
- * Fixed a crash introduced in 1.13.0 when working
-   with S/MIME.  [#4456]
+ * Fixed a crash introduced in 1.13.0 when working with S/MIME. [#4556]
 
- * w32: Improved handling of unicode install paths.
-   [#4453]
+ * w32: Fixed format string errors introduced in 1.13.0 that could
+   cause crashes.  [#4440]
 
- * w32: The gpgme_io_spawn error message is now
-   only shown once.  [#4453]
+ * w32: Fixed an error in the new diagnostic gpgsm support introduced
+   in 1.13.0 that caused crashes in low fd scenarios.  [#4439]
 
- * w32: Fixed format string errors introduced in
-   1.13.0 that could cause crashes.  [#4440]
+ * python: Fixed a DecryptionError Exception.  [#4478]
 
- * w32: Fixed an error in the new diagnostic
-   gpgsm support introduced in 1.13.0 that caused
-   crashes in low fd scenarios.  [#4439]
+ * python: No longer raises BadSignatures from decrypt(verify=True).
+   [#4276]
 
  * Interface changes relative to the 1.13.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: setGlobalFlag                         NEW.
+
+ [c=C33/A22/R1 cpp=C16/A10/R0 qt=C10/A3/R4]
+
+ Release-info: https://dev.gnupg.org/T4551
+
 
 Noteworthy changes in version 1.13.0 (2019-03-26)
 -------------------------------------------------
