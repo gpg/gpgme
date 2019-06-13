@@ -51,14 +51,15 @@ struct spawn_fd_item_s
   int arg_loc;
 };
 
-struct io_select_fd_s
+struct io_select_s
 {
   int fd;
-  int for_read;
-  int for_write;
-  int signaled;
-  void *opaque;
+  unsigned int for_read:1;
+  unsigned int for_write:1;
+  unsigned int signaled:1;
 };
+typedef struct io_select_s *io_select_t;
+
 
 /* These function are either defined in posix-io.c or w32-io.c.  */
 void _gpgme_io_subsystem_init (void);
@@ -89,7 +90,7 @@ int _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		     void (*atfork) (void *opaque, int reserved),
 		     void *atforkvalue, pid_t *r_pid);
 
-int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
+int _gpgme_io_select (io_select_t fds, unsigned int nfds, int nonblock);
 
 /* Write the printable version of FD to the buffer BUF of length
    BUFLEN.  The printable version is the representation on the command

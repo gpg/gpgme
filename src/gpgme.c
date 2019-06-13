@@ -135,7 +135,6 @@ gpgme_new (gpgme_ctx_t *r_ctx)
   ctx->include_certs = GPGME_INCLUDE_CERTS_DEFAULT;
   ctx->protocol = GPGME_PROTOCOL_OpenPGP;
   ctx->sub_protocol = GPGME_PROTOCOL_DEFAULT;
-  _gpgme_fd_table_init (&ctx->fdt);
 
   LOCK (context_list_lock);
   if (def_lc_ctype)
@@ -218,36 +217,43 @@ _gpgme_get_ctx (uint64_t serial, gpgme_ctx_t *r_ctx)
     *r_ctx = ctx;
   return err;
 }
+
+
+
+/* Cancel the context indetified with SERIAL.  Pass CTX_ERR or OP_ERR
+ * down to the engine.  */
 gpgme_error_t
-_gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
+_gpgme_cancel_with_err (uint64_t serial, gpg_error_t ctx_err,
 			gpg_error_t op_err)
 {
   gpgme_error_t err;
+  gpgme_ctx_t ctx;
   struct gpgme_io_event_done_data data;
 
   TRACE_BEG  (DEBUG_CTX, "_gpgme_cancel_with_err", NULL,
               "ctx=%lu ctx_err=%i op_err=%i",
-	      CTXSERIAL (ctx), ctx_err, op_err);
+	      (unsigned long)serial, ctx_err, op_err);
 
-  if (ctx_err)
-    {
-      err = _gpgme_engine_cancel (ctx->engine);
-      if (err)
-	return TRACE_ERR (err);
-    }
+  LOCK (context_list_lock);
+  for (ctx = context_list; ctx; ctx = ctx->next_ctx)
+    if (ctx->serial == serial)
+      break;
+  UNLOCK (context_list_lock);
+
+  if (!ctx)
+    err = gpg_error (GPG_ERR_NO_OBJ);
+  else if (ctx_err)
+    err = _gpgme_engine_cancel (ctx->engine);
   else
+    err = _gpgme_engine_cancel_op (ctx->engine);
+
+  if (!err)
     {
-      err = _gpgme_engine_cancel_op (ctx->engine);
-      if (err)
-	return TRACE_ERR (err);
+      data.err = ctx_err;
+      data.op_err = op_err;
+      _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &data);
     }
-
-  data.err = ctx_err;
-  data.op_err = op_err;
-
-  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &data);
-
-  return TRACE_ERR (0);
+  return TRACE_ERR (err);
 }
 
 
@@ -262,7 +268,7 @@ gpgme_cancel (gpgme_ctx_t ctx)
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = _gpgme_cancel_with_err (ctx, gpg_error (GPG_ERR_CANCELED), 0);
+  err = _gpgme_cancel_with_err (ctx->serial, gpg_error (GPG_ERR_CANCELED), 0);
 
   return TRACE_ERR (err);
 }
@@ -317,7 +323,7 @@ gpgme_release (gpgme_ctx_t ctx)
 
   _gpgme_engine_release (ctx->engine);
   ctx->engine = NULL;
-  _gpgme_fd_table_deinit (&ctx->fdt);
+  /* FIXME: Remove stale FDs belonging to us? */
   _gpgme_release_result (ctx);
   _gpgme_signers_clear (ctx);
   _gpgme_sig_notation_clear (ctx);
@@ -972,17 +978,17 @@ gpgme_set_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
              CTXSERIAL (ctx),
              io_cbs, io_cbs->add, io_cbs->add_priv, io_cbs->remove,
              io_cbs->event, io_cbs->event_priv);
-      ctx->io_cbs = *io_cbs;
+      ctx->user_io_cbs = *io_cbs;
     }
   else
     {
       TRACE (DEBUG_CTX, "gpgme_set_io_cbs", NULL,
              "ctx=%lu io_cbs=%p (default)", CTXSERIAL (ctx), io_cbs);
-      ctx->io_cbs.add = NULL;
-      ctx->io_cbs.add_priv = NULL;
-      ctx->io_cbs.remove = NULL;
-      ctx->io_cbs.event = NULL;
-      ctx->io_cbs.event_priv = NULL;
+      ctx->user_io_cbs.add = NULL;
+      ctx->user_io_cbs.add_priv = NULL;
+      ctx->user_io_cbs.remove = NULL;
+      ctx->user_io_cbs.event = NULL;
+      ctx->user_io_cbs.event_priv = NULL;
     }
 }
 
@@ -1054,7 +1060,7 @@ gpgme_get_io_cbs (gpgme_ctx_t ctx, gpgme_io_cbs_t io_cbs)
          io_cbs, io_cbs->add, io_cbs->add_priv, io_cbs->remove,
          io_cbs->event, io_cbs->event_priv);
 
-  *io_cbs = ctx->io_cbs;
+  *io_cbs = ctx->user_io_cbs;
 }
 
 

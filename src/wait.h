@@ -1,6 +1,6 @@
 /* wait.h - Definitions for the wait queue interface.
    Copyright (C) 2000 Werner Koch (dd9jn)
-   Copyright (C) 2001, 2002, 2003, 2004 g10 Code GmbH
+   Copyright (C) 2001, 2002, 2003, 2004. 2019 g10 Code GmbH
 
    This file is part of GPGME.
 
@@ -25,58 +25,46 @@
 #include "gpgme.h"
 #include "sema.h"
 
-struct fd_table
+/* A registered fd handler can be removed using the tag that
+ * identifies it.  In the public API that tag is an an opaque
+ * pointer. */
+struct io_cb_tag_s
 {
-  struct io_select_fd_s *fds;
-  size_t size;
-};
-typedef struct fd_table *fd_table_t;
+  /* The s/n of the context for which the fd was registered.  */
+  uint64_t serial;
 
-/* Wait items are hooked into the io_select_fd_s to connect an fd with
-   a callback handler.  */
-struct wait_item_s
-{
-  gpgme_ctx_t ctx;
-  gpgme_io_cb_t handler;
-  void *handler_value;
-  int dir;
-};
-
-/* A registered fd handler is removed later using the tag that
-   identifies it.  */
-struct tag
-{
-  /* The context for which the fd was registered.  */
-  gpgme_ctx_t ctx;
-
-  /* The index into the fd table for this context.  */
-  int idx;
+  /* The actual fd.  */
+  int fd;
 
   /* This is used by the wrappers for the user event loop.  */
   void *user_tag;
+
+  /* A string used describing the data.  This is used for tracing.  */
+  const char *desc;
 };
 
 
-void _gpgme_fd_table_init (fd_table_t fdt);
-void _gpgme_fd_table_deinit (fd_table_t fdt);
-
 gpgme_error_t _gpgme_add_io_cb (void *data, int fd, int dir,
-			     gpgme_io_cb_t fnc, void *fnc_data, void **r_tag);
+                                gpgme_io_cb_t fnc, void *fnc_data,
+                                void **r_tag);
+gpgme_error_t _gpgme_add_io_cb_user (void *data, int fd, int dir,
+                                     gpgme_io_cb_t fnc, void *fnc_data,
+                                     void **r_tag);
+
 void _gpgme_remove_io_cb (void *tag);
-void _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type,
-				   void *type_data);
+void _gpgme_remove_io_cb_user (void *tag);
+
+
 void _gpgme_wait_global_event_cb (void *data, gpgme_event_io_t type,
 				  void *type_data);
 
-gpgme_error_t _gpgme_wait_user_add_io_cb (void *data, int fd, int dir,
-					  gpgme_io_cb_t fnc, void *fnc_data,
-					  void **r_tag);
-void _gpgme_wait_user_remove_io_cb (void *tag);
+
+void _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type,
+				   void *type_data);
 void _gpgme_wait_user_event_cb (void *data, gpgme_event_io_t type,
 				void *type_data);
 
-gpgme_error_t _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
-				gpgme_error_t *err);
+
 
 
 /* Session based interfaces require to make a distinction between IPC

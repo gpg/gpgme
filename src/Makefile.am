@@ -75,7 +75,7 @@ main_sources =								\
 	data-compat.c data-identify.c					\
 	signers.c sig-notation.c					\
         fdtable.c fdtable.h                                             \
-	wait.c wait-global.c wait-private.c wait-user.c wait.h		\
+	wait.c wait.h	                                          	\
 	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\

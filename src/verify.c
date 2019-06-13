@@ -911,7 +911,7 @@ parse_error (gpgme_signature_t sig, char *args, int set_status)
       && gpg_err_code (err) == GPG_ERR_BAD_DATA)
     {
       /* This indicates a double plaintext.  The only solid way to
-         handle this is by failing the oepration.  */
+         handle this is by failing the operation.  */
       return gpg_error (GPG_ERR_BAD_DATA);
     }
   else if (!set_status)

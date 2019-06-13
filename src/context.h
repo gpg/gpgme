@@ -194,10 +194,8 @@ struct gpgme_context
   gpgme_status_cb_t status_cb;
   void *status_cb_value;
 
-  /* A list of file descriptors in active use by the current
-     operation.  */
-  struct fd_table fdt;
-  struct gpgme_io_cbs io_cbs;
+  /* User specific I/O callbacks.  */
+  struct gpgme_io_cbs user_io_cbs;
 };
 
 
@@ -208,7 +206,7 @@ struct gpgme_context
 
 gpg_error_t _gpgme_get_ctx (uint64_t serial, gpgme_ctx_t *r_ctx);
 
-gpgme_error_t _gpgme_cancel_with_err (gpgme_ctx_t ctx, gpg_error_t ctx_err,
+gpgme_error_t _gpgme_cancel_with_err (uint64_t serial, gpg_error_t ctx_err,
                                       gpg_error_t op_err);
 
 

@@ -21,6 +21,18 @@
 #ifndef GPGME_FDTABLE_H
 #define GPGME_FDTABLE_H
 
+#include "priv-io.h"
+
+/* Flags used by _gpgme_fdtable_get_fds.  */
+#define FDTABLE_FLAG_ACTIVE    1  /* Only those with the active flag set.   */
+#define FDTABLE_FLAG_DONE      2  /* Only those with the done flag set      */
+#define FDTABLE_FLAG_FOR_READ  4  /* Only those with the signaled flag set. */
+#define FDTABLE_FLAG_FOR_WRITE 8  /* Only those with the for_read flag set. */
+#define FDTABLE_FLAG_SIGNALED 16  /* Only those with the signaled flag set. */
+#define FDTABLE_FLAG_NOT_SIGNALED 32  /* Ditto reversed.                    */
+#define FDTABLE_FLAG_CLEAR   128  /* Clear the signaled flag.               */
+
+
 /* The handler type associated with an FD.  It is called with the FD
  * and the registered pointer.  The handler may return an error code
  * but there is no guarantee that this code is used; in particular
@@ -35,9 +47,35 @@ gpg_error_t _gpgme_fdtable_insert (int fd);
 gpg_error_t _gpgme_fdtable_add_close_notify (int fd,
                                              fdtable_handler_t handler,
                                              void *value);
+/* Set or remove the I/O callback.  */
+gpg_error_t _gpgme_fdtable_set_io_cb (int fd, uint64_t owner, int direction,
+                                      gpgme_io_cb_t cb, void *cb_value);
+
+/* Set all FDs of OWNER into the active state.  */
+gpg_error_t _gpgme_fdtable_set_active (uint64_t owner);
+
+/* Set all FDs of OWNER into the done state.  */
+gpg_error_t _gpgme_fdtable_set_done (uint64_t owner,
+                                     gpg_error_t status, gpg_error_t op_err);
+
+/* Walk over all FDS and copy the signaled flag if set.  */
+void _gpgme_fdtable_set_signaled (io_select_t fds, unsigned int nfds);
 
 /* Remove FD from the table.  This also runs the close handlers.  */
 gpg_error_t _gpgme_fdtable_remove (int fd);
 
+/* Return the number of active I/O callbacks for OWNER.  */
+unsigned int _gpgme_fdtable_io_cb_count (uint64_t owner);
+
+/* Run all the signaled IO callbacks of OWNER.  */
+gpg_error_t _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err);
+
+/* Return a list of FDs matching the OWNER and FLAGS.  */
+unsigned int _gpgme_fdtable_get_fds (io_select_t *r_fds,
+                                     uint64_t owner, unsigned int flags);
+
+/* Return the status info for the entry of OWNER.  */
+uint64_t _gpgme_fdtable_get_done (uint64_t owner, gpg_error_t *r_status,
+                                  gpg_error_t *r_op_err);
 
 #endif /*GPGME_FDTABLE_H*/

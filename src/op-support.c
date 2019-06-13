@@ -173,7 +173,7 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
 	return err;
     }
 
-  if (type == 1 || (type == 2 && !ctx->io_cbs.add))
+  if (type == 1 || (type == 2 && !ctx->user_io_cbs.add))
     {
       /* Use private event loop.  */
       io_cbs.add = _gpgme_add_io_cb;
@@ -182,7 +182,7 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
       io_cbs.event = _gpgme_wait_private_event_cb;
       io_cbs.event_priv = ctx;
     }
-  else if (! ctx->io_cbs.add)
+  else if (!ctx->user_io_cbs.add)
     {
       /* Use global event loop.  */
       io_cbs.add = _gpgme_add_io_cb;
@@ -194,9 +194,9 @@ _gpgme_op_reset (gpgme_ctx_t ctx, int type)
   else
     {
       /* Use user event loop.  */
-      io_cbs.add = _gpgme_wait_user_add_io_cb;
+      io_cbs.add = _gpgme_add_io_cb_user;
       io_cbs.add_priv = ctx;
-      io_cbs.remove = _gpgme_wait_user_remove_io_cb;
+      io_cbs.remove = _gpgme_remove_io_cb_user;
       io_cbs.event = _gpgme_wait_user_event_cb;
       io_cbs.event_priv = ctx;
     }

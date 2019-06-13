@@ -910,7 +910,7 @@ status_handler (void *opaque, int fd)
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: error from assuan (%d) getting status line : %s",
+		  "fd=%d: error from assuan (%d) getting status line : %s",
                   fd, err, gpg_strerror (err));
 	}
       else if (linelen >= 3
@@ -922,7 +922,7 @@ status_handler (void *opaque, int fd)
 	  if (! err)
 	    err = gpg_error (GPG_ERR_GENERAL);
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: ERR line - mapped to: %s",
+		  "fd=%d: ERR line - mapped to: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  /* Try our best to terminate the connection friendly.  */
 	  /*	  assuan_write_line (gpgsm->assuan_ctx, "BYE"); */
@@ -951,7 +951,7 @@ status_handler (void *opaque, int fd)
               err = gpgsm->colon.fnc (gpgsm->colon.fnc_value, NULL);
             }
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: OK line - final status: %s",
+		  "fd=%d: OK line - final status: %s",
                   fd, err ? gpg_strerror (err) : "ok");
 	  _gpgme_io_close (gpgsm->status_cb.fd);
 	  return err;
@@ -1026,7 +1026,7 @@ status_handler (void *opaque, int fd)
 		}
 	    }
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: D line; final status: %s",
+		  "fd=%d: D line; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
       else if (linelen > 2
@@ -1068,7 +1068,7 @@ status_handler (void *opaque, int fd)
             }
 
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: D inlinedata; final status: %s",
+		  "fd=%d: D inlinedata; final status: %s",
                   fd, err? gpg_strerror (err):"ok");
         }
       else if (linelen > 2
@@ -1106,7 +1106,7 @@ status_handler (void *opaque, int fd)
 	  else
 	    fprintf (stderr, "[UNKNOWN STATUS]%s %s", line + 2, rest);
           TRACE (DEBUG_CTX, "gpgme:status_handler", gpgsm,
-		  "fd 0x%x: S line (%s) - final status: %s",
+		  "fd=%d: S line (%s) - final status: %s",
                   fd, line+2, err? gpg_strerror (err):"ok");
 	}
       else if (linelen >= 7
@@ -1131,12 +1131,14 @@ status_handler (void *opaque, int fd)
 
 
 static gpgme_error_t
-add_io_cb (engine_gpgsm_t gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler)
+add_io_cb (engine_gpgsm_t gpgsm, iocb_data_t *iocbd, gpgme_io_cb_t handler,
+           const char *handler_desc)
 {
   gpgme_error_t err;
 
-  TRACE_BEG  (DEBUG_ENGINE, "engine-gpgsm:add_io_cb", gpgsm,
-              "fd=%d, dir %d", iocbd->fd, iocbd->dir);
+  TRACE_BEG  (DEBUG_ENGINE, "engine-gpgsm:add_io_cb", NULL,
+              "fd=%d, dir %d (%s-handler)",
+              iocbd->fd, iocbd->dir, handler_desc);
   err = (*gpgsm->io_cbs.add) (gpgsm->io_cbs.add_priv,
 			      iocbd->fd, iocbd->dir,
 			      handler, iocbd->data, &iocbd->tag);
@@ -1205,15 +1207,19 @@ start (engine_gpgsm_t gpgsm, const char *command)
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler);
+  err = add_io_cb (gpgsm, &gpgsm->status_cb, status_handler, "status");
   if (!err && gpgsm->input_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->input_cb, _gpgme_data_outbound_handler);
+    err = add_io_cb (gpgsm, &gpgsm->input_cb,
+                     _gpgme_data_outbound_handler, "outbound");
   if (!err && gpgsm->output_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->output_cb, _gpgme_data_inbound_handler);
+    err = add_io_cb (gpgsm, &gpgsm->output_cb,
+                     _gpgme_data_inbound_handler, "inbound");
   if (!err && gpgsm->message_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->message_cb, _gpgme_data_outbound_handler);
+    err = add_io_cb (gpgsm, &gpgsm->message_cb,
+                     _gpgme_data_outbound_handler, "outbound");
   if (!err && gpgsm->diag_cb.fd != -1)
-    err = add_io_cb (gpgsm, &gpgsm->diag_cb, _gpgme_data_inbound_handler);
+    err = add_io_cb (gpgsm, &gpgsm->diag_cb,
+                     _gpgme_data_inbound_handler, "inbound");
 
   if (!err)
     err = assuan_write_line (gpgsm->assuan_ctx, command);

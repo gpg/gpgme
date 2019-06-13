@@ -622,10 +622,14 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 }
 
 
-/* Select on the list of fds.  Returns: -1 = error, 0 = timeout or
-   nothing to select, > 0 = number of signaled fds.  */
+/* Select on the list of fds.
+ *
+ * Returns:  -1 = error,
+ *            0 = timeout or nothing to select,
+ *          > 0 = number of signaled fds.
+ */
 int
-_gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
+_gpgme_io_select (io_select_t fds, unsigned int nfds, int nonblock)
 {
   fd_set readfds;
   fd_set writefds;
@@ -638,7 +642,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   struct timeval timeout = { 1, 0 };
   void *dbg_help = NULL;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", NULL,
-	      "nfds=%zu, nonblock=%u", nfds, nonblock);
+	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
   FD_ZERO (&readfds);
   FD_ZERO (&writefds);
@@ -735,6 +739,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
     }
   return TRACE_SYSRES (count);
 }
+
 
 
 int
