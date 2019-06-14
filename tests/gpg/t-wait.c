@@ -59,7 +59,7 @@ main (void)
   fail_if_err (err);
 
   while (gpgme_wait (ctx, &err, 0) == NULL && err == 0)
-    sleep(1);
+    ;
 
   if (gpgme_err_code (err) != GPG_ERR_NO_DATA)
     {

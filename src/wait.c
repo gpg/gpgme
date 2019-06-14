@@ -58,10 +58,10 @@ user_io_cb_handler (void *data, int fd)
   serial = tag->serial;
   assert (serial);
 
-  err = _gpgme_fdtable_run_io_cbs (serial, &op_err);
+  err = _gpgme_fdtable_run_io_cbs (serial, &op_err, NULL);
   if (err || op_err)
     ;
-  else if (!_gpgme_fdtable_io_cb_count (serial))
+  else if (!_gpgme_fdtable_get_count (serial, 0))
     {
       /* No more active callbacks - emit a DONE.  */
       struct gpgme_io_event_done_data done_data =  { 0, 0 };
@@ -318,10 +318,20 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
   int nr;
   uint64_t serial;
 
+  TRACE_BEG  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu hang=%d",
+              CTXSERIAL (ctx), hang);
+
   do
     {
       /* Get all fds of CTX (or all if CTX is NULL) we want to wait
        * for and which are in the active state.  */
+      TRACE_LOG
+        ("active=%u done=%u !done=%d cbs=%u",
+         _gpgme_fdtable_get_count (ctx?ctx->serial:0,FDTABLE_FLAG_ACTIVE),
+         _gpgme_fdtable_get_count (ctx?ctx->serial:0,FDTABLE_FLAG_DONE),
+         _gpgme_fdtable_get_count (ctx?ctx->serial:0,FDTABLE_FLAG_NOT_DONE),
+         _gpgme_fdtable_get_count (ctx?ctx->serial:0,0));
+
       free (fds);
       nfds = _gpgme_fdtable_get_fds (&fds, ctx? ctx->serial : 0,
                                      ( FDTABLE_FLAG_ACTIVE
@@ -335,11 +345,22 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
                 *status = err;
               if (op_err)
                 *op_err = 0;
-              free (fds);
-              return NULL;
+              ctx = NULL;
+              goto leave;
             }
-          /* Nothing to select.  Run the select anyway, so that we use
-           * its timeout.  */
+          /* Nothing to select.  */
+
+          if (!_gpgme_fdtable_get_count (ctx? ctx->serial : 0,
+                                         FDTABLE_FLAG_NOT_DONE))
+            {
+              if (status)
+                *status = 0;
+              if (op_err)
+                *op_err = 0;
+              goto leave;
+            }
+          /* There are not yet active FDS.  Use the select's standard
+           * timeout and then try again.  */
         }
 
       nr = _gpgme_io_select (fds, nfds, 0);
@@ -349,30 +370,48 @@ gpgme_wait_ext (gpgme_ctx_t ctx, gpgme_error_t *status,
             *status = gpg_error_from_syserror ();
           if (op_err)
             *op_err = 0;
-          free (fds);
-          return NULL;
+          ctx = NULL;
+          goto leave;
         }
       _gpgme_fdtable_set_signaled (fds, nfds);
 
-      _gpgme_fdtable_run_io_cbs (ctx? ctx->serial : 0, NULL);
-      serial = _gpgme_fdtable_get_done (ctx? ctx->serial : 0, status, op_err);
-      if (serial)
+      err = _gpgme_fdtable_run_io_cbs (ctx? ctx->serial : 0, op_err, &serial);
+      if (err || (op_err && *op_err))
         {
-          _gpgme_get_ctx (serial, &ctx);
+          if (status)
+            *status = err;
+          if (serial)
+            _gpgme_get_ctx (serial, &ctx);
           hang = 0;
         }
-      else if (!hang)
+      else
         {
-          ctx = NULL;
-          if (status)
-            *status = 0;
-          if (op_err)
-            *op_err = 0;
+          serial = _gpgme_fdtable_get_done (ctx? ctx->serial : 0, status,
+                                            op_err);
+          if (serial)
+            {
+              _gpgme_get_ctx (serial, &ctx);
+              hang = 0;
+            }
+          else if (!hang)
+            {
+              ctx = NULL;
+              if (status)
+                *status = 0;
+              if (op_err)
+                *op_err = 0;
+            }
         }
     }
   while (hang);
 
+ leave:
   free (fds);
+  if (status)
+    TRACE_LOG ("status=%d", *status);
+  if (op_err)
+    TRACE_LOG ("op_err=%d", *op_err);
+  TRACE_SUC ("result=%lu", ctx? ctx->serial : 0);
   return ctx;
 }
 
@@ -434,12 +473,12 @@ _gpgme_sync_wait (gpgme_ctx_t ctx, volatile int *cond, gpg_error_t *r_op_err)
             }
           _gpgme_fdtable_set_signaled (fds, nfds);
 
-          err = _gpgme_fdtable_run_io_cbs (ctx->serial, r_op_err);
+          err = _gpgme_fdtable_run_io_cbs (ctx->serial, r_op_err, NULL);
           if (err || (r_op_err && *r_op_err))
             goto leave;
         }
 
-      if (!_gpgme_fdtable_io_cb_count (ctx->serial))
+      if (!_gpgme_fdtable_get_count (ctx->serial, 0))
 	{
           /* No more matching fds with IO callbacks.  */
 	  struct gpgme_io_event_done_data data = {0, 0};

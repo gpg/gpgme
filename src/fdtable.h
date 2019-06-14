@@ -26,11 +26,12 @@
 /* Flags used by _gpgme_fdtable_get_fds.  */
 #define FDTABLE_FLAG_ACTIVE    1  /* Only those with the active flag set.   */
 #define FDTABLE_FLAG_DONE      2  /* Only those with the done flag set      */
-#define FDTABLE_FLAG_FOR_READ  4  /* Only those with the signaled flag set. */
-#define FDTABLE_FLAG_FOR_WRITE 8  /* Only those with the for_read flag set. */
-#define FDTABLE_FLAG_SIGNALED 16  /* Only those with the signaled flag set. */
-#define FDTABLE_FLAG_NOT_SIGNALED 32  /* Ditto reversed.                    */
-#define FDTABLE_FLAG_CLEAR   128  /* Clear the signaled flag.               */
+#define FDTABLE_FLAG_NOT_DONE  4  /* Only those with the done flag cleared. */
+#define FDTABLE_FLAG_FOR_READ  16 /* Only those with the signaled flag set. */
+#define FDTABLE_FLAG_FOR_WRITE 32 /* Only those with the for_read flag set. */
+#define FDTABLE_FLAG_SIGNALED  64 /* Only those with the signaled flag set. */
+#define FDTABLE_FLAG_NOT_SIGNALED 128 /* Ditto reversed.                    */
+#define FDTABLE_FLAG_CLEAR   256  /* Clear the signaled flag.               */
 
 
 /* The handler type associated with an FD.  It is called with the FD
@@ -65,10 +66,11 @@ void _gpgme_fdtable_set_signaled (io_select_t fds, unsigned int nfds);
 gpg_error_t _gpgme_fdtable_remove (int fd);
 
 /* Return the number of active I/O callbacks for OWNER.  */
-unsigned int _gpgme_fdtable_io_cb_count (uint64_t owner);
+unsigned int _gpgme_fdtable_get_count (uint64_t owner, unsigned int flags);
 
 /* Run all the signaled IO callbacks of OWNER.  */
-gpg_error_t _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err);
+gpg_error_t _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err,
+                                       uint64_t *r_owner);
 
 /* Return a list of FDs matching the OWNER and FLAGS.  */
 unsigned int _gpgme_fdtable_get_fds (io_select_t *r_fds,

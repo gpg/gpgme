@@ -417,7 +417,7 @@ _gpgme_fdtable_remove (int fd)
   handlervalue = fdtable[idx].close_notify.value;
   fdtable[idx].close_notify.value = NULL;
 
-  /* The handler might call into the fdtable again, so of we have a
+  /* The handler might call into the fdtable again, so if we have a
    * handler we can't immediately close it but instead record the fact
    * and remove the entry from the table only after the handler has
    * been run.  */
@@ -445,10 +445,15 @@ _gpgme_fdtable_remove (int fd)
 }
 
 
-/* Return the number of active I/O callbacks for OWNER or for all if
- * OWNER is 0.  */
+/* Return the number of FDs for OWNER (or for all if OWNER is 0)
+ * which match FLAGS.  Recognized flag values are:
+ *   0                     - Number FDs with IO callbacks
+ *   FDTABLE_FLAG_ACTIVE   - Number of FDs in the active state.
+ *   FDTABLE_FLAG_DONE     - Number of FDs in the done state.
+ *   FDTABLE_FLAG_NOT_DONE - Number of FDs not in the done state.
+ */
 unsigned int
-_gpgme_fdtable_io_cb_count (uint64_t owner)
+_gpgme_fdtable_get_count (uint64_t owner, unsigned int flags)
 {
   int idx;
   unsigned int count = 0;
@@ -456,11 +461,23 @@ _gpgme_fdtable_io_cb_count (uint64_t owner)
   LOCK (fdtable_lock);
   for (idx=0; idx < fdtablesize; idx++)
     if (fdtable[idx].fd != -1 && (!owner || fdtable[idx].owner == owner))
-      count++;
+      {
+        if (fdtable[idx].closing)
+          continue;
+
+        if ((flags & FDTABLE_FLAG_DONE) && fdtable[idx].done)
+          count++;
+        else if ((flags & FDTABLE_FLAG_NOT_DONE) && !fdtable[idx].done)
+          count++;
+        else if ((flags & FDTABLE_FLAG_ACTIVE) && fdtable[idx].active)
+          count++;
+        else if (!flags && fdtable[idx].io_cb.cb)
+          count++;
+      }
   UNLOCK (fdtable_lock);
 
-  TRACE  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu count=%u",
-          (unsigned long)owner, count);
+  TRACE  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu flags=0x%u -> count=%u",
+          (unsigned long)owner, flags, count);
   return count;
 }
 
@@ -468,9 +485,10 @@ _gpgme_fdtable_io_cb_count (uint64_t owner)
 /* Run all signaled IO callbacks of OWNER or all signaled callbacks if
  * OWNER is 0.  Returns an error code on the first real error
  * encountered.  If R_OP_ERR is not NULL an optional operational error
- * can be stored tehre.  For EOF the respective flags are set.  */
+ * can be stored there.  For EOF the respective flags are set.  */
 gpg_error_t
-_gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err)
+_gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err,
+                           uint64_t *r_owner)
 {
   gpg_error_t err;
   int idx;
@@ -485,6 +503,8 @@ _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err)
 
   if (r_op_err)
     *r_op_err = 0;
+  if (r_owner)
+    *r_owner = 0;
 
   for (;;)
     {
@@ -543,6 +563,8 @@ _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err)
       if (err)
         {
           _gpgme_cancel_with_err (serial, err, 0);
+          if (r_owner)
+            *r_owner = serial;
           return TRACE_ERR (err);
         }
       else if (iocb_data.op_err)
@@ -558,6 +580,8 @@ _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err)
            * operation. */
           if (r_op_err)
             *r_op_err = iocb_data.op_err;
+          if (r_owner)
+            *r_owner = serial;
           return TRACE_ERR (0);
         }
       else if (!cb_count && actx)
@@ -606,6 +630,8 @@ _gpgme_fdtable_get_fds (io_select_t *r_fds, uint64_t owner, unsigned int flags)
           continue;
         if ((flags & FDTABLE_FLAG_DONE) && !fdtable[idx].done)
           continue;
+        if ((flags & FDTABLE_FLAG_NOT_DONE) && fdtable[idx].done)
+          continue;
         if ((flags & FDTABLE_FLAG_FOR_READ) && !fdtable[idx].for_read)
           continue;
         if ((flags & FDTABLE_FLAG_FOR_WRITE) && !fdtable[idx].for_write)
@@ -651,6 +677,11 @@ _gpgme_fdtable_get_done (uint64_t owner,
 
   TRACE_BEG (DEBUG_SYSIO, __func__, NULL, "ctx=%lu", (unsigned long)owner);
 
+  if (r_status)
+    *r_status = 0;
+  if (r_op_err)
+    *r_op_err = 0;
+
   LOCK (fdtable_lock);
 
   for (idx=0; idx < fdtablesize; idx++)
@@ -660,8 +691,11 @@ _gpgme_fdtable_get_done (uint64_t owner,
         /* Found.  If an owner has been given also clear the done
          * flags from all other fds of this owner.  Note that they
          * have the same status info anyway.  */
-        *r_status = fdtable[idx].done_status;
-        *r_op_err = fdtable[idx].done_op_err;
+        TRACE_LOG ("found fd=%d", fdtable[idx].fd);
+        if (r_status)
+          *r_status = fdtable[idx].done_status;
+        if (r_op_err)
+          *r_op_err = fdtable[idx].done_op_err;
         fdtable[idx].done = 0;
         serial = fdtable[idx].owner;
         if (owner)
