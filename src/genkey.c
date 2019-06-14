@@ -316,7 +316,7 @@ gpgme_op_genkey (gpgme_ctx_t ctx, const char *parms, gpgme_data_t pubkey,
 
   err = genkey_start (ctx, 1, parms, pubkey, seckey);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -400,7 +400,7 @@ gpgme_op_createkey (gpgme_ctx_t ctx, const char *userid, const char *algo,
   err = createkey_start (ctx, 1,
                          userid, algo, reserved, expires, anchorkey, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -487,7 +487,7 @@ gpgme_op_createsubkey (gpgme_ctx_t ctx, gpgme_key_t key, const char *algo,
 
   err = createsubkey_start (ctx, 1, key, algo, reserved, expires, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -571,7 +571,7 @@ gpgme_op_adduid (gpgme_ctx_t ctx,
 
   err = addrevuid_start (ctx, 1, 0, key, userid, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -608,7 +608,7 @@ gpgme_op_revuid (gpgme_ctx_t ctx,
 
   err = addrevuid_start (ctx, 1, GENKEY_EXTRAFLAG_REVOKE, key, userid, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -640,7 +640,7 @@ set_uid_flag (gpgme_ctx_t ctx, int synchronous,
     return err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
   if (synchronous && !err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 

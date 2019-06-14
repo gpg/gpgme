@@ -171,7 +171,7 @@ gpgme_op_encrypt_sign_ext (gpgme_ctx_t ctx, gpgme_key_t recp[],
 
   err = encrypt_sign_start (ctx, 1, recp, recpstring, flags, plain, cipher);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 

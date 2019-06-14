@@ -1194,7 +1194,7 @@ gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig, gpgme_data_t signed_text,
 
   err = verify_start (ctx, 1, sig, signed_text, plaintext);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 

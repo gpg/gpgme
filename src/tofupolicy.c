@@ -180,6 +180,6 @@ gpgme_op_tofu_policy (gpgme_ctx_t ctx,
 
   err = tofu_policy_start (ctx, 1, key, policy);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }

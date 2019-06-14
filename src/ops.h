@@ -33,10 +33,9 @@ void _gpgme_release_result (gpgme_ctx_t ctx);
 
 
 /* From wait.c.  */
-gpgme_error_t _gpgme_wait_one (gpgme_ctx_t ctx);
-gpgme_error_t _gpgme_wait_one_ext (gpgme_ctx_t ctx, gpgme_error_t *op_err);
-gpgme_error_t _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
-					gpgme_error_t *op_err);
+gpgme_error_t _gpgme_sync_wait (gpgme_ctx_t ctx,
+                                volatile int *cond,
+                                gpg_error_t *op_err);
 
 
 /* From data.c.  */

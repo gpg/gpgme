@@ -186,7 +186,7 @@ gpgme_op_interact (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags,
 
   err = interact_start (ctx, 1, key, flags, fnc, fnc_value, out);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return err;
 }
 
@@ -266,7 +266,7 @@ gpgme_op_edit (gpgme_ctx_t ctx, gpgme_key_t key,
   err = edit_start (ctx, 1, 0, key, fnc, fnc_value, out);
 
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -309,6 +309,6 @@ gpgme_op_card_edit (gpgme_ctx_t ctx, gpgme_key_t key,
 
   err = edit_start (ctx, 1, 1, key, fnc, fnc_value, out);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }

@@ -97,7 +97,7 @@ gpgme_op_vfs_transact (gpgme_ctx_t ctx,
   err = vfs_start (ctx, 1, command, data_cb, data_cb_value,
 		   inq_cb, inq_cb_value, status_cb, status_cb_value);
   if (!err)
-    err = _gpgme_wait_one_ext (ctx, op_err);
+    err = _gpgme_sync_wait (ctx, NULL, op_err);
   return err;
 }
 
@@ -202,4 +202,3 @@ gpgme_op_vfs_create (gpgme_ctx_t ctx, gpgme_key_t recp[],
   err = _gpgme_op_vfs_create (ctx, recp, container_file, flags, op_err);
   return TRACE_ERR (err);
 }
-

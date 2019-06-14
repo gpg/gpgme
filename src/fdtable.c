@@ -481,10 +481,10 @@ _gpgme_fdtable_run_io_cbs (uint64_t owner, gpg_error_t *r_op_err)
   unsigned int cb_count;
   gpgme_ctx_t actx;
 
+  TRACE_BEG  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu", owner);
+
   if (r_op_err)
     *r_op_err = 0;
-
-  TRACE_BEG  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu", owner);
 
   for (;;)
     {

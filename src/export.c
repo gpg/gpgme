@@ -202,7 +202,7 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
 
   err = export_start (ctx, 1, pattern, mode, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return err;
 }
 
@@ -319,7 +319,7 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
   err = export_ext_start (ctx, 1, pattern, mode, keydata);
   if (!err)
     {
-      err = _gpgme_wait_one (ctx);
+      err = _gpgme_sync_wait (ctx, NULL, NULL);
       if (!err)
         {
           /* For this synchronous operation we check for operational
@@ -459,7 +459,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
   err = export_keys_start (ctx, 1, keys, mode, keydata);
   if (!err)
     {
-      err = _gpgme_wait_one (ctx);
+      err = _gpgme_sync_wait (ctx, NULL, NULL);
       if (!err)
         {
           /* For this synchronous operation we check for operational
@@ -478,4 +478,3 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
 
   return TRACE_ERR (err);
 }
-

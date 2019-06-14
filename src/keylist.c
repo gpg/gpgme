@@ -1216,7 +1216,7 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 
   if (!opd->key_queue)
     {
-      err = _gpgme_wait_on_condition (ctx, &opd->key_cond, NULL);
+      err = _gpgme_sync_wait (ctx, &opd->key_cond, NULL);
       if (err)
 	return TRACE_ERR (err);
 

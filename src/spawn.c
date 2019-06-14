@@ -101,6 +101,6 @@ gpgme_op_spawn (gpgme_ctx_t ctx, const char *file, const char *argv[],
   err = spawn_start (ctx, 1, file, argv, datain, dataout, dataerr, flags);
 
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }

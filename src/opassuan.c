@@ -136,7 +136,7 @@ gpgme_op_assuan_transact_ext (gpgme_ctx_t ctx,
   if (err)
     goto out;
 
-  err = _gpgme_wait_one_ext (ctx, &op_err);
+  err = _gpgme_sync_wait (ctx, NULL, &op_err);
   if (op_err)
     {
       TRACE_LOG  ("op_err = %s <%s>", gpgme_strerror (op_err),

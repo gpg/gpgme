@@ -162,7 +162,7 @@ gpgme_op_delete (gpgme_ctx_t ctx, const gpgme_key_t key, int allow_secret)
   err = delete_start (ctx, 1, key,
 		      allow_secret ? GPGME_DELETE_ALLOW_SECRET : 0);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return err;
 }
 
@@ -204,6 +204,6 @@ gpgme_op_delete_ext (gpgme_ctx_t ctx, const gpgme_key_t key,
 
   err = delete_start (ctx, 1, key, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return err;
 }

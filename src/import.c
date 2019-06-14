@@ -316,7 +316,7 @@ gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata)
 
   err = _gpgme_op_import_start (ctx, 1, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 
@@ -433,7 +433,7 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
 
   err = _gpgme_op_import_keys_start (ctx, 1, keys);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
 

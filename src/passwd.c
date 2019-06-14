@@ -199,7 +199,6 @@ gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key, unsigned int flags)
 
   err = passwd_start (ctx, 1, key, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
-

@@ -613,7 +613,7 @@ gpgme_op_decrypt (gpgme_ctx_t ctx, gpgme_data_t cipher, gpgme_data_t plain)
 
   err = _gpgme_decrypt_start (ctx, 1, 0, cipher, plain);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   ctx->ignore_mdc_error = 0;  /* Always reset.  */
   return TRACE_ERR (err);
 }

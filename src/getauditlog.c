@@ -99,7 +99,6 @@ gpgme_op_getauditlog (gpgme_ctx_t ctx, gpgme_data_t output, unsigned int flags)
 
   err = getauditlog_start (ctx, 1, output, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
-

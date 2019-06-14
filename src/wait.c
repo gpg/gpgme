@@ -385,25 +385,29 @@ gpgme_wait (gpgme_ctx_t ctx, gpgme_error_t *status, int hang)
 
 
 
-/* If COND is a null pointer, wait until the blocking operation in CTX
-   finished and return its error value.  Otherwise, wait until COND is
-   satisfied or the operation finished.  */
+/* Wait until the blocking operation in context CTX has finished and
+ * return the error value.  If COND is not NULL return early if COND
+ * is satisfied.  A session based error will be returned at R_OP_ERR
+ * if it is not NULL.  */
 gpgme_error_t
-_gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
-			  gpgme_error_t *r_op_err)
+_gpgme_sync_wait (gpgme_ctx_t ctx, volatile int *cond, gpg_error_t *r_op_err)
 {
   gpgme_error_t err = 0;
   int hang = 1;
   io_select_t fds = NULL;
   unsigned int nfds;
-  int op_err;
   int nr;
+
+  TRACE_BEG  (DEBUG_SYSIO, __func__, NULL, "ctx=%lu", CTXSERIAL (ctx));
 
   if (r_op_err)
     *r_op_err = 0;
 
   if (!ctx)
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
 
   do
     {
@@ -415,35 +419,29 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
         {
           err = gpg_error_from_syserror ();
           if (gpg_err_code (err) != GPG_ERR_MISSING_ERRNO)
-            {
-              free (fds);
-              return err;
-            }
-          /* Nothing to select.  Run the select anyway, so that we use
-           * its timeout.  */
+            goto leave;
         }
-
-      nr = _gpgme_io_select (fds, nfds, 0);
-      if (nr < 0)
-	{
-	  /* An error occurred.  Close all fds in this context, and
-	     signal it.  */
-	  err = gpg_error_from_syserror ();
-          _gpgme_cancel_with_err (ctx->serial, err, 0);
-          free (fds);
-	  return err;
-	}
-      _gpgme_fdtable_set_signaled (fds, nfds);
-
-      err = _gpgme_fdtable_run_io_cbs (ctx->serial, r_op_err);
-      if (err || (r_op_err && *r_op_err))
+      else
         {
-          free (fds);
-          return err;
+          nr = _gpgme_io_select (fds, nfds, 0);
+          if (nr < 0)
+            {
+              /* An error occurred.  Close all fds in this context, and
+                 signal it.  */
+              err = gpg_error_from_syserror ();
+              _gpgme_cancel_with_err (ctx->serial, err, 0);
+              goto leave;
+            }
+          _gpgme_fdtable_set_signaled (fds, nfds);
+
+          err = _gpgme_fdtable_run_io_cbs (ctx->serial, r_op_err);
+          if (err || (r_op_err && *r_op_err))
+            goto leave;
         }
 
       if (!_gpgme_fdtable_io_cb_count (ctx->serial))
 	{
+          /* No more matching fds with IO callbacks.  */
 	  struct gpgme_io_event_done_data data = {0, 0};
 	  _gpgme_engine_io_event (ctx->engine, GPGME_EVENT_DONE, &data);
 	  hang = 0;
@@ -452,26 +450,9 @@ _gpgme_wait_on_condition (gpgme_ctx_t ctx, volatile int *cond,
 	hang = 0;
     }
   while (hang);
+  err = 0;
 
+ leave:
   free (fds);
-  return 0;
-}
-
-
-/* Wait until the blocking operation in context CTX has finished and
-   return the error value.  This variant can not be used for
-   session-based protocols.  */
-gpgme_error_t
-_gpgme_wait_one (gpgme_ctx_t ctx)
-{
-  return _gpgme_wait_on_condition (ctx, NULL, NULL);
-}
-
-/* Wait until the blocking operation in context CTX has finished and
-   return the error value.  This is the right variant to use for
-   sesion-based protocols.  */
-gpgme_error_t
-_gpgme_wait_one_ext (gpgme_ctx_t ctx, gpgme_error_t *op_err)
-{
-  return _gpgme_wait_on_condition (ctx, NULL, op_err);
+  return TRACE_ERR (err);
 }

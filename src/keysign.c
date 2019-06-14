@@ -214,6 +214,6 @@ gpgme_op_keysign (gpgme_ctx_t ctx, gpgme_key_t key, const char *userid,
 
   err = keysign_start (ctx, 1, key, userid, expires, flags);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    err = _gpgme_sync_wait (ctx, NULL, NULL);
   return TRACE_ERR (err);
 }
