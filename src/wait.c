@@ -51,12 +51,19 @@ user_io_cb_handler (void *data, int fd)
   uint64_t serial;
   gpgme_ctx_t ctx;
   gpg_error_t op_err;
+  struct io_select_s iosel;
 
   (void)fd;
 
   assert (data);
   serial = tag->serial;
   assert (serial);
+
+  iosel.fd = fd;
+  iosel.for_read = 0;  /* we don't care.  */
+  iosel.for_write = 0; /* we don't care.  */
+  iosel.signaled = 1;  /* we are only called when I/O is pending.  */
+  _gpgme_fdtable_set_signaled (&iosel, 1);
 
   err = _gpgme_fdtable_run_io_cbs (serial, &op_err, NULL);
   if (err || op_err)
