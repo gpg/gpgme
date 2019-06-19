@@ -40,7 +40,15 @@ import { decode, atobArray, Utf8ArrayToStr } from './Helpers';
 export class Connection{
 
     constructor (){
+        this._connectionError = null;
         this._connection = chrome.runtime.connectNative('gpgmejson');
+        this._connection.onDisconnect.addListener(() => {
+            if (chrome.runtime.lastError) {
+                this._connectionError = chrome.runtime.lastError.message;
+            } else {
+                this._connectionError = 'Disconnected without error message';
+            }
+        });
     }
 
     /**
@@ -50,9 +58,16 @@ export class Connection{
         if (this._connection){
             this._connection.disconnect();
             this._connection = null;
+            this._connectionError = 'Disconnect requested by gpgmejs';
         }
     }
 
+    /**
+     * Checks if the connection terminated with an error state
+     */
+    get isDisconnected (){
+        return this._connectionError !== null;
+    }
 
     /**
     * @typedef {Object} backEndDetails
@@ -126,9 +141,17 @@ export class Connection{
             this.disconnect();
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
         }
+        if (this.isDisconnected) {
+            if ( this.isNativeHostUnknown === true) {
+                return Promise.reject(gpgme_error('CONN_NO_CONFIG'));
+            } else {
+                return Promise.reject(gpgme_error(
+                    'CONN_NO_CONNECT', this._connectionError));
+            }
+        }
         let chunksize = message.chunksize;
         const me = this;
-        return new Promise(function (resolve, reject){
+        const nativeCommunication = new Promise(function (resolve, reject){
             let answer = new Answer(message);
             let listener = function (msg) {
                 if (!msg){
@@ -161,29 +184,21 @@ export class Connection{
                 }
             };
             me._connection.onMessage.addListener(listener);
-            if (permittedOperations[message.operation].pinentry){
-                return me._connection.postMessage(message.message);
-            } else {
-                return Promise.race([
-                    me._connection.postMessage(message.message),
-                    function (resolve, reject){
-                        setTimeout(function (){
-                            me._connection.disconnect();
-                            reject(gpgme_error('CONN_TIMEOUT'));
-                        }, 5000);
-                    }
-                ]).then(function (result){
-                    return result;
-                }, function (reject){
-                    if (!(reject instanceof Error)) {
-                        me._connection.disconnect();
-                        return gpgme_error('GNUPG_ERROR', reject);
-                    } else {
-                        return reject;
-                    }
-                });
-            }
+            me._connection.postMessage(message.message);
         });
+        if (permittedOperations[message.operation].pinentry === true) {
+            return nativeCommunication;
+        } else {
+            return Promise.race([
+                nativeCommunication,
+                new Promise(function (resolve, reject){
+                    setTimeout(function (){
+                        me._connection.disconnect();
+                        reject(gpgme_error('CONN_TIMEOUT'));
+                    }, 5000);
+                })
+            ]);
+        }
     }
 }
 
@@ -210,6 +225,13 @@ class Answer{
 
     get expected (){
         return this._expected;
+    }
+
+    /**
+     * Checks if an error matching browsers 'host not known' messages occurred
+     */
+    get isNativeHostUnknown () {
+        return this._connectionError === 'Specified native messaging host not found.';
     }
 
     /**

@@ -35,6 +35,14 @@ export const err_list = {
         msg: 'The nativeMessaging answer was empty.',
         type: 'error'
     },
+    'CONN_NO_CONFIG':{
+        msg: 'The browser does not recognize the nativeMessaging host.',
+        type: 'error'
+    },
+    'CONN_NATIVEMESSAGE':{
+        msg: 'The native messaging was not successful.',
+        type: 'error'
+    },
     'CONN_TIMEOUT': {
         msg: 'A connection timeout was exceeded.',
         type: 'error'
@@ -156,8 +164,8 @@ export function gpgme_error (code = 'GENERIC_ERROR', info){
  */
 class GPGME_Error extends Error{
     constructor (code = 'GENERIC_ERROR', msg=''){
-
-        if (code === 'GNUPG_ERROR' && typeof (msg) === 'string'){
+        const verboseErrors = ['GNUPG_ERROR', 'CONN_NATIVEMESSAGE'];
+        if (verboseErrors.includes(code) && typeof (msg) === 'string'){
             super(msg);
         } else if (err_list.hasOwnProperty(code)){
             if (msg){

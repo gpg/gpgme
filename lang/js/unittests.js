@@ -49,9 +49,40 @@ function unittests (){
                     expect(answer.info).to.be.an('Array');
                     expect(conn0.disconnect).to.be.a('function');
                     expect(conn0.post).to.be.a('function');
+                    expect(conn0.isDisconnected).to.be.false;
                     done();
                 });
 
+        });
+
+        it('Simple connection check', function (done) {
+            let conn0 = new Connection;
+            conn0.checkConnection(false, connectionTimeout).then(
+                function (answer) {
+                    expect(answer).to.be.true;
+                    expect(conn0.isDisconnected).to.be.false;
+                    done();
+                });
+        });
+
+        it('Connection check with backend information', function (done) {
+            let conn0 = new Connection;
+            conn0.checkConnection(true, connectionTimeout).then(
+                function (answer) {
+                    expect(answer).to.be.an('Object');
+                    expect(answer.gpgme).to.be.a('String');
+                    expect(answer.info).to.be.an('Array');
+                    expect(answer.info.length).to.be.above(0);
+                    for (const item of answer.info) {
+                        expect(item).to.have.property('protocol');
+                        expect(item).to.have.property('fname');
+                        expect(item).to.have.property('version');
+                        expect(item).to.have.property('req_version');
+                        expect(item).to.have.property('homedir');
+                    }
+                    expect(conn0.isDisconnected).to.be.false;
+                    done();
+                });
         });
 
         it('Disconnecting', function (done) {
@@ -63,6 +94,7 @@ function unittests (){
                     conn0.checkConnection(false, connectionTimeout).then(
                         function (result) {
                             expect(result).to.be.false;
+                            expect(conn0.isDisconnected).to.be.true;
                             done();
                         });
                 });

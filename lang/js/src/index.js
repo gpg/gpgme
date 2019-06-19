@@ -33,7 +33,7 @@ import { Connection } from './Connection';
  * An unsuccessful attempt will reject as a GPGME_Error.
  * @param {Object} config (optional) configuration options
  * @param {Number} config.timeout set the timeout for the initial connection
- * check. On some machines and operating systems a default timeout of 500 ms is
+ * check. On some machines and operating systems a default timeout of 1000 ms is
  * too low, so a higher number might be attempted.
  * @returns {Promise<GpgME>}
  * @async
@@ -46,7 +46,17 @@ function init ({ timeout = 1000 } = {}){
                 if (result === true) {
                     resolve(new GpgME());
                 } else {
-                    reject(gpgme_error('CONN_NO_CONNECT'));
+                    if (connection._connectionError) {
+                        if (connection.isNativeHostUnknown){
+                            reject(gpgme_error('CONN_NO_CONFIG'));
+                        } else {
+                            reject(gpgme_error('CONN_NATIVEMESSAGE',
+                                connection._connectionError)
+                            );
+                        }
+                    } else {
+                        reject(gpgme_error('CONN_TIMEOUT'));
+                    }
                 }
             }, function (){ // unspecific connection error. Should not happen
                 reject(gpgme_error('CONN_NO_CONNECT'));
