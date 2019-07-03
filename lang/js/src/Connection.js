@@ -99,25 +99,29 @@ export class Connection{
             timeout = 1000;
         }
         const msg = createMessage('version');
-        if (details === true) {
-            return this.post(msg);
-        } else {
-            let me = this;
-            return new Promise(function (resolve) {
-                Promise.race([
-                    me.post(msg),
-                    new Promise(function (resolve, reject){
-                        setTimeout(function (){
-                            reject(gpgme_error('CONN_TIMEOUT'));
-                        }, timeout);
-                    })
-                ]).then(function (){ // success
+        const prm = Promise.race([
+            this.post(msg),
+            new Promise(function (resolve, reject){
+                setTimeout(function (){
+                    reject(gpgme_error('CONN_TIMEOUT'));
+                }, timeout);
+            })
+        ]);
+        return new Promise( function (resolve, reject) {
+            prm.then(function (success){
+                if (details === true ) {
+                    resolve(success);
+                } else {
                     resolve(true);
-                }, function (){ // failure
+                }
+            }, function (error) {
+                if (details === true ) {
+                    reject(error);
+                } else {
                     resolve(false);
-                });
+                }
             });
-        }
+        });
     }
 
     /**
@@ -140,14 +144,6 @@ export class Connection{
         if (message.isComplete() !== true){
             this.disconnect();
             return Promise.reject(gpgme_error('MSG_INCOMPLETE'));
-        }
-        if (this.isDisconnected) {
-            if ( this.isNativeHostUnknown === true) {
-                return Promise.reject(gpgme_error('CONN_NO_CONFIG'));
-            } else {
-                return Promise.reject(gpgme_error(
-                    'CONN_NO_CONNECT', this._connectionError));
-            }
         }
         let chunksize = message.chunksize;
         const me = this;
@@ -185,6 +181,20 @@ export class Connection{
             };
             me._connection.onMessage.addListener(listener);
             me._connection.postMessage(message.message);
+
+            // check for browser messaging errors after a while
+            // (browsers' extension permission checks take some time)
+            setTimeout( () => {
+                if (me.isDisconnected) {
+                    if ( me.isNativeHostUnknown === true) {
+                        return reject(gpgme_error('CONN_NO_CONFIG'));
+                    } else {
+                        return reject(gpgme_error(
+                            'CONN_NO_CONNECT', me._connectionError));
+                    }
+                }
+            }, 25);
+
         });
         if (permittedOperations[message.operation].pinentry === true) {
             return nativeCommunication;
@@ -193,7 +203,7 @@ export class Connection{
                 nativeCommunication,
                 new Promise(function (resolve, reject){
                     setTimeout(function (){
-                        me._connection.disconnect();
+                        me.disconnect();
                         reject(gpgme_error('CONN_TIMEOUT'));
                     }, 5000);
                 })

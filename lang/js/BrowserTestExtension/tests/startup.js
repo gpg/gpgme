@@ -44,4 +44,16 @@ describe('GPGME context', function (){
                 done();
             });
     });
+
+    it('Error message on unsuccessful connection (timeout)', function (done) {
+        let prm = Gpgmejs.init({ timeout: 1 });
+        prm.then(
+            null,
+            function (error){
+                expect(error).to.be.an('error');
+                expect(error.code).to.equal('CONN_TIMEOUT');
+                done();
+            }
+        );
+    });
 });
