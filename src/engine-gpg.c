@@ -860,7 +860,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   gpgme_error_t err;
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map;
-  size_t datac=0, argc=0;
+  size_t datac=0, argc=0, allocated_argc=0;
   char **argv;
   int need_special = 0;
   int use_agent = 0;
@@ -908,18 +908,33 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	  /*   fprintf (stderr, "build_argv: arg=`%s'\n", a->arg );*/
         }
     }
+
   if (need_special)
     argc++;
   if (use_agent)
     argc++;
+  if (*gpg->request_origin)
+    argc++;
+  if (gpg->auto_key_locate)
+    argc++;
+  if (gpg->trust_model)
+    argc++;
+  if (gpg->flags.no_symkey_cache)
+    argc++;
+  if (gpg->flags.ignore_mdc_error)
+    argc++;
+  if (gpg->flags.offline)
+    argc++;
   if (gpg->pinentry_mode)
     argc++;
   if (!gpg->cmd.used)
-    argc++;	/* --batch */
-  argc += 4;	/* --no-sk-comments, --request-origin, --no-symkey-cache */
-                /* --disable-dirmngr  */
+    argc++; /* --batch */
+
+  argc++;   /* --no-sk-comments */
 
   argv = calloc (argc + 1, sizeof *argv);
+  allocated_argc = argc;
+
   if (!argv)
     return gpg_error_from_syserror ();
   fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
@@ -964,6 +979,8 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
         }
       argc++;
     }
+  /* NOTE: If you add a new argument here. Ensure that
+     argc is counted up above to allocate enough memory. */
 
   if (*gpg->request_origin)
     {
@@ -1191,6 +1208,11 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
             argc++;
         }
     }
+  /* Saveguard against adding a new argument without properly
+     counting up the argc used for allocation at the beginning
+     of this function. It would be better to use a dynamically
+     allocated array like ccparray in gnupg. */
+  assert (argc <= allocated_argc);
 
   gpg->argv = argv;
   gpg->fd_data_map = fd_data_map;
