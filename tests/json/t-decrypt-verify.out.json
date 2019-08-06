@@ -10,11 +10,6 @@
             "pubkey_algo_name":     "ELG-E",
             "status_string":        "Success",
             "status_code":  0
-        }, {
-        "keyid":        "04071FB807287134",
-        "pubkey_algo_name":     "ELG-E",
-        "status_string":        "No secret key",
-        "status_code":  117440529
         }]
     },
     "info": {
