@@ -5445,7 +5445,7 @@ counterpart to @code{GPGME_ENCRYPT_WRAP}.
 @end table
 
 The function returns the error codes as described for
-@code{gpgme_op_decrypt} respective @code{gpgme_op_encrypt}.
+@code{gpgme_op_decrypt}.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_decrypt_ext_start ( @
