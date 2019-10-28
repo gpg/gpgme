@@ -1643,7 +1643,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   int i;
   int any;
   int count;
-  void *dbg_help;
+  void *dbg_help = NULL;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%u, nonblock=%u", nfds, nonblock);
 
