@@ -621,8 +621,9 @@ keylist_colon_handler (void *priv, char *line)
 
   /* Only look at signature and trust info records immediately
      following a user ID.  For this, clear the user ID pointer when
-     encountering anything but a signature or trust record.  */
-  if (rectype != RT_SIG && rectype != RT_REV && rectype != RT_TFS)
+     encountering anything but a signature, trust record or subpacket.  */
+  if (rectype != RT_SIG && rectype != RT_REV && rectype != RT_TFS &&
+      rectype != RT_SPK)
     opd->tmp_uid = NULL;
 
   /* Only look at subpackets immediately following a signature.  For
