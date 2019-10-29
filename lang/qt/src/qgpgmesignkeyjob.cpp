@@ -57,14 +57,17 @@ QGpgMESignKeyJob::QGpgMESignKeyJob(Context *context)
       m_checkLevel(0),
       m_exportable(false),
       m_nonRevocable(false),
-      m_started(false)
+      m_started(false),
+      m_dupeOk(false)
 {
     lateInitialization();
 }
 
 QGpgMESignKeyJob::~QGpgMESignKeyJob() {}
 
-static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, const std::vector<unsigned int> &uids, unsigned int checkLevel, const Key &signer, unsigned int opts)
+static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, const std::vector<unsigned int> &uids,
+                                              unsigned int checkLevel, const Key &signer, unsigned int opts,
+                                              bool dupeOk, const QString &remark)
 {
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
@@ -73,6 +76,15 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
     skei->setUserIDsToSign(uids);
     skei->setCheckLevel(checkLevel);
     skei->setSigningOptions(opts);
+
+    if (dupeOk) {
+        ctx->setFlag("extended-edit", "1");
+        skei->setDupeOk(true);
+    }
+
+    if (!remark.isEmpty()) {
+        ctx->addSignatureNotation("rem@gnupg.org", remark.toUtf8().constData());
+    }
 
     if (!signer.isNull())
         if (const Error err = ctx->addSigningKey(signer)) {
@@ -93,7 +105,8 @@ Error QGpgMESignKeyJob::start(const Key &key)
     if (m_exportable) {
         opts |= GpgSignKeyEditInteractor::Exportable;
     }
-    run(std::bind(&sign_key, std::placeholders::_1, key, m_userIDsToSign, m_checkLevel, m_signingKey, opts));
+    run(std::bind(&sign_key, std::placeholders::_1, key, m_userIDsToSign, m_checkLevel, m_signingKey, opts,
+                  m_dupeOk, m_remark));
     m_started = true;
     return Error();
 }
@@ -126,5 +139,17 @@ void QGpgMESignKeyJob::setNonRevocable(bool nonRevocable)
 {
     assert(!m_started);
     m_nonRevocable = nonRevocable;
+}
+
+void QGpgMESignKeyJob::setRemark(const QString &remark)
+{
+    assert(!m_started);
+    m_remark = remark;
+}
+
+void QGpgMESignKeyJob::setDupeOk(bool value)
+{
+    assert(!m_started);
+    m_dupeOk = value;
 }
 #include "qgpgmesignkeyjob.moc"

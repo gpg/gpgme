@@ -45,6 +45,8 @@ class Error;
 class Key;
 }
 
+class QString;
+
 namespace QGpgME
 {
 
@@ -108,6 +110,22 @@ public:
      * can be revoked.
      */
     virtual void setNonRevocable(bool nonRevocable) = 0;
+
+    /**
+     * Set this if it is ok to overwrite an existing signature. In that
+     * case the context has to have the flag "extended-edit" set to 1 through
+     * Context::setFlag before calling edit.
+     *
+     * Not pure virtual for ABI compatibility.
+     **/
+    virtual void setDupeOk(bool) {};
+
+    /**
+     * Add a remark to the signature. This uses rem@gnupg.org as a notation.
+     *
+     * Not pure virtual for ABI compatibility.
+     **/
+    virtual void setRemark(const QString &) {};
 
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());

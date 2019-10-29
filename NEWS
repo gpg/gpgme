@@ -8,10 +8,15 @@ Noteworthy changes in version 1.14.0 (unreleased)
  * cpp: The sign key edit-interactor now supports multiple signatures
    from the same key. [#4734]
 
+ * qt: Extended signkeyjob to handle remarks and multiple signatures.
+   [#4734]
+
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: UserID::remark                          NEW.
  cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.
+ qt: SignKeyJob::setDupeOk                    NEW.
+ qt: SignKeyJob::setRemark                    NEW.
 
 
 Noteworthy changes in version 1.13.1 (2019-06-13)

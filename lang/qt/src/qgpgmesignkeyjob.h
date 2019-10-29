@@ -39,6 +39,8 @@
 
 #include "threadedjobmixin.h"
 
+#include <QString>
+
 #ifdef BUILDING_QGPGME
 # include "key.h"
 #else
@@ -82,6 +84,12 @@ public:
     /* from SignKeyJob */
     void setNonRevocable(bool nonRevocable) Q_DECL_OVERRIDE;
 
+    /* from SignKeyJob */
+    void setRemark(const QString &remark) Q_DECL_OVERRIDE;
+
+    /* from SignKeyJob */
+    void setDupeOk(bool value) Q_DECL_OVERRIDE;
+
 private:
     std::vector<unsigned int> m_userIDsToSign;
     GpgME::Key m_signingKey;
@@ -89,6 +97,8 @@ private:
     bool m_exportable;
     bool m_nonRevocable;
     bool m_started;
+    bool m_dupeOk;
+    QString m_remark;
 };
 }
 
