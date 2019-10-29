@@ -723,6 +723,56 @@ TofuInfo UserID::tofuInfo() const
     return TofuInfo(uid->tofu);
 }
 
+static gpgme_key_sig_t find_last_valid_sig_for_keyid (gpgme_user_id_t uid,
+                                                      const char *keyid)
+{
+    if (!keyid) {
+        return nullptr;
+    }
+    gpgme_key_sig_t ret = NULL;
+    for (gpgme_key_sig_t s = uid->signatures ; s ; s = s->next) {
+        if (s->keyid && !strcmp(keyid, s->keyid)) {
+            if (!s->expired && !s->revoked && !s->invalid && !s->status) {
+                if (!ret) {
+                    ret = s;
+                } else if (ret && ret->timestamp <= s->timestamp) {
+                    /* Equals because when the timestamps are the same we prefer
+                       the last in the list */
+                    ret = s;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
+const char *UserID::remark(const Key &remarker, Error &err) const
+{
+    if (!uid || remarker.isNull()) {
+        err = Error::fromCode(GPG_ERR_GENERAL);
+        return nullptr;
+    }
+
+    if (!(parent().keyListMode() & GPGME_KEYLIST_MODE_SIG_NOTATIONS) ||
+        !(parent().keyListMode() & GPGME_KEYLIST_MODE_SIGS)) {
+        err = Error::fromCode(GPG_ERR_NO_DATA);
+        return nullptr;
+    }
+
+    gpgme_key_sig_t s = find_last_valid_sig_for_keyid(uid, remarker.keyID());
+
+    if (!s) {
+        return nullptr;
+    }
+
+    for (gpgme_sig_notation_t n = s->notations; n ; n = n->next) {
+        if (n->name && !strcmp(n->name, "rem@gnupg.org")) {
+            return n->value;
+        }
+    }
+    return nullptr;
+}
+
 //
 //
 // class Signature

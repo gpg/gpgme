@@ -413,6 +413,23 @@ public:
      *
      * @returns the last update time. */
     time_t lastUpdate() const;
+
+    /*! Get a remark made by the key provided.
+     * A remark is a signature notation on
+     * this user id made by the key with the
+     * name "rem@gnupg.org". Returns an error if the
+     * parent key of this user id was not listed with the
+     * keylist mode flags for signatures and signature notations.
+     *
+     * @param key The key for which comments should be searched.
+     * @param error Set to GPG_ERR_NO_DATA if the keylist did
+     *              not include signature notations.
+     *
+     * @returns The value of the comment or NULL if none exists.
+     **/
+    const char *remark(const Key &key,
+                       Error &error) const;
+
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;
