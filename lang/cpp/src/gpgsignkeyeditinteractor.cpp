@@ -64,6 +64,7 @@ public:
     std::vector<unsigned int> userIDs;
     std::vector<unsigned int>::const_iterator currentId, nextId;
     unsigned int checkLevel;
+    bool dupeOk;
 
     const char *command() const
     {
@@ -126,7 +127,8 @@ GpgSignKeyEditInteractor::Private::Private()
     userIDs(),
     currentId(),
     nextId(),
-    checkLevel(0)
+    checkLevel(0),
+    dupeOk(false)
 {
 }
 
@@ -159,6 +161,7 @@ enum SignKeyState {
     SET_TRUST_REGEXP,
     CONFIRM,
     CONFIRM2,
+    DUPE_OK,
     QUIT,
     SAVE,
     ERROR = EditInteractor::ErrorState
@@ -193,6 +196,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(SET_CHECK_LEVEL, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(SET_EXPIRE, GET_BOOL, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM);
+    addEntry(DUPE_OK, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM2, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", COMMAND);
@@ -205,6 +209,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_BOOL, "sign_uid.okay", CONFIRM);
+    addEntry(UIDS_LIST_SEPARATELY_DONE, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(ERROR, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(QUIT, GET_BOOL, "keyedit.save.okay", SAVE);
@@ -236,6 +241,8 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
         return nullptr;
     case SET_CHECK_LEVEL:
         return check_level_strings[d->checkLevel];
+    case DUPE_OK:
+        return answer(d->dupeOk);
     case CONFIRM2:
     case CONFIRM:
         return answer(true);
@@ -325,4 +332,10 @@ void GpgSignKeyEditInteractor::setSigningOptions(int options)
 {
     assert(!d->started);
     d->options = options;
+}
+
+void GpgSignKeyEditInteractor::setDupeOk(bool value)
+{
+    assert(!d->started);
+    d->dupeOk = value;
 }

@@ -3,8 +3,15 @@ Noteworthy changes in version 1.14.0 (unreleased)
 
  * New context flag "extended-edit" to enable expert key edit. [#4734]
 
+ * cpp: Add convenience API to obtain remarks. [#4734]
+
+ * cpp: The sign key edit-interactor now supports multiple signatures
+   from the same key. [#4734]
+
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: UserID::remark                          NEW.
+ cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.
 
 
 Noteworthy changes in version 1.13.1 (2019-06-13)
