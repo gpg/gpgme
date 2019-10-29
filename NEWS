@@ -1,6 +1,7 @@
 Noteworthy changes in version 1.14.0 (unreleased)
 -------------------------------------------------
 
+ * New context flag "extended-edit" to enable expert key edit. [#4734]
 
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

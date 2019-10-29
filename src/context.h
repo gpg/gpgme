@@ -128,6 +128,9 @@ struct gpgme_context
    * after the operation.  */
   unsigned int ignore_mdc_error : 1;
 
+  /* Pass --expert to gpg edit key. */
+  unsigned int extended_edit : 1;
+
   /* Flags for keylist mode.  */
   gpgme_keylist_mode_t keylist_mode;
 

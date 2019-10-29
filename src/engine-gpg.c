@@ -1848,8 +1848,13 @@ append_args_from_sender (engine_gpg_t gpg, gpgme_ctx_t ctx)
 }
 
 
+#define NOTATION_FLAG_SIG  1 /* Use --sig-notation (default)*/
+#define NOTATION_FLAG_CERT 2 /* Use --cert-notation */
+#define NOTATION_FLAG_SET  3 /* Use --set-notation */
+
 static gpgme_error_t
-append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
+append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */,
+                                int flags)
 {
   gpgme_error_t err = 0;
   gpgme_sig_notation_t notation;
@@ -1890,7 +1895,14 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 	    }
 
 	  if (!err)
-	    err = add_arg (gpg, "--sig-notation");
+            {
+              if ((flags & NOTATION_FLAG_SET))
+                err = add_arg (gpg, "--set-notation");
+              else if ((flags & NOTATION_FLAG_CERT))
+                err = add_arg (gpg, "--cert-notation");
+              else
+                err = add_arg (gpg, "--sig-notation");
+            }
 	  if (!err)
 	    err = add_arg (gpg, arg);
 
@@ -1941,10 +1953,15 @@ gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
   gpgme_error_t err;
 
   err = add_arg (gpg, "--with-colons");
+
+  if (!err && ctx->extended_edit)
+    err = add_arg (gpg, "--expert");
   if (!err)
     err = append_args_from_signers (gpg, ctx);
   if (!err)
-  err = add_arg (gpg, type == 0 ? "--edit-key" : "--card-edit");
+    err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_CERT);
+  if (!err)
+    err = add_arg (gpg, type == 0 ? "--edit-key" : "--card-edit");
   if (!err)
     err = add_data (gpg, out, 1, 1);
   if (!err)
@@ -2254,7 +2271,7 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
     err = append_args_from_sender (gpg, ctx);
 
   if (!err)
-    err = append_args_from_sig_notations (gpg, ctx);
+    err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_SIG);
 
   /* Tell the gpg object about the data.  */
   if (!err)
@@ -3228,7 +3245,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!err)
     err = append_args_from_sender (gpg, ctx);
   if (!err)
-    err = append_args_from_sig_notations (gpg, ctx);
+    err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_SIG);
 
   if (gpgme_data_get_file_name (in))
     {

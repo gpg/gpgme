@@ -3150,6 +3150,10 @@ trust-model changes the default trust-model for future operations.
 A change in the trust-model also can have unintended side effects, like
 rebuilding the trust-db.
 
+@item "extended-edit"
+This flag passes the option @option{--expert} to gpg key edit.  This
+can be used to get additional callbacks in @code{gpgme_op_edit}.
+
 @end table
 
 This function returns @code{0} on success.

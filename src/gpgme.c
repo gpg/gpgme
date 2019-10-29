@@ -566,6 +566,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->trust_model)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "extended-edit"))
+    {
+      ctx->extended_edit = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -622,6 +626,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "auto-key-locate"))
     {
       return ctx->auto_key_locate? ctx->auto_key_locate : "";
+    }
+  else if (!strcmp (name, "extended-edit"))
+    {
+      return ctx->extended_edit ? "1":"";
     }
   else
     return NULL;
