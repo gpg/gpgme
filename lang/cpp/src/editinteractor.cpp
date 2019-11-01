@@ -178,10 +178,25 @@ EditInteractor::Private::Private(EditInteractor *qq)
       error(),
       debug(nullptr)
 {
-
+    const char *debug_env = getenv("GPGMEPP_INTERACTOR_DEBUG");
+    if (!debug_env) {
+        return;
+    }
+    if (!strcmp(debug_env, "stdout")) {
+        debug = stdout;
+    } else if (!strcmp(debug_env, "stderr")) {
+        debug = stderr;
+    } else if (debug_env) {
+        debug = std::fopen(debug_env, "a+");
+    }
 }
 
-EditInteractor::Private::~Private() {}
+EditInteractor::Private::~Private()
+{
+    if (debug) {
+        std::fclose(debug);
+    }
+}
 
 EditInteractor::EditInteractor()
     : d(new Private(this))
