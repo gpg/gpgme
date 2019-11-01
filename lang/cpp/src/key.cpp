@@ -753,8 +753,12 @@ const char *UserID::remark(const Key &remarker, Error &err) const
         return nullptr;
     }
 
-    if (!(parent().keyListMode() & GPGME_KEYLIST_MODE_SIG_NOTATIONS) ||
-        !(parent().keyListMode() & GPGME_KEYLIST_MODE_SIGS)) {
+    if (key->protocol != GPGME_PROTOCOL_OpenPGP) {
+        return nullptr;
+    }
+
+    if (!(key->keylist_mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS) ||
+        !(key->keylist_mode & GPGME_KEYLIST_MODE_SIGS)) {
         err = Error::fromCode(GPG_ERR_NO_DATA);
         return nullptr;
     }
