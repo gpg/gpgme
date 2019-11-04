@@ -188,6 +188,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(COMMAND, GET_BOOL, "keyedit.sign_all.okay", UIDS_ANSWER_SIGN_ALL);
     addEntry(COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(COMMAND, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM2);
+    addEntry(COMMAND, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
