@@ -107,6 +107,94 @@ public:
 
 private Q_SLOTS:
 
+    void testMultipleRemarks()
+    {
+        // Get the signing key1 (alfa)
+        auto ctx = Context::create(OpenPGP);
+        QVERIFY (ctx);
+        Error err;
+        auto alpha = ctx->key("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, true);
+        QVERIFY (!alpha.isNull());
+        QVERIFY (!err);
+
+        // Get the signing key2 (zulu)
+        auto zulu = ctx->key("23FD347A419429BACCD5E72D6BC4778054ACD246", err, true);
+        QVERIFY (!zulu.isNull());
+        QVERIFY (!err);
+
+        // Get the target key (victor)
+        auto target = ctx->key("E8143C489C8D41124DC40D0B47AF4B6961F04784", err, false);
+        QVERIFY (!target.isNull());
+        QVERIFY (!err);
+        QVERIFY (target.numUserIDs());
+
+        // Create the job
+        auto job = openpgp()->signKeyJob();
+        QVERIFY (job);
+
+        // Hack in the passphrase provider
+        auto jobCtx = Job::context(job);
+        TestPassphraseProvider provider;
+        jobCtx->setPassphraseProvider(&provider);
+        jobCtx->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the first job
+        job->setExportable(false);
+        std::vector<unsigned int> uids;
+        uids.push_back(0);
+        job->setUserIDsToSign(uids);
+        job->setSigningKey(alpha);
+        job->setRemark(QStringLiteral("String one"));
+
+        connect(job, &SignKeyJob::result, this, [this] (const GpgME::Error &err2,
+                                                        const QString,
+                                                        const GpgME::Error) {
+            Q_EMIT asyncDone();
+            QVERIFY(!err2);
+        });
+        job->start(target);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        // Now another remark from zulu
+        auto job3 = openpgp()->signKeyJob();
+        QVERIFY (job3);
+
+        // Hack in the passphrase provider
+        auto jobCtx3 = Job::context(job3);
+        jobCtx3->setPassphraseProvider(&provider);
+        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the job
+        job3->setExportable(false);
+        job3->setUserIDsToSign(uids);
+        job3->setSigningKey(zulu);
+        job3->setDupeOk(true);
+        job3->setRemark(QStringLiteral("String two"));
+
+        connect(job3, &SignKeyJob::result, this, [this] (const GpgME::Error &err2,
+                                                         const QString,
+                                                         const GpgME::Error) {
+            Q_EMIT asyncDone();
+            QVERIFY(!err2);
+        });
+
+        job3->start(target);
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        target.update();
+        std::vector<GpgME::Key> keys;
+        keys.push_back(alpha);
+        keys.push_back(zulu);
+
+        const auto remarks = target.userID(0).remarks(keys, err);
+
+        QVERIFY(!err);
+        QVERIFY(remarks.size() == 2);
+        QCOMPARE(remarks[0], std::string("String one"));
+        QCOMPARE(remarks[1], std::string("String two"));
+    }
+
     void testRemarkReplaceSingleUID()
     {
         // Get the signing key (alfa)
