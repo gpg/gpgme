@@ -23,9 +23,11 @@ AC_PREREQ(2.59)
 min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
-# (git tag -s gpgme-n.m.k) and run "./autogen.sh --force".  Please
-# bump the version number immediately after the release and do another
-# commit and push so that the git magic is able to work.  See below
+# "gpgme-n.m.k" and run "./autogen.sh --force".  Please bump the
+# version number immediately after the release and do another commit
+# and push so that the git magic is able to work.  If you start a new
+# series by bumping the minor (m) remember to also create a tag named
+# "gpgme-n.m-base" as the start point for beta numbering.  See below
 # for the LT versions.
 m4_define([mym4_package],[gpgme])
 m4_define([mym4_major], [1])
