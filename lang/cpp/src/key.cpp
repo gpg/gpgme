@@ -777,6 +777,22 @@ const char *UserID::remark(const Key &remarker, Error &err) const
     return nullptr;
 }
 
+std::vector<std::string> UserID::remarks(std::vector<Key> keys, Error &err) const
+{
+    std::vector<std::string> ret;
+
+    for (const auto &key: keys) {
+        const char *rem = remark(key, err);
+        if (err) {
+            return ret;
+        }
+        if (rem) {
+            ret.push_back(rem);
+        }
+    }
+    return ret;
+}
+
 //
 //
 // class Signature

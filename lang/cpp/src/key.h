@@ -430,6 +430,10 @@ public:
     const char *remark(const Key &key,
                        Error &error) const;
 
+    /*! Get multiple remarks made by potentially multiple keys. */
+    std::vector <std::string> remarks(std::vector<GpgME::Key> remarkers,
+                                      Error &error) const;
+
 private:
     shared_gpgme_key_t key;
     gpgme_user_id_t uid;

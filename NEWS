@@ -14,6 +14,7 @@ Noteworthy changes in version 1.14.0 (unreleased)
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: UserID::remark                          NEW.
+ cpp: UserID::remarks                         NEW.
  cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.
  qt: SignKeyJob::setDupeOk                    NEW.
  qt: SignKeyJob::setRemark                    NEW.
