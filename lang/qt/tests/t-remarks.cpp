@@ -107,6 +107,94 @@ public:
 
 private Q_SLOTS:
 
+    void testRemarkReplaceSingleUIDExportable()
+    {
+        // Get the signing key (alfa)
+        auto ctx = Context::create(OpenPGP);
+        QVERIFY (ctx);
+        Error err;
+        auto seckey = ctx->key("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, true);
+        QVERIFY (!seckey.isNull());
+        QVERIFY (!err);
+
+        // Get the target key (tango)
+        auto target = ctx->key("ECAC774F4EEEB0620767044A58CB9A4C85A81F38", err, false);
+        QVERIFY (!target.isNull());
+        QVERIFY (!err);
+        QVERIFY (target.numUserIDs());
+
+        // Create the job
+        auto job = openpgp()->signKeyJob();
+        QVERIFY (job);
+
+        // Hack in the passphrase provider
+        auto jobCtx = Job::context(job);
+        TestPassphraseProvider provider;
+        jobCtx->setPassphraseProvider(&provider);
+        jobCtx->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the job
+        job->setExportable(true);
+        std::vector<unsigned int> uids;
+        uids.push_back(0);
+        job->setUserIDsToSign(uids);
+        job->setSigningKey(seckey);
+        job->setRemark(QStringLiteral("The quick brown fox jumps over the lazy dog"));
+
+        connect(job, &SignKeyJob::result, this, [this] (const GpgME::Error &err2,
+                                                        const QString,
+                                                        const GpgME::Error) {
+            Q_EMIT asyncDone();
+            QVERIFY(!err2);
+        });
+
+        job->start(target);
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        // At this point the remark should have been added.
+        target.update();
+        const char *remark = target.userID(0).remark(seckey, err);
+        QVERIFY(!err);
+        Q_ASSERT(remark);
+        QCOMPARE(QString::fromUtf8(remark), QStringLiteral("The quick brown fox "
+                                                           "jumps over the lazy dog"));
+
+        // Now replace the remark
+        auto job3 = openpgp()->signKeyJob();
+        QVERIFY (job3);
+
+        // Hack in the passphrase provider
+        auto jobCtx3 = Job::context(job3);
+        jobCtx3->setPassphraseProvider(&provider);
+        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the job
+        job3->setExportable(false);
+        job3->setUserIDsToSign(uids);
+        job3->setSigningKey(seckey);
+        job3->setDupeOk(true);
+        job3->setRemark(QStringLiteral("The quick brown fox fails to jump over Frodo"));
+
+        connect(job3, &SignKeyJob::result, this, [this] (const GpgME::Error &err2,
+                                                         const QString,
+                                                         const GpgME::Error) {
+            Q_EMIT asyncDone();
+            QVERIFY(!err2);
+        });
+
+        job3->start(target);
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        target.update();
+        remark = target.userID(0).remark(seckey, err);
+        QVERIFY(!err);
+        QVERIFY(remark);
+        QCOMPARE(QString::fromUtf8(remark), QStringLiteral("The quick brown fox fails "
+                                                           "to jump over Frodo"));
+    }
+
+
     void testMultipleRemarks()
     {
         // Get the signing key1 (alfa)
