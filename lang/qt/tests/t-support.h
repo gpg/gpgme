@@ -53,6 +53,8 @@ public:
 } // namespace GpgME
 
 void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
+/* Is the passphrase Provider / loopback Supported */
+bool loopbackSupported();
 
 class QGpgMETest : public QObject
 {

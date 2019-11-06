@@ -62,6 +62,9 @@ public:
     // case in the UI
     void testRemarkOwnKey()
     {
+        if (!loopbackSupported()) {
+            return;
+        }
         // Get the signing key (alfa)
         auto ctx = Context::create(OpenPGP);
         QVERIFY (ctx);
@@ -109,6 +112,9 @@ private Q_SLOTS:
 
     void testRemarkReplaceSingleUIDExportable()
     {
+        if (!loopbackSupported()) {
+            return;
+        }
         // Get the signing key (alfa)
         auto ctx = Context::create(OpenPGP);
         QVERIFY (ctx);
@@ -197,6 +203,9 @@ private Q_SLOTS:
 
     void testMultipleRemarks()
     {
+        if (!loopbackSupported()) {
+            return;
+        }
         // Get the signing key1 (alfa)
         auto ctx = Context::create(OpenPGP);
         QVERIFY (ctx);
@@ -285,6 +294,9 @@ private Q_SLOTS:
 
     void testRemarkReplaceSingleUID()
     {
+        if (!loopbackSupported()) {
+            return;
+        }
         // Get the signing key (alfa)
         auto ctx = Context::create(OpenPGP);
         QVERIFY (ctx);
@@ -372,6 +384,9 @@ private Q_SLOTS:
 
     void testRemarkReplaceMultiUID()
     {
+        if (!loopbackSupported()) {
+            return;
+        }
         // Get the signing key (alfa)
         auto ctx = Context::create(OpenPGP);
         QVERIFY (ctx);

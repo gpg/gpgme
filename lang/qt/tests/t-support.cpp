@@ -44,6 +44,8 @@
 #include <QObject>
 #include <QDir>
 
+#include "engineinfo.h"
+
 void QGpgMETest::initTestCase()
 {
     GpgME::initializeLibrary();
@@ -98,5 +100,21 @@ void killAgent(const QString& dir)
     proc.waitForFinished();
 }
 
+bool loopbackSupported()
+{
+    /* With GnuPG 2.0.x (at least 2.0.26 by default on jessie)
+     * the passphrase_cb does not work. So the test popped up
+     * a pinentry. So tests requiring decryption don't work. */
+    static auto version = GpgME::engineInfo(GpgME::GpgEngine).engineVersion();
+    if (version < "2.0.0") {
+        /* With 1.4 it just works */
+        return true;
+    }
+    if (version < "2.1.0") {
+        /* With 2.1 it works with loopback mode */
+        return false;
+    }
+    return true;
+}
 
 #include "t-support.hmoc"

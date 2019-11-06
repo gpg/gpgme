@@ -57,22 +57,7 @@
 using namespace QGpgME;
 using namespace GpgME;
 
-static bool decryptSupported()
-{
-    /* With GnuPG 2.0.x (at least 2.0.26 by default on jessie)
-     * the passphrase_cb does not work. So the test popped up
-     * a pinentry. So tests requiring decryption don't work. */
-    static auto version = GpgME::engineInfo(GpgME::GpgEngine).engineVersion();
-    if (version < "2.0.0") {
-        /* With 1.4 it just works */
-        return true;
-    }
-    if (version < "2.1.0") {
-        /* With 2.1 it works with loopback mode */
-        return false;
-    }
-    return true;
-}
+
 
 class EncryptionTest : public QGpgMETest
 {
@@ -103,7 +88,7 @@ private Q_SLOTS:
         QVERIFY(cipherString.startsWith("-----BEGIN PGP MESSAGE-----"));
 
         /* Now decrypt */
-        if (!decryptSupported()) {
+        if (!loopbackSupported()) {
             return;
         }
         auto decJob = openpgp()->decryptJob();
@@ -174,7 +159,7 @@ private Q_SLOTS:
 
     void testSymmetricEncryptDecrypt()
     {
-        if (!decryptSupported()) {
+        if (!loopbackSupported()) {
             return;
         }
         auto job = openpgp()->encryptJob();
@@ -207,7 +192,7 @@ private Q_SLOTS:
     void testEncryptDecryptNowrap()
     {
         /* Now decrypt */
-        if (!decryptSupported()) {
+        if (!loopbackSupported()) {
             return;
         }
         auto listjob = openpgp()->keyListJob(false, false, false);
@@ -235,7 +220,7 @@ private Q_SLOTS:
         QVERIFY(cipherString.startsWith("-----BEGIN PGP MESSAGE-----"));
 
         /* Now decrypt */
-        if (!decryptSupported()) {
+        if (!loopbackSupported()) {
             return;
         }
 
@@ -272,7 +257,7 @@ private:
      * So this test is disabled until gnupg(?) is fixed for this. */
     void testMixedEncryptDecrypt()
     {
-        if (!decryptSupported()) {
+        if (!loopbackSupported()) {
             return;
         }
         auto listjob = openpgp()->keyListJob(false, false, false);
