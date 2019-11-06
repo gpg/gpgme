@@ -156,7 +156,7 @@ private Q_SLOTS:
         target.update();
         const char *remark = target.userID(0).remark(seckey, err);
         QVERIFY(!err);
-        Q_ASSERT(remark);
+        QVERIFY(remark);
         QCOMPARE(QString::fromUtf8(remark), QStringLiteral("The quick brown fox "
                                                            "jumps over the lazy dog"));
 
