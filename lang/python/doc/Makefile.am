@@ -17,56 +17,45 @@
 # License along with this program; if not, see <https://gnu.org/licenses/>.
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-EXTRA_DIST = README \
-             rst/_build/README \
-             rst/_static/README \
-             rst/_templates/README \
-             rst/conf.py \
-             rst/gpgme-python-howto.rst \
-             rst/index.rst \
-             rst/maintenance-mode.rst \
-             rst/short-history.rst \
-             rst/what-is-new.rst \
-             rst/what-was-new.rst \
-             src/gpgme-python-howto.org \
-             src/index.org \
-             src/maintenance-mode.org \
-             src/short-history.org \
-             src/what-is-new.org \
-             src/what-was-new.org \
-             texinfo/texinfo.tex \
-             texinfo/gpgme-python-howto.texi \
-             texinfo/index.texi \
-             texinfo/maintenance-mode.texi \
-             texinfo/short-history.texi \
-             texinfo/what-is-new.texi \
-             texinfo/what-was-new.texi
+EXTRA_DIST = README rst src texinfo
 
 if MAINTAINER_MODE
-dist-hook: the_doc_dirs $(RST_GENERATED) $(TEXI_GENERATED)
-	cp $(RST_GENERATED) rst/
-	cp $(TEXI_GENERATED) texinfo/
 
-.org.rst:
-	pandoc -f org -t rst $< -o $@
+ORGSRCS = index.org gpgme-python-howto.org maintenance-mode.org \
+	  short-history.org what-is-new.org what-was-new.org
 
-.org.texi:
-	pandoc -f org -t texinfo $< -o $@
+# Make sure we have 'rst' and 'texinfo' dirs in build directory
+.PHONY: the_doc_dirs gen_rst gen_texi
 
-RST_GENERATED = src/gpgme-python-howto.rst src/index.rst \
-	src/maintenance-mode.rst src/short-history.rst src/what-is-new.rst \
-	src/what-was-new.rst
-
-TEXI_GENERATED = src/gpgme-python-howto.texi src/index.texi \
-	src/maintenance-mode.texi src/short-history.texi src/what-is-new.texi \
-	src/what-was-new.texi
-
-# make 'src', 'rst' and 'texinfo' dir in build directory
-.PHONY: the_doc_dirs
 the_doc_dirs:
-	if test ! -d src; then $(MKDIR_P) src; fi
-	if test ! -d rst; then $(MKDIR_P) rst; fi
-	if test ! -d texinfo; then $(MKDIR_P) texinfo; fi
-endif
+	@if test ! -d rst; then echo $(MKDIR_P) rst; $(MKDIR_P) rst; fi
+	@if test ! -d texinfo; then echo $(MKDIR_P) texinfo; $(MKDIR_P) texinfo; fi
 
-MAINTAINERCLEANFILES = $(RST_GENERATED) $(TEXI_GENERATED)
+# Generate RST files from ORG
+gen_rst:
+	@for f in $(ORGSRCS); do if test ! -e rst/$${f%.org}.rst \
+	  -o rst/$${f%.org}.rst -ot $(srcdir)/src/$$f; then \
+	    echo pandoc -f org -t rst $(srcdir)/src/$$f -o rst/$${f%.org}.rst; \
+	    pandoc -f org -t rst $(srcdir)/src/$$f -o rst/$${f%.org}.rst;      \
+	  fi; \
+	done
+
+# Generate Texinfo files from ORG
+gen_texi:
+	@for f in $(ORGSRCS); do if test ! -e texinfo/$${f%.org}.texi \
+	  -o texinfo/$${f%.org}.texi -ot $(srcdir)/src/$$f; then \
+	    echo pandoc -f org -t texinfo $(srcdir)/src/$$f -o texinfo/$${f%.org}.texi; \
+	    pandoc -f org -t texinfo $(srcdir)/src/$$f -o texinfo/$${f%.org}.texi;      \
+	  fi; \
+	done
+
+all-local: gen_rst gen_texi
+
+gen_rst gen_texi: the_doc_dirs
+
+maintainer-clean-local:
+	@for f in $(ORGSRCS); do \
+	  echo rm -f rst/$${f%.org}.rst texinfo/$${f%.org}.texi; \
+	  rm -f rst/$${f%.org}.rst texinfo/$${f%.org}.texi; \
+	done
+endif
