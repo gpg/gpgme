@@ -501,6 +501,10 @@ private Q_SLOTS:
         const QString gpgHome = qgetenv("GNUPGHOME");
         QVERIFY(copyKeyrings(gpgHome, mDir.path()));
         qputenv("GNUPGHOME", mDir.path().toUtf8());
+        QFile conf(mDir.path() + QStringLiteral("/gpg.conf"));
+        QVERIFY(conf.open(QIODevice::WriteOnly));
+        conf.write("allow-weak-key-signatures");
+        conf.close();
     }
 
 private:
