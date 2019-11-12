@@ -30,7 +30,7 @@ BUILT_SOURCES = defsincdate defs.inc
 
 
 info_TEXINFOS = gpgme.texi
-gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
+gpgme_TEXINFOS = lesser.texi gpl.texi
 
 gpgme.texi : defs.inc
 
