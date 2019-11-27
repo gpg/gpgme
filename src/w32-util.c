@@ -308,10 +308,11 @@ _gpgme_w32_cancel_synchronous_io (HANDLE thread)
 
   if (func)
     {
-      if (!func (thread) && GetLastError() != ERROR_NOT_FOUND)
+      if (!func ((DWORD)thread) && GetLastError() != ERROR_NOT_FOUND)
         {
           TRACE (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", NULL,
-                  "called for thread %p: ec=%d", thread, GetLastError ());
+                 "called for thread %p: ec=%u",
+                 thread, (unsigned int)GetLastError ());
         }
     }
   else
