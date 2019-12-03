@@ -2149,7 +2149,7 @@ static const char hlp_include_certs[] =
   "\n"
   "With DEFAULT or N, set how many certificates should be\n"
   "included in the next S/MIME signed message.  See the\n"
-  "GPGME documentation for details on the meaning of"
+  "GPGME documentation for details on the meaning of\n"
   "various N.  Without either, return the current setting.";
 static gpg_error_t
 cmd_include_certs (assuan_context_t ctx, char *line)
