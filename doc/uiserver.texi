@@ -1,0 +1,621 @@
+@c uiserver.texi                    -*- mode: texinfo; coding: latin-1; -*-
+@c Specification of the UI server protocol.
+@c To be included by gpgme.texi
+
+@node UI Server Protocol
+@appendix The GnuPG UI Server Protocol
+@cindex UI server
+@cindex user interface server
+
+
+This section specifies the protocol used between clients and a User
+Interface Server (UI server).  This protocol helps to build a system
+where all cryptographic operations are done by a server and the server
+is responsible for all dialogs.  Although @acronym{GPGME} has no direct
+support for this protocol it is believed that servers will utilize the
+@acronym{GPGME} library; thus having the specification included in this
+manual is an appropriate choice.  This protocol should be referenced as
+`The GnuPG UI Server Protocol'.
+
+@noindent
+A server needs to implement these commands:@footnote{In all examples we
+assume that the connection has already been established; see the Assuan
+manual for details.}
+
+@menu
+* UI Server Encrypt::                Encrypt a message.
+* UI Server Sign::                   Sign a message.
+* UI Server Decrypt::                Decrypt a message.
+* UI Server Verify::                 Verify a message.
+* UI Server Set Input Files::        Specifying the input files to operate on.
+* UI Server Sign/Encrypt Files::     Encrypting and signing files.
+* UI Server Verify/Decrypt Files::   Decrypting and verifying files.
+* UI Server Import/Export Keys::     Managing certificates.
+* UI Server Checksum Files::         Create and verify checksums for files.
+* Miscellaneous UI Server Commands::   Commands not related to a specific operation.
+@end menu
+
+
+
+@node UI Server Encrypt
+@section UI Server: Encrypt a Message
+
+Before encryption can be done the recipients must be set using the
+command:
+
+@deffn Command RECIPIENT @var{string}
+
+Set the recipient for the encryption.  @var{string} is an RFC-2822
+recipient name ("mailbox" as per section 3.4).  This command may or may
+not check the recipient for validity right away; if it does not all
+recipients are expected to be checked at the time of the @code{ENCRYPT}
+command.  All @code{RECIPIENT} commands are cumulative until a
+successful @code{ENCRYPT} command or until a @code{RESET} command.
+Linefeeds are obviously not allowed in @var{string} and should be folded
+into spaces (which are equivalent).
+@end deffn
+
+@noindent
+To tell the server the source and destination of the data, the next two
+commands are to be used:
+
+@deffn Command INPUT FD=@var{n}
+Set the file descriptor for the message to be encrypted to @var{n}.  The
+message send to the server is binary encoded.
+
+GpgOL is a Windows only program, thus @var{n} is not a libc file
+descriptor but a regular system handle.  Given that the Assuan
+connection works over a socket, it is not possible to use regular
+inheritance to make the file descriptor available to the server.
+Thus @code{DuplicateHandle} needs to be used to duplicate a handle
+to the server process.  This is the reason that the server needs to
+implement the @code{GETINFO pid} command.  Sending this command a second
+time replaces the file descriptor set by the last one.
+@c If @var{n} is not given, this commands uses the
+@c %last file descriptor passed to the application.
+@c %@xref{fun-assuan_sendfd, ,the assuan_sendfd function,assuan,the
+@c %Libassuan manual}, on how to do descriptor passing.
+@end deffn
+
+@deffn Command OUTPUT FD=@var{n} [--binary]
+Set the file descriptor to be used for the output (i.e. the encrypted
+message) to @var{n}.  If the option @code{--binary} is given the
+output shall be in binary format; if not given, the output for OpenPGP
+needs to be ASCII armored and for CMS Base-64 encoded.  For details on
+the file descriptor, see the @code{INPUT} command.
+@end deffn
+
+@noindent
+The setting of the recipients, the data source and destination may
+happen in any order, even intermixed.  If this has been done the actual
+encryption operation is called using:
+
+@deffn Command ENCRYPT -@w{}-protocol=@var{name}
+
+This command reads the plaintext from the file descriptor set by the
+@code{INPUT} command, encrypts it and writes the ciphertext to the file
+descriptor set by the @code{OUTPUT} command.  The server may (and
+should) overlap reading and writing.  The recipients used for the
+encryption are all the recipients set so far.  If any recipient is not
+usable the server should take appropriate measures to notify the user
+about the problem and may cancel the operation by returning an error
+code.  The used file descriptors are void after this command; the
+recipient list is only cleared if the server returns success.
+
+@noindent
+Because GpgOL uses a streaming mode of operation the server is not
+allowed to auto select the protocol and must obey to the mandatory
+@var{protocol} parameter:
+
+@table @code
+@item OpenPGP
+Use the OpenPGP protocol (RFC-2440).
+@item CMS
+Use the CMS (PKCS#7) protocol (RFC-3852).
+@end table
+
+@end deffn
+
+To support automagically selection of the protocol depending on the
+selected keys, the server MAY implement the command:
+
+@deffn Command PREP_ENCRYPT [-@w{}-protocol=@var{name}] [-@w{}-expect-sign]
+
+This commands considers all recipients set so far and decides whether it
+is able to take input and start the actual encryption.  This is kind of
+a dry-run @command{ENCRYPT} without requiring or using the input and
+output file descriptors.  The server shall cache the result of any user
+selection to avoid asking this again when the actual @command{ENCRYPT}
+command is send.  The @option{--protocol} option is optional; if it is
+not given, the server should allow the user to select the protocol to be
+used based on the recipients given or by any other means.
+
+If @option{--expect-sign} is given the server should expect that the
+message will also be signed and use this hint to present a unified
+recipient and signer selection dialog if possible and desired.  A
+selected signer should then be cached for the expected SIGN command
+(which is expected in the same session but possible on another
+connection).
+
+If this command is given again before a successful @command{ENCRYPT}
+command, the second one takes effect.
+
+Before sending the OK response the server shall tell the client the
+protocol to be used (either the one given by the argument or the one
+selected by the user) by means of a status line:
+@end deffn
+
+@deffn {Status line} PROTOCOL @var{name}
+Advise the client to use the protocol @var{name} for the
+@command{ENCRYPT} command.  The valid protocol names are listed under
+the description of the @command{ENCRYPT} command.  The server shall emit
+exactly one PROTOCOL status line.
+@end deffn
+
+@noindent
+Here is an example of a complete encryption sequence; client lines are
+indicated by a @sc{c:}, server responses by @sc{c:}:
+
+@smallexample
+@group
+  @clnt{RESET}
+  @srvr{OK}
+  @clnt{RECIPIENT foo@@example.net}
+  @srvr{OK}
+  @clnt{RECIPIENT bar@@example.com}
+  @srvr{OK}
+  @clnt{PREP_ENCRYPT}
+  @srvr{S PROTOCOL OpenPGP}
+  @srvr{OK}
+  @clnt{INPUT FD=17}
+  @srvr{OK}
+  @clnt{OUTPUT FD=18}
+  @srvr{OK}
+  @clnt{ENCRYPT}
+  @srvr{OK}
+@end group
+@end smallexample
+
+
+
+@node UI Server Sign
+@section UI Server: Sign a Message
+
+The server needs to implement opaque signing as well as detached
+signing.  Due to the nature of OpenPGP messages it is always required to
+send the entire message to the server; sending just the hash is not
+possible.  The following two commands are required to set the input and
+output file descriptors:
+
+@deffn Command INPUT FD=@var{n}
+Set the file descriptor for the message to be signed to @var{n}.  The
+message send to the server is binary encoded.  For details on the file
+descriptor, see the description of @code{INPUT} in the @code{ENCRYPT}
+section.
+@end deffn
+
+@deffn Command OUTPUT FD=@var{n} [--binary]
+Set the file descriptor to be used for the output.  The output is
+either the complete signed message or in case of a detached signature
+just that detached signature.  If the option @code{--binary} is given
+the output shall be in binary format; if not given, the output for
+OpenPGP needs to be ASCII armored and for CMS Base-64 encoded.  For
+details on the file descriptor, see the @code{INPUT} command.
+@end deffn
+
+@noindent
+To allow the server the selection of a non-default signing key the
+client may optionally use the @code{SENDER} command, see @ref{command
+SENDER}.
+
+@noindent
+The signing operation is then initiated by:
+
+@deffn Command SIGN -@w{}-protocol=@var{name} [-@w{}-detached]
+Sign the data set with the @code{INPUT} command and write it to the sink
+set by OUTPUT.  @var{name} is the signing protocol used for the
+message. For a description of the allowed protocols see the
+@code{ENCRYPT} command.  With option @code{--detached} given, a detached
+signature is created; this is actually the usual way the command is
+used.
+@end deffn
+
+@noindent
+The client expects the server to send at least this status information
+before the final OK response:
+
+@deffn {Status line} MICALG @var{string}
+The @var{string} represents the hash algorithm used to create the
+signature. It is used with RFC-1847 style signature messages and defined by
+PGP/MIME (RFC-3156) and S/MIME (RFC-3851).  The GPGME library has a
+supporting function @code{gpgme_hash_algo_name} to return the algorithm
+name as a string.  This string needs to be lowercased and for OpenPGP
+prefixed with "@code{pgp-}".
+@end deffn
+
+
+
+@node UI Server Decrypt
+@section UI Server: Decrypt a Message
+
+Decryption may include the verification of OpenPGP messages.  This is
+due to the often used combined signing/encryption modus of OpenPGP.  The
+client may pass an option to the server to inhibit the signature
+verification.  The following two commands are required to set the input
+and output file descriptors:
+
+@deffn Command INPUT FD=@var{n}
+Set the file descriptor for the message to be decrypted to @var{n}.  The
+message send to the server is either binary encoded or --- in the case
+of OpenPGP --- ASCII armored.  For details on the file descriptor, see
+the description of @code{INPUT} in the @code{ENCRYPT} section.
+@end deffn
+
+@deffn Command OUTPUT FD=@var{n}
+Set the file descriptor to be used for the output. The output is binary
+encoded. For details on the file descriptor, see the description of
+@code{INPUT} in the @code{ENCRYPT} section.
+@end deffn
+
+@noindent
+The decryption is started with the command:
+
+@deffn Command DECRYPT -@w{}-protocol=@var{name} [-@w{}-no-verify] [-@w{}-export-session-key]
+@var{name} is the encryption protocol used for the message. For a
+description of the allowed protocols see the @code{ENCRYPT} command.
+This argument is mandatory.  If the option @option{--no-verify} is
+given, the server should not try to verify a signature, in case the
+input data is an OpenPGP combined message. If the option
+@option{--export-session-key} is given and the underlying engine knows
+how to export the session key, it will appear on a status line
+@end deffn
+
+
+@node UI Server Verify
+@section UI Server: Verify a Message
+
+The server needs to support the verification of opaque signatures as
+well as detached signatures.  The kind of input sources controls what
+kind message is to be verified.
+
+@deffn Command MESSAGE FD=@var{n}
+This command is used with detached signatures to set the file descriptor
+for the signed data to @var{n}. The data is binary encoded (used
+verbatim).  For details on the file descriptor, see the description of
+@code{INPUT} in the @code{ENCRYPT} section.
+@end deffn
+
+@deffn Command INPUT FD=@var{n}
+Set the file descriptor for the opaque message or the signature part of
+a detached signature to @var{n}.  The message send to the server is
+either binary encoded or -- in the case of OpenPGP -- ASCII armored.
+For details on the file descriptor, see the description of @code{INPUT}
+in the @code{ENCRYPT} section.
+@end deffn
+
+@deffn Command OUTPUT FD=@var{n}
+Set the file descriptor to be used for the output. The output is binary
+encoded and only used for opaque signatures.  For details on the file
+descriptor, see the description of @code{INPUT} in the @code{ENCRYPT}
+section.
+@end deffn
+
+@noindent
+The verification is then started using:
+
+@deffn Command VERIFY -@w{}-protocol=@var{name} [-@w{}-silent]
+@var{name} is the signing protocol used for the message. For a
+description of the allowed protocols see the @code{ENCRYPT} command.
+This argument is mandatory.  Depending on the combination of
+@code{MESSAGE} @code{INPUT} and @code{OUTPUT} commands, the server needs
+to select the appropriate verification mode:
+
+@table @asis
+@item MESSAGE and INPUT
+This indicates a detached signature.  Output data is not applicable.
+@item INPUT
+This indicates an opaque signature.  As no output command has been given,
+the server is only required to check the signature.
+@item INPUT and OUTPUT
+This indicates an opaque signature.  The server shall write the signed
+data to the file descriptor set by the output command.  This data shall
+even be written if the signatures can't be verified.
+@end table
+@end deffn
+
+With @option{--silent} the server shall not display any dialog; this is
+for example used by the client to get the content of opaque signed
+messages. The client expects the server to send at least this status
+information before the final OK response:
+
+@deffn {Status line} SIGSTATUS @var{flag} @var{displaystring}
+Returns the status for the signature and a short string explaining the
+status.  Valid values for @var{flag} are:
+
+@table @code
+@item none
+The message has a signature but it could not not be verified due to a
+missing key.
+@item green
+The signature is fully valid.
+@item yellow
+The signature is valid but additional information was shown regarding the
+validity of the key.
+@item red
+The signature is not valid.
+@end table
+
+@var{displaystring} is a percent-and-plus-encoded string with a short
+human readable description of the status.  For example
+
+@smallexample
+S SIGSTATUS green Good+signature+from+Keith+Moon+<keith@@example.net>
+@end smallexample
+
+Note that this string needs to fit into an Assuan line and should be
+short enough to be displayed as short one-liner on the clients window.
+As usual the encoding of this string is UTF-8 and it should be send in
+its translated form.
+
+The server shall send one status line for every signature found on the
+message.
+
+
+@end deffn
+
+
+@node UI Server Set Input Files
+@section UI Server: Specifying the input files to operate on.
+
+All file related UI server commands operate on a number of input files
+or directories, specified by one or more @code{FILE} commands:
+
+@deffn Command FILE [--clear] @var{name}
+Add the file or directory @var{name} to the list of pathnames to be
+processed by the server.  The parameter @var{name} must be an absolute
+path name (including the drive letter) and is percent espaced (in
+particular, the characters %, = and white space characters are always
+escaped).  If the option @code{--clear} is given, the list of files is
+cleared before adding @var{name}.
+
+Historical note: The original spec did not define @code{--clear} but
+the keyword @code{--continued} after the file name to indicate that
+more files are to be expected.  However, this has never been used and
+thus removed from the specs.
+@end deffn
+
+
+@node UI Server Sign/Encrypt Files
+@section UI Server: Encrypting and signing files.
+
+First, the input files need to be specified by one or more
+@code{FILE} commands.  Afterwards, the actual operation is requested:
+
+@deffn Command ENCRYPT_FILES --nohup
+@deffnx Command SIGN_FILES --nohup
+@deffnx Command ENCRYPT_SIGN_FILES --nohup
+Request that the files specified by @code{FILE} are encrypted and/or
+signed.  The command selects the default action.  The UI server may
+allow the user to change this default afterwards interactively, and
+even abort the operation or complete it only on some of the selected
+files and directories.
+
+What it means to encrypt or sign a file or directory is specific to
+the preferences of the user, the functionality the UI server provides,
+and the selected protocol.  Typically, for each input file a new file
+is created under the original filename plus a protocol specific
+extension (like @code{.gpg} or @code{.sig}), which contain the
+encrypted/signed file or a detached signature.  For directories, the
+server may offer multiple options to the user (for example ignore or
+process recursively).
+
+The @code{ENCRYPT_SIGN_FILES} command requests a combined sign and
+encrypt operation.  It may not be available for all protocols (for
+example, it is available for OpenPGP but not for CMS).
+
+The option @code{--nohup} is mandatory.  It is currently unspecified
+what should happen if @code{--nohup} is not present.  Because
+@code{--nohup} is present, the server always returns @code{OK}
+promptly, and completes the operation asynchronously.
+@end deffn
+
+
+@node UI Server Verify/Decrypt Files
+@section UI Server: Decrypting and verifying files.
+
+First, the input files need to be specified by one or more
+@code{FILE} commands.  Afterwards, the actual operation is requested:
+
+@deffn Command DECRYPT_FILES --nohup
+@deffnx Command VERIFY_FILES --nohup
+@deffnx Command DECRYPT_VERIFY_FILES --nohup
+Request that the files specified by @code{FILE} are decrypted and/or
+verified.  The command selects the default action.  The UI server may
+allow the user to change this default afterwards interactively, and
+even abort the operation or complete it only on some of the selected
+files and directories.
+
+What it means to decrypt or verify a file or directory is specific to
+the preferences of the user, the functionality the UI server provides,
+and the selected protocol.  Typically, for decryption, a new file is
+created for each input file under the original filename minus a
+protocol specific extension (like @code{.gpg}) which contains the
+original plaintext.  For verification a status is displayed for each
+signed input file, indicating if it is signed, and if yes, if the
+signature is valid.  For files that are signed and encrypted, the
+@code{VERIFY} command transiently decrypts the file to verify the
+enclosed signature.  For directories, the server may offer multiple
+options to the user (for example ignore or process recursively).
+
+The option @code{--nohup} is mandatory.  It is currently unspecified
+what should happen if @code{--nohup} is not present.  Because
+@code{--nohup} is present, the server always returns @code{OK}
+promptly, and completes the operation asynchronously.
+@end deffn
+
+
+@node UI Server Import/Export Keys
+@section UI Server: Managing certificates.
+
+First, the input files need to be specified by one or more
+@code{FILE} commands.  Afterwards, the actual operation is requested:
+
+@deffn Command IMPORT_FILES --nohup
+Request that the certificates contained in the files specified by
+@code{FILE} are imported into the local certificate databases.
+
+For directories, the server may offer multiple options to the user
+(for example ignore or process recursively).
+
+The option @code{--nohup} is mandatory.  It is currently unspecified
+what should happen if @code{--nohup} is not present.  Because
+@code{--nohup} is present, the server always returns @code{OK}
+promptly, and completes the operation asynchronously.
+@end deffn
+
+FIXME: It may be nice to support an @code{EXPORT} command as well,
+which is enabled by the context menu of the background of a directory.
+
+
+@node UI Server Checksum Files
+@section UI Server: Create and verify checksums for files.
+
+First, the input files need to be specified by one or more
+@code{FILE} commands.  Afterwards, the actual operation is requested:
+
+@deffn Command CHECKSUM_CREATE_FILES --nohup
+Request that checksums are created for the files specified by
+@code{FILE}.  The choice of checksum algorithm and the destination
+storage and format for the created checksums depend on the preferences
+of the user and the functionality provided by the UI server.  For
+directories, the server may offer multiple options to the user (for
+example ignore or process recursively).
+
+The option @code{--nohup} is mandatory.  It is currently unspecified
+what should happen if @code{--nohup} is not present.  Because
+@code{--nohup} is present, the server always returns @code{OK}
+promptly, and completes the operation asynchronously.
+@end deffn
+
+
+@deffn Command CHECKSUM_VERIFY_FILES --nohup
+Request that checksums are created for the files specified by
+@code{FILE} and verified against previously created and stored
+checksums.  The choice of checksum algorithm and the source storage
+and format for previously created checksums depend on the preferences
+of the user and the functionality provided by the UI server.  For
+directories, the server may offer multiple options to the user (for
+example ignore or process recursively).
+
+If the source storage of previously created checksums is available to
+the user through the Windows shell, this command may also accept such
+checksum files as @code{FILE} arguments.  In this case, the UI server
+should instead verify the checksum of the referenced files as if they
+were given as INPUT files.
+
+The option @code{--nohup} is mandatory.  It is currently unspecified
+what should happen if @code{--nohup} is not present.  Because
+@code{--nohup} is present, the server always returns @code{OK}
+promptly, and completes the operation asynchronously.
+@end deffn
+
+
+
+
+@c
+@c M I S C E L L A N E O U S  C O M M A N D S
+@c
+@node Miscellaneous UI Server Commands
+@section Miscellaneous UI Server Commands
+
+The server needs to implement the following commands which are not
+related to a specific command:
+
+@deffn Command GETINFO @var{what}
+This is a multi purpose command, commonly used to return a variety of
+information.  The required subcommands as described by the @var{what}
+parameter are:
+
+@table @code
+@item pid
+Return the process id of the server in decimal notation using an Assuan
+data line.
+@end table
+@end deffn
+
+
+@noindent
+To allow the server to pop up the windows in the correct relation to the
+client, the client is advised to tell the server by sending the option:
+
+@deffn {Command option} window-id @var{number}
+The @var{number} represents the native window ID of the clients current
+window.  On Windows systems this is a windows handle (@code{HWND}) and
+on X11 systems it is the @code{X Window ID}.  The number needs to be
+given as a hexadecimal value so that it is easier to convey pointer
+values (e.g. @code{HWND}).
+@end deffn
+
+
+@noindent
+A client may want to fire up the certificate manager of the server.  To
+do this it uses the Assuan command:
+
+@deffn Command START_KEYMANAGER
+The server shall pop up the main window of the key manager (aka
+certificate manager).  The client expects that the key manager is brought
+into the foregound and that this command immediately returns (does not
+wait until the key manager has been fully brought up).
+@end deffn
+
+@noindent
+A client may want to fire up the configuration dialog of the server.  To
+do this it uses the Assuan command:
+
+@deffn Command START_CONFDIALOG
+The server shall pop up its configuration dialog.  The client expects
+that this dialog is brought into the foregound and that this command
+immediately returns (i.e. it does not wait until the dialog has been
+fully brought up).
+@end deffn
+
+@anchor{command SENDER}
+@noindent
+When doing an operation on a mail, it is useful to let the server know
+the address of the sender:
+
+@deffn Command SENDER [-@w{}-info] [-@w{}-protocol=@var{name}] @var{email}
+@var{email} is the plain ASCII encoded address ("addr-spec" as per
+RFC-2822) enclosed in angle brackets.  The address set with this command
+is valid until a successful completion of the operation or until a
+@code{RESET} command.  A second command overrides the effect of the
+first one; if @var{email} is not given and @option{--info} is not used,
+the server shall use the default signing key.
+
+If option @option{--info} is not given, the server shall also suggest a
+protocol to use for signing.  The client may use this suggested protocol
+on its own discretion.  The same status line as with PREP_ENCRYPT is
+used for this.
+
+The option @option{--protocol} may be used to give the server a hint on
+which signing protocol should be preferred.
+@end deffn
+
+@noindent
+To allow the UI-server to visually identify a running operation or to
+associate operations the server MAY support the command:
+
+@deffn Command SESSION @var{number} [@var{string}]
+The @var{number} is an arbitrary value, a server may use to associate
+simultaneous running sessions.  It is a 32 bit unsigned integer with
+@code{0} as a special value indicating that no session association shall
+be done.
+
+If @var{string} is given, the server may use this as the title of a
+window or, in the case of an email operation, to extract the sender's
+address. The string may contain spaces; thus no plus-escaping is used.
+
+This command may be used at any time and overrides the effect of the
+last command.  A @code{RESET} undoes the effect of this command.
+
+@end deffn

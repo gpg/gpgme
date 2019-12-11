@@ -103,6 +103,7 @@ This is Edition @value{EDITION}, last updated @value{UPDATED}, of
 
 Appendices
 
+* UI Server Protocol::            The GnuPG UI Server Protocol.
 * Debugging::                     How to solve problems.
 * Deprecated Functions::          Documentation of deprecated functions.
 
@@ -901,6 +902,9 @@ This specifies the raw Assuan protocol.
 
 Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
 
+@item GPGME_PROTOCOL_UISERVER
+Under development.  Please ask on @email{gnupg-devel@@gnupg.org} for help.
+
 @item GPGME_PROTOCOL_SPAWN
 @since{1.5.0}
 
@@ -976,6 +980,9 @@ gpg-agent.
 
 @item dirmngr-socket
 Return the name of the socket to connect to the dirmngr.
+
+@item uiserver-socket
+Return the name of the socket to connect to the user interface server.
 
 @item gpgconf-name
 Return the file name of the engine configuration tool.
@@ -6247,6 +6254,14 @@ plaintext shall not be compressed before it is encrypted.  This is
 in some cases useful if the length of the encrypted message
 may reveal information about the plaintext.
 
+@item GPGME_ENCRYPT_PREPARE
+@itemx GPGME_ENCRYPT_EXPECT_SIGN
+The @code{GPGME_ENCRYPT_PREPARE} symbol is used with the UI Server
+protocol to prepare an encryption (i.e. sending the
+@code{PREP_ENCRYPT} command).  With the
+@code{GPGME_ENCRYPT_EXPECT_SIGN} symbol the UI Server is advised to
+also expect a sign command.
+
 @item GPGME_ENCRYPT_SYMMETRIC
 @since{1.7.0}
 
@@ -7580,6 +7595,8 @@ case the state of @var{ctx} is not modified).
 @c **********************************************************
 @c *******************  Appendices  *************************
 @c **********************************************************
+
+@include uiserver.texi
 
 @node Debugging
 @appendix How to solve problems
