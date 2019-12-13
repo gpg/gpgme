@@ -385,6 +385,7 @@ gpgme_key_unref (gpgme_key_t key)
         }
 
       free (uid->address);
+      free (uid->uidhash);
       free (uid);
       uid = next_uid;
     }

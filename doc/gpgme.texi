@@ -3581,6 +3581,12 @@ Reserved for the origin of this user ID.
 
 Reserved for the time of the last update of this user ID.
 
+@item char *uidhash;
+A string used by gpg to identify a user ID.  This string can be used
+at certain prompts of @code{gpgme_op_edit} to select a user ID.  Users
+must be prepared to see a @code{NULL} value here.  The format of the
+value is not specified and may depend on the GPGME or GnuPG version.
+
 @end table
 @end deftp
 

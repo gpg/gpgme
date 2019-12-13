@@ -13,6 +13,7 @@ Noteworthy changes in version 1.14.0 (unreleased)
 
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_user_id_t                         EXTENDED: New field 'uidhash'.
  cpp: UserID::remark                          NEW.
  cpp: UserID::remarks                         NEW.
  cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.

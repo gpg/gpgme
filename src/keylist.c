@@ -831,6 +831,12 @@ keylist_colon_handler (void *priv, char *line)
 
           if (field[1])
             set_userid_flags (key, field[1]);
+          if (field[7] && *field[7])
+            {
+              gpgme_user_id_t uid = key->_last_uid;
+              assert (uid);
+              uid->uidhash = strdup (field[7]);
+            }
           opd->tmp_uid = key->_last_uid;
           if (fields >= 20)
             {

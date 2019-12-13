@@ -728,6 +728,9 @@ struct _gpgme_user_id
 
   /* Time of the last refresh of this user id.  0 if unknown.  */
   unsigned long last_update;
+
+  /* The string to exactly identify a userid.  Might be NULL.  */
+  char *uidhash;
 };
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 

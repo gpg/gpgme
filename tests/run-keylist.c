@@ -330,6 +330,8 @@ main (int argc, char **argv)
             printf ("    name: %s\n", uid->name);
           if (uid->comment)
             printf ("   cmmnt: %s\n", uid->comment);
+          if (uid->uidhash)
+            printf (" uidhash: %s\n", uid->uidhash);
           printf ("     upd: %lu (%u)\n", uid->last_update, uid->origin);
           printf ("   valid: %s\n",
                   uid->validity == GPGME_VALIDITY_UNKNOWN? "unknown":
