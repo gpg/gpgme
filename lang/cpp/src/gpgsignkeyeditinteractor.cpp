@@ -65,6 +65,7 @@ public:
     std::vector<unsigned int>::const_iterator currentId, nextId;
     unsigned int checkLevel;
     bool dupeOk;
+    Key key;
 
     const char *command() const
     {
@@ -259,7 +260,17 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
     default:
         if (st >= UIDS_LIST_SEPARATELY && st < UIDS_LIST_SEPARATELY_DONE) {
             std::stringstream ss;
-            ss << d->nextUserID();
+            auto nextID = d->nextUserID();
+            const char *hash;
+            assert (nextID);
+            if (!d->key.isNull() && (hash = d->key.userID(nextID - 1).uidhash())) {
+                /* Prefer uidhash if it is available as it might happen
+                 * that uidattrs break the ordering of the uids in the
+                 * edit-key interface */
+                ss << "uid " << hash;
+            } else {
+                ss << nextID;
+            }
             d->scratch = ss.str();
             return d->scratch.c_str();
         }
@@ -317,6 +328,10 @@ unsigned int GpgSignKeyEditInteractor::nextState(unsigned int status, const char
 
     err = GENERAL_ERROR;
     return ERROR;
+}
+void GpgSignKeyEditInteractor::setKey(const Key &key)
+{
+    d->key = key;
 }
 
 void GpgSignKeyEditInteractor::setCheckLevel(unsigned int checkLevel)

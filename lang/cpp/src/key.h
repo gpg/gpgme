@@ -363,6 +363,7 @@ public:
     const char *name() const;
     const char *email() const;
     const char *comment() const;
+    const char *uidhash() const;
 
     enum Validity { Unknown = 0, Undefined = 1, Never = 2,
                     Marginal = 3, Full = 4, Ultimate = 5

@@ -673,6 +673,11 @@ const char *UserID::comment() const
     return uid ? uid->comment : nullptr ;
 }
 
+const char *UserID::uidhash() const
+{
+    return uid ? uid->uidhash : nullptr ;
+}
+
 UserID::Validity UserID::validity() const
 {
     if (!uid) {

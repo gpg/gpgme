@@ -76,6 +76,7 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
     skei->setUserIDsToSign(uids);
     skei->setCheckLevel(checkLevel);
     skei->setSigningOptions(opts);
+    skei->setKey(key);
 
     if (dupeOk) {
         ctx->setFlag("extended-edit", "1");
