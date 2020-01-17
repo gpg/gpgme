@@ -79,27 +79,18 @@ _gpgme_set_override_inst_dir (const char *dir)
   return 0;
 }
 
-
-/* Find an executable program PGM along the envvar PATH.  */
+/* Find an executable program in the colon seperated paths. */
 static char *
-walk_path (const char *pgm)
+walk_path_str (const char *path_str, const char *pgm)
 {
-  const char *orig_path, *path, *s;
+  const char *path, *s;
   char *fname, *p;
 
-#ifdef FIXED_SEARCH_PATH
-  orig_path = FIXED_SEARCH_PATH;
-#else
-  orig_path = getenv ("PATH");
-  if (!orig_path)
-    orig_path = "/bin:/usr/bin";
-#endif
-
-  fname = malloc (strlen (orig_path) + 1 + strlen (pgm) + 1);
+  fname = malloc (strlen (path_str) + 1 + strlen (pgm) + 1);
   if (!fname)
     return NULL;
 
-  path = orig_path;
+  path = path_str;
   for (;;)
     {
       for (s=path, p=fname; *s && *s != ':'; s++, p++)
@@ -114,12 +105,50 @@ walk_path (const char *pgm)
       path = s + 1;
     }
 
-  _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
-                "gpgme-walk_path: '%s' not found in '%s'",
-                pgm, orig_path);
-
   free (fname);
   return NULL;
+}
+
+/* Find an executable program PGM. */
+static char *
+find_executable (const char *pgm)
+{
+  const char *orig_path;
+  char *ret;
+
+#ifdef FIXED_SEARCH_PATH
+  orig_path = FIXED_SEARCH_PATH;
+#else
+  orig_path = getenv ("PATH");
+  if (!orig_path)
+    orig_path = "/bin:/usr/bin";
+#endif
+  ret = walk_path_str (orig_path, pgm);
+
+  if (!ret)
+    {
+      _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                    "gpgme-walk_path: '%s' not found in '%s'",
+                    pgm, orig_path);
+    }
+#ifdef __APPLE__
+  /* On apple, especially when started through gpgme-json via
+     the browser interface we should look into some additional
+     fallback paths. */
+  const char *additional_path = "/usr/local/bin:/usr/local/MacGPG2/bin";
+  if (!ret)
+    {
+      ret = walk_path_str (additional_path, pgm);
+    }
+  if (!ret)
+    {
+      _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
+                    "gpgme-walk_path: '%s' not found in '%s'",
+                    pgm, additional_path);
+    }
+#endif
+
+  return ret;
 }
 
 
@@ -130,7 +159,7 @@ walk_path (const char *pgm)
 char *
 _gpgme_get_gpg_path (void)
 {
-  return walk_path (default_gpg_name? default_gpg_name : "gpg");
+  return find_executable (default_gpg_name? default_gpg_name : "gpg");
 }
 
 
@@ -139,7 +168,7 @@ _gpgme_get_gpg_path (void)
 char *
 _gpgme_get_gpgconf_path (void)
 {
-  return walk_path (default_gpgconf_name? default_gpgconf_name : "gpgconf");
+  return find_executable (default_gpgconf_name? default_gpgconf_name : "gpgconf");
 }
 
 /* See w32-util.c */
