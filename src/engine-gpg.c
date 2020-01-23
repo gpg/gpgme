@@ -2961,6 +2961,7 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
   gpg_error_t err;
 
   err = add_arg (gpg, "--with-colons");
+  err = add_arg (gpg, "--with-keygrip");
 
   /* Since gpg 2.1.15 fingerprints are always printed, thus there is
    * no more need to explicitly request them.  */
