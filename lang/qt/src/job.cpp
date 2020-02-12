@@ -65,6 +65,7 @@
 #include "tofupolicyjob.h"
 #include "threadedjobmixin.h"
 #include "quickjob.h"
+#include "gpgcardjob.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -141,6 +142,7 @@ make_job_subclass(KeyForMailboxJob)
 make_job_subclass(WKSPublishJob)
 make_job_subclass(TofuPolicyJob)
 make_job_subclass(QuickJob)
+make_job_subclass(GpgCardJob)
 
 #undef make_job_subclass
 
@@ -173,3 +175,4 @@ make_job_subclass(QuickJob)
 #include "wkspublishjob.moc"
 #include "tofupolicyjob.moc"
 #include "quickjob.moc"
+#include "gpgcardjob.moc"

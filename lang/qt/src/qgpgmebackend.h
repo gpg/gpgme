@@ -46,6 +46,7 @@ namespace QGpgME
 {
 class CryptoConfig;
 class Protocol;
+class GpgCardJob;
 
 
 class QGpgMEBackend
@@ -58,6 +59,7 @@ public:
     QString displayName() const;
 
     CryptoConfig *config() const;
+    GpgCardJob *gpgCardJob() const;
 
     Protocol *openpgp() const;
     Protocol *smime() const;

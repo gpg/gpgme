@@ -67,6 +67,7 @@ class KeyForMailboxJob;
 class WKSPublishJob;
 class TofuPolicyJob;
 class QuickJob;
+class GpgCardJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -183,6 +184,13 @@ QGPGME_EXPORT Protocol *smime();
  * @returns reference to cryptoConfig object.
  */
 QGPGME_EXPORT CryptoConfig *cryptoConfig();
+
+/** Obtain a reference to a protocol agnostic GpgCardJob.
+ *
+ * The reference is to a static object.
+ * @returns reference to a GpgCardJob following the job pattern.
+ */
+QGPGME_EXPORT GpgCardJob *gpgCardJob();
 
 }
 #endif

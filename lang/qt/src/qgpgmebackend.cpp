@@ -38,6 +38,7 @@
 
 #include "qgpgmebackend.h"
 
+#include "qgpgmegpgcardjob.h"
 
 #include "error.h"
 #include "engineinfo.h"
@@ -84,6 +85,11 @@ QGpgME::CryptoConfig *QGpgME::QGpgMEBackend::config() const
         }
     }
     return mCryptoConfig;
+}
+
+QGpgME::GpgCardJob *QGpgME::QGpgMEBackend::gpgCardJob() const
+{
+    return new QGpgME::QGpgMEGpgCardJob();
 }
 
 static bool check(GpgME::Protocol proto, QString *reason)
@@ -205,4 +211,12 @@ QGpgME::Protocol *QGpgME::smime()
         gpgmeBackend = new QGpgME::QGpgMEBackend();
     }
     return gpgmeBackend->smime();
+}
+
+QGpgME::GpgCardJob *QGpgME::gpgCardJob ()
+{
+    if (!gpgmeBackend) {
+        gpgmeBackend = new QGpgME::QGpgMEBackend();
+    }
+    return gpgmeBackend->gpgCardJob();
 }

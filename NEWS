@@ -11,6 +11,8 @@ Noteworthy changes in version 1.14.0 (unreleased)
  * qt: Extended signkeyjob to handle remarks and multiple signatures.
    [#4734]
 
+ * qt: Added job API for gpg-card.
+
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_user_id_t                         EXTENDED: New field 'uidhash'.
@@ -19,6 +21,7 @@ Noteworthy changes in version 1.14.0 (unreleased)
  cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.
  qt: SignKeyJob::setDupeOk                    NEW.
  qt: SignKeyJob::setRemark                    NEW.
+ qt: GpgCardJob                               NEW.
 
 
 Noteworthy changes in version 1.13.1 (2019-06-13)

@@ -38,6 +38,7 @@ qgpgme_sources = \
     qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
+    qgpgmegpgcardjob.cpp \
     dn.cpp cryptoconfig.cpp
 
 # If you add one here make sure that you also add one in camelcase
@@ -78,6 +79,7 @@ qgpgme_headers= \
     defaultkeygenerationjob.h \
     tofupolicyjob.h \
     wkspublishjob.h \
+    gpgcardjob.h \
     dn.h
 
 camelcase_headers= \
@@ -116,7 +118,8 @@ camelcase_headers= \
     KeyForMailboxJob \
     DefaultKeyGenerationJob \
     WKSPublishJob \
-    TofuPolicyJob
+    TofuPolicyJob \
+    GpgCardJob
 
 private_qgpgme_headers = \
     qgpgme_export.h \
@@ -147,6 +150,7 @@ private_qgpgme_headers = \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
     qgpgmetofupolicyjob.h \
+    qgpgmegpgcardjob.h \
     qgpgmequickjob.h \
     threadedjobmixin.h
 
@@ -207,7 +211,9 @@ qgpgme_moc_sources = \
     qgpgmekeyformailboxjob.moc \
     defaultkeygenerationjob.moc \
     quickjob.moc \
-    qgpgmequickjob.moc
+    qgpgmequickjob.moc \
+    gpgcardjob.moc \
+    qgpgmegpgcardjob.moc
 
 qgpgmeincludedir = $(includedir)/qgpgme
 qgpgmeinclude_HEADERS = $(qgpgme_headers)
