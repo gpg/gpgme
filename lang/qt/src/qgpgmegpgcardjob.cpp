@@ -53,7 +53,8 @@ using namespace GpgME;
 using namespace QGpgME;
 
 QGpgMEGpgCardJob::QGpgMEGpgCardJob()
-    : mixin_type(nullptr)
+    : mixin_type(/* needed for the mixer */
+                 Context::createForEngine(GpgME::SpawnEngine).release())
 {
     lateInitialization();
 }
