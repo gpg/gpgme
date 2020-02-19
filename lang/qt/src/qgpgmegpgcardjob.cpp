@@ -1,9 +1,8 @@
 /*
-    qgpgmekeyformailboxjob.cpp
+    qgpgmegpgcardjob.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
-    Software engineering by Intevation GmbH
+    Copyright (c) 2020 g10 Code GmbH
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -42,6 +41,7 @@
 #include <QDir>
 #include <QProcess>
 #include "util.h"
+#include "gpgme_backend_debug.h"
 
 /* We cannot have a timeout because key generation can
  * take ages. Well maybe 10 minutes. */
@@ -85,6 +85,8 @@ static QGpgMEGpgCardJob::result_type do_work(const QStringList &cmds, const QStr
 
     proc.setProgram(path);
     proc.setArguments(args);
+
+    qCDebug(GPGPME_BACKEND_LOG) << "Executing:" << path << args;
     proc.start();
     if (!proc.waitForStarted()) {
         return std::make_tuple (QString(), QString(), 1, QString(), Error());
