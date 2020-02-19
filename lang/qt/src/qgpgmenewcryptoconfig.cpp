@@ -39,7 +39,7 @@
 #include "qgpgmenewcryptoconfig.h"
 
 #include <QDebug>
-#include "gpgme_backend_debug.h"
+#include "qgpgme_debug.h"
 
 #include <QFile>
 #include <QDir>
@@ -101,14 +101,14 @@ void QGpgMENewCryptoConfig::reloadConfiguration(bool)
            << "components:\n";
         std::copy(components.begin(), components.end(),
                   std::ostream_iterator<Component>(ss, "\n"));
-        qCDebug(GPGPME_BACKEND_LOG) << ss.str().c_str();
+        qCDebug(QGPGME_LOG) << ss.str().c_str();
     }
 #endif
 #if 0
     TODO port?
     if (error && showErrors) {
         const QString wmsg = i18n("<qt>Failed to execute gpgconf:<p>%1</p></qt>", QString::fromLocal8Bit(error.asString()));
-        qCWarning(GPGPME_BACKEND_LOG) << wmsg; // to see it from test_cryptoconfig.cpp
+        qCWarning(QGPGME_LOG) << wmsg; // to see it from test_cryptoconfig.cpp
         KMessageBox::error(0, wmsg);
     }
 #endif
@@ -183,7 +183,7 @@ void QGpgMENewCryptoConfigComponent::setComponent(const Component &component)
         group->m_entryNames.push_back(name);
         group->m_entriesByName[name] = entry;
     } else {
-        qCWarning(GPGPME_BACKEND_LOG) << "found no group for entry" << o.name() << "of component" << name();
+        qCWarning(QGPGME_LOG) << "found no group for entry" << o.name() << "of component" << name();
     }
     if (group) {
         m_groupsByName[group->name()] = group;
@@ -222,7 +222,7 @@ void QGpgMENewCryptoConfigComponent::sync(bool runtime)
 {
     Q_UNUSED(runtime) // runtime is always set by engine_gpgconf
     if (const Error err = m_component.save()) {
-        qCWarning(GPGPME_BACKEND_LOG) << ":"
+        qCWarning(QGPGME_LOG) << ":"
             << "Error from gpgconf while saving configuration: %1"
             << QString::fromLocal8Bit(err.asString());
     }
@@ -279,7 +279,7 @@ static QString urlpart_encode(const QString &str)
     QString enc(str);
     enc.replace(QLatin1Char('%'), QStringLiteral("%25"));   // first!
     enc.replace(QLatin1Char(':'), QStringLiteral("%3a"));
-    //qCDebug(GPGPME_BACKEND_LOG) <<"  urlpart_encode:" << str <<" ->" << enc;
+    //qCDebug(QGPGME_LOG) <<"  urlpart_encode:" << str <<" ->" << enc;
     return enc;
 }
 
@@ -326,7 +326,7 @@ QVariant QGpgMENewCryptoConfigEntry::stringToValue(const QString &str, bool unes
             bool ok = true;
             const QVariant v = str.isEmpty() ? 0U : str.toUInt(&ok);
             if (!ok) {
-                qCWarning(GPGPME_BACKEND_LOG) << "list-of-none should have an unsigned int as value:" << str;
+                qCWarning(QGPGME_LOG) << "list-of-none should have an unsigned int as value:" << str;
             }
             return v;
         }
@@ -340,7 +340,7 @@ QVariant QGpgMENewCryptoConfigEntry::stringToValue(const QString &str, bool unes
                     continue;
                 } else if (unescape) {
                     if (val[0] != '"') { // see README.gpgconf
-                        qCWarning(GPGPME_BACKEND_LOG) << "String value should start with '\"' :" << val;
+                        qCWarning(QGPGME_LOG) << "String value should start with '\"' :" << val;
                     }
                     val = val.mid(1);
                 }
@@ -355,7 +355,7 @@ QVariant QGpgMENewCryptoConfigEntry::stringToValue(const QString &str, bool unes
                 return QVariant(QString());    // not set  [ok with lists too?]
             } else if (unescape) {
                 if (val[0] != '"') { // see README.gpgconf
-                    qCWarning(GPGPME_BACKEND_LOG) << "String value should start with '\"' :" << val;
+                    qCWarning(QGPGME_LOG) << "String value should start with '\"' :" << val;
                 }
                 val = val.mid(1);
             }
@@ -369,7 +369,7 @@ QGpgMENewCryptoConfigEntry::~QGpgMENewCryptoConfigEntry()
 {
 #ifndef NDEBUG
     if (!s_duringClear && m_option.dirty())
-        qCWarning(GPGPME_BACKEND_LOG) << "Deleting a QGpgMENewCryptoConfigEntry that was modified (" << m_option.description() << ")"
+        qCWarning(QGPGME_LOG) << "Deleting a QGpgMENewCryptoConfigEntry that was modified (" << m_option.description() << ")"
                                       << "You forgot to call sync() (to commit) or clear() (to discard)";
 #endif
 }
@@ -480,7 +480,7 @@ static QUrl parseURL(int mRealArgType, const QString &str)
             if (ok) {
                 url.setPort(port);
             } else if (!it->isEmpty()) {
-                qCWarning(GPGPME_BACKEND_LOG) << "parseURL: malformed LDAP server port, ignoring: \"" << *it << "\"";
+                qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server port, ignoring: \"" << *it << "\"";
             }
 
             const QString userName = urlpart_decode(*it++);
@@ -494,7 +494,7 @@ static QUrl parseURL(int mRealArgType, const QString &str)
             url.setQuery(urlpart_decode(*it));
             return url;
         } else {
-            qCWarning(GPGPME_BACKEND_LOG) << "parseURL: malformed LDAP server:" << str;
+            qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server:" << str;
         }
     }
     // other URLs : assume wellformed URL syntax.
@@ -700,7 +700,7 @@ QString QGpgMENewCryptoConfigEntry::toString(bool escape) const
                 }
             }
             QString res = lst.join(",");
-            //qCDebug(GPGPME_BACKEND_LOG) <<"toString:" << res;
+            //qCDebug(QGPGME_LOG) <<"toString:" << res;
             return res;
         } else { // normal string
             QString res = mValue.toString();

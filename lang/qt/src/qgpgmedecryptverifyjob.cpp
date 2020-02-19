@@ -46,7 +46,7 @@
 #include "data.h"
 
 #include <QDebug>
-#include "gpgme_backend_debug.h"
+#include "qgpgme_debug.h"
 
 #include <QBuffer>
 
@@ -68,7 +68,7 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread 
                                                           const std::weak_ptr<QIODevice> &plainText_)
 {
 
-    qCDebug(GPGPME_BACKEND_LOG);
+    qCDebug(QGPGME_LOG);
 
     const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
     const std::shared_ptr<QIODevice> plainText = plainText_.lock();
@@ -86,7 +86,7 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread 
         const std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        qCDebug(GPGPME_BACKEND_LOG) << "End no plainText. Error: " << ae;
+        qCDebug(QGPGME_LOG) << "End no plainText. Error: " << ae;
         return std::make_tuple(res.first, res.second, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(plainText);
@@ -95,7 +95,7 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread 
         const std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        qCDebug(GPGPME_BACKEND_LOG) << "End plainText. Error: " << ae;
+        qCDebug(QGPGME_LOG) << "End plainText. Error: " << ae;
         return std::make_tuple(res.first, res.second, QByteArray(), log, ae);
     }
 

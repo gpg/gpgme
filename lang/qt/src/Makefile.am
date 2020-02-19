@@ -20,7 +20,7 @@
 # 02111-1307, USA
 lib_LTLIBRARIES = libqgpgme.la
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
-             gpgme_backend_debug.h qgpgme_version.h.in \
+             qgpgme_debug.h qgpgme_version.h.in \
              QGpgmeConfig.cmake.in.in
 
 qgpgme_sources = \
@@ -35,7 +35,7 @@ qgpgme_sources = \
     qgpgmesecretkeyexportjob.cpp qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
-    qgpgmekeyformailboxjob.cpp gpgme_backend_debug.cpp \
+    qgpgmekeyformailboxjob.cpp qgpgme_debug.cpp \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     qgpgmegpgcardjob.cpp \

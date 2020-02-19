@@ -39,7 +39,7 @@
 #include "qgpgmesecretkeyexportjob.h"
 
 #include <QDebug>
-#include "gpgme_backend_debug.h"
+#include "qgpgme_debug.h"
 
 #include "context.h"
 #include "data.h"

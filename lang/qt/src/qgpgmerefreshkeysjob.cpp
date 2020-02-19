@@ -41,7 +41,7 @@
 #include "qgpgmerefreshkeysjob.h"
 
 #include <QDebug>
-#include "gpgme_backend_debug.h"
+#include "qgpgme_debug.h"
 
 #include "context.h"
 
@@ -157,18 +157,18 @@ void QGpgME::QGpgMERefreshKeysJob::slotStatus(QProcess *proc, const QString &typ
     if (type == QLatin1String("ERROR")) {
 
         if (args.size() < 2) {
-            qCDebug(GPGPME_BACKEND_LOG) << "not recognising ERROR with < 2 args!";
+            qCDebug(QGPGME_LOG) << "not recognising ERROR with < 2 args!";
             return;
         }
         const int source = (*++it).toInt(&ok);
         if (!ok) {
-            qCDebug(GPGPME_BACKEND_LOG) << "expected number for first ERROR arg, got something else";
+            qCDebug(QGPGME_LOG) << "expected number for first ERROR arg, got something else";
             return;
         }
         ok = false;
         const int code = (*++it).toInt(&ok);
         if (!ok) {
-            qCDebug(GPGPME_BACKEND_LOG) << "expected number for second ERROR arg, got something else";
+            qCDebug(QGPGME_LOG) << "expected number for second ERROR arg, got something else";
             return;
         }
         mError = GpgME::Error::fromCode(code, source);
@@ -176,26 +176,26 @@ void QGpgME::QGpgMERefreshKeysJob::slotStatus(QProcess *proc, const QString &typ
     } else if (type == QLatin1String("PROGRESS")) {
 
         if (args.size() < 4) {
-            qCDebug(GPGPME_BACKEND_LOG) << "not recognising PROGRESS with < 4 args!";
+            qCDebug(QGPGME_LOG) << "not recognising PROGRESS with < 4 args!";
             return;
         }
         const QString what = *++it;
         ok = false;
         (*++it).toInt(&ok);
         if (!ok) {
-            qCDebug(GPGPME_BACKEND_LOG) << "expected number for \"type\", got something else";
+            qCDebug(QGPGME_LOG) << "expected number for \"type\", got something else";
             return;
         }
         ok = false;
         const int cur = (*++it).toInt(&ok);
         if (!ok) {
-            qCDebug(GPGPME_BACKEND_LOG) << "expected number for \"cur\", got something else";
+            qCDebug(QGPGME_LOG) << "expected number for \"cur\", got something else";
             return;
         }
         ok = false;
         const int total = (*++it).toInt(&ok);
         if (!ok) {
-            qCDebug(GPGPME_BACKEND_LOG) << "expected number for \"total\", got something else";
+            qCDebug(QGPGME_LOG) << "expected number for \"total\", got something else";
             return;
         }
         // TODO port
