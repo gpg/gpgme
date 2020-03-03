@@ -464,7 +464,7 @@ case in most, if not all, cases.
 
 Note that from GPGME [[https://dev.gnupg.org/rMff6ff616aea6f59b7f2ce1176492850ecdf3851e][1.12.1]] the default installation installs to each
 version of Python it can find first.  That is that it will currently
-install for the first copies of Python versions 2.7, 3.4, 3.5, and so so
+install for the first copies of Python versions 2.7, 3.4, 3.5, and so on
 up until the current dev branch that it finds.  Usually this will be in the
 same prefix as GPGME itself, but is dictated by the =$PATH= when the
 installation is performed.  The above instructions can still be
