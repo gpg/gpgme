@@ -85,6 +85,7 @@ show_usage (int ex)
          "  --loopback       use a loopback pinentry\n"
          "  --key NAME       use key NAME for signing\n"
          "  --sender MBOX    use MBOX as sender address\n"
+         "  --include-key-block  use this option with gpg\n"
          , stderr);
   exit (ex);
 }
@@ -103,6 +104,7 @@ main (int argc, char **argv)
   gpgme_sign_result_t result;
   int print_status = 0;
   int use_loopback = 0;
+  int include_key_block = 0;
   const char *sender = NULL;
   const char *s;
 
@@ -165,6 +167,11 @@ main (int argc, char **argv)
           use_loopback = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--include-key-block"))
+        {
+          include_key_block = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -197,6 +204,8 @@ main (int argc, char **argv)
       err = gpgme_get_key (ctx, key_string, &akey, 1);
       if (err)
         {
+          fprintf (stderr, PGM ": get key '%s' failed: %s\n",
+                   key_string, gpg_strerror (err));
           exit (1);
         }
       err = gpgme_signers_add (ctx, akey);
@@ -208,6 +217,17 @@ main (int argc, char **argv)
     {
       err = gpgme_set_sender (ctx, sender);
       fail_if_err (err);
+    }
+
+  if (include_key_block)
+    {
+      err = gpgme_set_ctx_flag (ctx, "include-key-block", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting include-key-block:  %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
     }
 
   err = gpgme_data_new_from_file (&in, *argv, 1);

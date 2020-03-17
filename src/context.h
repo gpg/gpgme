@@ -118,6 +118,12 @@ struct gpgme_context
    * flag is cleared with each operation.  */
   unsigned int redraw_suggested : 1;
 
+  /* True if the option --include-key-block shall be passed to gpg.  */
+  unsigned int include_key_block : 1;
+
+  /* True if the option --auto-key-import shall be passed to gpg.  */
+  unsigned int auto_key_import : 1;
+
   /* True if the option --auto-key-retrieve shall be passed to gpg.  */
   unsigned int auto_key_retrieve : 1;
 

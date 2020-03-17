@@ -3105,6 +3105,14 @@ a message signed by a brand new key (which you naturally will not have
 on your local keyring), the operator can tell both your IP address and
 the time when you verified the signature.
 
+@item "auto-key-import"
+Setting the @var{value} to "1" forces the GPG backend to automatically
+import a missing key for signature verification from the signature.
+
+@item "include-key-block"
+Setting the @var{value} to "1" forces the GPG backend to embed the
+signing key as well as an encryption subkey into the the signature.
+
 @item "request-origin"
 The string given in @var{value} is passed to the GnuPG engines to
 request restrictions based on the origin of the request.  Valid values
@@ -3496,7 +3504,7 @@ available.
 @since{1.7.0}
 
 The keygrip of the subkey in hex digit form or @code{NULL} if not
-availabale.
+available.
 
 @item long int timestamp
 This is the creation timestamp of the subkey.  This is -1 if the

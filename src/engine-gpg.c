@@ -148,6 +148,8 @@ struct engine_gpg
     unsigned int no_symkey_cache : 1;
     unsigned int offline : 1;
     unsigned int ignore_mdc_error : 1;
+    unsigned int include_key_block : 1;
+    unsigned int auto_key_import : 1;
   } flags;
 
   /* NULL or the data object fed to --override_session_key-fd.  */
@@ -686,6 +688,13 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
 
   gpg->flags.ignore_mdc_error = !!ctx->ignore_mdc_error;
 
+  if (have_gpg_version (gpg, "2.2.20"))
+    {
+      if (ctx->auto_key_import)
+        gpg->flags.auto_key_import = 1;
+      if (ctx->include_key_block)
+        gpg->flags.include_key_block = 1;
+    }
 }
 
 
@@ -1703,6 +1712,9 @@ gpg_decrypt (void *engine,
   if (!err && auto_key_retrieve)
     err = add_arg (gpg, "--auto-key-retrieve");
 
+  if (!err && gpg->flags.auto_key_import)
+    err = add_arg (gpg, "--auto-key-import");
+
   if (!err && override_session_key && *override_session_key)
     {
       if (have_gpg_version (gpg, "2.1.16"))
@@ -2176,6 +2188,9 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
 
+  if (!err && gpg->flags.include_key_block)
+    err = add_arg (gpg, "--include-key-block");
+
   if (recp || recpstring)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
@@ -2250,6 +2265,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
       && have_gpg_version (gpg, "2.1.14"))
     err = add_arg (gpg, "--mimemode");
+
+  if (!err && gpg->flags.include_key_block)
+    err = add_arg (gpg, "--include-key-block");
 
   if (recp || recpstring)
     {
@@ -3243,6 +3261,8 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
         }
     }
 
+  if (!err && gpg->flags.include_key_block)
+    err = add_arg (gpg, "--include-key-block");
   if (!err)
     err = append_args_from_signers (gpg, ctx);
   if (!err)
@@ -3305,6 +3325,8 @@ gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
   gpgme_error_t err;
 
   err = append_args_from_sender (gpg, ctx);
+  if (!err && gpg->flags.auto_key_import)
+    err = add_arg (gpg, "--auto-key-import");
   if (!err && ctx->auto_key_retrieve)
     err = add_arg (gpg, "--auto-key-retrieve");
 

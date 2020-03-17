@@ -234,6 +234,7 @@ show_usage (int ex)
          "  --sender MBOX    use MBOX as sender address\n"
          "  --repeat N       repeat the operation N times\n"
          "  --auto-key-retrieve\n"
+         "  --auto-key-import\n"
          , stderr);
   exit (ex);
 }
@@ -248,6 +249,7 @@ main (int argc, char **argv)
   int print_status = 0;
   const char *sender = NULL;
   int auto_key_retrieve = 0;
+  int auto_key_import = 0;
   int repeats = 1;
 
   if (argc)
@@ -304,7 +306,11 @@ main (int argc, char **argv)
           auto_key_retrieve = 1;
           argc--; argv++;
         }
-
+      else if (!strcmp (*argv, "--auto-key-import"))
+        {
+          auto_key_import = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -368,6 +374,18 @@ main (int argc, char **argv)
             {
               fprintf (stderr, PGM ": gpgme_get_ctx_flag failed for '%s'\n",
                        "auto-key-retrieve");
+              exit (1);
+            }
+        }
+
+      if (auto_key_import)
+        {
+          gpgme_set_ctx_flag (ctx, "auto-key-import", "1");
+          s = gpgme_get_ctx_flag (ctx, "auto-key-import");
+          if (!s || strcmp (s, "1"))
+            {
+              fprintf (stderr, PGM ": gpgme_get_ctx_flag failed for '%s'\n",
+                       "auto-key-import");
               exit (1);
             }
         }
