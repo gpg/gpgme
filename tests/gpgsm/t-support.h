@@ -26,6 +26,10 @@
 
 #include <gpgme.h>
 
+#ifndef DIM
+#define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
+#endif
+
 #define fail_if_err(err)					\
   do								\
     {								\

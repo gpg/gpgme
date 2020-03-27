@@ -59,37 +59,9 @@ progress (void *self, const char *what, int type, int current, int total)
 }
 
 
-int
-main (void)
+static void
+check_result (gpgme_genkey_result_t result)
 {
-  gpgme_ctx_t ctx;
-  gpgme_error_t err;
-  const char *parms = "<GnupgKeyParms format=\"internal\">\n"
-    "Key-Type: RSA\n"
-    "Key-Length: 1024\n"
-    "Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester\n"
-    "Name-Email: joe@foo.bar\n"
-    "</GnupgKeyParms>\n";
-  gpgme_genkey_result_t result;
-  gpgme_data_t certreq;
-
-  init_gpgme (GPGME_PROTOCOL_CMS);
-
-  err = gpgme_data_new (&certreq);
-  fail_if_err (err);
-
-  err = gpgme_new (&ctx);
-  fail_if_err (err);
-
-  gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
-  gpgme_set_armor (ctx, 1);
-
-  gpgme_set_progress_cb (ctx, progress, NULL);
-
-  err = gpgme_op_genkey (ctx, parms, certreq, NULL);
-  fail_if_err (err);
-
-  result = gpgme_op_genkey_result (ctx);
   if (!result)
     {
       fprintf (stderr, "%s:%d: gpgme_op_genkey_result returns NULL\n",
@@ -121,10 +93,66 @@ main (void)
 	       __FILE__, __LINE__);
       exit (1);
     }
-  gpgme_release (ctx);
+}
 
-  print_data (certreq);
-  gpgme_data_release (certreq);
+static const char *parms[] = {
+    "<GnupgKeyParms format=\"internal\">\n"
+    "Key-Type: RSA\n"
+    "Key-Length: 1024\n"
+    "Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester\n"
+    "Name-Email: joe@foo.bar\n"
+    "</GnupgKeyParms>\n",
+    "<GnupgKeyParms format=\"internal\">\n"
+    "Key-Type: ECC\n"
+    "Key-Curve: NIST P-256\n"
+    "Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester\n"
+    "Name-Email: joe@foo.bar\n"
+    "</GnupgKeyParms>\n",
+    "<GnupgKeyParms format=\"internal\">\n"
+    "Key-Type: ECC\n"
+    "Key-Curve: Ed25519\n"
+    "Name-DN: C=de,O=g10 code,OU=Testlab,CN=Joe 2 Tester\n"
+    "Name-Email: joe@foo.bar\n"
+    "</GnupgKeyParms>\n",
+};
+
+int
+main (void)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_genkey_result_t result;
+  int i;
+
+  init_gpgme (GPGME_PROTOCOL_CMS);
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  gpgme_set_protocol (ctx, GPGME_PROTOCOL_CMS);
+  gpgme_set_armor (ctx, 1);
+
+  gpgme_set_progress_cb (ctx, progress, NULL);
+
+  for (i = 0; i < DIM(parms); i++)
+    {
+      gpgme_data_t certreq;
+
+      progress_called = 0;
+      err = gpgme_data_new (&certreq);
+      fail_if_err (err);
+
+      err = gpgme_op_genkey (ctx, parms[i], certreq, NULL);
+      fail_if_err (err);
+
+      result = gpgme_op_genkey_result (ctx);
+      check_result (result);
+
+      print_data (certreq);
+      gpgme_data_release (certreq);
+    }
+
+  gpgme_release (ctx);
 
   return 0;
 }
