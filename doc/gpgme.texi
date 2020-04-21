@@ -4131,7 +4131,7 @@ already existing in the local key database.  This flag can be used to
 override this check.
 
 @item GPGME_CREATE_NOEXPIRE
-@since{1.8.0}
+@since{1.9.0}
 
 Request generation of keys that do not expire.
 
