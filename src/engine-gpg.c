@@ -2997,7 +2997,10 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
     err = add_arg (gpg, "--with-tofu-info");
 
   if (!err && (mode & GPGME_KEYLIST_MODE_WITH_SECRET))
-    err = add_arg (gpg, "--with-secret");
+    {
+      err = add_arg (gpg, "--with-secret");
+      err = add_arg (gpg, "--with-keygrip");
+    }
 
   if (!err
       && (mode & GPGME_KEYLIST_MODE_SIGS)

@@ -2827,7 +2827,8 @@ The @code{GPGME_KEYLIST_MODE_WITH_SECRET} returns information about
 the presence of a corresponding secret key in a public key listing.  A
 public key listing with this mode is slower than a standard listing
 but can be used instead of a second run to list the secret keys.  This
-is only supported for GnuPG versions >= 2.1.
+is only supported for GnuPG versions >= 2.1.  Note that using this
+option also makes sure that the keygrip is available in the output.
 
 @item GPGME_KEYLIST_MODE_EPHEMERAL
 @since{1.2.0}
