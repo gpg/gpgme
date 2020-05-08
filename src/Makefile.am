@@ -126,6 +126,7 @@ gpgme_res = versioninfo.lo
 no_undefined = -no-undefined
 export_symbols = -export-symbols $(srcdir)/gpgme.def
 extra_ltoptions = -XCClinker -static-libgcc
+gpgme_w32_extra_libs = -lws2_32
 
 install-def-file:
 	-$(INSTALL) -d $(DESTDIR)$(libdir)
@@ -152,7 +153,7 @@ libgpgme_la_LDFLAGS = $(no_undefined) $(export_symbols) $(extra_ltoptions) \
 	@LIBGPGME_LT_CURRENT@:@LIBGPGME_LT_REVISION@:@LIBGPGME_LT_AGE@
 libgpgme_la_DEPENDENCIES = @LTLIBOBJS@ $(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	             @GPG_ERROR_LIBS@
+	             @GPG_ERROR_LIBS@ $(gpgme_w32_extra_libs)
 
 if BUILD_W32_GLIB
 libgpgme_glib_la_LDFLAGS = \
@@ -162,7 +163,7 @@ libgpgme_glib_la_LDFLAGS = \
 libgpgme_glib_la_DEPENDENCIES =	@LTLIBOBJS@ \
 	$(srcdir)/libgpgme.vers $(gpgme_deps)
 libgpgme_glib_la_LIBADD = $(gpgme_res) @LIBASSUAN_LIBS@ @LTLIBOBJS@ \
-	@GPG_ERROR_LIBS@ @GLIB_LIBS@
+	@GPG_ERROR_LIBS@ @GLIB_LIBS@ $(gpgme_w32_extra_libs)
 endif
 
 install-data-local: install-def-file
