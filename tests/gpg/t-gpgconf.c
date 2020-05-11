@@ -340,7 +340,7 @@ main (void)
   }
 
   /* Now change something else.  */
-  fprintf (stderr, " gpg.keyserver ");
+  fprintf (stderr, " dirmngr.keyserver ");
   for (i = 0; i < N; i++) {
     const char *values[2] = { "hkp://foo.bar", "hkps://bar.foo" };
     gpgme_conf_arg_t arg;
@@ -349,7 +349,7 @@ main (void)
     err = gpgme_conf_arg_new (&arg, GPGME_CONF_STRING, values[i%2]);
     fail_if_err (err);
 
-    if (lookup (conf, "gpg", "keyserver", &comp, &opt))
+    if (lookup (conf, "dirmngr", "keyserver", &comp, &opt))
       {
 	/* Found.  */
 	test (opt->alt_type == GPGME_CONF_STRING);
@@ -361,7 +361,7 @@ main (void)
       }
     else
       {
-	fprintf (stderr, "Skipping test, option gpg.keyserver not found.\n");
+	fprintf (stderr, "Skipping test, option dirmngr.keyserver not found.\n");
 	break;
       }
 
@@ -369,7 +369,7 @@ main (void)
     gpgme_conf_release (conf);
     err = gpgme_op_conf_load (ctx, &conf);
     fail_if_err (err);
-    if (lookup (conf, "gpg", "keyserver", &comp, &opt))
+    if (lookup (conf, "dirmngr", "keyserver", &comp, &opt))
       {
         /* Found.  */
         test (opt->alt_type == GPGME_CONF_STRING);

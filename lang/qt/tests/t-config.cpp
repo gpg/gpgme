@@ -50,36 +50,6 @@ class CryptoConfigTest: public QGpgMETest
     Q_OBJECT
 
 private Q_SLOTS:
-    void testKeyserver()
-    {
-        // Repeatedly set a config value and clear it
-        // this was broken at some point so it gets a
-        // unit test.
-        for (int i = 0; i < 10; i++) {
-            auto conf = cryptoConfig();
-            QVERIFY(conf);
-            auto entry = conf->entry(QStringLiteral("gpg"),
-                    QStringLiteral("Keyserver"),
-                    QStringLiteral("keyserver"));
-            QVERIFY(entry);
-            const QString url(QStringLiteral("hkp://foo.bar.baz"));
-            entry->setStringValue(url);
-            conf->sync(false);
-            conf->clear();
-            entry = conf->entry(QStringLiteral("gpg"),
-                    QStringLiteral("Keyserver"),
-                    QStringLiteral("keyserver"));
-            QCOMPARE (entry->stringValue(), url);
-            entry->setStringValue(QString());
-            conf->sync(false);
-            conf->clear();
-            entry = conf->entry(QStringLiteral("gpg"),
-                    QStringLiteral("Keyserver"),
-                    QStringLiteral("keyserver"));
-            QCOMPARE (entry->stringValue(), QString());
-        }
-    }
-
     void testDefault()
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.2.0") {
