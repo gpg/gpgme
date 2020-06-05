@@ -663,7 +663,7 @@ parse_trust (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
         {
           while (*args == ' ')
             args++;
-          if (!strncmp (args, "chain", 2) && (args[2] == ' ' || !args[2]))
+          if (!strncmp (args, "chain", 5) && (args[5] == ' ' || !args[5]))
             sig->chain_model = 1;
         }
     }
