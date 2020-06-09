@@ -5773,8 +5773,15 @@ status codes are of interest:
 
   @table @code
   @item GPG_ERR_NO_ERROR
-  This status indicates that the signature is valid.  For the combined
-  result this status means that all signatures are valid.
+  This status indicates that the signature could be verified or that
+  there is no signature.  For the combined result this status
+  means that all signatures could be verified.
+
+  Note: This does not mean that a valid signature could be found.  Check
+  the @code{summary} field for that.
+
+  For example a @code{gpgme_op_decrypt_verify} returns a verification
+  result with GPG_ERR_NO_ERROR for encrypted but unsigned data.
 
   @item GPG_ERR_SIG_EXPIRED
   This status indicates that the signature is valid but expired.  For
