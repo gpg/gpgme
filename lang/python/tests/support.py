@@ -38,6 +38,12 @@ def assert_gpg_version(version=(2, 1, 0)):
                 c.engine_info.version, '.'.join(map(str, version))))
             sys.exit(77)
 
+def is_gpg_version(version):
+    with gpg.Context() as c:
+        clean_version = re.match(r'\d+\.\d+\.\d+',
+                                 c.engine_info.version).group(0)
+        return tuple(map(int, clean_version.split('.'))) == version
+
 
 def have_tofu_support(ctx, some_uid):
     keys = list(

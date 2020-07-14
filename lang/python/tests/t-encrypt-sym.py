@@ -44,8 +44,16 @@ for passphrase in ("abc", b"abc"):
     c.set_passphrase_cb(passphrase_cb, None)
 
     c.op_encrypt([], 0, source, cipher)
-    assert passphrase_cb_called == 1, \
-        "Callback called {} times".format(passphrase_cb_called)
+    # gpg 2.2.21 has a bug in that for a new passphrase the callback
+    # is called twice.  This is fixed in 2.2.22 but a patch was also
+    # distributed so that we allow both.
+    if support.is_gpg_version((2,2,21)):
+        print("Enabling GnuPG 2.2.21 bug 4991 test workaround.")
+        assert passphrase_cb_called == 1 or passphrase_cb_called == 2, \
+            "Callback called {} times".format(passphrase_cb_called)
+    else:
+        assert passphrase_cb_called == 1, \
+            "Callback called {} times".format(passphrase_cb_called)
     support.print_data(cipher)
 
     c = gpg.Context()
