@@ -917,13 +917,12 @@ _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in, gpgme_data_t out,
 gpgme_error_t
 _gpgme_engine_op_trustlist (engine_t engine, const char *pattern)
 {
+  (void)pattern;
+
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (!engine->ops->trustlist)
-    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-
-  return (*engine->ops->trustlist) (engine->engine, pattern);
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
 

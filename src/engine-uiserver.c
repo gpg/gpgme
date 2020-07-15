@@ -1437,7 +1437,6 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     NULL,               /* keysign */
     NULL,               /* tofu_policy */
     uiserver_sign,
-    NULL,		/* trustlist */
     uiserver_verify,
     NULL,		/* getauditlog */
     NULL,               /* opassuan_transact */

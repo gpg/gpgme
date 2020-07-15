@@ -5,6 +5,8 @@ Noteworthy changes in version 1.14.0 (unreleased)
 
  * New context flag "extended-edit" to enable expert key edit. [#4734]
 
+ * Deprecate the anyway non working trustlist functions.  [#4834]
+
  * cpp: Add convenience API to obtain remarks. [#4734]
 
  * cpp: The sign key edit-interactor now supports multiple signatures

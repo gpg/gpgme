@@ -3303,29 +3303,6 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 }
 
 static gpgme_error_t
-gpg_trustlist (void *engine, const char *pattern)
-{
-  engine_gpg_t gpg = engine;
-  gpgme_error_t err;
-
-  err = add_arg (gpg, "--with-colons");
-  if (!err)
-    err = add_arg (gpg, "--list-trust-path");
-
-  /* Tell the gpg object about the data.  */
-  if (!err)
-    err = add_arg (gpg, "--");
-  if (!err)
-    err = add_arg (gpg, pattern);
-
-  if (!err)
-    err = start (gpg);
-
-  return err;
-}
-
-
-static gpgme_error_t
 gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 	    gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
@@ -3475,7 +3452,6 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_keysign,
     gpg_tofu_policy,    /* tofu_policy */
     gpg_sign,
-    gpg_trustlist,
     gpg_verify,
     gpg_getauditlog,
     NULL,               /* opassuan_transact */

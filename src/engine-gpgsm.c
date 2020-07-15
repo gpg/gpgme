@@ -2324,7 +2324,6 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     NULL,               /* keysign */
     NULL,               /* tofu_policy */
     gpgsm_sign,
-    NULL,		/* trustlist */
     gpgsm_verify,
     gpgsm_getauditlog,
     NULL,               /* opassuan_transact */

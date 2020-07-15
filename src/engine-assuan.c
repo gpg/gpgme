@@ -826,7 +826,6 @@ struct engine_ops _gpgme_engine_ops_assuan =
     NULL,               /* keysign */
     NULL,               /* tofu_policy */
     NULL,               /* sign */
-    NULL,		/* trustlist */
     NULL,               /* verify */
     NULL,               /* getauditlog */
     llass_transact,     /* opassuan_transact */

@@ -806,7 +806,6 @@ struct engine_ops _gpgme_engine_ops_g13 =
     NULL,               /* keysign */
     NULL,               /* tofu_policy */
     NULL,               /* sign */
-    NULL,		/* trustlist */
     NULL,               /* verify */
     NULL,               /* getauditlog */
     g13_transact,

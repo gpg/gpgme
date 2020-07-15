@@ -182,7 +182,6 @@ Contexts
 * Result Management::             Managing the result of crypto operations.
 * Context Attributes::            Setting properties of a context.
 * Key Management::                Managing keys with @acronym{GPGME}.
-* Trust Item Management::         Managing trust items with @acronym{GPGME}.
 * Crypto Operations::             Using a context for cryptography.
 * Miscellaneous::                 Miscellaneous operations.
 * Run Control::                   Controlling how operations are run.
@@ -216,11 +215,6 @@ Key Management
 * Changing Passphrases::          Change the passphrase of a key.
 * Changing TOFU Data::            Changing data pertaining to TOFU.
 * Advanced Key Editing::          Advanced key edit operation.
-
-Trust Item Management
-
-* Listing Trust Items::           Browsing the list of available trust items.
-* Manipulating Trust Items::      Operations on trust items.
 
 Crypto Operations
 
@@ -2353,7 +2347,6 @@ cryptographic operations.
 * Result Management::             Managing the result of crypto operations.
 * Context Attributes::            Setting properties of a context.
 * Key Management::                Managing keys with @acronym{GPGME}.
-* Trust Item Management::         Managing trust items with @acronym{GPGME}.
 * Crypto Operations::             Using a context for cryptography.
 * Miscellaneous::                 Miscellaneous operations
 * Run Control::                   Controlling how operations are run.
@@ -5263,114 +5256,6 @@ is not a valid pointer.
 @end deftypefun
 
 
-
-@node Trust Item Management
-@section Trust Item Management
-@cindex trust item
-
-@strong{Caution:} The trust items interface is experimental.
-
-@deftp {Data type} gpgme_trust_item_t
-The @code{gpgme_trust_item_t} type is a pointer to a trust item object.
-It has the following members:
-
-@table @code
-@item char *keyid
-This is a string describing the key to which this trust items belongs.
-
-@item int type
-This is the type of the trust item.  A value of 1 refers to a key, a
-value of 2 refers to a user ID.
-
-@item int level
-This is the trust level.
-
-@item char *owner_trust
-The owner trust if @code{type} is 1.
-
-@item char *validity
-The calculated validity.
-
-@item char *name
-The user name if @code{type} is 2.
-@end table
-@end deftp
-
-@menu
-* Listing Trust Items::           Browsing the list of available trust items.
-* Manipulating Trust Items::      Operations on trust items.
-@end menu
-
-
-@node Listing Trust Items
-@subsection Listing Trust Items
-@cindex trust item list
-
-@deftypefun gpgme_error_t gpgme_op_trustlist_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{pattern}}, @w{int @var{max_level}})
-The function @code{gpgme_op_trustlist_start} initiates a trust item
-listing operation inside the context @var{ctx}.  It sets everything up
-so that subsequent invocations of @code{gpgme_op_trustlist_next} return
-the trust items in the list.
-
-The string @var{pattern} contains an engine specific expression that
-is used to limit the list to all trust items matching the pattern.  It
-can not be the empty string.
-
-The argument @var{max_level} is currently ignored.
-
-The context will be busy until either all trust items are received
-(and @code{gpgme_op_trustlist_next} returns @code{GPG_ERR_EOF}), or
-@code{gpgme_op_trustlist_end} is called to finish the operation.
-
-The function returns the error code @code{GPG_ERR_INV_VALUE} if
-@var{ctx} is not a valid pointer, and passes through any errors that
-are reported by the crypto engine support routines.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_op_trustlist_next (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_trust_item_t *@var{r_item}})
-The function @code{gpgme_op_trustlist_next} returns the next trust
-item in the list created by a previous @code{gpgme_op_trustlist_start}
-operation in the context @var{ctx}.  The trust item can be destroyed
-with @code{gpgme_trust_item_release}.  @xref{Manipulating Trust Items}.
-
-This is the only way to get at @code{gpgme_trust_item_t} objects in
-@acronym{GPGME}.
-
-If the last trust item in the list has already been returned,
-@code{gpgme_op_trustlist_next} returns @code{GPG_ERR_EOF}.
-
-The function returns the error code @code{GPG_ERR_INV_VALUE} if @var{ctx} or
-@var{r_item} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if
-there is not enough memory for the operation.
-@end deftypefun
-
-@deftypefun gpgme_error_t gpgme_op_trustlist_end (@w{gpgme_ctx_t @var{ctx}})
-The function @code{gpgme_op_trustlist_end} ends a pending trust list
-operation in the context @var{ctx}.
-
-The function returns the error code @code{GPG_ERR_INV_VALUE} if
-@var{ctx} is not a valid pointer, and @code{GPG_ERR_ENOMEM} if at some
-time during the operation there was not enough memory available.
-@end deftypefun
-
-
-@node Manipulating Trust Items
-@subsection Manipulating Trust Items
-@cindex trust item, manipulation
-
-@deftypefun void gpgme_trust_item_ref (@w{gpgme_trust_item_t @var{item}})
-The function @code{gpgme_trust_item_ref} acquires an additional
-reference for the trust item @var{item}.
-@end deftypefun
-
-@deftypefun void gpgme_trust_item_unref (@w{gpgme_trust_item_t @var{item}})
-The function @code{gpgme_trust_item_unref} releases a reference for
-the trust item @var{item}.  If this was the last reference, the trust
-item will be destroyed and all resources associated to it will be
-released.
-@end deftypefun
-
-
 @node Crypto Operations
 @section Crypto Operations
 @cindex cryptographic operation
@@ -7067,11 +6952,6 @@ received from the crypto engine.  The accompanying @var{type_data} is
 a @code{gpgme_key_t} variable that contains the key with one reference
 for the user.
 
-@item GPGME_EVENT_NEXT_TRUSTITEM
-In a @code{gpgme_op_trustlist_start} operation, the next trust item
-was received from the crypto engine.  The accompanying @var{type_data}
-is a @code{gpgme_trust_item_t} variable that contains the trust item with
-one reference for the user.
 @end table
 @end deftp
 
@@ -7686,12 +7566,6 @@ The function @code{gpgme_key_release} is equivalent to
 @code{gpgme_key_unref}.
 @end deftypefun
 
-@deftypefun void gpgme_trust_item_release (@w{gpgme_trust_item_t @var{item}})
-The function @code{gpgme_trust_item_release} is an alias for
-@code{gpgme_trust_item_unref}.
-@end deftypefun
-
-
 @deftypefun gpgme_error_t gpgme_op_import_ext (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{keydata}}, @w{int *@var{nr}})
 @since{0.3.9}
 
@@ -7830,8 +7704,6 @@ attribute.  The following attributes are defined:
 @item GPGME_ATTR_KEYID
 This is the key ID of a sub key.  It is representable as a string.
 
-For trust items, the trust item refers to the key with this ID.
-
 @item GPGME_ATTR_FPR
 This is the fingerprint of a sub key.  It is representable as a
 string.
@@ -7853,15 +7725,10 @@ representable as a number.
 This is the expiration time of a sub key.  It is representable as a
 number.
 
-@item GPGME_ATTR_OTRUST
-XXX FIXME  (also for trust items)
-
 @item GPGME_ATTR_USERID
 This is a user ID.  There can be more than one user IDs in a
 @var{gpgme_key_t} object.  The first one (with index 0) is the primary
 user ID.  The user ID is representable as a number.
-
-For trust items, this is the user ID associated with this trust item.
 
 @item GPGME_ATTR_NAME
 This is the name belonging to a user ID.  It is representable as a string.
@@ -7878,9 +7745,6 @@ string.
 This is the validity belonging to a user ID.  It is representable as a
 string and as a number.  See below for a list of available validities.
 
-For trust items, this is the validity that is associated with this
-trust item.
-
 @item GPGME_ATTR_UID_REVOKED
 This specifies if a user ID is revoked.  It is representable as a
 number, and is @code{1} if the user ID is revoked, and @code{0}
@@ -7891,13 +7755,10 @@ This specifies if a user ID is invalid.  It is representable as a
 number, and is @code{1} if the user ID is invalid, and @code{0}
 otherwise.
 
-@item GPGME_ATTR_LEVEL
-This is the trust level of a trust item.
-
 @item GPGME_ATTR_TYPE
 This returns information about the type of key.  For the string function
 this will eother be "PGP" or "X.509".  The integer function returns 0
-for PGP and 1 for X.509.  It is also used for the type of a trust item.
+for PGP and 1 for X.509.
 
 @item GPGME_ATTR_IS_SECRET
 This specifies if the key is a secret key.  It is representable as a
@@ -8081,43 +7942,6 @@ argument @var{reserved} is reserved for later use and should be
 The function returns @code{0} if an attribute can't be returned as a
 string, @var{key} is not a valid pointer, @var{uid_idx} or @var{idx}
 out of range, or @var{reserved} not @code{NULL}.
-@end deftypefun
-
-
-@c node Information About Trust Items
-@c subsection Information About Trust Items
-@c cindex trust item, information about
-@c cindex trust item, attributes
-@c cindex attributes, of a trust item
-
-Trust items have attributes which can be queried using the interfaces
-below.  The attribute identifiers are shared with those for key
-attributes.  @xref{Information About Keys}.
-
-@deftypefun {const char *} gpgme_trust_item_get_string_attr (@w{gpgme_trust_item_t @var{item}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
-The function @code{gpgme_trust_item_get_string_attr} returns the value
-of the string-representable attribute @var{what} of trust item
-@var{item}.  The arguments @var{idx} and @var{reserved} are reserved
-for later use and should be @code{0} and @code{NULL} respectively.
-
-The string returned is only valid as long as the key is valid.
-
-The function returns @code{0} if an attribute can't be returned as a
-string, @var{key} is not a valid pointer, @var{idx} out of range,
-or @var{reserved} not @code{NULL}.
-@end deftypefun
-
-@deftypefun int gpgme_trust_item_get_int_attr (@w{gpgme_trust_item_t @var{item}}, @w{gpgme_attr_t @var{what}}, @w{const void *@var{reserved}}, @w{int @var{idx}})
-The function @code{gpgme_trust_item_get_int_attr} returns the value of
-the number-representable attribute @var{what} of trust item
-@var{item}.  If the attribute occurs more than once in the trust item,
-the index is specified by @var{idx}.  However, currently no such
-attribute exists, so @var{idx} should be @code{0}.  The argument
-@var{reserved} is reserved for later use and should be @code{NULL}.
-
-The function returns @code{0} if the attribute can't be returned as a
-number, @var{key} is not a valid pointer, @var{idx} out of range,
-or @var{reserved} not @code{NULL}.
 @end deftypefun
 
 
