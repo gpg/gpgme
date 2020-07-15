@@ -413,7 +413,8 @@ GpgME::Key GpgME::Signature::key(bool search, bool update) const
                         KeyListMode::Signatures |
                         KeyListMode::SignatureNotations |
                         KeyListMode::Validate |
-                        KeyListMode::WithTofu);
+                        KeyListMode::WithTofu |
+                        KeyListMode::WithKeygrip);
             Error e;
             ret = d->keys[idx] = ctx->key(fingerprint(), e, false);
             delete ctx;

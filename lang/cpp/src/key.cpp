@@ -358,7 +358,8 @@ void Key::update()
                         KeyListMode::Signatures |
                         KeyListMode::SignatureNotations |
                         KeyListMode::Validate |
-                        KeyListMode::WithTofu);
+                        KeyListMode::WithTofu |
+                        KeyListMode::WithKeygrip);
     Error err;
     auto newKey = ctx->key(primaryFingerprint(), err, true);
     // Not secret so we get the information from the pubring.

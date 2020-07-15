@@ -2298,6 +2298,7 @@ static const char hlp_keylist[] =
   "sigs:          Add KEYLIST_MODE_SIGS.\n"
   "notations:     Add KEYLIST_MODE_SIG_NOTATIONS.\n"
   "tofu:          Add KEYLIST_MODE_WITH_TOFU.\n"
+  "keygrip:       Add KEYLIST_MODE_WITH_KEYGRIP.\n"
   "ephemeral:     Add KEYLIST_MODE_EPHEMERAL.\n"
   "validate:      Add KEYLIST_MODE_VALIDATE.\n"
   "locate:        Add KEYLIST_MODE_LOCATE.\n"
@@ -2462,6 +2463,11 @@ op_keylist (cjson_t request, cjson_t result)
     goto leave;
   if (abool)
     mode |= GPGME_KEYLIST_MODE_WITH_TOFU;
+
+  if ((err = get_boolean_flag (request, "keygrip", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_WITH_KEYGRIP;
 
   if ((err = get_boolean_flag (request, "ephemeral", 0, &abool)))
     goto leave;

@@ -3001,6 +3001,11 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
       err = add_arg (gpg, "--with-secret");
       err = add_arg (gpg, "--with-keygrip");
     }
+  else if (!err && (mode & GPGME_KEYLIST_MODE_WITH_KEYGRIP))
+    {
+      /* Explicitly requests the keygrip.  */
+      err = add_arg (gpg, "--with-keygrip");
+    }
 
   if (!err
       && (mode & GPGME_KEYLIST_MODE_SIGS)

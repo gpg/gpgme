@@ -379,6 +379,7 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_SIG_NOTATIONS	8
 #define GPGME_KEYLIST_MODE_WITH_SECRET       	16
 #define GPGME_KEYLIST_MODE_WITH_TOFU       	32
+#define GPGME_KEYLIST_MODE_WITH_KEYGRIP       	64
 #define GPGME_KEYLIST_MODE_EPHEMERAL            128
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 
@@ -600,7 +601,7 @@ struct _gpgme_subkey
   /* The name of the curve for ECC algorithms or NULL.  */
   char *curve;
 
-  /* The keygrip of the subkey in hex digit form or NULL if not availabale.  */
+  /* The keygrip of the subkey in hex digit form or NULL if not available.  */
   char *keygrip;
 };
 typedef struct _gpgme_subkey *gpgme_subkey_t;
