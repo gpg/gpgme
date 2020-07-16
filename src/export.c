@@ -123,6 +123,7 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL
                 |GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_SSH
                 |GPGME_EXPORT_MODE_RAW
                 |GPGME_EXPORT_MODE_NOUID
                 |GPGME_EXPORT_MODE_PKCS12)))
