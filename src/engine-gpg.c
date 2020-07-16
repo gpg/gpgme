@@ -2330,6 +2330,7 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
 
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_SSH
                 |GPGME_EXPORT_MODE_SECRET)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
@@ -2345,6 +2346,15 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
 
   if (err)
     ;
+  else if ((mode & GPGME_EXPORT_MODE_SSH))
+    {
+      if (have_gpg_version (gpg, "2.1.11"))
+        err = add_arg (gpg, "--export-ssh-key");
+      else
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      if (!err)
+        err = add_data (gpg, keydata, 1, 1);
+    }
   else if ((mode & GPGME_EXPORT_MODE_EXTERN))
     {
       err = add_arg (gpg, "--send-keys");

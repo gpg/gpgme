@@ -3,6 +3,8 @@ Noteworthy changes in version 1.14.0 (unreleased)
 
  * New keylist mode to force the engine to return the keygrip. [#4820]
 
+ * New export mode to export as OpenSSH public key.  [#4310]
+
  * New context flag "extended-edit" to enable expert key edit. [#4734]
 
  * Deprecate the anyway non working trustlist functions.  [#4834]
@@ -23,6 +25,7 @@ Noteworthy changes in version 1.14.0 (unreleased)
  * Interface changes relative to the 1.13.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_KEYLIST_MODE_WITH_KEYGRIP              NEW.
+ GPGME_EXPORT_MODE_SSH                        NEW.
  gpgme_user_id_t                         EXTENDED: New field 'uidhash'.
  cpp: UserID::remark                          NEW.
  cpp: UserID::remarks                         NEW.

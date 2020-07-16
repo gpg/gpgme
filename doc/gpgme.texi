@@ -4679,6 +4679,14 @@ If this bit is set, the smallest possible key is exported.  For OpenPGP
 keys it removes all signatures except for the latest self-signatures.
 For X.509 keys it has no effect.
 
+@item GPGME_EXPORT_MODE_SSH
+@since{1.4.0}
+
+If this bit is set, the latest authentication key of the requested
+OpenPGP key is exported in the OpenSSH public key format.  This
+accepts just a single key; to force the export of a specific subkey
+a fingerprint pattern with an appended exclamation mark may be used.
+
 
 @item GPGME_EXPORT_MODE_SECRET
 @since{1.6.0}

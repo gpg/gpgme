@@ -407,6 +407,7 @@ gpgme_pinentry_mode_t;
 #define GPGME_EXPORT_MODE_RAW                  32
 #define GPGME_EXPORT_MODE_PKCS12               64
 #define GPGME_EXPORT_MODE_NOUID               128  /* Experimental(!)*/
+#define GPGME_EXPORT_MODE_SSH                 256
 
 typedef unsigned int gpgme_export_mode_t;
 
