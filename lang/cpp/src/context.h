@@ -182,11 +182,25 @@ public:
     //
     // Key Export
     //
+    enum ExportMode {
+        ExportDefault = 0,
+        ExportExtern = 2,
+        ExportMinimal = 4,
+        ExportSecret = 16,
+        ExportRaw = 32,
+        ExportPKCS12 = 64,
+        ExportNoUID = 128,
+        ExportSSH = 256,
+    };
 
     GpgME::Error exportPublicKeys(const char *pattern, Data &keyData);
+    GpgME::Error exportPublicKeys(const char *pattern, Data &keyData, unsigned int flags);
     GpgME::Error exportPublicKeys(const char *pattern[], Data &keyData);
+    GpgME::Error exportPublicKeys(const char *pattern[], Data &keyData, unsigned int export_mode);
     GpgME::Error startPublicKeyExport(const char *pattern, Data &keyData);
+    GpgME::Error startPublicKeyExport(const char *pattern, Data &keyData, unsigned int flags);
     GpgME::Error startPublicKeyExport(const char *pattern[], Data &keyData);
+    GpgME::Error startPublicKeyExport(const char *pattern[], Data &keyData, unsigned int export_mode);
 
     //
     // Key Import

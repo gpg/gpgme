@@ -79,6 +79,8 @@ public:
     */
     virtual GpgME::Error start(const QStringList &patterns) = 0;
 
+    virtual void setExportFlags (unsigned int flags);
+
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QByteArray &keyData, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };

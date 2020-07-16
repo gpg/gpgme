@@ -563,44 +563,66 @@ KeyGenerationResult Context::keyGenerationResult() const
     }
 }
 
-Error Context::exportPublicKeys(const char *pattern, Data &keyData)
+Error Context::exportPublicKeys(const char *pattern, Data &keyData, unsigned int flags)
 {
     d->lastop = Private::Export;
     Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export(d->ctx, pattern, 0, dp ? dp->data : nullptr));
+    return Error(d->lasterr = gpgme_op_export(d->ctx, pattern, flags, dp ? dp->data : nullptr));
+}
+
+Error Context::exportPublicKeys(const char *patterns[], Data &keyData, unsigned int flags)
+{
+    d->lastop = Private::Export;
+#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
+    if (!patterns || !patterns[0] || !patterns[1]) {
+        // max. one pattern -> use the non-ext version
+        return exportPublicKeys(patterns ? patterns[0] : nullptr, keyData, flags);
+    }
+#endif
+    Data::Private *const dp = keyData.impl();
+    return Error(d->lasterr = gpgme_op_export_ext(d->ctx, patterns, flags, dp ? dp->data : nullptr));
+}
+
+Error Context::startPublicKeyExport(const char *pattern, Data &keyData, unsigned int flags)
+{
+    d->lastop = Private::Export;
+    Data::Private *const dp = keyData.impl();
+    return Error(d->lasterr = gpgme_op_export_start(d->ctx, pattern, flags, dp ? dp->data : nullptr));
+}
+
+Error Context::startPublicKeyExport(const char *patterns[], Data &keyData, unsigned int flags)
+{
+    d->lastop = Private::Export;
+#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
+    if (!patterns || !patterns[0] || !patterns[1]) {
+        // max. one pattern -> use the non-ext version
+        return startPublicKeyExport(patterns ? patterns[0] : nullptr, keyData, flags);
+    }
+#endif
+    Data::Private *const dp = keyData.impl();
+    return Error(d->lasterr = gpgme_op_export_ext_start(d->ctx, patterns, flags, dp ? dp->data : nullptr));
+}
+
+
+/* Same as above but without flags  */
+Error Context::exportPublicKeys(const char *pattern, Data &keyData)
+{
+    return exportPublicKeys(pattern, keyData, 0);
 }
 
 Error Context::exportPublicKeys(const char *patterns[], Data &keyData)
 {
-    d->lastop = Private::Export;
-#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
-    if (!patterns || !patterns[0] || !patterns[1]) {
-        // max. one pattern -> use the non-ext version
-        return exportPublicKeys(patterns ? patterns[0] : nullptr, keyData);
-    }
-#endif
-    Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_ext(d->ctx, patterns, 0, dp ? dp->data : nullptr));
+    return exportPublicKeys(patterns, keyData, 0);
 }
 
 Error Context::startPublicKeyExport(const char *pattern, Data &keyData)
 {
-    d->lastop = Private::Export;
-    Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_start(d->ctx, pattern, 0, dp ? dp->data : nullptr));
+    return startPublicKeyExport(pattern, keyData, 0);
 }
 
 Error Context::startPublicKeyExport(const char *patterns[], Data &keyData)
 {
-    d->lastop = Private::Export;
-#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
-    if (!patterns || !patterns[0] || !patterns[1]) {
-        // max. one pattern -> use the non-ext version
-        return startPublicKeyExport(patterns ? patterns[0] : nullptr, keyData);
-    }
-#endif
-    Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_ext_start(d->ctx, patterns, 0, dp ? dp->data : nullptr));
+    return startPublicKeyExport(patterns, keyData, 0);
 }
 
 ImportResult Context::importKeys(const Data &data)

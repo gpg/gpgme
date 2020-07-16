@@ -52,14 +52,15 @@ using namespace QGpgME;
 using namespace GpgME;
 
 QGpgMEExportJob::QGpgMEExportJob(Context *context)
-    : mixin_type(context)
+    : mixin_type(context),
+      m_flags(0)
 {
     lateInitialization();
 }
 
 QGpgMEExportJob::~QGpgMEExportJob() {}
 
-static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &patterns)
+static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &patterns, unsigned int flags)
 {
 
     const _detail::PatternConverter pc(patterns);
@@ -67,7 +68,7 @@ static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
 
-    const Error err = ctx->exportPublicKeys(pc.patterns(), data);
+    const Error err = ctx->exportPublicKeys(pc.patterns(), data, flags);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, dp.data(), log, ae);
@@ -75,7 +76,17 @@ static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &
 
 Error QGpgMEExportJob::start(const QStringList &patterns)
 {
-    run(std::bind(&export_qba, std::placeholders::_1, patterns));
+    run(std::bind(&export_qba, std::placeholders::_1, patterns, m_flags));
     return Error();
+}
+
+void QGpgMEExportJob::setExportFlags(unsigned int flags)
+{
+    m_flags = flags;
+}
+
+/* For ABI compat not pure virtual. */
+void ExportJob::setExportFlags(unsigned int)
+{
 }
 #include "qgpgmeexportjob.moc"

@@ -30,9 +30,13 @@ Noteworthy changes in version 1.14.0 (unreleased)
  cpp: UserID::remark                          NEW.
  cpp: UserID::remarks                         NEW.
  cpp: GpgSignKeyEditInteractor::setDupeOk     NEW.
+ cpp: Context::exportPublicKeys          EXTENDED: New param 'flags'.
+ cpp: Context::startPublicKeyExport      EXTENDED: New param 'flags'.
+ cpp: Context::ExportMode                     NEW.
  qt: SignKeyJob::setDupeOk                    NEW.
  qt: SignKeyJob::setRemark                    NEW.
  qt: GpgCardJob                               NEW.
+ qt: ExportJob::setExportFlags                NEW.
 
 
 Noteworthy changes in version 1.13.1 (2019-06-13)

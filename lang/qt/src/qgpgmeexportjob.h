@@ -59,7 +59,12 @@ public:
     ~QGpgMEExportJob();
 
     /* from ExportJob */
+    void setExportFlags (unsigned int flags) Q_DECL_OVERRIDE;
+
+    /* from ExportJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
+private:
+    unsigned int m_flags;
 };
 
 }
