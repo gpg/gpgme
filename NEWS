@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.14.0 (unreleased)
+Noteworthy changes in version 1.14.0 (2020-07-16)
 -------------------------------------------------
 
  * New keylist mode to force the engine to return the keygrip. [#4820]
@@ -37,6 +37,10 @@ Noteworthy changes in version 1.14.0 (unreleased)
  qt: SignKeyJob::setRemark                    NEW.
  qt: GpgCardJob                               NEW.
  qt: ExportJob::setExportFlags                NEW.
+
+ [c=C34/A23/R0 cpp=C17/A11/R0 qt=C11/A4/R0]
+
+ Release-info: https://dev.gnupg.org/T4996
 
 
 Noteworthy changes in version 1.13.1 (2019-06-13)
