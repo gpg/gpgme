@@ -1868,6 +1868,13 @@ gpgme_error_t gpgme_op_set_uid_flag       (gpgme_ctx_t ctx,
                                            gpgme_key_t key, const char *userid,
                                            const char *name, const char *value);
 
+/* Change the expiry of a key.  */
+gpgme_error_t gpgme_op_setexpire_start (gpgme_ctx_t ctx,
+                                        gpgme_key_t key, unsigned long expires,
+                                        const char *subfprs, unsigned int reserved);
+gpgme_error_t gpgme_op_setexpire       (gpgme_ctx_t ctx,
+                                        gpgme_key_t key, unsigned long expires,
+                                        const char *subfprs, unsigned int reserved);
 
 /* Retrieve a pointer to the result of a genkey, createkey, or
  * createsubkey operation.  */

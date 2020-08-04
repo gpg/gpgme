@@ -2326,6 +2326,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_sign,
     gpgsm_verify,
     gpgsm_getauditlog,
+    NULL,               /* setexpire */
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */

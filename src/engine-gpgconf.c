@@ -1306,6 +1306,7 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     NULL,		/* sign */
     NULL,		/* verify */
     NULL,		/* getauditlog */
+    NULL,               /* setexpire */
     NULL,               /* opassuan_transact */
     gpgconf_conf_load,
     gpgconf_conf_save,

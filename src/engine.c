@@ -1128,3 +1128,17 @@ _gpgme_engine_op_spawn (engine_t engine,
   return (*engine->ops->opspawn) (engine->engine, file, argv,
                                   datain, dataout, dataerr, flags);
 }
+
+gpgme_error_t
+_gpgme_engine_op_setexpire (engine_t engine, gpgme_key_t key,
+                            unsigned long expires, const char *subfprs,
+                            unsigned int reserved)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->setexpire)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->setexpire) (engine->engine, key, expires, subfprs, reserved);
+}

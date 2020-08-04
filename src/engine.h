@@ -210,6 +210,11 @@ gpgme_error_t _gpgme_engine_op_spawn (engine_t engine,
                                       gpgme_data_t dataout,
                                       gpgme_data_t dataerr,
                                       unsigned int flags);
+gpgme_error_t _gpgme_engine_op_setexpire (engine_t engine,
+                                          gpgme_key_t key,
+                                          unsigned long expires,
+                                          const char *subfprs,
+                                          unsigned int reserved);
 
 /* The available engine option flags.  */
 #define GPGME_ENGINE_FLAG_OFFLINE        1

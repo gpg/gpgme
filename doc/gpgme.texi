@@ -4016,6 +4016,81 @@ The function @code{gpgme_key_unref} releases a reference for the key
 and all resources associated to it will be released.
 @end deftypefun
 
+@c
+@c  gpgme_op_setexpire
+@c
+@deftypefun gpgme_error_t gpgme_op_setexpire @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{const char *@var{subfprs}}, @
+       @w{unsigned int @var{reserved}});
+
+@since{1.14.1}
+
+The function @code{gpgme_op_setexpire} sets the expiration time of
+the key @var{key} or of the specified subkeys.
+This function requires at least version 2.1.22 of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{expires} specifies the expiration time in seconds from now.
+To be similar to other usages where expiration times are provided
+in unsigned long this is similar to the key creation date
+and so it is in seconds from NOW.
+
+The common case is to use 0 to not set an expiration time.
+Note that this parameter takes an unsigned long value and not
+a @code{time_t} to avoid problems on systems which use a signed
+32 bit @code{time_t}.  Note further that the OpenPGP protocol
+uses 32 bit values for timestamps and thus can
+only encode dates up to the year 2106.
+
+@var{subfprs} selects the subkey(s) for which the expiration time
+should be set.  If @var{subfprs} is set to @code{NULL}, then the
+expiration time of the primary key is set.  If @var{subfprs} is
+an asterisk (@code{*}), then the expiration times of all non-revoked
+and not yet expired subkeys are set.  To select more than one subkey
+put all subkey fingerprints into one string separated by linefeeds
+characters (@code{\n}).
+
+@var{reserved} is reserved for later use and must be @code{0}.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_setexpire_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{unsigned long @var{expires}}, @
+       @w{const char *@var{subfprs}}, @
+       @w{unsigned int @var{flags}});
+
+@since{1.14.1}
+
+The function @code{gpgme_op_setexpire_start} initiates a
+@code{gpgme_op_setexpire} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_revuid_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+@since{1.14.1}
+
+The function @code{gpgme_op_setexpire_start} initiates a
+@code{gpgme_op_setexpire} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
 
 @node Generating Keys
 @subsection Generating Keys

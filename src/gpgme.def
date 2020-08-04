@@ -274,5 +274,8 @@ EXPORTS
 
     gpgme_data_new_from_estream           @204
 
+    gpgme_op_setexpire                    @205
+    gpgme_op_setexpire_start              @206
+
 ; END
 

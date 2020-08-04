@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.14.1 (unreleased)
 -------------------------------------------------
 
+* New function gpgme_op_setexpire to make changing the expiration
+  easier (requires GnuPG 2.1.22). [#4999]
+
+ * Interface changes relative to the 1.14.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_op_setexpire_start                   NEW.
+ gpgme_op_setexpire                         NEW.
+
+
 Noteworthy changes in version 1.14.0 (2020-07-16)
 -------------------------------------------------
 

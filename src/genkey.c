@@ -663,3 +663,55 @@ gpgme_op_set_uid_flag (gpgme_ctx_t ctx,
 {
   return set_uid_flag (ctx, 1, key, userid, name, value);
 }
+
+/* Set the expiration time of a key or its subkeys.  See
+   --quick-set-expire in the gnupg documentation. */
+static gpg_error_t
+setexpire (gpgme_ctx_t ctx, int synchronous,
+           gpgme_key_t key,
+           unsigned long expires,
+           const char *subfprs,
+           unsigned int reserved)
+{
+  gpgme_error_t err = 0;
+
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_setexpire", ctx,
+              "%d key=%p expiry: %lu subkeys: '%s' reserved=0x%x",
+              synchronous, key, expires, subfprs, reserved);
+
+  if (!ctx || !key)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_ARG));
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_engine_op_setexpire (ctx->engine, key, expires, subfprs, reserved);
+
+  if (synchronous && !err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+/* See setexpire. */
+gpgme_error_t
+gpgme_op_setexpire_start (gpgme_ctx_t ctx,
+                          gpgme_key_t key,
+                          unsigned long expires,
+                          const char *subfprs,
+                          unsigned int reserved)
+{
+  return setexpire (ctx, 0, key, expires, subfprs, reserved);
+}
+
+
+/* See setexpire.  This is the synchronous variant.  */
+gpgme_error_t
+gpgme_op_setexpire (gpgme_ctx_t ctx,
+                    gpgme_key_t key,
+                    unsigned long expires,
+                    const char *subfprs,
+                    unsigned int reserved)
+{
+  return setexpire (ctx, 1, key, expires, subfprs, reserved);
+}

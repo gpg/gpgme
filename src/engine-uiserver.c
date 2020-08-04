@@ -1439,6 +1439,7 @@ struct engine_ops _gpgme_engine_ops_uiserver =
     uiserver_sign,
     uiserver_verify,
     NULL,		/* getauditlog */
+    NULL,               /* setexpire */
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */

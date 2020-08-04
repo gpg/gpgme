@@ -3426,6 +3426,59 @@ gpg_getauditlog (void *engine, gpgme_data_t output, unsigned int flags)
 #undef MYBUFLEN
 }
 
+static gpgme_error_t
+gpg_setexpire (void *engine, gpgme_key_t key, unsigned long expires,
+               const char *subfprs, unsigned int reserved)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+  const char *s;
+
+  if (reserved)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!have_gpg_version (gpg, "2.1.22"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = add_arg (gpg, "--quick-set-expire");
+
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+
+  if (!err)
+    {
+      char tmpbuf[8+20];
+      snprintf (tmpbuf, sizeof tmpbuf, "seconds=%lu", expires);
+      err = add_arg (gpg, tmpbuf);
+    }
+
+  if (!err && subfprs)
+    {
+      for (; !err && (s = strchr (subfprs, '\n')); subfprs = s + 1)
+        {
+          if ((s - subfprs))
+            {
+              err = add_arg_len (gpg, NULL, subfprs, s - subfprs);
+            }
+        }
+      if (!err && *subfprs)
+        {
+          err = add_arg (gpg, subfprs);
+        }
+    }
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
 
 
 struct engine_ops _gpgme_engine_ops_gpg =
@@ -3464,6 +3517,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_sign,
     gpg_verify,
     gpg_getauditlog,
+    gpg_setexpire,
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */

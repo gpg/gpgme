@@ -205,12 +205,15 @@ show_usage (int ex)
          "   for addkey: FPR    [ALGO [USAGE [EXPIRESECONDS]]]\n"
          "   for adduid: FPR    USERID\n"
          "   for revuid: FPR    USERID\n"
+         "   for setexpire: FPR EXPIRE [SUBFPRS]\n"
          "   for set-primary: FPR    USERID\n"
          "Options:\n"
          "  --addkey         add a subkey to the key with FPR\n"
          "  --adduid         add a user id to the key with FPR\n"
          "  --revuid         revoke a user id from the key with FPR\n"
          "  --set-primary    set the primary key flag on USERID\n"
+         "  --setexpire      set the expiration time of the key FPR\n"
+         "                   or of its subkeys SUBFPRS\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -238,12 +241,17 @@ main (int argc, char **argv)
   int adduid = 0;
   int revuid = 0;
   int setpri = 0;
+  int setexpire = 0;
   const char *userid;
   const char *algo = NULL;
   const char *newuserid = NULL;
+  const char *subfprs = NULL;
   unsigned int flags = 0;
   unsigned long expire = 0;
   gpgme_genkey_result_t result;
+  int i;
+  size_t n;
+  char *subfprs_buffer = NULL;
 
   if (argc)
     { argc--; argv++; }
@@ -264,6 +272,7 @@ main (int argc, char **argv)
           adduid = 0;
           revuid = 0;
           setpri = 0;
+          setexpire = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--adduid"))
@@ -272,6 +281,7 @@ main (int argc, char **argv)
           adduid = 1;
           revuid = 0;
           setpri = 0;
+          setexpire = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--revuid"))
@@ -280,6 +290,7 @@ main (int argc, char **argv)
           adduid = 0;
           revuid = 1;
           setpri = 0;
+          setexpire = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--set-primary"))
@@ -288,6 +299,16 @@ main (int argc, char **argv)
           adduid = 0;
           revuid = 0;
           setpri = 1;
+          setexpire = 0;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--setexpire"))
+        {
+          addkey = 0;
+          adduid = 0;
+          revuid = 0;
+          setpri = 0;
+          setexpire = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -341,6 +362,48 @@ main (int argc, char **argv)
       userid = argv[0];
       newuserid = argv[1];
     }
+  else if (setexpire)
+    {
+      if (argc < 2)
+        {
+          show_usage (1);
+        }
+      userid = argv[0];
+      argc--; argv++;
+      expire = parse_expire_string (argv[0]);
+      argc--; argv++;
+      if (argc > 1)
+        {
+          /* Several subkey fprs given  */
+          for (i=0, n = 0; i < argc; i++)
+            n += strlen (argv[1]) + 1;
+          n++;
+          subfprs_buffer = malloc (n);
+          if (!subfprs_buffer)
+            {
+              fprintf (stderr, PGM ": malloc failed: %s\n",
+                       gpg_strerror (gpg_error_from_syserror ()));
+              exit (1);
+            }
+          *subfprs_buffer = 0;
+          for (i=0; i < argc; i++)
+            {
+              strcat (subfprs_buffer, argv[i]);
+              strcat (subfprs_buffer, "\n");
+            }
+          subfprs = subfprs_buffer;
+        }
+      else if (argc)
+        {
+          /* One subkey fpr (or '*') given  */
+          subfprs = *argv;
+        }
+      else
+        {
+          /* No subkey fpr given.  */
+          subfprs = NULL;
+        }
+    }
   else
     {
       if (!argc || argc > 4)
@@ -373,7 +436,8 @@ main (int argc, char **argv)
       gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
     }
 
-  if (addkey || adduid || revuid || setpri)
+
+  if (addkey || adduid || revuid || setpri || setexpire)
     {
       gpgme_key_t akey;
 
@@ -425,6 +489,17 @@ main (int argc, char **argv)
               exit (1);
             }
         }
+      else if (setexpire)
+        {
+          err = gpgme_op_setexpire (ctx, akey, expire, subfprs, 0);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_setexpire failed: %s\n",
+                      gpg_strerror (err));
+              exit (1);
+            }
+        }
+
       gpgme_key_unref (akey);
     }
   else
@@ -438,7 +513,7 @@ main (int argc, char **argv)
         }
     }
 
-  if (!setpri)
+  if (!setpri && !setexpire)
     {
       result = gpgme_op_genkey_result (ctx);
       if (!result)
