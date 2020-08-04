@@ -51,6 +51,7 @@
 #include <gpgme.h>
 
 #include <istream>
+#include <numeric>
 #ifndef NDEBUG
 #include <iostream>
 using std::cerr;
@@ -1524,6 +1525,62 @@ Error Context::startCreateSubkey(const Key &k, const char *algo,
 {
     return Error(d->lasterr = gpgme_op_createsubkey_start(d->ctx,
                  k.impl(), algo, reserved, expires, flags));
+}
+
+std::string Context::getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys)
+{
+    if (subkeys.empty()) {
+        return std::string();
+    }
+
+    std::vector<std::string> fprs;
+    fprs.reserve(subkeys.size());
+    for (auto &it : subkeys) {
+        if (it.fingerprint()) {
+            fprs.push_back(std::string(it.fingerprint()));
+        }
+    }
+
+    if (fprs.empty()) {
+        return std::string();
+    }
+
+    return std::accumulate(
+        std::next(fprs.begin()),
+        fprs.end(),
+        fprs[0],
+        [](const std::string &a, const std::string &b) {
+            return a + '\n' + b;
+        }
+    );
+}
+
+Error Context::setExpire(const Key &k, unsigned long expires,
+                         const std::vector<Subkey> &subkeys,
+                         const Context::SetExpireFlags flags)
+{
+    std::string subfprs;
+    if (flags & Context::SetExpireAllSubkeys) {
+        subfprs = "*";
+    } else {
+        subfprs = getLFSeparatedListOfFingerprintsFromSubkeys(subkeys);
+    }
+    return Error(d->lasterr = gpgme_op_setexpire(d->ctx,
+                 k.impl(), expires, subfprs.c_str(), 0));
+}
+
+Error Context::startSetExpire(const Key &k, unsigned long expires,
+                              const std::vector<Subkey> &subkeys,
+                              const Context::SetExpireFlags flags)
+{
+    std::string subfprs;
+    if (flags & Context::SetExpireAllSubkeys) {
+        subfprs = "*";
+    } else {
+        subfprs = getLFSeparatedListOfFingerprintsFromSubkeys(subkeys);
+    }
+    return Error(d->lasterr = gpgme_op_setexpire_start(d->ctx,
+                 k.impl(), expires, subfprs.c_str(), 0));
 }
 
 Error Context::setFlag(const char *name, const char *value)

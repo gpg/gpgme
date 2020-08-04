@@ -27,6 +27,7 @@
 #include "global.h"
 
 #include "error.h"
+#include "key.h"
 #include "verificationresult.h" // for Signature::Notation
 
 #include <memory>
@@ -37,7 +38,6 @@
 namespace GpgME
 {
 
-class Key;
 class Data;
 class TrustItem;
 class ProgressProvider;
@@ -273,6 +273,18 @@ public:
                             unsigned long expires = 0,
                             unsigned int flags = 0);
 
+    enum SetExpireFlags {
+        SetExpireDefault = 0,
+        SetExpireAllSubkeys = 1
+    };
+
+    Error setExpire(const Key &k, unsigned long expires,
+                    const std::vector<Subkey> &subkeys = std::vector<Subkey>(),
+                    const SetExpireFlags flags = SetExpireDefault);
+    Error startSetExpire(const Key &k, unsigned long expires,
+                         const std::vector<Subkey> &subkeys = std::vector<Subkey>(),
+                         const SetExpireFlags flags = SetExpireDefault);
+
     // using TofuInfo::Policy
     Error setTofuPolicy(const Key &k, unsigned int policy);
     Error setTofuPolicyStart(const Key &k, unsigned int policy);
@@ -487,6 +499,8 @@ private:
     // Helper functions that need to be context because they rely
     // on the "Friendlyness" of context to access the gpgme types.
     gpgme_key_t *getKeysFromRecipients(const std::vector<Key> &recipients);
+
+    std::string getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys);
 
 private:
     Private *const d;
