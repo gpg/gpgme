@@ -516,6 +516,7 @@ private:
 };
 
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const UserID &uid);
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Subkey &subkey);
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Key &key);
 
 } // namespace GpgME

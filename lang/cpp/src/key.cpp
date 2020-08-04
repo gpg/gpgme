@@ -1147,6 +1147,25 @@ std::ostream &operator<<(std::ostream &os, const UserID &uid)
     return os << ')';
 }
 
+std::ostream &operator<<(std::ostream &os, const Subkey &subkey)
+{
+    os << "GpgME::Subkey(";
+    if (!subkey.isNull()) {
+        os << "\n fingerprint:   " << protect(subkey.fingerprint())
+           << "\n creationTime:  " << subkey.creationTime()
+           << "\n expirationTime:" << subkey.expirationTime()
+           << "\n isRevoked:     " << subkey.isRevoked()
+           << "\n isExpired:     " << subkey.isExpired()
+           << "\n isInvalid:     " << subkey.isRevoked()
+           << "\n isDisabled:    " << subkey.isInvalid()
+           << "\n canSign:       " << subkey.canSign()
+           << "\n canEncrypt:    " << subkey.canEncrypt()
+           << "\n canCertify:    " << subkey.canCertify()
+           << "\n canAuth:       " << subkey.canAuthenticate();
+    }
+    return os << ')';
+}
+
 std::ostream &operator<<(std::ostream &os, const Key &key)
 {
     os << "GpgME::Key(";
@@ -1166,6 +1185,9 @@ std::ostream &operator<<(std::ostream &os, const Key &key)
         const std::vector<UserID> uids = key.userIDs();
         std::copy(uids.begin(), uids.end(),
                   std::ostream_iterator<UserID>(os, "\n"));
+        const std::vector<Subkey> subkeys = key.subkeys();
+        std::copy(subkeys.begin(), subkeys.end(),
+                  std::ostream_iterator<Subkey>(os, "\n"));
     }
     return os << ')';
 }
