@@ -170,6 +170,60 @@ private Q_SLOTS:
         QVERIFY(id_revoked);
     }
 
+    void testSetExpire()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.22") {
+            return;
+        }
+        KeyListJob *job = openpgp()->keyListJob(false, true, true);
+        std::vector<GpgME::Key> keys;
+        GpgME::KeyListResult result = job->exec(QStringList() << QStringLiteral("alfa@example.net"),
+                                                false, keys);
+        delete job;
+        QVERIFY (!result.error());
+        QVERIFY (keys.size() == 1);
+        Key key = keys.front();
+
+        QVERIFY (key.subkey(0).expirationTime() == time_t(0));
+        QVERIFY (key.subkey(1).expirationTime() == time_t(0));
+
+        auto ctx = Context::createForProtocol(key.protocol());
+        QVERIFY (ctx);
+        TestPassphraseProvider provider;
+        ctx->setPassphraseProvider(&provider);
+        ctx->setPinentryMode(Context::PinentryLoopback);
+
+        // change expiration of the main key
+        QVERIFY(!ctx->setExpire(key, 1000));
+        delete ctx;
+        key.update();
+
+        QVERIFY (key.subkey(0).expirationTime() != time_t(0));
+        QVERIFY (key.subkey(1).expirationTime() == time_t(0));
+        time_t keyExpiration = key.subkey(0).expirationTime();
+
+        // change expiration of all subkeys
+        ctx = Context::createForProtocol(key.protocol());
+        QVERIFY(!ctx->setExpire(key, 2000, std::vector<Subkey>(), Context::SetExpireAllSubkeys));
+        delete ctx;
+        key.update();
+
+        QVERIFY (key.subkey(0).expirationTime() == keyExpiration);
+        QVERIFY (key.subkey(1).expirationTime() != time_t(0));
+        time_t subkeyExpiration = key.subkey(1).expirationTime();
+
+        // change expiration of specific subkey(s)
+        ctx = Context::createForProtocol(key.protocol());
+        std::vector<Subkey> specificSubkeys;
+        specificSubkeys.push_back(key.subkey(1));
+        QVERIFY(!ctx->setExpire(key, 3000, specificSubkeys));
+        delete ctx;
+        key.update();
+
+        QVERIFY (key.subkey(0).expirationTime() == keyExpiration);
+        QVERIFY (key.subkey(1).expirationTime() != subkeyExpiration);
+    }
+
     void testVersion()
     {
         QVERIFY(EngineInfo::Version("2.1.0") < EngineInfo::Version("2.1.1"));
