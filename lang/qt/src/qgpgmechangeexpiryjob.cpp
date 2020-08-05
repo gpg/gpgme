@@ -38,18 +38,10 @@
 
 #include "qgpgmechangeexpiryjob.h"
 
-#include "dataprovider.h"
-
 #include "context.h"
-#include "data.h"
-#include "gpgsetexpirytimeeditinteractor.h"
 #include "key.h"
 
 #include <QDateTime>
-
-#include <cassert>
-#include <memory>
-#include <string>
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -64,17 +56,13 @@ QGpgMEChangeExpiryJob::~QGpgMEChangeExpiryJob() {}
 
 static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key &key, const QDateTime &expiry)
 {
-    EditInteractor *ei = expiry.isValid()
-       ? new GpgSetExpiryTimeEditInteractor(expiry.date().toString(Qt::ISODate).toStdString())
-       : new GpgSetExpiryTimeEditInteractor();
+    // convert expiry to "seconds from now"; use 1 second from now if expiry is before the current datetime
+    const unsigned long expires = expiry.isValid()
+       ? std::max<qint64>(QDateTime::currentDateTime().secsTo(expiry), 1)
+       : 0;
 
-    QGpgME::QByteArrayDataProvider dp;
-    Data data(&dp);
-    assert(!data.isNull());
-    const Error err = ctx->edit(key, std::unique_ptr<EditInteractor> (ei), data);
-    Error ae;
-    const QString log = _detail::audit_log_as_html(ctx, ae);
-    return std::make_tuple(err, log, ae);
+    auto err = ctx->setExpire(key, expires);
+    return std::make_tuple(err, QString(), Error());
 }
 
 Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry)
