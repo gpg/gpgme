@@ -41,6 +41,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <cstdlib>
 
 #ifndef GPG_ERR_ALREADY_SIGNED
 # define GPG_ERR_ALREADY_SIGNED GPG_ERR_USER_1
@@ -178,7 +179,7 @@ EditInteractor::Private::Private(EditInteractor *qq)
       error(),
       debug(nullptr)
 {
-    const char *debug_env = getenv("GPGMEPP_INTERACTOR_DEBUG");
+    const char *debug_env = std::getenv("GPGMEPP_INTERACTOR_DEBUG");
     if (!debug_env) {
         return;
     }
