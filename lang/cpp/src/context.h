@@ -500,8 +500,6 @@ private:
     // on the "Friendlyness" of context to access the gpgme types.
     gpgme_key_t *getKeysFromRecipients(const std::vector<Key> &recipients);
 
-    std::string getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys);
-
 private:
     Private *const d;
 

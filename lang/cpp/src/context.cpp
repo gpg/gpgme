@@ -1527,7 +1527,7 @@ Error Context::startCreateSubkey(const Key &k, const char *algo,
                  k.impl(), algo, reserved, expires, flags));
 }
 
-std::string Context::getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys)
+static std::string getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys)
 {
     if (subkeys.empty()) {
         return std::string();
