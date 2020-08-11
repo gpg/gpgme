@@ -6,6 +6,9 @@ Noteworthy changes in version 1.14.1 (unreleased)
 
  * cpp: Support for set expire operations in the C++ bindings. [#5003]
 
+ * qt: Extended ChangeExpiryJob to support changing the expiry of
+   subkeys. [#4717]
+
  * Interface changes relative to the 1.14.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_op_setexpire_start                   NEW.

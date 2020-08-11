@@ -54,20 +54,33 @@ QGpgMEChangeExpiryJob::QGpgMEChangeExpiryJob(Context *context)
 
 QGpgMEChangeExpiryJob::~QGpgMEChangeExpiryJob() {}
 
-static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key &key, const QDateTime &expiry)
+static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key &key, const QDateTime &expiry,
+    const std::vector<Subkey> &subkeys)
 {
     // convert expiry to "seconds from now"; use 1 second from now if expiry is before the current datetime
     const unsigned long expires = expiry.isValid()
        ? std::max<qint64>(QDateTime::currentDateTime().secsTo(expiry), 1)
        : 0;
 
-    auto err = ctx->setExpire(key, expires);
+    auto err = ctx->setExpire(key, expires, subkeys);
     return std::make_tuple(err, QString(), Error());
 }
 
 Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry)
 {
-    run(std::bind(&change_expiry, std::placeholders::_1, key, expiry));
+    return start(key, expiry, std::vector<Subkey>());
+}
+
+Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry, const std::vector<Subkey> &subkeys)
+{
+    run(std::bind(&change_expiry, std::placeholders::_1, key, expiry, subkeys));
     return Error();
 }
+
+/* For ABI compat not pure virtual. */
+Error ChangeExpiryJob::start(const Key &, const QDateTime &, const std::vector<Subkey> &)
+{
+    return Error();
+}
+
 #include "qgpgmechangeexpiryjob.moc"

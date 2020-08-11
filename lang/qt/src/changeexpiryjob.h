@@ -37,10 +37,17 @@
 
 #include "job.h"
 
+#ifdef BUILDING_QGPGME
+# include "key.h"
+#else
+# include <gpgme++/key.h>
+#endif
+
+#include <vector>
+
 namespace GpgME
 {
 class Error;
-class Key;
 }
 
 class QDateTime;
@@ -75,6 +82,16 @@ public:
        is not valid, \a key is set to never expire.
     */
     virtual GpgME::Error start(const GpgME::Key &key, const QDateTime &expiry) = 0;
+
+    /**
+       Starts the change-expiry operation. \a key is the key to change,
+       \a subkeys is a list of subkeys of the key, and \a expiry is the
+       new expiry time. If \a subkeys is empty, then the expiry of \a key
+       is changed. Otherwise, the expiry of \a subkeys is changed. If
+       \a expiry is not valid, then \a key or \a subkeys are set to never expire.
+    */
+    virtual GpgME::Error start(const GpgME::Key &key, const QDateTime &expiry,
+                               const std::vector<GpgME::Subkey> &subkeys);
 
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());

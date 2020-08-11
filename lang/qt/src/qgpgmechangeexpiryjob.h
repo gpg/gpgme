@@ -60,6 +60,11 @@ public:
 
     /* from ChangeExpiryJob */
     GpgME::Error start(const GpgME::Key &key, const QDateTime &expiry) Q_DECL_OVERRIDE;
+
+    /* from ChangeExpiryJob */
+    GpgME::Error start(const GpgME::Key &key, const QDateTime &expiry,
+                       const std::vector<GpgME::Subkey> &subkeys) Q_DECL_OVERRIDE;
+
 };
 
 }
