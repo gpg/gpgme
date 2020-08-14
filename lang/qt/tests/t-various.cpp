@@ -222,6 +222,15 @@ private Q_SLOTS:
 
         QVERIFY (key.subkey(0).expirationTime() == keyExpiration);
         QVERIFY (key.subkey(1).expirationTime() != subkeyExpiration);
+
+        // test error handling: calling setExpire() with the primary key as
+        // subkey should fail with "subkey <primary key fpr> not found"
+        ctx = Context::createForProtocol(key.protocol());
+        std::vector<Subkey> primaryKey;
+        primaryKey.push_back(key.subkey(0));
+        const auto err = ctx->setExpire(key, 3000, primaryKey);
+        QCOMPARE(err.code(), GPG_ERR_NOT_FOUND);
+        delete ctx;
     }
 
     void testVersion()

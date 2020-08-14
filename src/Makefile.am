@@ -80,6 +80,7 @@ main_sources =								\
 	sign.c passphrase.c progress.c					\
 	key.c keylist.c keysign.c trust-item.c trustlist.c tofupolicy.c	\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
+	setexpire.c							\
 	opassuan.c passwd.c spawn.c assuan-support.c                    \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\
 	engine-gpgsm.c engine-assuan.c engine-gpgconf.c                 \
