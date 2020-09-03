@@ -337,6 +337,10 @@ const Key &Key::mergeWith(const Key &other)
         for (gpgme_sub_key_t hissk = him->subkeys ; hissk ; hissk = hissk->next) {
             if (strcmp(mysk->fpr, hissk->fpr) == 0) {
                 mysk->is_cardkey |= hissk->is_cardkey;
+                mysk->secret |= hissk->secret;
+                if (hissk->keygrip && !mysk->keygrip) {
+                    mysk->keygrip = strdup(hissk->keygrip);
+                }
                 break;
             }
         }
