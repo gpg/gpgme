@@ -1695,6 +1695,7 @@ std::ostream &operator<<(std::ostream &os, KeyListMode mode)
     CHECK(Ephemeral);
     CHECK(WithTofu);
     CHECK(WithKeygrip);
+    CHECK(WithSecret);
 #undef CHECK
     return os << ')';
 }

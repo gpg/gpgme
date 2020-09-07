@@ -66,7 +66,8 @@ enum KeyListMode {
     Validate = 0x10,
     Ephemeral = 0x20,
     WithTofu = 0x40,
-    WithKeygrip = 0x80
+    WithKeygrip = 0x80,
+    WithSecret = 0x100
 };
 
 enum SignatureMode { NormalSignatureMode, Detached, Clearsigned };
