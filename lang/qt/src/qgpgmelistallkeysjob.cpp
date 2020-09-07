@@ -40,7 +40,10 @@
 
 #include "key.h"
 #include "context.h"
+#include "engineinfo.h"
+#include "global.h"
 #include "keylistresult.h"
+
 #include <gpg-error.h>
 
 #include <algorithm>
@@ -61,7 +64,9 @@ QGpgMEListAllKeysJob::QGpgMEListAllKeysJob(Context *context)
 
 QGpgMEListAllKeysJob::~QGpgMEListAllKeysJob() {}
 
-static KeyListResult do_list_keys(Context *ctx, std::vector<Key> &keys, bool secretOnly)
+namespace {
+
+static KeyListResult do_list_keys_legacy(Context *ctx, std::vector<Key> &keys, bool secretOnly)
 {
 
     const char **pat = nullptr;
@@ -80,9 +85,6 @@ static KeyListResult do_list_keys(Context *ctx, std::vector<Key> &keys, bool sec
     ctx->cancelPendingOperation();
     return result;
 }
-
-namespace
-{
 
 template <typename ForwardIterator, typename BinaryPredicate>
 ForwardIterator unique_by_merge(ForwardIterator first, ForwardIterator last, BinaryPredicate pred)
@@ -103,8 +105,6 @@ ForwardIterator unique_by_merge(ForwardIterator first, ForwardIterator last, Bin
     return ++dest;
 }
 
-}
-
 static void merge_keys(std::vector<Key> &merged, std::vector<Key> &pub, std::vector<Key> &sec)
 {
     merged.reserve(pub.size() + sec.size());
@@ -118,15 +118,15 @@ static void merge_keys(std::vector<Key> &merged, std::vector<Key> &pub, std::vec
                  merged.end());
 }
 
-static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
+static QGpgMEListAllKeysJob::result_type list_keys_legacy(Context *ctx, bool mergeKeys)
 {
     std::vector<Key> pub, sec, merged;
     KeyListResult r;
 
-    r.mergeWith(do_list_keys(ctx, pub, false));
+    r.mergeWith(do_list_keys_legacy(ctx, pub, false));
     std::sort(pub.begin(), pub.end(), ByFingerprint<std::less>());
 
-    r.mergeWith(do_list_keys(ctx, sec, true));
+    r.mergeWith(do_list_keys_legacy(ctx, sec, true));
     std::sort(sec.begin(), sec.end(), ByFingerprint<std::less>());
 
     if (mergeKeys) {
@@ -135,6 +135,49 @@ static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
         merged.swap(pub);
     }
     return std::make_tuple(r, merged, sec, QString(), Error());
+}
+
+static KeyListResult do_list_keys(Context *ctx, std::vector<Key> &keys)
+{
+    const unsigned int keyListMode = ctx->keyListMode();
+    ctx->addKeyListMode(KeyListMode::WithSecret);
+
+    const char **pat = nullptr;
+    if (const Error err = ctx->startKeyListing(pat)) {
+        ctx->setKeyListMode(keyListMode);
+        return KeyListResult(nullptr, err);
+    }
+
+    Error err;
+    do {
+        keys.push_back(ctx->nextKey(err));
+    } while (!err);
+
+    keys.pop_back();
+
+    const KeyListResult result = ctx->endKeyListing();
+    ctx->setKeyListMode(keyListMode);
+
+    ctx->cancelPendingOperation();
+    return result;
+}
+
+static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
+{
+    if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.0") {
+        return list_keys_legacy(ctx, mergeKeys);
+    }
+
+    std::vector<Key> keys;
+    KeyListResult r = do_list_keys(ctx, keys);
+    std::sort(keys.begin(), keys.end(), ByFingerprint<std::less>());
+
+    std::vector<Key> sec;
+    std::copy_if(keys.begin(), keys.end(), std::back_inserter(sec), [](const Key &key) { return key.hasSecret(); });
+
+    return std::make_tuple(r, keys, sec, QString(), Error());
+}
+
 }
 
 Error QGpgMEListAllKeysJob::start(bool mergeKeys)

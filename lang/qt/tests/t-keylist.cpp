@@ -39,10 +39,12 @@
 #include <QSignalSpy>
 #include <QMap>
 #include "keylistjob.h"
+#include "listallkeysjob.h"
 #include "qgpgmebackend.h"
 #include "keylistresult.h"
 
 #include "context.h"
+#include "engineinfo.h"
 
 #include <memory>
 
@@ -137,6 +139,68 @@ private Q_SLOTS:
         job->start(QStringList() << "alfa@example.net");
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+    }
+
+    void testListAllKeysSync()
+    {
+        const auto accumulateFingerprints = [](std::vector<std::string> &v, const Key &key) { v.push_back(std::string(key.primaryFingerprint())); return v; };
+
+        ListAllKeysJob *job = openpgp()->listAllKeysJob(/* includeSigs= */false, /* validate= */false);
+        std::vector<GpgME::Key> pubKeys, secKeys;
+        GpgME::KeyListResult result = job->exec(pubKeys, secKeys, /* mergeKeys= */false); // mergeKeys is unused for GnuPG >= 2.1
+        delete job;
+        QVERIFY(!result.error());
+
+        QCOMPARE(secKeys.size(), 2u);
+        std::vector<std::string> secKeyFingerprints = std::accumulate(secKeys.begin(), secKeys.end(), std::vector<std::string>(), accumulateFingerprints);
+        QCOMPARE(secKeyFingerprints, std::vector<std::string>({
+                "23FD347A419429BACCD5E72D6BC4778054ACD246",
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734"
+        }));
+        QVERIFY(secKeys[0].hasSecret());
+        if (!(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.0")) {
+            QVERIFY(secKeys[0].subkeys()[0].keyGrip());
+        }
+
+        QCOMPARE(pubKeys.size(), 26u);
+        std::vector<std::string> pubKeyFingerprints = std::accumulate(pubKeys.begin(), pubKeys.end(), std::vector<std::string>(), accumulateFingerprints);
+        QCOMPARE(pubKeyFingerprints, std::vector<std::string>({
+                "045B2334ADD69FC221076841A5E67F7FA3AE3EA1",
+                "04C1DF62EFA0EBB00519B06A8979A6C5567FB34A",
+                "0DBCAD3F08843B9557C6C4D4A94C0F75653244D6",
+                "1DDD28CEF714F5B03B8C246937CAB51FB79103F8",
+                "23FD347A419429BACCD5E72D6BC4778054ACD246",
+                "2686AA191A278013992C72EBBE794852BE5CF886",
+                "3531152DE293E26A07F504BC318C1FAEFAEF6D1B",
+                "38FBE1E4BF6A5E1242C8F6A13BDBEDB1777FBED3",
+                "3FD11083779196C2ECDD9594AD1B0FAD43C2D0C7",
+                "43929E89F8F79381678CAE515F6356BA6D9732AC",
+                "56D33268F7FE693FBB594762D4BF57F37372E243",
+                "5AB9D6D7BAA1C95B3BAA3D9425B00FD430CEC684",
+                "61EE841A2A27EB983B3B3C26413F4AF31AFDAB6C",
+                "6560C59C43D031C54D7C588EEBA9F240EB9DC9E6",
+                "6FAA9C201E5E26DCBAEC39FD5D15E01D3FF13206",
+                "9E91CBB11E4D4135583EF90513DB965534C6E3F1",
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+                "A7969DA1C3297AA96D49843F1C67EC133C661C84",
+                "C9C07DCC6621B9FB8D071B1D168410A48FC282E6",
+                "CD538D6CC9FB3D745ECDA5201FE8FC6F04259677",
+                "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2",
+                "E8143C489C8D41124DC40D0B47AF4B6961F04784",
+                "E8D6C90B683B0982BD557A99DEF0F7B8EC67DBDE",
+                "ECAC774F4EEEB0620767044A58CB9A4C85A81F38",
+                "ED9B316F78644A58D042655A9EEF34CD4B11B25F",
+                "F8F1EDC73995AB739AD54B380C820C71D2699313"
+        }));
+        if (!(GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.0")) {
+            // with GnuPG >= 2.1 the job always lists keys with --with-keygrip and --with-secret,
+            // i.e. the key grips and information about secret keys are always available
+            QVERIFY(!pubKeys[0].hasSecret());
+            QVERIFY(pubKeys[0].subkeys()[0].keyGrip());
+
+            QVERIFY(pubKeys[4].hasSecret());
+            QVERIFY(pubKeys[4].subkeys()[0].keyGrip());
+        }
     }
 };
 
