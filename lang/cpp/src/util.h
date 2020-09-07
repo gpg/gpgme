@@ -72,11 +72,11 @@ static inline gpgme_keylist_mode_t add_to_gpgme_keylist_mode_t(unsigned int oldm
     if (newmodes & GpgME::SignatureNotations) {
         oldmode |= GPGME_KEYLIST_MODE_SIG_NOTATIONS;
     }
-    if (newmodes & GpgME::Ephemeral) {
-        oldmode |= GPGME_KEYLIST_MODE_EPHEMERAL;
-    }
     if (newmodes & GpgME::Validate) {
         oldmode |= GPGME_KEYLIST_MODE_VALIDATE;
+    }
+    if (newmodes & GpgME::Ephemeral) {
+        oldmode |= GPGME_KEYLIST_MODE_EPHEMERAL;
     }
     if (newmodes & GpgME::WithTofu) {
         oldmode |= GPGME_KEYLIST_MODE_WITH_TOFU;
@@ -85,9 +85,17 @@ static inline gpgme_keylist_mode_t add_to_gpgme_keylist_mode_t(unsigned int oldm
         oldmode |= GPGME_KEYLIST_MODE_WITH_KEYGRIP;
     }
 #ifndef NDEBUG
-    if (newmodes & ~(GpgME::Local | GpgME::Extern | GpgME::Signatures | GpgME::SignatureNotations | GpgME::Ephemeral | GpgME::Validate)) {
+    if (newmodes & ~(GpgME::Local |
+                     GpgME::Extern |
+                     GpgME::Signatures |
+                     GpgME::SignatureNotations |
+                     GpgME::Validate |
+                     GpgME::Ephemeral |
+                     GpgME::WithTofu |
+                     GpgME::WithKeygrip)) {
         //std::cerr << "GpgME::Context: keylist mode must be one of Local, "
-        //"Extern, Signatures, SignatureNotations, or Validate, or a combination thereof!" << std::endl;
+        //"Extern, Signatures, SignatureNotations, Validate, Ephemeral, WithTofu, "
+        //"WithKeygrip, or a combination thereof!" << std::endl;
     }
 #endif
     return static_cast<gpgme_keylist_mode_t>(oldmode);
@@ -108,6 +116,12 @@ static inline unsigned int convert_from_gpgme_keylist_mode_t(unsigned int mode)
     if (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS) {
         result |= GpgME::SignatureNotations;
     }
+    if (mode & GPGME_KEYLIST_MODE_WITH_TOFU) {
+        result |= GpgME::WithTofu;
+    }
+    if (mode & GPGME_KEYLIST_MODE_WITH_KEYGRIP) {
+        result |= GpgME::WithKeygrip;
+    }
     if (mode & GPGME_KEYLIST_MODE_EPHEMERAL) {
         result |= GpgME::Ephemeral;
     }
@@ -117,10 +131,12 @@ static inline unsigned int convert_from_gpgme_keylist_mode_t(unsigned int mode)
 #ifndef NDEBUG
     if (mode & ~(GPGME_KEYLIST_MODE_LOCAL |
                  GPGME_KEYLIST_MODE_EXTERN |
+                 GPGME_KEYLIST_MODE_SIGS |
                  GPGME_KEYLIST_MODE_SIG_NOTATIONS |
+                 GPGME_KEYLIST_MODE_WITH_TOFU |
+                 GPGME_KEYLIST_MODE_WITH_KEYGRIP |
                  GPGME_KEYLIST_MODE_EPHEMERAL |
-                 GPGME_KEYLIST_MODE_VALIDATE |
-                 GPGME_KEYLIST_MODE_SIGS)) {
+                 GPGME_KEYLIST_MODE_VALIDATE)) {
         //std::cerr << "GpgME: WARNING: gpgme_get_keylist_mode() returned an unknown flag!" << std::endl;
     }
 #endif // NDEBUG
