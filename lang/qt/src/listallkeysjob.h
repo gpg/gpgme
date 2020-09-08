@@ -86,8 +86,9 @@ public:
       and should do so; when this happens, it will be reported by the
       result object).
 
-      If \a mergeKeys is true, secret keys are merged into public
-      keys.
+      If GnuPG 2.1 or later is used, then \a mergeKeys is ignored. Otherwise,
+      if \a mergeKeys is true, then some (but not all) information of the
+      secret keys is merged into public keys.
     */
     virtual GpgME::Error start(bool mergeKeys = false) = 0;
 
