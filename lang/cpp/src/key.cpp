@@ -29,6 +29,7 @@
 #include "util.h"
 #include "tofuinfo.h"
 #include "context.h"
+#include "engineinfo.h"
 
 #include <gpgme.h>
 
@@ -363,11 +364,17 @@ void Key::update()
                         KeyListMode::SignatureNotations |
                         KeyListMode::Validate |
                         KeyListMode::WithTofu |
-                        KeyListMode::WithKeygrip);
+                        KeyListMode::WithKeygrip |
+                        KeyListMode::WithSecret);
     Error err;
-    auto newKey = ctx->key(primaryFingerprint(), err, true);
-    // Not secret so we get the information from the pubring.
-    if (newKey.isNull()) {
+    Key newKey;
+    if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.0") {
+        newKey = ctx->key(primaryFingerprint(), err, true);
+        // Not secret so we get the information from the pubring.
+        if (newKey.isNull()) {
+            newKey = ctx->key(primaryFingerprint(), err, false);
+        }
+    } else {
         newKey = ctx->key(primaryFingerprint(), err, false);
     }
     delete ctx;
@@ -375,7 +382,6 @@ void Key::update()
         return;
     }
     swap(newKey);
-    return;
 }
 
 // static
