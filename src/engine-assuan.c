@@ -445,7 +445,10 @@ llass_set_locale (void *engine, int category, const char *value)
 static gpgme_error_t
 inquire_cb (engine_llass_t llass, const char *keyword, const char *args)
 {
-  gpg_error_t err;
+  gpg_error_t err, err2;
+  gpgme_data_t data = NULL;
+  char buf[1024];
+  gpgme_ssize_t n;
 
   if (llass->opt.gpg_agent && !strcmp (keyword, "PINENTRY_LAUNCHED"))
     {
@@ -454,17 +457,23 @@ inquire_cb (engine_llass_t llass, const char *keyword, const char *args)
 
   if (llass->user.inq_cb)
     {
-      gpgme_data_t data = NULL;
-
       err = llass->user.inq_cb (llass->user.inq_cb_value,
                                 keyword, args, &data);
       if (!err && data)
         {
-          /* FIXME: Returning data is not yet implemented.  However we
-             need to allow the caller to cleanup his data object.
-             Thus we run the callback in finish mode immediately.  */
-          err = llass->user.inq_cb (llass->user.inq_cb_value,
-                                    NULL, NULL, &data);
+          while ((n = gpgme_data_read (data, buf, sizeof buf)) > 0)
+            {
+              err = assuan_send_data (llass->assuan_ctx, buf, n);
+              if (err)
+                break;
+            }
+          /* Tell the caller that we are finished with the data
+           * object.  The error code from assuan_send_data has
+           * priority over the one from the cleanup function. */
+          err2 = llass->user.inq_cb (llass->user.inq_cb_value,
+                                     NULL, NULL, &data);
+          if (!err)
+            err = err2;
         }
     }
   else

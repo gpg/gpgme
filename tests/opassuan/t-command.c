@@ -70,8 +70,9 @@ inq_cb (void *opaque, const char *name, const char *args,
       /* There shall be no data object.  */
       assert (!*r_data);
 
-      err = gpgme_data_new (&data);
+      err = gpgme_data_new_from_mem (&data, "Foo bar\nbaz\n", 10, 0);
       fail_if_err (err);
+
       *r_data = data;
       printf ("        sending data object %p\n", data);
     }
@@ -142,4 +143,3 @@ main (int argc, char **argv)
 
   return 0;
 }
-
