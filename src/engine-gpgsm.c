@@ -573,9 +573,9 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
     _gpgme_io_close (gpgsm->output_cb.server_fd);
   if (gpgsm->message_cb.server_fd != -1)
     _gpgme_io_close (gpgsm->message_cb.server_fd);
+#endif
   if (gpgsm->diag_cb.server_fd != -1)
     _gpgme_io_close (gpgsm->diag_cb.server_fd);
-#endif
 
   if (err)
     gpgsm_release (gpgsm);
