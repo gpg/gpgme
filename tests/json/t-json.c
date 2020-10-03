@@ -209,6 +209,8 @@ get_file (const char *fname)
 int
 test_contains (cjson_t needle, cjson_t hay)
 {
+  cjson_t it;
+
   if (verbose == 2)
     fprintf (stderr, "%s: -------checking-------- "
                      "\n%s\n -------against-------- \n%s\n",
@@ -261,7 +263,9 @@ test_contains (cjson_t needle, cjson_t hay)
       if (test_contains (needle->child, hay->child))
         {
           int found = 0;
-          for (cjson_t hit = hay->child; hit; hit = hit->next)
+          cjson_t hit;
+
+          for (hit = hay->child; hit; hit = hit->next)
             {
               found |= !test_contains (needle->child, hit);
               if (found)
@@ -282,13 +286,16 @@ test_contains (cjson_t needle, cjson_t hay)
     }
 
   /* Walk elements of an array */
-  for (cjson_t it = needle->next; it; it = it->next)
+  for (it = needle->next; it; it = it->next)
     {
       int found = 0;
+      cjson_t hit;
+
       if (!it->string && it->child)
         {
           /* Try out all other anonymous children on the same level */
-          cjson_t hit = hay;
+          hit = hay;
+
           /* Return to the beginning */
           while (hit->prev)
             {
@@ -310,7 +317,7 @@ test_contains (cjson_t needle, cjson_t hay)
         }
 
       /* Try the children in the haystack */
-      for (cjson_t hit = hay; hit; hit = hit->next)
+      for (hit = hay; hit; hit = hit->next)
         {
           if (hit->string && it->string &&
               !strcmp (hit->string, it->string))
@@ -463,6 +470,7 @@ main (int argc, char *argv[])
 {
   const char *gpgme_json = getenv ("gpgme_json");
   int last_argc = -1;
+  const char **test;
 
   if (argc)
     { argc--; argv++; }
@@ -488,7 +496,7 @@ main (int argc, char *argv[])
 
   init_gpgme (GPGME_PROTOCOL_SPAWN);
 
-  for (const char **test = tests; *test; test++)
+  for (test = tests; *test; test++)
     {
       if (run_test (*test, gpgme_json))
         {
