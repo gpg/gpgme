@@ -85,6 +85,16 @@ public:
             return operator<(Version(other));
         }
 
+        bool operator <= (const Version &other)
+        {
+            return !operator>(other);
+        }
+
+        bool operator <= (const char *other)
+        {
+            return operator<=(Version(other));
+        }
+
         bool operator > (const char* other)
         {
             return operator>(Version(other));
@@ -93,6 +103,16 @@ public:
         bool operator > (const Version & other)
         {
             return !operator<(other) && !operator==(other);
+        }
+
+        bool operator >= (const Version &other)
+        {
+            return !operator<(other);
+        }
+
+        bool operator >= (const char *other)
+        {
+            return operator>=(Version(other));
         }
 
         bool operator == (const Version& other)
@@ -105,6 +125,16 @@ public:
         bool operator == (const char* other)
         {
             return operator==(Version(other));
+        }
+
+        bool operator != (const Version &other)
+        {
+            return !operator==(other);
+        }
+
+        bool operator != (const char *other)
+        {
+            return operator!=(Version(other));
         }
 
         friend std::ostream& operator << (std::ostream& stream, const Version& ver)

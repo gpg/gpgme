@@ -15,6 +15,9 @@ Noteworthy changes in version 1.14.1 (unreleased)
  gpgme_op_setexpire                         NEW.
  cpp: Context::setExpire                    NEW.
  cpp: Context::startSetExpire               NEW.
+ cpp: EngineInfo::Version::operator<=       NEW.
+ cpp: EngineInfo::Version::operator>=       NEW.
+ cpp: EngineInfo::Version::operator!=       NEW.
 
 
 Noteworthy changes in version 1.14.0 (2020-07-16)
