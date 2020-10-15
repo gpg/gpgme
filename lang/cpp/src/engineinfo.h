@@ -87,13 +87,14 @@ public:
 
         bool operator > (const char* other)
         {
-            return !operator<(Version(other));
+            return operator>(Version(other));
         }
 
         bool operator > (const Version & other)
         {
-            return !operator<(other);
+            return !operator<(other) && !operator==(other);
         }
+
         bool operator == (const Version& other)
         {
             return major == other.major

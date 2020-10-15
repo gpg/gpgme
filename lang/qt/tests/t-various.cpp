@@ -241,6 +241,7 @@ private Q_SLOTS:
         QVERIFY(EngineInfo::Version("1.0.0") < EngineInfo::Version("2.0.0"));
         QVERIFY(EngineInfo::Version("0.1.0") < EngineInfo::Version("1.0.0"));
         QVERIFY(!(EngineInfo::Version("2.0.0") < EngineInfo::Version("2.0.0")));
+        QVERIFY(!(EngineInfo::Version("2.0.0") > EngineInfo::Version("2.0.0")));
         QVERIFY(EngineInfo::Version("3.0.0") > EngineInfo::Version("2.3.20"));
         QVERIFY(EngineInfo::Version("3.0.1") > EngineInfo::Version("3.0.0"));
         QVERIFY(EngineInfo::Version("3.1.0") > EngineInfo::Version("3.0.20"));
