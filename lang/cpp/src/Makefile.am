@@ -35,6 +35,7 @@ main_sources = \
     gpgadduserideditinteractor.cpp gpggencardkeyinteractor.cpp \
     defaultassuantransaction.cpp \
     scdgetinfoassuantransaction.cpp gpgagentgetinfoassuantransaction.cpp \
+    statusconsumerassuantransaction.cpp \
     vfsmountresult.cpp configuration.cpp tofuinfo.cpp swdbresult.cpp
 
 gpgmepp_headers = \
@@ -47,6 +48,7 @@ gpgmepp_headers = \
     gpggencardkeyinteractor.h \
     importresult.h keygenerationresult.h key.h keylistresult.h \
     notation.h result.h scdgetinfoassuantransaction.h signingresult.h \
+    statusconsumerassuantransaction.h \
     trustitem.h verificationresult.h vfsmountresult.h gpgmepp_export.h \
     tofuinfo.h swdbresult.h
 
@@ -55,7 +57,8 @@ private_gpgmepp_headers = \
 
 interface_headers= \
     interfaces/assuantransaction.h interfaces/dataprovider.h \
-    interfaces/passphraseprovider.h interfaces/progressprovider.h
+    interfaces/passphraseprovider.h interfaces/progressprovider.h \
+    interfaces/statusconsumer.h
 
 gpgmeppincludedir = $(includedir)/gpgme++
 gpgmeppinclude_HEADERS = $(gpgmepp_headers)
