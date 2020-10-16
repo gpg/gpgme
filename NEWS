@@ -9,6 +9,8 @@ Noteworthy changes in version 1.14.1 (unreleased)
  * qt: Extended ChangeExpiryJob to support changing the expiry of
    subkeys. [#4717]
 
+ * qt: Added QDebug stream operator for GpgME::Error.
+
  * Interface changes relative to the 1.14.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_op_setexpire_start                   NEW.
@@ -18,6 +20,7 @@ Noteworthy changes in version 1.14.1 (unreleased)
  cpp: EngineInfo::Version::operator<=       NEW.
  cpp: EngineInfo::Version::operator>=       NEW.
  cpp: EngineInfo::Version::operator!=       NEW.
+ qt: operator<<(QDebug debug, const GpgME::Error &err) NEW.
 
 
 Noteworthy changes in version 1.14.0 (2020-07-16)

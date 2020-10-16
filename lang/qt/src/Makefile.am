@@ -24,7 +24,9 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
              QGpgmeConfig.cmake.in.in
 
 qgpgme_sources = \
-    dataprovider.cpp job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
+    dataprovider.cpp \
+    debug.cpp \
+    job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
     qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
@@ -49,6 +51,7 @@ qgpgme_headers= \
     changeownertrustjob.h \
     changepasswdjob.h \
     dataprovider.h \
+    debug.h \
     decryptjob.h \
     decryptverifyjob.h \
     downloadjob.h \
@@ -89,6 +92,7 @@ camelcase_headers= \
     ChangeOwnerTrustJob \
     ChangePasswdJob \
     DataProvider \
+    Debug \
     DecryptJob \
     DecryptVerifyJob \
     DN \
