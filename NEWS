@@ -22,6 +22,7 @@ Noteworthy changes in version 1.14.1 (unreleased)
  cpp: EngineInfo::Version::operator!=       NEW.
  cpp: StatusConsumer                        NEW.
  cpp: StatusConsumerAssuanTransaction       NEW.
+ cpp: Context::cancelPendingOperationImmediately NEW.
  qt: operator<<(QDebug debug, const GpgME::Error &err) NEW.
 
 

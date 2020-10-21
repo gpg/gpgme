@@ -1343,6 +1343,11 @@ Error Context::cancelPendingOperation()
     return Error(gpgme_cancel_async(d->ctx));
 }
 
+Error Context::cancelPendingOperationImmediately()
+{
+    return Error(gpgme_cancel(d->ctx));
+}
+
 bool Context::poll()
 {
     gpgme_error_t e = GPG_ERR_NO_ERROR;

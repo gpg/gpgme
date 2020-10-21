@@ -484,6 +484,7 @@ public:
     GpgME::Error wait();
     GpgME::Error lastError() const;
     GpgME::Error cancelPendingOperation();
+    GpgME::Error cancelPendingOperationImmediately();
 
     class Private;
     const Private *impl() const
