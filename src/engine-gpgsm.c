@@ -2322,6 +2322,7 @@ struct engine_ops _gpgme_engine_ops_gpgsm =
     gpgsm_keylist_ext,
     NULL,               /* keylist_data */
     NULL,               /* keysign */
+    NULL,               /* revsig */
     NULL,               /* tofu_policy */
     gpgsm_sign,
     gpgsm_verify,

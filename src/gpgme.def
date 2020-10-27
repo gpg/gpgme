@@ -277,5 +277,8 @@ EXPORTS
     gpgme_op_setexpire                    @205
     gpgme_op_setexpire_start              @206
 
+    gpgme_op_revsig                       @207
+    gpgme_op_revsig_start                 @208
+
 ; END
 

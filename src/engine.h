@@ -131,6 +131,11 @@ gpgme_error_t _gpgme_engine_op_keysign (engine_t engine,
                                         unsigned long expires,
                                         unsigned int flags,
                                         gpgme_ctx_t ctx);
+gpgme_error_t _gpgme_engine_op_revsig (engine_t engine,
+                                       gpgme_key_t key,
+                                       gpgme_key_t signing_key,
+                                       const char *userid,
+                                       unsigned int flags);
 gpgme_error_t _gpgme_engine_op_tofu_policy (engine_t engine,
                                             gpgme_key_t key,
                                             gpgme_tofu_policy_t policy);

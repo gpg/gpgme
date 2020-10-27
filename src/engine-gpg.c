@@ -3211,6 +3211,52 @@ gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
 
 
 static gpgme_error_t
+gpg_revsig (void *engine, gpgme_key_t key, gpgme_key_t signing_key,
+            const char *userid, unsigned int flags)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+  const char *s;
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!have_gpg_version (gpg, "2.2.24"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = add_arg (gpg, "--quick-revoke-sig");
+
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+
+  if (!err)
+    err = add_arg (gpg, signing_key->fpr);
+
+  if (!err && userid)
+    {
+      if ((flags & GPGME_REVSIG_LFSEP))
+        {
+          for (; !err && (s = strchr (userid, '\n')); userid = s + 1)
+            if ((s - userid))
+              err = add_arg_len (gpg, "=", userid, s - userid);
+          if (!err && *userid)
+            err = add_arg_pfx (gpg, "=", userid);
+        }
+      else
+        err = add_arg_pfx (gpg, "=", userid);
+    }
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_tofu_policy (void *engine, gpgme_key_t key, gpgme_tofu_policy_t policy)
 {
   engine_gpg_t gpg = engine;
@@ -3513,6 +3559,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_keylist_ext,
     gpg_keylist_data,
     gpg_keysign,
+    gpg_revsig,
     gpg_tofu_policy,    /* tofu_policy */
     gpg_sign,
     gpg_verify,

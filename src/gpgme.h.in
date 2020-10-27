@@ -1919,6 +1919,20 @@ gpgme_error_t gpgme_op_keysign       (gpgme_ctx_t ctx,
                                       unsigned int flags);
 
 
+/* Flags for the signature revoking functions.  */
+#define GPGME_REVSIG_LFSEP   (1 << 8)  /* Indicate LF separated user ids. */
+
+/* Revoke the signatures made with SIGNING_KEY on the USERID(s) of KEY.  */
+gpgme_error_t gpgme_op_revsig_start (gpgme_ctx_t ctx,
+                                     gpgme_key_t key,
+                                     gpgme_key_t signing_key,
+                                     const char *userid,
+                                     unsigned int flags);
+gpgme_error_t gpgme_op_revsig       (gpgme_ctx_t ctx,
+                                     gpgme_key_t key,
+                                     gpgme_key_t signing_key,
+                                     const char *userid,
+                                     unsigned int flags);
 
 
 /*

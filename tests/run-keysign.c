@@ -1,4 +1,4 @@
-/* run-keysign.c  - Test tool to sign a key
+/* run-keysign.c  - Test tool to sign a key and to revoke a key signature
  * Copyright (C) 2016 g10 Code GmbH
  *
  * This file is part of GPGME.
@@ -77,10 +77,11 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --loopback       use a loopback pinentry\n"
-         "  --signer NAME    use key NAME for signing\n"
+         "  --signer NAME    use key NAME for signing/revoking\n"
          "  --local          create a local signature\n"
          "  --noexpire       force no expiration\n"
          "  --expire EPOCH   expire the signature at EPOCH\n"
+         "  --revoke         revoke the signature(s)\n"
          , stderr);
   exit (ex);
 }
@@ -97,9 +98,12 @@ main (int argc, char **argv)
   int print_status = 0;
   int use_loopback = 0;
   const char *userid;
-  unsigned int flags = 0;
+  unsigned int keysign_flags = 0;
   unsigned long expire = 0;
+  int revoke = 0;
+  unsigned int revoke_flags = 0;
   gpgme_key_t thekey;
+  gpgme_key_t signing_key = NULL;
   int i;
   size_t n;
   char *userid_buffer = NULL;
@@ -142,12 +146,12 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--local"))
         {
-          flags |= GPGME_KEYSIGN_LOCAL;
+          keysign_flags |= GPGME_KEYSIGN_LOCAL;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--noexpire"))
         {
-          flags |= GPGME_KEYSIGN_NOEXPIRE;
+          keysign_flags |= GPGME_KEYSIGN_NOEXPIRE;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--expire"))
@@ -158,8 +162,19 @@ main (int argc, char **argv)
           expire = parse_expire_string (*argv);
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--revoke"))
+        {
+          revoke = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
+    }
+
+  if (revoke && !signer_string)
+    {
+      fprintf (stderr, PGM ": please specify the signer key\n");
+      exit (1);
     }
 
   if (!argc)
@@ -186,23 +201,20 @@ main (int argc, char **argv)
 
   if (signer_string)
     {
-      gpgme_key_t akey;
-
-      err = gpgme_get_key (ctx, signer_string, &akey, 1);
+      err = gpgme_get_key (ctx, signer_string, &signing_key, 1);
       if (err)
         {
           fprintf (stderr, PGM ": error getting signer key '%s': %s\n",
                    signer_string, gpg_strerror (err));
           exit (1);
         }
-      err = gpgme_signers_add (ctx, akey);
+      err = gpgme_signers_add (ctx, signing_key);
       if (err)
         {
           fprintf (stderr, PGM ": error adding signer key: %s\n",
                    gpg_strerror (err));
           exit (1);
         }
-      gpgme_key_unref (akey);
     }
 
 
@@ -234,7 +246,8 @@ main (int argc, char **argv)
           strcat (userid_buffer, "\n");
         }
       userid = userid_buffer;
-      flags |= GPGME_KEYSIGN_LFSEP;
+      keysign_flags |= GPGME_KEYSIGN_LFSEP;
+      revoke_flags |= GPGME_REVSIG_LFSEP;
     }
   else if (argc)
     {
@@ -247,15 +260,29 @@ main (int argc, char **argv)
       userid = NULL;
     }
 
-  err = gpgme_op_keysign (ctx, thekey, userid, expire, flags);
-  if (err)
+  if (revoke)
     {
-      fprintf (stderr, PGM ": gpgme_op_adduid failed: %s\n",
-               gpg_strerror (err));
-      exit (1);
+      err = gpgme_op_revsig (ctx, thekey, signing_key, userid, revoke_flags);
+      if (err)
+        {
+          fprintf (stderr, PGM ": gpgme_op_revsig failed: %s\n",
+                   gpg_strerror (err));
+          exit (1);
+        }
+    }
+  else
+    {
+      err = gpgme_op_keysign (ctx, thekey, userid, expire, keysign_flags);
+      if (err)
+        {
+          fprintf (stderr, PGM ": gpgme_op_keysign failed: %s\n",
+                   gpg_strerror (err));
+          exit (1);
+        }
     }
 
   free (userid_buffer);
+  gpgme_key_unref (signing_key);
   gpgme_key_unref (thekey);
   gpgme_release (ctx);
   return 0;

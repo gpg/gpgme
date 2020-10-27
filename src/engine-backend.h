@@ -108,6 +108,9 @@ struct engine_ops
                             gpgme_key_t key, const char *userid,
                             unsigned long expires, unsigned int flags,
                             gpgme_ctx_t ctx);
+  gpgme_error_t (*revsig) (void *engine,
+                           gpgme_key_t key, gpgme_key_t signing_key,
+                           const char *userid, unsigned int flags);
   gpgme_error_t (*tofu_policy) (void *engine,
                                 gpgme_key_t key,
                                 gpgme_tofu_policy_t policy);

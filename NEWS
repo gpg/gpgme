@@ -1,8 +1,11 @@
 Noteworthy changes in version 1.14.1 (unreleased)
 -------------------------------------------------
 
-* New function gpgme_op_setexpire to make changing the expiration
-  easier (requires GnuPG 2.1.22). [#4999]
+ * New function gpgme_op_setexpire to make changing the expiration
+   easier (requires GnuPG 2.1.22). [#4999]
+
+ * New function gpgme_op_revsig to revoke key signatures (requires
+   GnuPG 2.2.24). [#5094]
 
  * cpp: Support for set expire operations in the C++ bindings. [#5003]
 
@@ -15,6 +18,9 @@ Noteworthy changes in version 1.14.1 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_op_setexpire_start                   NEW.
  gpgme_op_setexpire                         NEW.
+ gpgme_op_revsig_start                      NEW.
+ gpgme_op_revsig                            NEW.
+ GPGME_REVSIG_LFSEP                         NEW.
  cpp: Context::setExpire                    NEW.
  cpp: Context::startSetExpire               NEW.
  cpp: EngineInfo::Version::operator<=       NEW.

@@ -276,6 +276,9 @@ GPGME_1.0 {
     gpgme_op_setexpire;
     gpgme_op_setexpire_start;
 
+    gpgme_op_revsig;
+    gpgme_op_revsig_start;
+
   local:
     *;
 

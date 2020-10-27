@@ -464,6 +464,7 @@ struct engine_ops _gpgme_engine_ops_spawn =
     NULL,		/* keylist_ext */
     NULL,               /* keylist_data */
     NULL,               /* keysign */
+    NULL,               /* revsig */
     NULL,               /* tofu_policy */
     NULL,		/* sign */
     NULL,		/* verify */

@@ -825,6 +825,20 @@ _gpgme_engine_op_keysign (engine_t engine, gpgme_key_t key, const char *userid,
 
 
 gpgme_error_t
+_gpgme_engine_op_revsig (engine_t engine, gpgme_key_t key, gpgme_key_t signing_key,
+                         const char *userid, unsigned int flags)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->revsig)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->revsig) (engine->engine, key, signing_key, userid, flags);
+}
+
+
+gpgme_error_t
 _gpgme_engine_op_tofu_policy (engine_t engine,
                               gpgme_key_t key,  gpgme_tofu_policy_t policy)
 {

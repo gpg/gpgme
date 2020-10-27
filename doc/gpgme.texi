@@ -4726,6 +4726,71 @@ be completed by calling @code{gpgme_wait} on the context.
 
 
 @c
+@c  gpgme_op_revsig
+@c
+@deftypefun gpgme_error_t gpgme_op_revsig @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{gpgme_key_t @var{signing_key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+@since{1.14.1}
+
+The function @code{gpgme_op_revsig} revokes key signatures of the
+public key @var{key} made with the key @var{signing_key}.   This
+function requires at least version 2.2.24 of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{signing_key} specifies the key whose signatures shall be revoked.
+
+@var{userid} selects the user ID or user IDs whose signatures shall
+be revoked.  If @var{userid} is set to @code{NULL} the signatures
+on all user IDs are revoked.  The user ID must be given verbatim
+because the engine does an exact and case sensitive match.  Thus the
+@code{uid} field from the user ID object (@code{gpgme_user_id_t}) is to
+be used.  To select more than one user ID put them all into one string
+separated by linefeeds characters (@code{\n}) and set the flag
+@code{GPGME_REVSIG_LFSEP}.
+
+@var{flags} can be set to the bit-wise OR of the following flags:
+
+@table @code
+@item GPGME_REVSIG_LFSEP
+@since{1.14.1}
+
+Although linefeeds are uncommon in user IDs this flag is required to
+explicitly declare that @var{userid} may contain several linefeed
+separated user IDs.
+
+@end table
+
+The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, or a bunch of other error
+codes.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_revsig_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{gpgme_key_t @var{signing_key}}, @
+       @w{const char *@var{userid}}, @
+       @w{unsigned int @var{flags}});
+
+@since{1.14.1}
+
+The function @code{gpgme_op_revsig_start} initiates a
+@code{gpgme_op_revsig} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+@end deftypefun
+
+
+@c
 @c  EXPORTING KEYS
 @c
 @node Exporting Keys
