@@ -147,7 +147,12 @@ class GpgmeWrapper(object):
                     gpgme.gpg_raise_callback_exception(slf)
                 return result
 
-        doc = self._munge_docstring.sub(r'\2.\1(\3', getattr(func, "__doc__"))
+        doc_orig = getattr(func, "__doc__")
+        if doc_orig:
+            doc = self._munge_docstring.sub(r'\2.\1(\3', doc_orig)
+        else:
+            doc = None
+
         _funcwrap.__doc__ = doc
 
         # Monkey-patch the class.
