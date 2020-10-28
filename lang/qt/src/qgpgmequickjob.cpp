@@ -1,6 +1,9 @@
-/* qgpgmequickjob.cpp
+/*  qgpgmequickjob.cpp
 
+    This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2017 Intevation GmbH
+    Copyright (c) 2020 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -47,7 +50,9 @@ QGpgMEQuickJob::QGpgMEQuickJob(Context *context)
     lateInitialization();
 }
 
-QGpgMEQuickJob::~QGpgMEQuickJob() {}
+QGpgMEQuickJob::~QGpgMEQuickJob()
+{
+}
 
 static QGpgMEQuickJob::result_type createWorker(GpgME::Context *ctx,
                                                 const QString &uid,
@@ -93,6 +98,15 @@ static QGpgMEQuickJob::result_type revUidWorker(GpgME::Context *ctx,
     return std::make_tuple(err, QString(), Error());
 }
 
+static QGpgMEQuickJob::result_type revokeSignatureWorker(Context *ctx,
+                                                         const Key &key,
+                                                         const Key &signingKey,
+                                                         const std::vector<UserID> &userIds)
+{
+    const auto err = ctx->revokeSignature(key, signingKey, userIds);
+    return std::make_tuple(err, QString(), Error());
+}
+
 void QGpgMEQuickJob::startCreate(const QString &uid,
                  const char *algo,
                  const QDateTime &expires,
@@ -120,4 +134,10 @@ void QGpgMEQuickJob::startAddSubkey(const GpgME::Key &key, const char *algo,
     run(std::bind(&addSubkeyWorker, std::placeholders::_1, key, algo,
                   expires, flags));
 }
+
+void QGpgMEQuickJob::startRevokeSignature(const Key &key, const Key &signingKey, const std::vector<UserID> &userIds)
+{
+    run(std::bind(&revokeSignatureWorker, std::placeholders::_1, key, signingKey, userIds));
+}
+
 #include "qgpgmequickjob.moc"

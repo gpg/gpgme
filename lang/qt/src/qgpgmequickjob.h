@@ -1,6 +1,9 @@
 /*  qgpgmequickjob.h
 
+    This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2017 Intevation GmbH
+    Copyright (c) 2020 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -66,6 +69,8 @@ public:
     void startAddSubkey(const GpgME::Key &key, const char *algo,
                         const QDateTime &expires = QDateTime(),
                         unsigned int flags = 0) Q_DECL_OVERRIDE;
+    void startRevokeSignature(const GpgME::Key &key, const GpgME::Key &signingKey,
+                              const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) Q_DECL_OVERRIDE;
 };
 
 }

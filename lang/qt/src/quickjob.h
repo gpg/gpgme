@@ -1,6 +1,9 @@
 /*  quickjob.h
 
+    This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2017 Intevation GmbH
+    Copyright (c) 2020 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -73,6 +76,14 @@ public:
     virtual void startAddSubkey(const GpgME::Key &key, const char *algo,
                                 const QDateTime &expires = QDateTime(),
                                 unsigned int flags = 0) = 0;
+
+    /**
+       Starts the operation to revoke the signatures made with the key \a signingKey on the
+       user IDs \a userIds of the key \a key. If \a userIds is an empty list, then all
+       signatures made with \a signingKey on the user IDs of \a key will be revoked.
+    */
+    virtual void startRevokeSignature(const GpgME::Key &key, const GpgME::Key &signingKey,
+                                      const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) = 0;
 
 Q_SIGNALS:
     void result(const GpgME::Error &error,
