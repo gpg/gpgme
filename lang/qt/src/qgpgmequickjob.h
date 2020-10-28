@@ -34,14 +34,8 @@
 
 #include "threadedjobmixin.h"
 
-namespace GpgME {
-class Key;
-}
-
-class QDateTime;
-class QString;
-
-namespace QGpgME{
+namespace QGpgME
+{
 
 /**
  * Interface to the modern key manipulation functions.
@@ -50,7 +44,7 @@ class QGpgMEQuickJob
 #ifdef Q_MOC_RUN
     : public QuickJob
 #else
-    : public _detail::ThreadedJobMixin<QuickJob, std::tuple<GpgME::Error, QString, GpgME::Error> >
+    : public _detail::ThreadedJobMixin<QuickJob>
 #endif
 {
     Q_OBJECT
@@ -72,10 +66,6 @@ public:
     void startAddSubkey(const GpgME::Key &key, const char *algo,
                         const QDateTime &expires = QDateTime(),
                         unsigned int flags = 0) Q_DECL_OVERRIDE;
-
-Q_SIGNALS:
-    void result(const GpgME::Error &error,
-                const QString &auditLogAsHtml, const GpgME::Error &auditLogError);
 };
 
 }
