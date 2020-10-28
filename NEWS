@@ -9,6 +9,8 @@ Noteworthy changes in version 1.14.1 (unreleased)
 
  * cpp: Support for set expire operations in the C++ bindings. [#5003]
 
+ * cpp: Support for revoking key signatures in the C++ bindings. [#5094]
+
  * qt: Extended ChangeExpiryJob to support changing the expiry of
    subkeys. [#4717]
 
@@ -29,6 +31,8 @@ Noteworthy changes in version 1.14.1 (unreleased)
  cpp: StatusConsumer                        NEW.
  cpp: StatusConsumerAssuanTransaction       NEW.
  cpp: Context::cancelPendingOperationImmediately NEW.
+ cpp: Context::revokeSignature              NEW.
+ cpp: Context::startRevokeSignature         NEW.
  qt: operator<<(QDebug debug, const GpgME::Error &err) NEW.
 
 

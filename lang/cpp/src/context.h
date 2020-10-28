@@ -285,6 +285,11 @@ public:
                          const std::vector<Subkey> &subkeys = std::vector<Subkey>(),
                          const SetExpireFlags flags = SetExpireDefault);
 
+    Error revokeSignature(const Key &key, const Key &signingKey,
+                          const std::vector<UserID> &userIds = std::vector<UserID>());
+    Error startRevokeSignature(const Key &key, const Key &signingKey,
+                               const std::vector<UserID> &userIds = std::vector<UserID>());
+
     // using TofuInfo::Policy
     Error setTofuPolicy(const Key &k, unsigned int policy);
     Error setTofuPolicyStart(const Key &k, unsigned int policy);

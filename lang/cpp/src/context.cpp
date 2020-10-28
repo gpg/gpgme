@@ -1532,6 +1532,22 @@ Error Context::startCreateSubkey(const Key &k, const char *algo,
                  k.impl(), algo, reserved, expires, flags));
 }
 
+static std::string getLFSeparatedListOfStrings(const std::vector<std::string> &strings)
+{
+    if (strings.empty()) {
+        return std::string();
+    }
+
+    return std::accumulate(
+        std::next(strings.begin()),
+        strings.end(),
+        strings[0],
+        [](const std::string &a, const std::string &b) {
+            return a + '\n' + b;
+        }
+    );
+}
+
 static std::string getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector<Subkey> &subkeys)
 {
     if (subkeys.empty()) {
@@ -1546,18 +1562,7 @@ static std::string getLFSeparatedListOfFingerprintsFromSubkeys(const std::vector
         }
     }
 
-    if (fprs.empty()) {
-        return std::string();
-    }
-
-    return std::accumulate(
-        std::next(fprs.begin()),
-        fprs.end(),
-        fprs[0],
-        [](const std::string &a, const std::string &b) {
-            return a + '\n' + b;
-        }
-    );
+    return getLFSeparatedListOfStrings(fprs);
 }
 
 Error Context::setExpire(const Key &k, unsigned long expires,
@@ -1586,6 +1591,41 @@ Error Context::startSetExpire(const Key &k, unsigned long expires,
     }
     return Error(d->lasterr = gpgme_op_setexpire_start(d->ctx,
                  k.impl(), expires, subfprs.c_str(), 0));
+}
+
+static std::string getLFSeparatedListOfUserIds(const std::vector<UserID> &userIds)
+{
+    if (userIds.empty()) {
+        return std::string();
+    }
+
+    std::vector<std::string> uids;
+    uids.reserve(userIds.size());
+    for (auto &userId : userIds) {
+        if (userId.id()) {
+            uids.push_back(std::string(userId.id()));
+        }
+    }
+
+    return getLFSeparatedListOfStrings(uids);
+}
+
+Error Context::revokeSignature(const Key &key, const Key &signingKey,
+                               const std::vector<UserID> &userIds)
+{
+    const unsigned int flags = userIds.size() > 1 ? GPGME_REVSIG_LFSEP : 0;
+    const std::string uids = getLFSeparatedListOfUserIds(userIds);
+    return Error(d->lasterr = gpgme_op_revsig(d->ctx,
+                 key.impl(), signingKey.impl(), uids.c_str(), flags));
+}
+
+Error Context::startRevokeSignature(const Key &key, const Key &signingKey,
+                                    const std::vector<UserID> &userIds)
+{
+    const unsigned int flags = userIds.size() > 1 ? GPGME_REVSIG_LFSEP : 0;
+    const std::string uids = getLFSeparatedListOfUserIds(userIds);
+    return Error(d->lasterr = gpgme_op_revsig_start(d->ctx,
+                 key.impl(), signingKey.impl(), uids.c_str(), flags));
 }
 
 Error Context::setFlag(const char *name, const char *value)
