@@ -87,7 +87,7 @@ public:
 
 Q_SIGNALS:
     void result(const GpgME::Error &error,
-                const QString &auditLogAsHtml, const GpgME::Error &auditLogError);
+                const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };
 
 }

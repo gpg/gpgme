@@ -38,6 +38,8 @@ Noteworthy changes in version 1.14.1 (unreleased)
  cpp: UserID::Signature::operator<          NEW.
  qt: operator<<(QDebug debug, const GpgME::Error &err) NEW.
  qt: QuickJob::startRevokeSignature         NEW.
+ qt: QuickJob::result                   CHANGED: Made params 'auditLogAsHtml'
+                                                and 'auditLogError' optional.
 
 
 Noteworthy changes in version 1.14.0 (2020-07-16)
