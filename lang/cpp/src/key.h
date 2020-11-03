@@ -467,6 +467,9 @@ public:
         swap(this->sig, other.sig);
     }
 
+    /*! Defines a canonical sort order for signatures of the same user ID. */
+    bool operator<(const Signature &other);
+
     bool isNull() const
     {
         return !sig || !uid || !key ;

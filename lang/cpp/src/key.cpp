@@ -35,6 +35,7 @@
 
 #include <string.h>
 #include <strings.h>
+#include <cassert>
 #include <istream>
 #include <iterator>
 
@@ -839,18 +840,76 @@ gpgme_key_sig_t verify_signature(gpgme_user_id_t uid, gpgme_key_sig_t sig)
     return nullptr;
 }
 
+static int signature_index(gpgme_user_id_t uid, gpgme_key_sig_t sig)
+{
+    if (uid) {
+        int i = 0;
+        for (gpgme_key_sig_t s = uid->signatures ; s ; s = s->next, ++i) {
+            if (s == sig) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
 UserID::Signature::Signature() : key(), uid(nullptr), sig(nullptr) {}
 
 UserID::Signature::Signature(const shared_gpgme_key_t &k, gpgme_user_id_t u, unsigned int idx)
     : key(k), uid(verify_uid(k, u)), sig(find_signature(uid, idx))
 {
-
 }
 
 UserID::Signature::Signature(const shared_gpgme_key_t &k, gpgme_user_id_t u, gpgme_key_sig_t s)
     : key(k), uid(verify_uid(k, u)), sig(verify_signature(uid, s))
 {
+}
 
+bool UserID::Signature::operator<(const Signature &other)
+{
+    // based on cmp_signodes() in g10/keylist.c
+
+    // both signatures must belong to the same user ID
+    assert(uid == other.uid);
+
+    // self-signatures are ordered first
+    const char *primaryKeyId = parent().parent().keyID();
+    const bool thisIsSelfSignature = strcmp(signerKeyID(), primaryKeyId) == 0;
+    const bool otherIsSelfSignature = strcmp(other.signerKeyID(), primaryKeyId) == 0;
+    if (thisIsSelfSignature && !otherIsSelfSignature) {
+        return true;
+    }
+    if (otherIsSelfSignature && !thisIsSelfSignature) {
+        return false;
+    }
+
+    // then sort by signer key ID (which are or course the same for self-sigs)
+    const int keyIdComparison = strcmp(signerKeyID(), other.signerKeyID());
+    if (keyIdComparison < 0) {
+        return true;
+    }
+    if (keyIdComparison > 0) {
+        return false;
+    }
+
+    // followed by creation time
+    if (creationTime() < other.creationTime()) {
+        return true;
+    }
+    if (creationTime() > other.creationTime()) {
+        return false;
+    }
+
+    // followed by the class in a way that a rev comes first
+    if (certClass() < other.certClass()) {
+        return true;
+    }
+    if (certClass() > other.certClass()) {
+        return false;
+    }
+
+    // to make the sort stable we compare the indexes of the signatures as last resort
+    return signature_index(uid, sig) < signature_index(uid, other.sig);
 }
 
 UserID UserID::Signature::parent() const
