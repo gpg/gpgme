@@ -111,6 +111,9 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
       opd->no_passphrase = 1;
       break;
 
+    case GPGME_STATUS_CANCELED_BY_USER:
+      return gpg_error (GPG_ERR_CANCELED);
+
     case GPGME_STATUS_EOF:
       if (opd->no_passphrase || opd->bad_passphrase)
 	return gpg_error (GPG_ERR_BAD_PASSPHRASE);
