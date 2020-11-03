@@ -412,7 +412,7 @@ Key Key::locate(const char *mbox)
 //
 //
 
-gpgme_sub_key_t find_subkey(const shared_gpgme_key_t &key, unsigned int idx)
+static gpgme_sub_key_t find_subkey(const shared_gpgme_key_t &key, unsigned int idx)
 {
     if (key) {
         for (gpgme_sub_key_t s = key->subkeys ; s ; s = s->next, --idx) {
@@ -424,7 +424,7 @@ gpgme_sub_key_t find_subkey(const shared_gpgme_key_t &key, unsigned int idx)
     return nullptr;
 }
 
-gpgme_sub_key_t verify_subkey(const shared_gpgme_key_t &key, gpgme_sub_key_t subkey)
+static gpgme_sub_key_t verify_subkey(const shared_gpgme_key_t &key, gpgme_sub_key_t subkey)
 {
     if (key) {
         for (gpgme_sub_key_t s = key->subkeys ; s ; s = s->next) {
@@ -591,7 +591,7 @@ bool Subkey::isDisabled() const
 //
 //
 
-gpgme_user_id_t find_uid(const shared_gpgme_key_t &key, unsigned int idx)
+static gpgme_user_id_t find_uid(const shared_gpgme_key_t &key, unsigned int idx)
 {
     if (key) {
         for (gpgme_user_id_t u = key->uids ; u ; u = u->next, --idx) {
@@ -603,7 +603,7 @@ gpgme_user_id_t find_uid(const shared_gpgme_key_t &key, unsigned int idx)
     return nullptr;
 }
 
-gpgme_user_id_t verify_uid(const shared_gpgme_key_t &key, gpgme_user_id_t uid)
+static gpgme_user_id_t verify_uid(const shared_gpgme_key_t &key, gpgme_user_id_t uid)
 {
     if (key) {
         for (gpgme_user_id_t u = key->uids ; u ; u = u->next) {
@@ -816,7 +816,7 @@ std::vector<std::string> UserID::remarks(std::vector<Key> keys, Error &err) cons
 //
 //
 
-gpgme_key_sig_t find_signature(gpgme_user_id_t uid, unsigned int idx)
+static gpgme_key_sig_t find_signature(gpgme_user_id_t uid, unsigned int idx)
 {
     if (uid) {
         for (gpgme_key_sig_t s = uid->signatures ; s ; s = s->next, --idx) {
@@ -828,7 +828,7 @@ gpgme_key_sig_t find_signature(gpgme_user_id_t uid, unsigned int idx)
     return nullptr;
 }
 
-gpgme_key_sig_t verify_signature(gpgme_user_id_t uid, gpgme_key_sig_t sig)
+static gpgme_key_sig_t verify_signature(gpgme_user_id_t uid, gpgme_key_sig_t sig)
 {
     if (uid) {
         for (gpgme_key_sig_t s = uid->signatures ; s ; s = s->next) {
