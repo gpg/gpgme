@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.14.1 (unreleased)
+Noteworthy changes in version 1.15.0 (unreleased)
 -------------------------------------------------
 
  * New function gpgme_op_setexpire to make changing the expiration
@@ -17,6 +17,8 @@ Noteworthy changes in version 1.14.1 (unreleased)
  * qt: Extended QuickJob to support revoking of key signatures. [#5094]
 
  * qt: Added QDebug stream operator for GpgME::Error.
+
+ * Require a somewhat newer version of libgpg-error (1.36).
 
  * Interface changes relative to the 1.14.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

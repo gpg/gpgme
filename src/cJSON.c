@@ -66,25 +66,14 @@
 #define wipememory(_ptr,_len) wipememory2(_ptr,0,_len)
 
 /* We use malloc function wrappers from gpgrt (aka libgpg-error).  */
-#if GPGRT_VERSION_NUMBER >= 0x011c00 /* 1.28 */
-# include <gpgrt.h>
-# define xtrycalloc(a,b) gpgrt_calloc ((a), (b))
-# define xtrystrdup(a)   gpgrt_strdup ((a))
-# define xfree(a)        gpgrt_free ((a))
-# if CALLOC_ONLY
-#  define xtrymalloc(a)  gpgrt_calloc (1, (a))
-# else
-#  define xtrymalloc(a)  gpgrt_malloc ((a))
-# endif
-#else /* Without gpgrt (aka libgpg-error).  */
-# define xtrycalloc(a,b) calloc ((a), (b))
-# define xtrystrdup(a)   strdup ((a))
-# define xfree(a)        free ((a))
-# if CALLOC_ONLY
-#  define xtrymalloc(a)  calloc (1, (a))
-# else
-#  define xtrymalloc(a)  malloc ((a))
-# endif
+#include <gpgrt.h>
+#define xtrycalloc(a,b) gpgrt_calloc ((a), (b))
+#define xtrystrdup(a)   gpgrt_strdup ((a))
+#define xfree(a)        gpgrt_free ((a))
+#if CALLOC_ONLY
+# define xtrymalloc(a)  gpgrt_calloc (1, (a))
+#else
+# define xtrymalloc(a)  gpgrt_malloc ((a))
 #endif
 
 

@@ -41,10 +41,6 @@
 #include "cJSON.h"
 
 
-#if GPGRT_VERSION_NUMBER < 0x011c00 /* 1.28 */
-int main (void){fputs ("Build with Libgpg-error >= 1.28!\n", stderr);return 1;}
-#else /* libgpg-error >= 1.28 */
-
 /* We don't allow a request with more than 64 MiB.  */
 #define MAX_REQUEST_SIZE (64 * 1024 * 1024)
 
@@ -246,9 +242,6 @@ static gpg_error_t
 add_base64_to_object (cjson_t object, const char *name,
                       const void *data, size_t datalen)
 {
-#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
-#else
   gpg_err_code_t err;
   estream_t fp = NULL;
   gpgrt_b64state_t state = NULL;
@@ -309,7 +302,6 @@ add_base64_to_object (cjson_t object, const char *name,
   gpgrt_b64enc_finish (state);
   es_fclose (fp);
   return err;
-#endif
 }
 
 
@@ -629,10 +621,6 @@ release_onetime_context (gpgme_ctx_t ctx)
 static gpg_error_t
 data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
 {
-#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
-  *r_data = NULL;
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
-#else
   gpg_error_t err;
   size_t len;
   char *buf = NULL;
@@ -685,7 +673,6 @@ data_from_base64_string (gpgme_data_t *r_data, cjson_t json)
   xfree (buf);
   gpgrt_b64dec_finish (state);
   return err;
-#endif
 }
 
 
@@ -3553,10 +3540,8 @@ interactive_repl (void)
   int first;
 
   es_setvbuf (es_stdin, NULL, _IONBF, 0);
-#if GPGRT_VERSION_NUMBER >= 0x011d00 /* 1.29 */
   es_fprintf (es_stderr, "%s %s ready (enter \",help\" for help)\n",
               gpgrt_strusage (11), gpgrt_strusage (13));
-#endif
   do
     {
       es_fputs ("> ", es_stderr);
@@ -3828,13 +3813,6 @@ my_strusage( int level )
 int
 main (int argc, char *argv[])
 {
-#if GPGRT_VERSION_NUMBER < 0x011d00 /* 1.29 */
-
-  fprintf (stderr, "WARNING: Old libgpg-error - using limited mode\n");
-  native_messaging_repl ();
-
-#else /* This is a modern libgp-error.  */
-
   enum { CMD_DEFAULT     = 0,
          CMD_INTERACTIVE = 'i',
          CMD_SINGLE      = 's',
@@ -3950,7 +3928,5 @@ main (int argc, char *argv[])
   if (opt_debug)
     log_debug ("ready");
 
-#endif /* This is a modern libgp-error.  */
   return 0;
 }
-#endif /* libgpg-error >= 1.28 */

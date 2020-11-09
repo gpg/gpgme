@@ -41,15 +41,6 @@
 
 #define DIM(v) (sizeof(v)/sizeof((v)[0]))
 
-#if GPG_ERROR_VERSION_NUMBER < 0x011900 /* 1.25 */
-# define GPG_ERR_ENGINE_TOO_OLD 300
-# define GPG_ERR_TOO_OLD        308
-#endif
-
-#ifndef GPGRT_ATTR_SENTINEL
-# define GPGRT_ATTR_SENTINEL(a)  /* */
-#endif
-
 
 
 /*-- {posix,w32}-util.c --*/

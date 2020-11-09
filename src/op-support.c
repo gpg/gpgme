@@ -34,10 +34,6 @@
 #include "util.h"
 #include "debug.h"
 
-#if GPG_ERROR_VERSION_NUMBER < 0x011700  /* 1.23 */
-# define GPG_ERR_SUBKEYS_EXP_OR_REV 217
-#endif
-
 
 
 gpgme_error_t

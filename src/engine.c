@@ -258,11 +258,7 @@ gpgme_get_engine_info (gpgme_engine_info_t *info)
           if (!err && version && engine_minimal_version
               && !_gpgme_compare_versions (version, engine_minimal_version))
             {
-#if GPG_ERROR_VERSION_NUMBER < 0x011900 /* 1.25 */
-              err = gpg_error (GPG_ERR_NO_ENGINE);
-#else
               err = gpg_error (GPG_ERR_ENGINE_TOO_OLD);
-#endif
             }
 
           /* Now set the dummy version for pseudo engines.  */
