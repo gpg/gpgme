@@ -43,6 +43,7 @@
 #include "protocol.h"
 #include "signkeyjob.h"
 #include "context.h"
+#include "engineinfo.h"
 
 #include "t-support.h"
 
@@ -503,7 +504,9 @@ private Q_SLOTS:
         qputenv("GNUPGHOME", mDir.path().toUtf8());
         QFile conf(mDir.path() + QStringLiteral("/gpg.conf"));
         QVERIFY(conf.open(QIODevice::WriteOnly));
-        conf.write("allow-weak-key-signatures");
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() >= "2.2.18") {
+            conf.write("allow-weak-key-signatures");
+        }
         conf.close();
     }
 
