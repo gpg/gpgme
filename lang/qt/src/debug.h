@@ -34,6 +34,8 @@
 #ifndef QGPGME_DEBUG_H
 #define QGPGME_DEBUG_H
 
+#include "qgpgme_export.h"
+
 namespace GpgME
 {
 class Error;
@@ -41,6 +43,6 @@ class Error;
 
 class QDebug;
 
-QDebug operator<<(QDebug debug, const GpgME::Error &err);
+QGPGME_EXPORT QDebug operator<<(QDebug debug, const GpgME::Error &err);
 
 #endif // QGPGME_DEBUG_H
