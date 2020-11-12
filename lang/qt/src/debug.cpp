@@ -36,6 +36,7 @@
 #endif
 
 #include "error.h"
+#include "debug.h"
 
 #include <QDebug>
 
