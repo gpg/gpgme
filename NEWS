@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.15.0 (unreleased)
+Noteworthy changes in version 1.15.0 (2020-11-12)
 -------------------------------------------------
 
  * New function gpgme_op_setexpire to make changing the expiration
@@ -6,6 +6,8 @@ Noteworthy changes in version 1.15.0 (unreleased)
 
  * New function gpgme_op_revsig to revoke key signatures (requires
    GnuPG 2.2.24). [#5094]
+
+ * Support exporting secret keys. [#5046]
 
  * cpp: Support for set expire operations in the C++ bindings. [#5003]
 
@@ -42,6 +44,10 @@ Noteworthy changes in version 1.15.0 (unreleased)
  qt: QuickJob::startRevokeSignature         NEW.
  qt: QuickJob::result                   CHANGED: Made params 'auditLogAsHtml'
                                                 and 'auditLogError' optional.
+
+ [c=C35/A24/R0 cpp=C18/A12/R0 qt=C12/A5/R0]
+
+ Release-info: https://dev.gnupg.org/T5131
 
 
 Noteworthy changes in version 1.14.0 (2020-07-16)
