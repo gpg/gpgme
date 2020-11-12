@@ -163,6 +163,14 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
   if (err)
     return err;
 
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx);
+      if (err)
+	return err;
+    }
+
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
 
   return _gpgme_engine_op_export (ctx->engine, pattern, mode, keydata,
@@ -257,6 +265,14 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
   opd = hook;
   if (err)
     return err;
+
+  if (ctx->passphrase_cb)
+    {
+      err = _gpgme_engine_set_command_handler
+	(ctx->engine, _gpgme_passphrase_command_handler, ctx);
+      if (err)
+	return err;
+    }
 
   _gpgme_engine_set_status_handler (ctx->engine, export_status_handler, ctx);
 
