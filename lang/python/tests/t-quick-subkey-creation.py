@@ -70,7 +70,8 @@ with support.EphemeralContext() as ctx:
             continue
 
         res = ctx.create_subkey(
-            key, sign=sign, encrypt=encrypt, authenticate=authenticate)
+            key, sign=sign, encrypt=encrypt, authenticate=authenticate,
+            algorithm="rsa")
         subkey = get_subkey(res.fpr)
         assert sign == subkey.can_sign
         assert encrypt == subkey.can_encrypt
