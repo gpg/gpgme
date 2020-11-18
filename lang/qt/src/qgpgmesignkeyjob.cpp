@@ -83,7 +83,7 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
         skei->setDupeOk(true);
     }
 
-    if (!remark.isNull()) {
+    if (!remark.isEmpty()) {
         ctx->addSignatureNotation("rem@gnupg.org", remark.toUtf8().constData());
     }
 
