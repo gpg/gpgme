@@ -902,7 +902,8 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/versioninfo.rc
                 src/gpgme.pc
                 src/gpgme-glib.pc
-                src/gpgme.h)
+                src/gpgme.h
+                lang/cpp/src/data.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
 AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
 AC_CONFIG_FILES(lang/cpp/tests/Makefile)

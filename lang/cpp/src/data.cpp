@@ -217,17 +217,17 @@ GpgME::Error GpgME::Data::setFileName(const char *name)
     return Error(gpgme_data_set_file_name(d->data, name));
 }
 
-ssize_t GpgME::Data::read(void *buffer, size_t length)
+gpgme_ssize_t GpgME::Data::read(void *buffer, size_t length)
 {
     return gpgme_data_read(d->data, buffer, length);
 }
 
-ssize_t GpgME::Data::write(const void *buffer, size_t length)
+gpgme_ssize_t GpgME::Data::write(const void *buffer, size_t length)
 {
     return gpgme_data_write(d->data, buffer, length);
 }
 
-off_t GpgME::Data::seek(off_t offset, int whence)
+gpgme_off_t GpgME::Data::seek(gpgme_off_t offset, int whence)
 {
     return gpgme_data_seek(d->data, offset, whence);
 }
