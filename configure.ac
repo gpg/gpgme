@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 # (Process this file with autoconf to produce a configure script.)
-AC_PREREQ(2.59)
+AC_PREREQ([2.59])
 min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
@@ -45,7 +45,7 @@ m4_define([mym4_version],      m4_argn(4, mym4_verslist))
 m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
 m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
-AC_INIT([mym4_package],[mym4_version], [https://bugs.gnupg.org])
+AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 
 # LT Version numbers, remember to change them just *before* a release.
 #   (Code changed:			REVISION++)
@@ -105,7 +105,7 @@ AM_SILENT_RULES
 AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
 # Enable GNU extensions on systems that have them.
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 # Taken from mpfr-4.0.1, then modified for LDADD_FOR_TESTS_KLUDGE
 dnl Under Linux, make sure that the old dtags are used if LD_LIBRARY_PATH
@@ -243,7 +243,7 @@ case "${host}" in
 
 	AM_PATH_GLIB_2_0
 	AC_ARG_ENABLE(w32-glib,
-	    AC_HELP_STRING([--enable-w32-glib], [build GPGME Glib for W32]),
+	    AS_HELP_STRING([--enable-w32-glib],[build GPGME Glib for W32]),
 	    		   build_w32_glib=$enableval)
        ;;
     *)
@@ -291,7 +291,7 @@ AM_CONDITIONAL(BUILD_W32_GLIB, test "$build_w32_glib" = yes)
 
 
 AC_ARG_ENABLE([fixed-path],
-              AC_HELP_STRING([--enable-fixed-path=PATH],
+              AS_HELP_STRING([--enable-fixed-path=PATH],
                              [locate binaries only via this PATH]),
               [fixed_search_path="$enableval"],
               [fixed_search_path=""])
@@ -304,7 +304,7 @@ fi
 # Note: You need to declare all possible languages also in
 #       lang/Makefile.am's DIST_SUBDIRS.
 AC_ARG_ENABLE([languages],
-              AC_HELP_STRING([--enable-languages=languages],
+              AS_HELP_STRING([--enable-languages=languages],
                              [enable only specific language bindings]),
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
@@ -494,7 +494,7 @@ AC_SUBST(BUILD_VERSION)
 AC_SUBST(BUILD_FILEVERSION)
 
 AC_ARG_ENABLE([build-timestamp],
-  AC_HELP_STRING([--enable-build-timestamp],
+  AS_HELP_STRING([--enable-build-timestamp],
                  [set an explicit build timestamp for reproducibility.
                   (default is the current time in ISO-8601 format)]),
      [if test "$enableval" = "yes"; then
@@ -513,25 +513,25 @@ AC_DEFINE_UNQUOTED(BUILD_TIMESTAMP, "$BUILD_TIMESTAMP",
 #
 run_gpgconf_test="yes"
 AC_ARG_ENABLE(gpgconf-test,
-  AC_HELP_STRING([--disable-gpgconf-test], [disable GPGCONF regression test]),
+  AS_HELP_STRING([--disable-gpgconf-test],[disable GPGCONF regression test]),
          run_gpgconf_test=$enableval)
 AM_CONDITIONAL(RUN_GPGCONF_TESTS, test "$run_gpgconf_test" = "yes")
 
 run_gpg_test="yes"
 AC_ARG_ENABLE(gpg-test,
-  AC_HELP_STRING([--disable-gpg-test], [disable GPG regression test]),
+  AS_HELP_STRING([--disable-gpg-test],[disable GPG regression test]),
          run_gpg_test=$enableval)
 AM_CONDITIONAL(RUN_GPG_TESTS, test "$run_gpg_test" = "yes")
 
 run_gpgsm_test="yes"
 AC_ARG_ENABLE(gpgsm-test,
-  AC_HELP_STRING([--disable-gpgsm-test], [disable GPGSM regression test]),
+  AS_HELP_STRING([--disable-gpgsm-test],[disable GPGSM regression test]),
          run_gpgsm_test=$enableval)
 AM_CONDITIONAL(RUN_GPGSM_TESTS, test "$run_gpgsm_test" = "yes")
 
 run_g13_test="yes"
 AC_ARG_ENABLE(g13-test,
-  AC_HELP_STRING([--disable-g13-test], [disable G13 regression test]),
+  AS_HELP_STRING([--disable-g13-test],[disable G13 regression test]),
          run_g13_test=$enableval)
 AM_CONDITIONAL(RUN_G13_TESTS, test "$run_g13_test" = "yes")
 
@@ -750,7 +750,7 @@ AC_CHECK_MEMBER(struct cmsghdr.cmsg_len,
 
 use_descriptor_passing=yes
 AC_ARG_ENABLE(fd-passing,
-  AC_HELP_STRING([--disable-fd-passing], [do not use FD passing]),
+  AS_HELP_STRING([--disable-fd-passing],[do not use FD passing]),
   use_descriptor_passing=$enableval)
 
 if test "$supports_descriptor_passing" != "yes"; then
@@ -782,7 +782,7 @@ AM_CONDITIONAL(HAVE_UISERVER, test "$uiserver" != "no")
 # before an exec.  This option allows to switch this optimization off.
 use_linux_getdents=yes
 AC_ARG_ENABLE(linux-getdents,
-              AC_HELP_STRING([--disable-linux-getdents],
+              AS_HELP_STRING([--disable-linux-getdents],
                              [do not use SYS_getdents on Linux]),
               use_linux_getdents=$enableval)
 if test "$use_linux_getdents" = "yes"; then
