@@ -9,12 +9,12 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2018-11-12
+# Last-changed: 2020-11-20
 
 
 AC_DEFUN([_AM_PATH_GPGME_CONFIG],
 [ AC_ARG_WITH(gpgme-prefix,
-            AC_HELP_STRING([--with-gpgme-prefix=PFX],
+            AS_HELP_STRING([--with-gpgme-prefix=PFX],
                            [prefix where GPGME is installed (optional)]),
      gpgme_config_prefix="$withval", gpgme_config_prefix="")
   if test x"${GPGME_CONFIG}" = x ; then
