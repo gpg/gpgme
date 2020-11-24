@@ -88,6 +88,10 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
   op_data_t opd;
   const char *loc;
 
+  err = _gpgme_passphrase_status_handler (priv, code, args);
+  if (err)
+    return err;
+
   err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
   opd = hook;
   if (err)
