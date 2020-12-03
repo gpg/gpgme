@@ -637,7 +637,7 @@ class Context(GpgmeWrapper):
             data.seek(0, os.SEEK_SET)
             pk_result = data.read()
         except GPGMEError as e:
-            pk_result = e
+            raise e
 
         if len(pk_result) > 0:
             result = pk_result
@@ -672,7 +672,7 @@ class Context(GpgmeWrapper):
             data.seek(0, os.SEEK_SET)
             pk_result = data.read()
         except GPGMEError as e:
-            pk_result = e
+            raise e
 
         if len(pk_result) > 0:
             result = pk_result
@@ -713,7 +713,7 @@ class Context(GpgmeWrapper):
             data.seek(0, os.SEEK_SET)
             sk_result = data.read()
         except GPGMEError as e:
-            sk_result = e
+            raise e
 
         if len(sk_result) > 0:
             result = sk_result
