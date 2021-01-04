@@ -85,7 +85,7 @@ public:
        Starts the signing operation. \a signers is the list of keys to
        sign \a plainText with. Empty (null) keys are ignored.
     */
-    virtual QGPGME_DEPRECATED_EXPORT GpgME::Error start(const std::vector<GpgME::Key> &signers,
+    virtual GpgME::Error start(const std::vector<GpgME::Key> &signers,
             const QByteArray &plainText,
             GpgME::SignatureMode mode) = 0;
 

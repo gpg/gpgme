@@ -90,7 +90,7 @@ public:
        not be performed, but full validity assumed for all keys
        without further checks.
     */
-    virtual QGPGME_DEPRECATED_EXPORT GpgME::Error start(const std::vector<GpgME::Key> &recipients,
+    virtual GpgME::Error start(const std::vector<GpgME::Key> &recipients,
             const QByteArray &plainText, bool alwaysTrust = false) = 0;
 
     /*!
