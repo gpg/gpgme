@@ -468,7 +468,9 @@ public:
     }
 
     /*! Defines a canonical sort order for signatures of the same user ID. */
-    bool operator<(const Signature &other);
+    bool operator<(const Signature &other) const;
+
+    GPGMEPP_DEPRECATED bool operator<(const Signature &other);
 
     bool isNull() const
     {

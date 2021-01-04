@@ -867,6 +867,12 @@ UserID::Signature::Signature(const shared_gpgme_key_t &k, gpgme_user_id_t u, gpg
 
 bool UserID::Signature::operator<(const Signature &other)
 {
+    // kept for binary compatibility
+    return static_cast<const UserID::Signature *>(this)->operator<(other);
+}
+
+bool UserID::Signature::operator<(const Signature &other) const
+{
     // based on cmp_signodes() in g10/keylist.c
 
     // both signatures must belong to the same user ID
