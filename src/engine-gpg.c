@@ -3017,6 +3017,12 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
       err = add_arg (gpg, "--with-keygrip");
     }
 
+  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
+      && have_gpg_version (gpg, "2.0.10"))
+    {
+      err = add_arg (gpg, "--with-sig-check");
+    }
+
   if (!err
       && (mode & GPGME_KEYLIST_MODE_SIGS)
       && (mode & GPGME_KEYLIST_MODE_SIG_NOTATIONS))
