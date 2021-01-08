@@ -97,7 +97,7 @@ release:
 	 cd $(abs_top_builddir); \
 	 rm -rf dist; mkdir dist ; cd dist ; \
 	 $(abs_top_srcdir)/configure --enable-maintainer-mode; \
-	 $(MAKE) distcheck TESTFLAGS=--parallel; \
+	 $(MAKE) distcheck; \
 	 echo "/* Build finished at $$(date -uIseconds) */" ;\
          echo "/*" ;\
 	 echo " * Please run the final step interactively:" ;\
