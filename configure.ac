@@ -1,6 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001-2018 g10 Code GmbH
+# Copyright (C) 2001-2021 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -55,18 +55,18 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 #
 LIBGPGME_LT_CURRENT=35
 LIBGPGME_LT_AGE=24
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 
 # If there is an ABI break in gpgmepp or qgpgme also bump the
 # version in IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in
 
 LIBGPGMEPP_LT_CURRENT=18
 LIBGPGMEPP_LT_AGE=12
-LIBGPGMEPP_LT_REVISION=0
+LIBGPGMEPP_LT_REVISION=1
 
 LIBQGPGME_LT_CURRENT=12
 LIBQGPGME_LT_AGE=5
-LIBQGPGME_LT_REVISION=0
+LIBQGPGME_LT_REVISION=1
 ################################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
@@ -824,7 +824,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2020 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2021 g10 Code GmbH\n"
 ])
 
 

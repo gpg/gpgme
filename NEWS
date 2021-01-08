@@ -1,8 +1,20 @@
-Noteworthy changes in version 1.15.1 (unreleased)
+Noteworthy changes in version 1.15.1 (2021-01-08)
 -------------------------------------------------
 
- [c=C35/A24/R0 cpp=C18/A12/R0 qt=C12/A5/R0]
- Release-info: https://dev.gnupg.org/T5131
+ * Fix another bug in the secret key export.  [#5046]
+
+ * Make listing of signatures work if only secret keys are listed.  [#3580]
+
+ * Fix build problem on FreeBSD.  [a6220adf30]
+
+ * qt: Avoid empty "rem@gnupg.org" signature notations.  [#5142]
+
+ * python: Fix key_export functions.  [#5149]
+
+
+ [c=C35/A24/R1 cpp=C18/A12/R1 qt=C12/A5/R1]
+
+ Release-info: https://dev.gnupg.org/T5225
 
 
 Noteworthy changes in version 1.15.0 (2020-11-12)
