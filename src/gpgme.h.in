@@ -406,7 +406,6 @@ gpgme_pinentry_mode_t;
 #define GPGME_EXPORT_MODE_SECRET               16
 #define GPGME_EXPORT_MODE_RAW                  32
 #define GPGME_EXPORT_MODE_PKCS12               64
-#define GPGME_EXPORT_MODE_NOUID               128  /* Experimental(!)*/
 #define GPGME_EXPORT_MODE_SSH                 256
 
 typedef unsigned int gpgme_export_mode_t;
@@ -2462,6 +2461,11 @@ char *gpgme_addrspec_from_uid (const char *uid);
 /*
  * Deprecated types, constants and functions.
  */
+
+/* This is a former experimental only features.  The constant is
+ * provided to not break existing code in the compiler phase.  */
+#define GPGME_EXPORT_MODE_NOUID               128  /* Do not use! */
+
 
 /* The possible stati for gpgme_op_edit.  The use of that function and
  * these status codes are deprecated in favor of gpgme_op_interact. */
