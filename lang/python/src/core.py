@@ -342,7 +342,7 @@ class Context(GpgmeWrapper):
 
         return self.__read__(sink, ciphertext), result, sig_result
 
-    def decrypt(self, ciphertext, sink=None, passphrase=None, verify=True):
+    def decrypt(self, ciphertext, sink=None, passphrase=None, verify=True, filter_signatures=True):
         """Decrypt data
 
         Decrypt the given ciphertext and verify any signatures.  If
@@ -354,6 +354,10 @@ class Context(GpgmeWrapper):
         signatures are required and no MissingSignatures error will be
         raised).
 
+        The filter_signatures argument can be used to force this
+        function to return signatures that are not fully trusted - for
+        example because they were made by unknown keys.
+
         If the ciphertext is symmetrically encrypted using a
         passphrase, that passphrase can be given as parameter, using a
         callback registered at the context, or out-of-band via
@@ -364,6 +368,8 @@ class Context(GpgmeWrapper):
         passphrase      -- for symmetric decryption
         verify          -- check signatures (boolean or iterable of keys,
                            see above) (default True)
+        filter_signatures  -- if this function should filter out signatures
+                           that are not completely OK (default True)
 
         Returns:
         plaintext       -- the decrypted data (or None if sink is given)
@@ -437,8 +443,8 @@ class Context(GpgmeWrapper):
                                               results=results)
 
         if do_sig_verification:
-            # filter out all invalid signatures
-            verify_result.signatures = list(filter(lambda s: s.status == errors.NO_ERROR, verify_result.signatures))
+            if filter_signatures:
+                verify_result.signatures = list(filter(lambda s: s.status == errors.NO_ERROR, verify_result.signatures))
             if required_keys is not None:
                 missing = []
                 for key in required_keys:

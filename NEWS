@@ -7,6 +7,9 @@ Noteworthy changes in version 1.15.2 (unreleased)
 
  * qt: Add support for flags in LDAP server options. [#5217]
 
+ * python: New optional parameter filter_signatures for decrypt.
+   [#5292]
+
  * Interface changes relative to the 1.15.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_ctx_flag                    EXTENDED: New flag 'cert-expire'.
