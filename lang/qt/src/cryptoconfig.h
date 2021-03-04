@@ -373,18 +373,26 @@ public:
 
     /**
      * Convenience method to get hold of a single configuration entry when
-     * its component, group and name are known. This can be used to read
+     * its component and name are known. This can be used to read
      * the value and/or to set a value to it.
      *
      * @return the configuration object for a single configuration entry, 0 if not found.
      * The object is owned by CryptoConfig, don't delete it.
      */
-    CryptoConfigEntry *entry(const QString &componentName, const QString &groupName, const QString &entryName) const
-    {
-        const QGpgME::CryptoConfigComponent *comp = component(componentName);
-        const QGpgME::CryptoConfigGroup *group = comp ? comp->group(groupName) : nullptr;
-        return group ? group->entry(entryName) : nullptr;
-    }
+    CryptoConfigEntry *entry(const QString &componentName, const QString &entryName) const;
+
+    /**
+     * This function is obsolete. It is provided to keep old source code working.
+     * We strongly advise against using it in new code.
+     *
+     * This function overloads @ref entry().
+     *
+     * Use the entry overload that does not require a group name instead. The group name
+     * is not needed to identify a configuration entry because it only provides logical
+     * grouping for user interfaces. Sometimes configuration entries are moved to different
+     * groups to improve usability.
+     */
+    QGPGME_DEPRECATED CryptoConfigEntry *entry(const QString &componentName, const QString &groupName, const QString &entryName) const;
 
     /**
      * Write back changes

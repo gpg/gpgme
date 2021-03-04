@@ -43,3 +43,23 @@ QStringList CryptoConfigEntry::stringValueList() const
     }
     return entry->stringValueList();
 }
+
+QGpgME::CryptoConfigEntry *CryptoConfig::entry(const QString &componentName, const QString &entryName) const
+{
+    const CryptoConfigComponent *comp = component(componentName);
+    const QStringList groupNames = comp->groupList();
+    for (const auto &groupName : groupNames) {
+        const CryptoConfigGroup *group = comp ? comp->group(groupName) : nullptr;
+        if (CryptoConfigEntry *entry = group->entry(entryName)) {
+            return entry;
+        }
+    }
+    return nullptr;
+}
+
+QGpgME::CryptoConfigEntry *CryptoConfig::entry(const QString &componentName, const QString &groupName, const QString &entryName) const
+{
+    const CryptoConfigComponent *comp = component(componentName);
+    const CryptoConfigGroup *group = comp ? comp->group(groupName) : nullptr;
+    return group ? group->entry(entryName) : nullptr;
+}

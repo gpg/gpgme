@@ -2,6 +2,10 @@ Noteworthy changes in version 1.15.2 (unreleased)
 -------------------------------------------------
 
 
+ * Interface changes relative to the 1.15.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ qt: CryptoConfig::entry               CHANGED: Added overload; deprecated old
+
 
 Noteworthy changes in version 1.15.1 (2021-01-08)
 -------------------------------------------------
