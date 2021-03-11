@@ -36,7 +36,7 @@ DISTCHECK_CONFIGURE_FLAGS =
 
 EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in  \
              ChangeLog-2011 m4/ChangeLog-2011     \
-             conf/whatisthis VERSION
+             conf/whatisthis VERSION LICENSES
 
 
 if RUN_GPG_TESTS
