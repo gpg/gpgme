@@ -1905,6 +1905,7 @@ gpgme_error_t gpgme_op_delete_ext (gpgme_ctx_t ctx, const gpgme_key_t key,
 #define GPGME_KEYSIGN_LOCAL     (1 << 7)  /* Create a local signature.  */
 #define GPGME_KEYSIGN_LFSEP     (1 << 8)  /* Indicate LF separated user ids. */
 #define GPGME_KEYSIGN_NOEXPIRE  (1 << 9)  /* Force no expiration.  */
+#define GPGME_KEYSIGN_FORCE     (1 << 10) /* Force creation.  */
 
 
 /* Sign the USERID of KEY using the current set of signers.  */

@@ -82,6 +82,7 @@ show_usage (int ex)
          "  --noexpire       force no expiration\n"
          "  --expire EPOCH   expire the signature at EPOCH\n"
          "  --revoke         revoke the signature(s)\n"
+         "  --force          pass --force-sign-key option\n"
          , stderr);
   exit (ex);
 }
@@ -147,6 +148,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--local"))
         {
           keysign_flags |= GPGME_KEYSIGN_LOCAL;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--force"))
+        {
+          keysign_flags |= GPGME_KEYSIGN_FORCE;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--noexpire"))

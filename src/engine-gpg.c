@@ -3164,6 +3164,13 @@ gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
   else
     err = add_arg (gpg, "--quick-sign-key");
 
+  /* The force flag as only an effect with recent gpg versions; if the
+   * gpg version is too old, the signature will simply not be created.
+   * I think this is better than bailing out.  */
+  if (!err && (flags & GPGME_KEYSIGN_FORCE)
+      && have_gpg_version (gpg, "2.2.28"))
+    err = add_arg (gpg, "--force-sign-key");
+
   if (!err)
     err = append_args_from_signers (gpg, ctx);
 

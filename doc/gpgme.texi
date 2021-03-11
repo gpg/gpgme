@@ -4699,6 +4699,11 @@ separated user IDs.
 Force the creation of a key signature without an expiration date.  This
 overrides @var{expire} and any local configuration of the engine.
 
+@item GPGME_KEYSIGN_FORCE
+Force the creation of a new signature even if one already exists.
+This flag has an effect only if the gpg version is at least 2.2.28 but
+won't return an error with older versions.
+
 @end table
 
 The function returns zero on success, @code{GPG_ERR_NOT_SUPPORTED} if

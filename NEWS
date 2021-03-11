@@ -4,6 +4,7 @@ Noteworthy changes in version 1.15.2 (unreleased)
 
  * Interface changes relative to the 1.15.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_KEYSIGN_FORCE                   NEW.
  qt: CryptoConfig::entry               CHANGED: Added overload; deprecated old
 
 
