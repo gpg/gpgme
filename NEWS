@@ -4,6 +4,10 @@ Noteworthy changes in version 1.15.2 (unreleased)
 
  * Interface changes relative to the 1.15.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: UserID::Signature::isTrustSignature   NEW.
+ cpp: UserID::Signature::trustValue         NEW.
+ cpp: UserID::Signature::trustDepth         NEW.
+ cpp: UserID::Signature::trustScope         NEW.
  gpgme_key_sig_t                       EXTENDED: New field 'trust_depth'.
  gpgme_key_sig_t                       EXTENDED: New field 'trust_value'.
  gpgme_key_sig_t                       EXTENDED: New field 'trust_scope'.

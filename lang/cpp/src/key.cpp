@@ -1083,6 +1083,29 @@ const char *UserID::Signature::policyURL() const
     return nullptr;
 }
 
+bool UserID::Signature::isTrustSignature() const
+{
+    return sig && sig->trust_depth > 0;
+}
+
+TrustSignatureTrust UserID::Signature::trustValue() const
+{
+    if (!sig || !isTrustSignature()) {
+        return TrustSignatureTrust::None;
+    }
+    return sig->trust_value >= 120 ? TrustSignatureTrust::Complete : TrustSignatureTrust::Partial;
+}
+
+unsigned int UserID::Signature::trustDepth() const
+{
+    return sig ? sig->trust_depth : 0;
+}
+
+const char *UserID::Signature::trustScope() const
+{
+    return sig ? sig->trust_scope : nullptr;
+}
+
 std::string UserID::addrSpecFromString(const char *userid)
 {
     if (!userid) {

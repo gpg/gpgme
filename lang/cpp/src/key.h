@@ -47,6 +47,12 @@ class TofuInfo;
 
 typedef std::shared_ptr< std::remove_pointer<gpgme_key_t>::type > shared_gpgme_key_t;
 
+enum class TrustSignatureTrust : char {
+    None = 0,
+    Partial,
+    Complete,
+};
+
 //
 // class Key
 //
@@ -513,6 +519,11 @@ public:
     unsigned int numNotations() const;
     GpgME::Notation notation(unsigned int idx) const;
     std::vector<GpgME::Notation> notations() const;
+
+    bool isTrustSignature() const;
+    TrustSignatureTrust trustValue() const;
+    unsigned int trustDepth() const;
+    const char *trustScope() const;
 
 private:
     shared_gpgme_key_t key;
