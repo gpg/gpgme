@@ -369,6 +369,9 @@ main (int argc, char **argv)
               printf ("     created: %s\n", isotimestr(ks->timestamp));
               printf ("     expires: %s\n", isotimestr(ks->expires));
               printf ("       class: %x\n", ks->sig_class);
+              printf (" trust depth: %u\n", ks->trust_depth);
+              printf (" trust value: %u\n", ks->trust_value);
+              printf (" trust scope: %s\n", nonnull (ks->trust_scope));
             }
         }
 

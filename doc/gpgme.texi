@@ -3706,6 +3706,13 @@ This is true if the key signature is invalid.
 @item unsigned int exportable : 1
 This is true if the key signature is exportable.
 
+@item unsigned int trust_depth : 8
+This is the depth of a trust signature, or 0 if the key signature is not
+a trust signature.
+
+@item unsigned int trust_value : 8
+This is the trust amount of a trust signature.
+
 @item gpgme_pubkey_algo_t pubkey_algo
 This is the public key algorithm used to create the signature.
 
@@ -3720,6 +3727,10 @@ the timestamp is invalid, and 0 if it is not available.
 @item long int expires
 This is the expiration timestamp of the key signature, or 0 if the key
 signature does not expire.
+
+@item char *trust_scope
+This is a regular expression that limits the scope of a trust signature.
+Users must be prepared to see a @code{NULL} value here.
 
 @item gpgme_error_t status
 This is the status of the signature and has the same meaning as the

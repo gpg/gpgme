@@ -627,7 +627,13 @@ struct _gpgme_key_sig
   unsigned int exportable : 1;
 
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 28;
+  unsigned int _unused : 12;
+
+  /* The depth of a trust signature, 0 if no trust signature.  */
+  unsigned int trust_depth : 8;
+
+  /* The trust value of a trust signature, 0 if no trust signature.  */
+  unsigned int trust_value : 8;
 
   /* The public key algorithm used to create the signature.  */
   gpgme_pubkey_algo_t pubkey_algo;
@@ -643,6 +649,9 @@ struct _gpgme_key_sig
 
   /* The expiration timestamp, 0 if the subkey does not expire.  */
   long int expires;
+
+  /* The scope of a trust signature.  Might be NULL.  */
+  char *trust_scope;
 
   /* Same as in gpgme_signature_t.  */
   gpgme_error_t status;

@@ -369,6 +369,7 @@ gpgme_key_unref (gpgme_key_t key)
 	      notation = next_notation;
 	    }
 
+	  free (keysig->trust_scope);
           free (keysig);
 	  keysig = next_keysig;
         }

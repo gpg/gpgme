@@ -967,6 +967,30 @@ keylist_colon_handler (void *priv, char *line)
       if (fields >= 7)
 	keysig->expires = _gpgme_parse_timestamp (field[6], NULL);
 
+      /* Field 8 has the trust depth and the trust value.  */
+      if (fields >= 8 && *field[7])
+        {
+          const char *trust_depth = field[7];
+          char *trust_value = strchr (field[7] + 1, ' ');
+          if (trust_value)
+            *(trust_value++) = '\0';
+          if (trust_value)
+            {
+              int depth = atoi (trust_depth);
+              int value = atoi (trust_value);
+
+              if (depth >= 1 && depth < 256)
+                keysig->trust_depth = depth;
+              if (value >= 1 && value < 256)
+                keysig->trust_value = value;
+            }
+        }
+
+      /* Field 9 has the trust signature scope (a regular expression).  */
+      if (fields >= 9)
+	if (_gpgme_decode_c_string (field[8], &keysig->trust_scope, 0))
+	  return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
+
       /* Field 11 has the signature class (eg, 0x30 means revoked).  */
       if (fields >= 11)
 	if (field[10][0] && field[10][1])
