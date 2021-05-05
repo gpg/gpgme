@@ -84,6 +84,9 @@ public:
     /* from SignKeyJob */
     void setDupeOk(bool value) Q_DECL_OVERRIDE;
 
+    /* from SignKeyJob */
+    void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) Q_DECL_OVERRIDE;
+
 private:
     class Private;
     std::unique_ptr<Private> d;

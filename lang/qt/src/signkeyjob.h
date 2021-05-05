@@ -43,6 +43,7 @@ namespace GpgME
 {
 class Error;
 class Key;
+enum class TrustSignatureTrust : char;
 }
 
 class QString;
@@ -126,6 +127,25 @@ public:
      * Not pure virtual for ABI compatibility.
      **/
     virtual void setRemark(const QString &) {};
+
+    /**
+     * If set, then the created signature will be a trust signature. By default,
+     * no trust signatures are created.
+     *
+     * @a trust is the amount of trust to put into the signed key, either
+     *          @c TrustSignatureTrust::Partial or @c TrustSignatureTrust::Complete.
+     * @a depth is the level of the trust signature. Values between 0 and 255 are
+     *          allowed. Level 0 has the same meaning as an ordinary validity signature.
+     *          Level 1 means that the signed key is asserted to be a valid trusted
+     *          introducer. Level n >= 2 means that the signed key is asserted to be
+     *          trusted to issue level n-1 trust signatures, i.e., that it is a "meta
+     *          introducer".
+     * @a scope is a domain name that limits the scope of trust of the signed key
+     *          to user IDs with email addresses matching the domain (or a subdomain).
+     *
+     * Not pure virtual for ABI compatibility.
+     **/
+    virtual void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) { Q_UNUSED(trust); Q_UNUSED(depth); Q_UNUSED(scope); };
 
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());

@@ -51,6 +51,15 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+struct TrustSignatureProperties {
+    TrustSignatureTrust trust = TrustSignatureTrust::None;
+    unsigned int depth = 0;
+    QString scope;
+};
+}
+
 class QGpgMESignKeyJob::Private
 {
 public:
@@ -64,6 +73,7 @@ public:
     bool m_started = false;
     bool m_dupeOk = false;
     QString m_remark;
+    TrustSignatureProperties m_trustSignature;
 };
 
 QGpgMESignKeyJob::QGpgMESignKeyJob(Context *context)
@@ -77,7 +87,8 @@ QGpgMESignKeyJob::~QGpgMESignKeyJob() {}
 
 static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, const std::vector<unsigned int> &uids,
                                               unsigned int checkLevel, const Key &signer, unsigned int opts,
-                                              bool dupeOk, const QString &remark)
+                                              bool dupeOk, const QString &remark,
+                                              const TrustSignatureProperties &trustSignature)
 {
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
@@ -95,6 +106,12 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
 
     if (!remark.isEmpty()) {
         ctx->addSignatureNotation("rem@gnupg.org", remark.toUtf8().constData());
+    }
+
+    if (opts & GpgSignKeyEditInteractor::Trust) {
+        skei->setTrustSignatureTrust(trustSignature.trust);
+        skei->setTrustSignatureDepth(trustSignature.depth);
+        skei->setTrustSignatureScope(trustSignature.scope.toUtf8().toStdString());
     }
 
     if (!signer.isNull())
@@ -116,8 +133,17 @@ Error QGpgMESignKeyJob::start(const Key &key)
     if (d->m_exportable) {
         opts |= GpgSignKeyEditInteractor::Exportable;
     }
+    switch (d->m_trustSignature.trust) {
+    case TrustSignatureTrust::Partial:
+    case TrustSignatureTrust::Complete:
+        opts |= GpgSignKeyEditInteractor::Trust;
+        break;
+    default:
+        opts &= ~GpgSignKeyEditInteractor::Trust;
+        break;
+    }
     run(std::bind(&sign_key, std::placeholders::_1, key, d->m_userIDsToSign, d->m_checkLevel, d->m_signingKey,
-                  opts, d->m_dupeOk, d->m_remark));
+                  opts, d->m_dupeOk, d->m_remark, d->m_trustSignature));
     d->m_started = true;
     return Error();
 }
@@ -163,4 +189,12 @@ void QGpgMESignKeyJob::setDupeOk(bool value)
     assert(!d->m_started);
     d->m_dupeOk = value;
 }
+
+void QGpgMESignKeyJob::setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope)
+{
+    assert(!d->m_started);
+    assert(depth <= 255);
+    d->m_trustSignature = {trust, depth, scope};
+}
+
 #include "qgpgmesignkeyjob.moc"
