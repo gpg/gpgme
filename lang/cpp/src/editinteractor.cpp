@@ -62,9 +62,10 @@ public:
     ~Private();
 
 private:
-    unsigned int state;
+    unsigned int state = StartState;
     Error error;
-    std::FILE *debug;
+    std::FILE *debug = nullptr;
+    bool debugNeedsClosing = false;
 };
 
 class GpgME::CallbackHelper
@@ -174,10 +175,7 @@ static gpgme_error_t edit_interactor_callback(void *opaque, gpgme_status_code_t 
 const gpgme_edit_cb_t GpgME::edit_interactor_callback = ::edit_interactor_callback;
 
 EditInteractor::Private::Private(EditInteractor *qq)
-    : q(qq),
-      state(StartState),
-      error(),
-      debug(nullptr)
+    : q(qq)
 {
     const char *debug_env = std::getenv("GPGMEPP_INTERACTOR_DEBUG");
     if (!debug_env) {
@@ -189,12 +187,13 @@ EditInteractor::Private::Private(EditInteractor *qq)
         debug = stderr;
     } else if (debug_env) {
         debug = std::fopen(debug_env, "a+");
+        debugNeedsClosing = true;
     }
 }
 
 EditInteractor::Private::~Private()
 {
-    if (debug) {
+    if (debug && debugNeedsClosing) {
         std::fclose(debug);
     }
 }
