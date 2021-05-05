@@ -66,6 +66,11 @@ public:
     unsigned int checkLevel;
     bool dupeOk;
     Key key;
+    struct {
+        TrustSignatureTrust trust;
+        std::string depth;
+        std::string scope;
+    } trustSignature;
 
     const char *command() const
     {
@@ -129,7 +134,8 @@ GpgSignKeyEditInteractor::Private::Private()
     currentId(),
     nextId(),
     checkLevel(0),
-    dupeOk(false)
+    dupeOk(false),
+    trustSignature{TrustSignatureTrust::None, "0", {}}
 {
 }
 
@@ -190,26 +196,31 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(COMMAND, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM2);
     addEntry(COMMAND, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
+    addEntry(COMMAND, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_BOOL, "sign_uid.okay", CONFIRM);
+    addEntry(UIDS_ANSWER_SIGN_ALL, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
-    addEntry(SET_TRUST_VALUE, GET_LINE, "trustsign_prompt.trust_depth", SET_TRUST_DEPTH);
-    addEntry(SET_TRUST_DEPTH, GET_LINE, "trustsign_prompt.trust_regexp", SET_TRUST_REGEXP);
-    addEntry(SET_TRUST_REGEXP, GET_LINE, "sign_uid.okay", CONFIRM);
+    addEntry(UIDS_ANSWER_SIGN_ALL, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
+    addEntry(SET_TRUST_VALUE, GET_LINE, "trustsig_prompt.trust_depth", SET_TRUST_DEPTH);
+    addEntry(SET_TRUST_DEPTH, GET_LINE, "trustsig_prompt.trust_regexp", SET_TRUST_REGEXP);
+    addEntry(SET_TRUST_REGEXP, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(SET_CHECK_LEVEL, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(SET_EXPIRE, GET_BOOL, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM);
     addEntry(DUPE_OK, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(DUPE_OK2, GET_BOOL, "sign_uid.okay", CONFIRM);
+    addEntry(DUPE_OK, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
+    addEntry(DUPE_OK2, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM2, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", COMMAND);
-    addEntry(CONFIRM, GET_LINE, "trustsign_prompt.trust_value", SET_TRUST_VALUE);
+    addEntry(CONFIRM, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(CONFIRM, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "keyedit.prompt", COMMAND);
-    addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "trustsign_prompt.trust_value", SET_TRUST_VALUE);
+    addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "sign_uid.expire", SET_EXPIRE);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_LINE, "sign_uid.class", SET_CHECK_LEVEL);
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_BOOL, "sign_uid.okay", CONFIRM);
@@ -239,12 +250,11 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
     case SET_EXPIRE:
         return answer(true);
     case SET_TRUST_VALUE:
-    // TODO
+        return d->trustSignature.trust == TrustSignatureTrust::Partial ? "1" : "2";
     case SET_TRUST_DEPTH:
-    //TODO
+        return d->trustSignature.depth.c_str();
     case SET_TRUST_REGEXP:
-        //TODO
-        return nullptr;
+        return d->trustSignature.scope.c_str();
     case SET_CHECK_LEVEL:
         return check_level_strings[d->checkLevel];
     case DUPE_OK:
@@ -359,4 +369,24 @@ void GpgSignKeyEditInteractor::setDupeOk(bool value)
 {
     assert(!d->started);
     d->dupeOk = value;
+}
+
+void GpgSignKeyEditInteractor::setTrustSignatureTrust(GpgME::TrustSignatureTrust trust)
+{
+    assert(!d->started);
+    assert(trust != TrustSignatureTrust::None);
+    d->trustSignature.trust = trust;
+}
+
+void GpgSignKeyEditInteractor::setTrustSignatureDepth(unsigned short depth)
+{
+    assert(!d->started);
+    assert(depth <= 255);
+    d->trustSignature.depth = std::to_string(depth);
+}
+
+void GpgSignKeyEditInteractor::setTrustSignatureScope(const std::string &scope)
+{
+    assert(!d->started);
+    d->trustSignature.scope = scope;
 }

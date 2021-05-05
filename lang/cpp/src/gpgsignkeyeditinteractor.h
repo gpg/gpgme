@@ -35,6 +35,7 @@ namespace GpgME
 
 class Key;
 class UserID;
+enum class TrustSignatureTrust : char;
 
 class GPGMEPP_EXPORT GpgSignKeyEditInteractor : public EditInteractor
 {
@@ -57,6 +58,10 @@ public:
      * case the context has to have the flag "extended-edit" set to 1 through
      * Context::setFlag before calling edit.*/
     void setDupeOk(bool value);
+
+    void setTrustSignatureTrust(TrustSignatureTrust trust);
+    void setTrustSignatureDepth(unsigned short depth);
+    void setTrustSignatureScope(const std::string &scope);
 
 private:
     const char *action(Error &err) const override;
