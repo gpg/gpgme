@@ -38,6 +38,8 @@
 
 #include "qgpgmesignkeyjob.h"
 
+#include <QString>
+
 #include "dataprovider.h"
 
 #include "context.h"
@@ -45,20 +47,28 @@
 #include "gpgsignkeyeditinteractor.h"
 
 #include <cassert>
-#include <memory>
 
 using namespace QGpgME;
 using namespace GpgME;
 
+class QGpgMESignKeyJob::Private
+{
+public:
+    Private() = default;
+
+    std::vector<unsigned int> m_userIDsToSign;
+    GpgME::Key m_signingKey;
+    unsigned int m_checkLevel = 0;
+    bool m_exportable = false;
+    bool m_nonRevocable = false;
+    bool m_started = false;
+    bool m_dupeOk = false;
+    QString m_remark;
+};
+
 QGpgMESignKeyJob::QGpgMESignKeyJob(Context *context)
-    : mixin_type(context),
-      m_userIDsToSign(),
-      m_signingKey(),
-      m_checkLevel(0),
-      m_exportable(false),
-      m_nonRevocable(false),
-      m_started(false),
-      m_dupeOk(false)
+    : mixin_type(context)
+    , d{std::unique_ptr<Private>(new Private())}
 {
     lateInitialization();
 }
@@ -100,57 +110,57 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
 Error QGpgMESignKeyJob::start(const Key &key)
 {
     unsigned int opts = 0;
-    if (m_nonRevocable) {
+    if (d->m_nonRevocable) {
         opts |= GpgSignKeyEditInteractor::NonRevocable;
     }
-    if (m_exportable) {
+    if (d->m_exportable) {
         opts |= GpgSignKeyEditInteractor::Exportable;
     }
-    run(std::bind(&sign_key, std::placeholders::_1, key, m_userIDsToSign, m_checkLevel, m_signingKey, opts,
-                  m_dupeOk, m_remark));
-    m_started = true;
+    run(std::bind(&sign_key, std::placeholders::_1, key, d->m_userIDsToSign, d->m_checkLevel, d->m_signingKey,
+                  opts, d->m_dupeOk, d->m_remark));
+    d->m_started = true;
     return Error();
 }
 
 void QGpgMESignKeyJob::setUserIDsToSign(const std::vector<unsigned int> &idsToSign)
 {
-    assert(!m_started);
-    m_userIDsToSign = idsToSign;
+    assert(!d->m_started);
+    d->m_userIDsToSign = idsToSign;
 }
 
 void QGpgMESignKeyJob::setCheckLevel(unsigned int checkLevel)
 {
-    assert(!m_started);
-    m_checkLevel = checkLevel;
+    assert(!d->m_started);
+    d->m_checkLevel = checkLevel;
 }
 
 void QGpgMESignKeyJob::setExportable(bool exportable)
 {
-    assert(!m_started);
-    m_exportable = exportable;
+    assert(!d->m_started);
+    d->m_exportable = exportable;
 }
 
 void QGpgMESignKeyJob::setSigningKey(const Key &key)
 {
-    assert(!m_started);
-    m_signingKey = key;
+    assert(!d->m_started);
+    d->m_signingKey = key;
 }
 
 void QGpgMESignKeyJob::setNonRevocable(bool nonRevocable)
 {
-    assert(!m_started);
-    m_nonRevocable = nonRevocable;
+    assert(!d->m_started);
+    d->m_nonRevocable = nonRevocable;
 }
 
 void QGpgMESignKeyJob::setRemark(const QString &remark)
 {
-    assert(!m_started);
-    m_remark = remark;
+    assert(!d->m_started);
+    d->m_remark = remark;
 }
 
 void QGpgMESignKeyJob::setDupeOk(bool value)
 {
-    assert(!m_started);
-    m_dupeOk = value;
+    assert(!d->m_started);
+    d->m_dupeOk = value;
 }
 #include "qgpgmesignkeyjob.moc"

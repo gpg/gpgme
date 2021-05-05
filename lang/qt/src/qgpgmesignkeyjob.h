@@ -39,13 +39,7 @@
 
 #include "threadedjobmixin.h"
 
-#include <QString>
-
-#ifdef BUILDING_QGPGME
-# include "key.h"
-#else
-#include <gpgme++/key.h>
-#endif
+#include <memory>
 
 namespace QGpgME
 {
@@ -91,14 +85,8 @@ public:
     void setDupeOk(bool value) Q_DECL_OVERRIDE;
 
 private:
-    std::vector<unsigned int> m_userIDsToSign;
-    GpgME::Key m_signingKey;
-    unsigned int m_checkLevel;
-    bool m_exportable;
-    bool m_nonRevocable;
-    bool m_started;
-    bool m_dupeOk;
-    QString m_remark;
+    class Private;
+    std::unique_ptr<Private> d;
 };
 }
 
