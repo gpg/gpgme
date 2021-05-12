@@ -650,9 +650,6 @@ struct _gpgme_key_sig
   /* The expiration timestamp, 0 if the subkey does not expire.  */
   long int expires;
 
-  /* The scope of a trust signature.  Might be NULL.  */
-  char *trust_scope;
-
   /* Same as in gpgme_signature_t.  */
   gpgme_error_t status;
 
@@ -683,6 +680,9 @@ struct _gpgme_key_sig
 
   /* Internal to GPGME, do not use.  */
   gpgme_sig_notation_t _last_notation;
+
+  /* The scope of a trust signature.  Might be NULL.  */
+  char *trust_scope;
 };
 typedef struct _gpgme_key_sig *gpgme_key_sig_t;
 
