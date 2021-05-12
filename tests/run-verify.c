@@ -251,6 +251,7 @@ main (int argc, char **argv)
   int auto_key_retrieve = 0;
   int auto_key_import = 0;
   int repeats = 1;
+  int i;
 
   if (argc)
     { argc--; argv++; }
@@ -321,7 +322,7 @@ main (int argc, char **argv)
 
   init_gpgme (protocol);
 
-  for (int i = 0; i < repeats; i++)
+  for (i = 0; i < repeats; i++)
     {
       gpgme_error_t err;
       gpgme_ctx_t ctx;

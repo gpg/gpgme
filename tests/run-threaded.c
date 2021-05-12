@@ -627,6 +627,7 @@ void
 start_keylistings (void)
 {
   static struct keylist_args_s args[4];
+  int i;
 
   args[0].proto = GPGME_PROTOCOL_OpenPGP;
   args[0].secret = 0;
@@ -640,7 +641,7 @@ start_keylistings (void)
   args[3].proto = GPGME_PROTOCOL_CMS;
   args[3].secret = 1;
 
-  for (int i = 0; i < 4; i++)
+  for (i = 0; i < 4; i++)
     {
       thread_cnt--;
       create_thread (do_keylist, &args[i]);
