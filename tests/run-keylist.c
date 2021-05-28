@@ -272,11 +272,6 @@ main (int argc, char **argv)
       int nsigs;
 
       printf ("keyid   : %s\n", key->subkeys?nonnull (key->subkeys->keyid):"?");
-      printf ("fpr     : %s\n", key->subkeys?nonnull (key->subkeys->fpr):"?");
-      if (key->subkeys && key->subkeys->keygrip)
-        printf ("grip    : %s\n", key->subkeys->keygrip);
-      if (key->subkeys && key->subkeys->curve)
-            printf ("curve   : %s\n", key->subkeys->curve);
       printf ("caps    : %s%s%s%s\n",
               key->can_encrypt? "e":"",
               key->can_sign? "s":"",
@@ -294,9 +289,7 @@ main (int argc, char **argv)
       printf ("upd     : %lu (%u)\n", key->last_update, key->origin);
 
       subkey = key->subkeys;
-      if (subkey)
-        subkey = subkey->next;
-      for (nsub=1; subkey; subkey = subkey->next, nsub++)
+      for (nsub=0; subkey; subkey = subkey->next, nsub++)
         {
           printf ("fpr   %2d: %s\n", nsub, nonnull (subkey->fpr));
           if (subkey->keygrip)
