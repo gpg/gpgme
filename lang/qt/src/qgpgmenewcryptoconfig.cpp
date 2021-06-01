@@ -468,37 +468,56 @@ static QUrl parseURL(int mRealArgType, const QString &str)
 {
     if (mRealArgType == 33) {   // LDAP server
         // The format is HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN
-        QStringList items = str.split(QLatin1Char(':'));
-        if (items.count() == 5) {
-            QStringList::const_iterator it = items.constBegin();
-            QUrl url;
-            url.setScheme(QStringLiteral("ldap"));
-            url.setHost(urlpart_decode(*it++));
+        // or, since gpg 2.2.18, e.g. for dirmngr/ldapserver: [ldap:]hostname:port:username:password:base_dn:flags[:]
+        const bool isLdapUrl = str.startsWith(QLatin1String("ldap://")) || str.startsWith(QLatin1String("ldaps://"));
+        if (!isLdapUrl) {
+            const bool hasOptionalPrefix = str.startsWith(QLatin1String("ldap:"));
+            const QStringList items = hasOptionalPrefix ? str.mid(5).split(QLatin1Char(':')) : str.split(QLatin1Char(':'));
+            if (items.size() >= 5) {
+                QUrl url;
+                url.setScheme(QStringLiteral("ldap"));
+                url.setHost(urlpart_decode(items[0]), QUrl::DecodedMode);
 
-            bool ok;
-            const int port = (*it++).toInt(&ok);
-            if (ok) {
-                url.setPort(port);
-            } else if (!it->isEmpty()) {
-                qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server port, ignoring: \"" << *it << "\"";
-            }
+                const auto portString = items[1];
+                if (!portString.isEmpty()) {
+                    bool ok;
+                    const int port = portString.toInt(&ok);
+                    if (ok) {
+                        url.setPort(port);
+                    } else {
+                        qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server port, ignoring:" << portString;
+                    }
+                }
 
-            const QString userName = urlpart_decode(*it++);
-            if (!userName.isEmpty()) {
-                url.setUserName(userName);
+                const QString userName = urlpart_decode(items[2]);
+                if (!userName.isEmpty()) {
+                    url.setUserName(userName, QUrl::DecodedMode);
+                }
+                const QString passWord = urlpart_decode(items[3]);
+                if (!passWord.isEmpty()) {
+                    url.setPassword(passWord, QUrl::DecodedMode);
+                }
+                url.setQuery(urlpart_decode(items[4]), QUrl::DecodedMode);
+                if (items.size() >= 6) {
+                    const auto flags = urlpart_decode(items[5]);
+                    if (!flags.isEmpty()) {
+                        url.setFragment(flags, QUrl::DecodedMode);
+                    }
+                }
+                return url;
+            } else {
+                qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server:" << str;
             }
-            const QString passWord = urlpart_decode(*it++);
-            if (!passWord.isEmpty()) {
-                url.setPassword(passWord);
-            }
-            url.setQuery(urlpart_decode(*it));
-            return url;
-        } else {
-            qCWarning(QGPGME_LOG) << "parseURL: malformed LDAP server:" << str;
         }
     }
     // other URLs : assume wellformed URL syntax.
     return QUrl(str);
+}
+
+static QString portToString(int port)
+{
+    // -1 is used for default ports => empty string
+    return port != -1 ? QString::number(port) : QString();
 }
 
 // The opposite of parseURL
@@ -506,12 +525,14 @@ static QString splitURL(int mRealArgType, const QUrl &url)
 {
     if (mRealArgType == 33) {   // LDAP server
         // The format is HOSTNAME:PORT:USERNAME:PASSWORD:BASE_DN
+        // or, since gpg 2.2.18, e.g. for dirmngr/ldapserver: [ldap:]hostname:port:username:password:base_dn:flags[:]
         Q_ASSERT(url.scheme() == QLatin1String("ldap"));
         return urlpart_encode(url.host()) + QLatin1Char(':') +
-               (url.port() != -1 ? QString::number(url.port()) : QString()) + QLatin1Char(':') +     // -1 is used for default ports, omit
+               portToString(url.port()) + QLatin1Char(':') +
                urlpart_encode(url.userName()) + QLatin1Char(':') +
                urlpart_encode(url.password()) + QLatin1Char(':') +
-               urlpart_encode(url.query());
+               urlpart_encode(url.query()) + QLatin1Char(':') +
+               urlpart_encode(url.fragment());
     }
     return url.path();
 }
