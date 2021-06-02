@@ -734,7 +734,7 @@ keylist_colon_handler (void *priv, char *line)
         }
 
       /* Field 18 has the compliance flags.  */
-      if (fields >= 17 && *field[17])
+      if (fields >= 18 && *field[17])
         PARSE_COMPLIANCE_FLAGS (field[17], subkey);
 
       if (fields >= 20)
@@ -817,7 +817,7 @@ keylist_colon_handler (void *priv, char *line)
         }
 
       /* Field 18 has the compliance flags.  */
-      if (fields >= 17 && *field[17])
+      if (fields >= 18 && *field[17])
         PARSE_COMPLIANCE_FLAGS (field[17], subkey);
 
       break;
@@ -1015,7 +1015,7 @@ keylist_colon_handler (void *priv, char *line)
 	return 0;
       assert (opd->tmp_keysig == key->_last_uid->_last_keysig);
 
-      if (fields >= 4)
+      if (fields >= 5)
 	{
 	  /* Field 2 has the subpacket type.  */
 	  int type = atoi (field[1]);
