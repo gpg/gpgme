@@ -101,7 +101,7 @@ void QGpgMENewCryptoConfig::reloadConfiguration(bool)
            << "components:\n";
         std::copy(components.begin(), components.end(),
                   std::ostream_iterator<Component>(ss, "\n"));
-        qCDebug(QGPGME_LOG) << ss.str().c_str();
+        qCDebug(QGPGME_CONFIG_LOADING_LOG) << ss.str().c_str();
     }
 #endif
 #if 0
