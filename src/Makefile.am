@@ -101,7 +101,7 @@ endif
 
 # We use a global CFLAGS setting for all libraries
 # versions, because then every object file is only compiled once.
-AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GLIB_CFLAGS@
+AM_CFLAGS = @LIBASSUAN_CFLAGS@ @GPG_ERROR_CFLAGS@ @GLIB_CFLAGS@
 
 gpgme_tool_SOURCES = gpgme-tool.c argparse.c argparse.h
 gpgme_tool_LDADD = libgpgme.la @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@
