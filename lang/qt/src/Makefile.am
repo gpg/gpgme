@@ -233,7 +233,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
               -Wzero-as-null-pointer-constant
 
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
-                       @LIBASSUAN_LIBS@ @GPGME_QT_LIBS@
+                       @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT_LIBS@
 libqgpgme_la_LDFLAGS = -no-undefined -version-info \
     @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 
