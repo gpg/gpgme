@@ -82,7 +82,11 @@ struct gpgme_data
 #ifdef _POSIX_PIPE_BUF
 #define BUFFER_SIZE _POSIX_PIPE_BUF
 #else
+#ifdef HAVE_W32_SYSTEM
+#define BUFFER_SIZE 4096
+#else
 #define BUFFER_SIZE 512
+#endif
 #endif
 #endif
   char pending[BUFFER_SIZE];
