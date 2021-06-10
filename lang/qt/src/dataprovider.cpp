@@ -248,7 +248,17 @@ ssize_t QIODeviceDataProvider::write(const void *buffer, size_t bufSize)
         return -1;
     }
 
-    return mIO->write(static_cast<const char *>(buffer), bufSize);
+    ssize_t ret = mIO->write(static_cast<const char *>(buffer), bufSize);
+    if (mHaveQProcess) {
+        /* XXX: With at least Qt 5.12 we have the problem that the acutal write
+         * would be triggered by an event / slot. So as we have moved the io
+         * device to our thread this is never triggered until the job is finished
+         * calling waitForBytesWritten internally triggers a _q_canWrite which will
+         * actually write. This is what we want as we want to stream and not to
+         * buffer endlessly. */
+        qobject_cast<QProcess *>(mIO.get())->waitForBytesWritten(0);
+    }
+    return ret;
 }
 
 off_t QIODeviceDataProvider::seek(off_t offset, int whence)
