@@ -52,7 +52,7 @@
  */
 struct property_s
 {
-  gpgme_data_t dh;   /* The data objcet or NULL if the slot is not used.  */
+  gpgme_data_t dh;   /* The data object or NULL if the slot is not used.  */
   uint64_t dserial;  /* The serial number of the data object.  */
   struct {
     unsigned int blankout : 1;  /* Void the held data.  */

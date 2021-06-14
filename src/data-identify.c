@@ -416,8 +416,8 @@ basic_detection (char *data, size_t datalen)
         }
       else if (ti.length == 11)
         {
-          if (!memcmp (s, "\x2A\x86\x48\x86\xF7\x0D\x01\x09\x10\x01\x02", 11))
-            return GPGME_DATA_TYPE_CMS_OTHER; /* Auth Data.  */
+          if (!memcmp (s, "\x2A\x86\x48\x86\xF7\x0D\x01\x09\x10\x01\x17", 11))
+            return GPGME_DATA_TYPE_CMS_ENCRYPTED; /* AuthEnveloped Data.  */
         }
     }
 
