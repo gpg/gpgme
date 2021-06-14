@@ -339,6 +339,21 @@ _gpgme_data_release (gpgme_data_t dh)
   remove_from_property_table (dh, dh->propidx);
   if (dh->file_name)
     free (dh->file_name);
+  if (dh->inbound_buffer)
+    {
+      if (dh->sensitive)
+        _gpgme_wipememory (dh->inbound_buffer, dh->io_buffer_size);
+      free (dh->inbound_buffer);
+    }
+  if (dh->outbound_buffer)
+    {
+      if (dh->sensitive)
+        _gpgme_wipememory (dh->outbound_buffer, dh->io_buffer_size);
+      free (dh->outbound_buffer);
+    }
+  if (dh->sensitive)
+    _gpgme_wipememory (dh->outboundspace, BUFFER_SIZE);
+
   free (dh);
 }
 
@@ -431,11 +446,11 @@ gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
   /* For relative movement, we must take into account the actual
      position of the read counter.  */
   if (whence == SEEK_CUR)
-    offset -= dh->pending_len;
+    offset -= dh->outbound_pending;
 
   offset = (*dh->cbs->seek) (dh, offset, whence);
   if (offset >= 0)
-    dh->pending_len = 0;
+    dh->outbound_pending = 0;
 
   return TRACE_SYSRES ((int)offset);
 }
@@ -555,6 +570,28 @@ gpgme_data_set_flag (gpgme_data_t dh, const char *name, const char *value)
     {
       dh->size_hint= value? _gpgme_string_to_off (value) : 0;
     }
+  else if (!strcmp (name, "io-buffer-size"))
+    {
+      gpgme_off_t val;
+
+      /* We may set this only once.  */
+      if (dh->io_buffer_size)
+        return gpg_error (GPG_ERR_CONFLICT);
+
+      val = value? _gpgme_string_to_off (value) : 0;
+      if (val > 1024*1024)
+        val = 1024*1024;  /* Cap at 1MiB */
+      else if (val < BUFFER_SIZE)
+        val = 0;          /* We can use the default buffer.  */
+
+      /* Actual allocation happens as needed but we round it to a
+       * multiple of 1k. */
+      dh->io_buffer_size = ((val + 1023)/1024)*1024;
+    }
+  else if (!strcmp (name, "sensitive"))
+    {
+      dh->sensitive = (value && *value)? !!atoi (value) : 0;
+    }
   else
     return gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -569,14 +606,35 @@ gpgme_error_t
 _gpgme_data_inbound_handler (void *opaque, int fd)
 {
   struct io_cb_data *data = (struct io_cb_data *) opaque;
+  gpg_error_t err;
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
-  char buffer[BUFFER_SIZE];
-  char *bufp = buffer;
+  char bufferspace[BUFFER_SIZE];
+  char *buffer;
+  size_t buffer_size;
+  char *bufp;
   gpgme_ssize_t buflen;
   TRACE_BEG  (DEBUG_CTX, "_gpgme_data_inbound_handler", dh,
 	      "fd=%d", fd);
 
-  buflen = _gpgme_io_read (fd, buffer, BUFFER_SIZE);
+  if (dh->io_buffer_size)
+    {
+      if (!dh->inbound_buffer)
+        {
+          dh->inbound_buffer = malloc (dh->io_buffer_size);
+          if (!dh->inbound_buffer)
+            return TRACE_ERR (gpg_error_from_syserror ());
+        }
+      buffer_size = dh->io_buffer_size;
+      buffer = dh->inbound_buffer;
+    }
+  else
+    {
+      buffer_size = BUFFER_SIZE;
+      buffer = bufferspace;
+    }
+  bufp = buffer;
+
+  buflen = _gpgme_io_read (fd, buffer, buffer_size);
   if (buflen < 0)
     return gpg_error_from_syserror ();
   if (buflen == 0)
@@ -589,12 +647,21 @@ _gpgme_data_inbound_handler (void *opaque, int fd)
     {
       gpgme_ssize_t amt = gpgme_data_write (dh, bufp, buflen);
       if (amt == 0 || (amt < 0 && errno != EINTR))
-	return TRACE_ERR (gpg_error_from_syserror ());
+	{
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       bufp += amt;
       buflen -= amt;
     }
   while (buflen > 0);
-  return TRACE_ERR (0);
+  err = 0;
+
+ leave:
+  if (dh->sensitive && buffer == bufferspace)
+    _gpgme_wipememory (bufferspace, BUFFER_SIZE);
+
+  return TRACE_ERR (err);
 }
 
 
@@ -603,13 +670,34 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
 {
   struct io_cb_data *data = (struct io_cb_data *) opaque;
   gpgme_data_t dh = (gpgme_data_t) data->handler_value;
+  char *buffer;
+  size_t buffer_size;
   gpgme_ssize_t nwritten;
   TRACE_BEG  (DEBUG_CTX, "_gpgme_data_outbound_handler", dh,
 	      "fd=%d", fd);
 
-  if (!dh->pending_len)
+  if (dh->io_buffer_size)
     {
-      gpgme_ssize_t amt = gpgme_data_read (dh, dh->pending, BUFFER_SIZE);
+      if (!dh->outbound_buffer)
+        {
+          dh->outbound_buffer = malloc (dh->io_buffer_size);
+          if (!dh->outbound_buffer)
+            return TRACE_ERR (gpg_error_from_syserror ());
+          dh->outbound_pending = 0;
+        }
+      buffer_size = dh->io_buffer_size;
+      buffer = dh->outbound_buffer;
+    }
+  else
+    {
+      buffer_size = BUFFER_SIZE;
+      buffer = dh->outboundspace;
+    }
+
+
+  if (!dh->outbound_pending)
+    {
+      gpgme_ssize_t amt = gpgme_data_read (dh, buffer, buffer_size);
       if (amt < 0)
 	return TRACE_ERR (gpg_error_from_syserror ());
       if (amt == 0)
@@ -617,10 +705,10 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
 	  _gpgme_io_close (fd);
 	  return TRACE_ERR (0);
 	}
-      dh->pending_len = amt;
+      dh->outbound_pending = amt;
     }
 
-  nwritten = _gpgme_io_write (fd, dh->pending, dh->pending_len);
+  nwritten = _gpgme_io_write (fd, buffer, dh->outbound_pending);
   if (nwritten == -1 && errno == EAGAIN)
     return TRACE_ERR (0);
 
@@ -637,9 +725,9 @@ _gpgme_data_outbound_handler (void *opaque, int fd)
   if (nwritten <= 0)
     return TRACE_ERR (gpg_error_from_syserror ());
 
-  if (nwritten < dh->pending_len)
-    memmove (dh->pending, dh->pending + nwritten, dh->pending_len - nwritten);
-  dh->pending_len -= nwritten;
+  if (nwritten < dh->outbound_pending)
+    memmove (buffer, buffer + nwritten, dh->outbound_pending - nwritten);
+  dh->outbound_pending -= nwritten;
   return TRACE_ERR (0);
 }
 

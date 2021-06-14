@@ -2253,6 +2253,22 @@ the data.  If this is set the OpenPGP engine may use this to decide on
 buffer allocation strategies and to provide a total value for its
 progress information.
 
+@item io-buffer-size
+The value is a decimal number with the length of internal buffers to
+used for internal I/O operations.  The value is capped at 1048576 (1
+MiB).  In certain environments large buffers can yield a performance
+boost for callback bases data object, but the details depend a lot on
+the circumstances and the operating system.  This flag may only be set
+once and must be set before any actual I/O happens ion the data
+objects.
+
+@item sensitive
+If the numeric value is not 0 the data object is considered to contain
+sensitive information like passwords or key material.  If this is set
+the internal buffers are securely overwritten with zeroes by
+gpgme_data_release.
+
+
 @end table
 
 This function returns @code{0} on success.

@@ -89,6 +89,8 @@ show_usage (int ex)
          "  --no-symkey-cache               disable the use of that cache\n"
          "  --ignore-mdc-error              allow decryption of legacy data\n"
          "  --unwrap         remove only the encryption layer\n"
+         "  --large-buffers  use large I/O buffer\n"
+         "  --sensitive      mark data objects as sensitive\n"
          "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
@@ -114,6 +116,8 @@ main (int argc, char **argv)
   int no_symkey_cache = 0;
   int ignore_mdc_error = 0;
   int raw_output = 0;
+  int large_buffers = 0;
+  int sensitive = 0;
   int diagnostics = 0;
 
   if (argc)
@@ -183,6 +187,16 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--diagnostics"))
         {
           diagnostics = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--large-buffers"))
+        {
+          large_buffers = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--sensitive"))
+        {
+          sensitive = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--unwrap"))
@@ -287,6 +301,26 @@ main (int argc, char **argv)
       fprintf (stderr, PGM ": error allocating data object: %s\n",
                gpgme_strerror (err));
       exit (1);
+    }
+  if (large_buffers)
+    {
+      err = gpgme_data_set_flag (out, "io-buffer-size", "1000000");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting io-buffer-size (out): %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
+  if (sensitive)
+    {
+      err = gpgme_data_set_flag (out, "sensitive", "1");
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting sensitive flag (out): %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
     }
 
   err = gpgme_op_decrypt_ext (ctx, flags, in, out);

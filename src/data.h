@@ -33,6 +33,22 @@
 
 #include "gpgme.h"
 
+/* Figure out the standard size for internal data buffers.  */
+#ifdef PIPE_BUF
+# define BUFFER_SIZE PIPE_BUF
+#else
+# ifdef _POSIX_PIPE_BUF
+#  define BUFFER_SIZE _POSIX_PIPE_BUF
+# else
+#  ifdef HAVE_W32_SYSTEM
+#   define BUFFER_SIZE 4096
+#  else
+#   define BUFFER_SIZE 512
+#  endif
+# endif
+#endif
+
+
 
 /* Read up to SIZE bytes into buffer BUFFER from the data object with
    the handle DH.  Return the number of characters read, 0 on EOF and
@@ -76,27 +92,32 @@ struct gpgme_data
   gpgme_data_encoding_t encoding;
   unsigned int propidx;  /* Index into the property table.  */
 
-#ifdef PIPE_BUF
-#define BUFFER_SIZE PIPE_BUF
-#else
-#ifdef _POSIX_PIPE_BUF
-#define BUFFER_SIZE _POSIX_PIPE_BUF
-#else
-#ifdef HAVE_W32_SYSTEM
-#define BUFFER_SIZE 4096
-#else
-#define BUFFER_SIZE 512
-#endif
-#endif
-#endif
-  char pending[BUFFER_SIZE];
-  int pending_len;
-
   /* File name of the data object.  */
   char *file_name;
 
   /* Hint on the to be expected total size of the data.  */
   gpgme_off_t size_hint;
+
+  /* If no 0 the size of an allocated inbound or outpund buffers.  The
+   * value is at least BUFFER_SIZE and capped at 1MiB.  */
+  unsigned int io_buffer_size;
+
+  /* If not NULL a malloced buffer used for inbound data used instead
+   * of the handler's static buffer.  Its size is io_buffer_size.  */
+  char *inbound_buffer;
+
+  /* A default memory space for the outbound handler and the number of
+   * actual pending bytes.  If outbound_buffer is not NULL, this is a
+   * malloced buffer used instead of the outboundspace.  Its malloced
+   * size is io_buffer_size. */
+  char outboundspace[BUFFER_SIZE];
+  unsigned int outbound_pending;
+  char *outbound_buffer;
+
+  /* If set sensitive data is conveyed via the internal buffer.  This
+   * flags overwrites the memory of the buffers with zero before they
+   * are released. */
+  unsigned int sensitive:1;
 
   union
   {

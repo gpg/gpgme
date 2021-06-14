@@ -96,6 +96,9 @@ int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);
 
 /*-- conversion.c --*/
 
+/* Make sure to to erase the memory (PTR,LEN).  */
+void _gpgme_wipememory (void *ptr, size_t len);
+
 /* Concatenate the string S1 with all the following strings up to a
    NULL.  Returns a malloced buffer with the new string or NULL on a
    malloc error or if too many arguments are given.  */

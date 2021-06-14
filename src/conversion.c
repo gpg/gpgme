@@ -43,6 +43,17 @@
 
 
 
+void
+_gpgme_wipememory (void *ptr, size_t len)
+{
+  /* Prevent compiler from optimizing away the call to memset by accessing
+   * memset through volatile pointer. */
+  static void *(*volatile memset_ptr)(void *, int, size_t) = (void *)memset;
+  memset_ptr (ptr, 0, len);
+}
+
+
+
 static char *
 do_strconcat (const char *s1, va_list arg_ptr)
 {
