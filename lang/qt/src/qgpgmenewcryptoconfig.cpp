@@ -496,8 +496,10 @@ static QUrl parseURL(int mRealArgType, const QString &str)
                 const QString passWord = urlpart_decode(items[3]);
                 if (!passWord.isEmpty()) {
                     url.setPassword(passWord, QUrl::DecodedMode);
+                const auto baseDn = urlpart_decode(items[4]);
+                if (!baseDn.isEmpty()) {
+                    url.setQuery(baseDn, QUrl::DecodedMode);
                 }
-                url.setQuery(urlpart_decode(items[4]), QUrl::DecodedMode);
                 if (items.size() >= 6) {
                     const auto flags = urlpart_decode(items[5]);
                     if (!flags.isEmpty()) {
