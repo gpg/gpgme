@@ -46,7 +46,7 @@
 
 #include "global.h"
 #include "error.h"
-
+#include "debug.h"
 
 #include <sstream>
 #include <string>
@@ -698,7 +698,10 @@ void QGpgMENewCryptoConfigEntry::setURLValueList(const QList<QUrl> &urls)
         } else {
             values.push_back(splitURL(type, url).toUtf8().constData());
         }
-    m_option.setNewValue(m_option.createStringListArgument(values));
+    const auto err = m_option.setNewValue(m_option.createStringListArgument(values));
+    if (err) {
+        qCWarning(QGPGME_LOG) << "setURLValueList: failed to set new value:" << err;
+    }
 }
 
 bool QGpgMENewCryptoConfigEntry::isDirty() const
