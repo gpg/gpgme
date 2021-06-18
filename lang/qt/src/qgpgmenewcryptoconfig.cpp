@@ -496,6 +496,7 @@ static QUrl parseURL(int mRealArgType, const QString &str)
                 const QString passWord = urlpart_decode(items[3]);
                 if (!passWord.isEmpty()) {
                     url.setPassword(passWord, QUrl::DecodedMode);
+                }
                 const auto baseDn = urlpart_decode(items[4]);
                 if (!baseDn.isEmpty()) {
                     url.setQuery(baseDn, QUrl::DecodedMode);
