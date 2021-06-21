@@ -1,9 +1,17 @@
 Noteworthy changes in version 1.15.2 (unreleased)
 -------------------------------------------------
 
+ * cpp, qt: Add support for trust signatures. [#5421]
+
+ * qt: Add support for flags in LDAP server options. [#5217]
 
  * Interface changes relative to the 1.15.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: SignKeyJob::setTrustSignature         NEW.
+ cpp: TrustSignatureTrust                   NEW.
+ cpp: GpgSignKeyEditInteractor::setTrustSignatureTrust NEW.
+ cpp: GpgSignKeyEditInteractor::setTrustSignatureDepth NEW.
+ cpp: GpgSignKeyEditInteractor::setTrustSignatureScope NEW.
  cpp: UserID::Signature::isTrustSignature   NEW.
  cpp: UserID::Signature::trustValue         NEW.
  cpp: UserID::Signature::trustDepth         NEW.
