@@ -87,6 +87,8 @@ public:
     /* from SignKeyJob */
     void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) Q_DECL_OVERRIDE;
 
+    void setExpirationDate(const QDate &expiration) override;
+
 private:
     class Private;
     std::unique_ptr<Private> d;

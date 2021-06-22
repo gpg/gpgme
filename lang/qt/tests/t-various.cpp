@@ -46,6 +46,7 @@
 #include "dn.h"
 #include "data.h"
 #include "dataprovider.h"
+#include "signkeyjob.h"
 
 #include "t-support.h"
 
@@ -233,6 +234,131 @@ private Q_SLOTS:
         delete ctx;
     }
 
+    void testSignKeyWithoutExpiration()
+    {
+        Error err;
+
+        if (!loopbackSupported()) {
+            return;
+        }
+
+        auto ctx = Context::create(OpenPGP);
+        QVERIFY(ctx);
+
+        // Get the signing key (alfa@example.net)
+        auto seckey = ctx->key("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, true);
+        QVERIFY(!err);
+        QVERIFY(!seckey.isNull());
+
+        // Get the target key (Bob / Bravo Test)
+        auto target = ctx->key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", err, false);
+        QVERIFY(!err);
+        QVERIFY(!target.isNull());
+        QVERIFY(target.numUserIDs() > 0);
+
+        // Create the job
+        auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
+        QVERIFY(job);
+
+        // Hack in the passphrase provider
+        auto jobCtx = Job::context(job.get());
+        TestPassphraseProvider provider;
+        jobCtx->setPassphraseProvider(&provider);
+        jobCtx->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the job
+        job->setExportable(true);
+        job->setSigningKey(seckey);
+        job->setDupeOk(true);
+
+        connect(job.get(), &SignKeyJob::result,
+                this, [this] (const GpgME::Error &err2, const QString &, const GpgME::Error &) {
+                    Q_EMIT asyncDone();
+                    if (err2) {
+                        if (err2.code() == GPG_ERR_GENERAL) {
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.\n"
+                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(err2.asString())));
+                        } else {
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(err2.asString())));
+                        }
+                    }
+                });
+
+        job->start(target);
+        QSignalSpy spy{this, &TestVarious::asyncDone};
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        // At this point the signature should have been added.
+        target.update();
+        const auto keySignature = target.userID(0).signature(target.userID(0).numSignatures() - 1);
+        QVERIFY(keySignature.neverExpires());
+    }
+
+    void testSignKeyWithExpiration()
+    {
+        Error err;
+
+        if (!loopbackSupported()) {
+            return;
+        }
+
+        auto ctx = Context::create(OpenPGP);
+        QVERIFY(ctx);
+
+        // Get the signing key (alfa@example.net)
+        auto seckey = ctx->key("A0FF4590BB6122EDEF6E3C542D727CC768697734", err, true);
+        QVERIFY(!err);
+        QVERIFY(!seckey.isNull());
+
+        // Get the target key (Bob / Bravo Test)
+        auto target = ctx->key("D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", err, false);
+        QVERIFY(!err);
+        QVERIFY(!target.isNull());
+        QVERIFY(target.numUserIDs() > 0);
+
+        // Create the job
+        auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
+        QVERIFY(job);
+
+        // Hack in the passphrase provider
+        auto jobCtx = Job::context(job.get());
+        TestPassphraseProvider provider;
+        jobCtx->setPassphraseProvider(&provider);
+        jobCtx->setPinentryMode(Context::PinentryLoopback);
+
+        // Setup the job
+        job->setExportable(true);
+        job->setSigningKey(seckey);
+        job->setDupeOk(true);
+        job->setExpirationDate(QDate{2222, 2, 22});
+
+        connect(job.get(), &SignKeyJob::result,
+                this, [this] (const GpgME::Error &err2, const QString &, const GpgME::Error &) {
+                    Q_EMIT asyncDone();
+                    if (err2) {
+                        if (err2.code() == GPG_ERR_GENERAL) {
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.\n"
+                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(err2.asString())));
+                        } else {
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(err2.asString())));
+                        }
+                    }
+                });
+
+        QTest::ignoreMessage(QtWarningMsg, "Expiration of certification has been changed to QDate(\"2106-02-06\")");
+
+        job->start(target);
+        QSignalSpy spy{this, &TestVarious::asyncDone};
+        QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
+
+        // At this point the signature should have been added.
+        target.update();
+        const auto keySignature = target.userID(0).signature(target.userID(0).numSignatures() - 1);
+        QVERIFY(!keySignature.neverExpires());
+        const auto expirationDate = QDateTime::fromSecsSinceEpoch(keySignature.expirationTime()).date();
+        QCOMPARE(expirationDate, QDate(2106, 2, 6));  // expiration date is capped at 2106-02-06
+    }
+
     void testVersion()
     {
         QVERIFY(EngineInfo::Version("2.1.0") < EngineInfo::Version("2.1.1"));
@@ -285,6 +411,12 @@ private Q_SLOTS:
         const QString gpgHome = qgetenv("GNUPGHOME");
         QVERIFY(copyKeyrings(gpgHome, mDir.path()));
         qputenv("GNUPGHOME", mDir.path().toUtf8());
+        QFile conf(mDir.path() + QStringLiteral("/gpg.conf"));
+        QVERIFY(conf.open(QIODevice::WriteOnly));
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() >= "2.2.18") {
+            conf.write("allow-weak-key-signatures");
+        }
+        conf.close();
     }
 
 private:

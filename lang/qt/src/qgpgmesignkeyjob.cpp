@@ -38,6 +38,7 @@
 
 #include "qgpgmesignkeyjob.h"
 
+#include <QDate>
 #include <QString>
 
 #include "dataprovider.h"
@@ -45,6 +46,8 @@
 #include "context.h"
 #include "data.h"
 #include "gpgsignkeyeditinteractor.h"
+
+#include "qgpgme_debug.h"
 
 #include <cassert>
 
@@ -74,6 +77,7 @@ public:
     bool m_dupeOk = false;
     QString m_remark;
     TrustSignatureProperties m_trustSignature;
+    QDate m_expiration;
 };
 
 QGpgMESignKeyJob::QGpgMESignKeyJob(Context *context)
@@ -88,7 +92,8 @@ QGpgMESignKeyJob::~QGpgMESignKeyJob() {}
 static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, const std::vector<unsigned int> &uids,
                                               unsigned int checkLevel, const Key &signer, unsigned int opts,
                                               bool dupeOk, const QString &remark,
-                                              const TrustSignatureProperties &trustSignature)
+                                              const TrustSignatureProperties &trustSignature,
+                                              const QDate &expirationDate)
 {
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
@@ -114,10 +119,32 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
         skei->setTrustSignatureScope(trustSignature.scope.toUtf8().toStdString());
     }
 
-    if (!signer.isNull())
+    if (!signer.isNull()) {
         if (const Error err = ctx->addSigningKey(signer)) {
             return std::make_tuple(err, QString(), Error());
         }
+    }
+
+    if (expirationDate.isValid()) {
+        // on 2106-02-07, the Unix time will reach 0xFFFFFFFF; since gpg uses uint32 internally
+        // for the expiration date clip it at 2106-02-06
+        static const QDate maxAllowedDate{2106, 2, 6};
+        const auto clippedExpirationDate = expirationDate <= maxAllowedDate ? expirationDate : maxAllowedDate;
+        if (clippedExpirationDate != expirationDate) {
+            qCWarning(QGPGME_LOG) << "Expiration of certification has been changed to" << clippedExpirationDate;
+        }
+        // use the "days from now" format to specify the expiration date of the certification;
+        // this format is the most appropriate regardless of the local timezone
+        const auto daysFromNow = QDate::currentDate().daysTo(clippedExpirationDate);
+        if (daysFromNow > 0) {
+            const auto certExpire = std::to_string(daysFromNow) + "d";
+            ctx->setFlag("cert-expire", certExpire.c_str());
+        }
+    } else {
+        // explicitly set "cert-expire" to "0" (no expiration) to override default-cert-expire set in gpg.conf
+        ctx->setFlag("cert-expire", "0");
+    }
+
     const Error err = ctx->edit(key, std::unique_ptr<EditInteractor> (skei), data);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
@@ -143,7 +170,7 @@ Error QGpgMESignKeyJob::start(const Key &key)
         break;
     }
     run(std::bind(&sign_key, std::placeholders::_1, key, d->m_userIDsToSign, d->m_checkLevel, d->m_signingKey,
-                  opts, d->m_dupeOk, d->m_remark, d->m_trustSignature));
+                  opts, d->m_dupeOk, d->m_remark, d->m_trustSignature, d->m_expiration));
     d->m_started = true;
     return Error();
 }
@@ -195,6 +222,12 @@ void QGpgMESignKeyJob::setTrustSignature(GpgME::TrustSignatureTrust trust, unsig
     assert(!d->m_started);
     assert(depth <= 255);
     d->m_trustSignature = {trust, depth, scope};
+}
+
+void QGpgMESignKeyJob::setExpirationDate(const QDate &expiration)
+{
+    assert(!d->m_started);
+    d->m_expiration = expiration;
 }
 
 #include "qgpgmesignkeyjob.moc"

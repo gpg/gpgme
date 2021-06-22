@@ -46,6 +46,7 @@ class Key;
 enum class TrustSignatureTrust : char;
 }
 
+class QDate;
 class QString;
 
 namespace QGpgME
@@ -143,6 +144,16 @@ public:
      * Not pure virtual for ABI compatibility.
      **/
     virtual void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) { Q_UNUSED(trust); Q_UNUSED(depth); Q_UNUSED(scope); };
+
+    /**
+     * Sets the expiration date of the key signature to @a expiration. By default,
+     * key signatures do not expire.
+     *
+     * Note: Expiration dates after 2106-02-06 will be set to 2106-02-06.
+     *
+     * Not pure virtual for ABI compatibility.
+     **/
+    virtual void setExpirationDate(const QDate &expiration) { Q_UNUSED(expiration); }
 
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
