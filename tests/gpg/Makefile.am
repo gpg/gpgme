@@ -39,7 +39,7 @@ c_tests = \
         t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
 	t-import t-edit t-keylist t-keylist-sig t-keylist-secret-sig t-wait	\
-	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed \
+	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed t-edit-sign	\
 	$(tests_unix)
 
 TESTS = initial.test $(c_tests) final.test
@@ -104,6 +104,8 @@ pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 gpg.conf:
 # This is required for t-sig-notations.
 	echo no-force-v3-sigs > ./gpg.conf
+# This is required for t-edit-sign.
+	echo allow-weak-key-signatures >> ./gpg.conf
 
 gpg-agent.conf:
 # This is required for gpg2, which does not support command fd for the

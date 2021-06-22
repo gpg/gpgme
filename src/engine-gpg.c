@@ -1961,6 +1961,27 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */,
 
 
 static gpgme_error_t
+append_args_from_cert_expire (engine_gpg_t gpg, gpgme_ctx_t ctx)
+{
+  gpgme_error_t err;
+
+  if (ctx->cert_expire)
+    {
+      /* Override ask-cert-expire set in the configuration, so that the specified
+       * default is actually used.  */
+      err = add_arg (gpg, "--no-ask-cert-expire");
+      if (!err)
+        err = add_arg (gpg, "--default-cert-expire");
+      if (!err)
+        err = add_arg (gpg, ctx->cert_expire);
+    }
+  else
+    err = 0;
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
 	  gpgme_ctx_t ctx /* FIXME */)
 {
@@ -1975,6 +1996,8 @@ gpg_edit (void *engine, int type, gpgme_key_t key, gpgme_data_t out,
     err = append_args_from_signers (gpg, ctx);
   if (!err)
     err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_CERT);
+  if (!err)
+    err = append_args_from_cert_expire (gpg, ctx);
   if (!err)
     err = add_arg (gpg, type == 0 ? "--edit-key" : "--card-edit");
   if (!err)

@@ -3179,6 +3179,14 @@ rebuilding the trust-db.
 This flag passes the option @option{--expert} to gpg key edit.  This
 can be used to get additional callbacks in @code{gpgme_op_edit}.
 
+@item "cert-expire"
+@since{1.15.2}
+The string given in @var{value} is passed to the GnuPG engine to set
+the expiration time to use for key signature expiration.  Valid values
+are documented in the GnuPG manual and the gpg man page under
+the option @option{--default-cert-expire}.
+
+
 @end table
 
 This function returns @code{0} on success.

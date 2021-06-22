@@ -253,6 +253,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->request_origin);
   free (ctx->auto_key_locate);
   free (ctx->trust_model);
+  free (ctx->cert_expire);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -578,6 +579,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->extended_edit = abool;
     }
+  else if (!strcmp (name, "cert-expire"))
+    {
+      free (ctx->cert_expire);
+      ctx->cert_expire = strdup (value);
+      if (!ctx->cert_expire)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -646,6 +654,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "extended-edit"))
     {
       return ctx->extended_edit ? "1":"";
+    }
+  else if (!strcmp (name, "cert-expire"))
+    {
+      return ctx->cert_expire? ctx->cert_expire : "";
     }
   else
     return NULL;

@@ -174,6 +174,9 @@ struct gpgme_context
   /* The optional trust-model override.  */
   char *trust_model;
 
+  /* The optional expiration date of a certification.  */
+  char *cert_expire;
+
   /* The operation data hooked into the context.  */
   ctx_op_data_t op_data;
 

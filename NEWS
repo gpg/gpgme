@@ -1,12 +1,15 @@
 Noteworthy changes in version 1.15.2 (unreleased)
 -------------------------------------------------
 
+ * New context flag "cert-expire".
+
  * cpp, qt: Add support for trust signatures. [#5421]
 
  * qt: Add support for flags in LDAP server options. [#5217]
 
  * Interface changes relative to the 1.15.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_set_ctx_flag                    EXTENDED: New flag 'cert-expire'.
  cpp: SignKeyJob::setTrustSignature         NEW.
  cpp: TrustSignatureTrust                   NEW.
  cpp: GpgSignKeyEditInteractor::setTrustSignatureTrust NEW.
