@@ -1,11 +1,22 @@
-Noteworthy changes in version 1.15.2 (unreleased)
+Noteworthy changes in version 1.16.0 (2021-06-24)
 -------------------------------------------------
 
- * New context flag "cert-expire".
+ * New context flag "cert-expire".  [#5505]
 
- * cpp, qt: Add support for trust signatures. [#5421]
+ * New data flags "io-buffer-size" and "sensitive".  [#5478]
+
+ * Increase I/O buffer size from 512 to 4k under Windows.
+
+ * cpp,qt: Add support for trust signatures. [#5421]
 
  * qt: Add support for flags in LDAP server options. [#5217]
+
+ * qt: Fix too high memory consumption due to QProcess.  [#5475]
+
+ * qt: Do not set empty base DN as query of keyserver URL.  [#5465]
+
+ * qt: Extend SignKeyJob to create signatures with expiration date.
+   [5506]
 
  * python: New optional parameter filter_signatures for decrypt.
    [#5292]
@@ -27,6 +38,10 @@ Noteworthy changes in version 1.15.2 (unreleased)
  gpgme_key_sig_t                       EXTENDED: New field 'trust_scope'.
  GPGME_KEYSIGN_FORCE                   NEW.
  qt: CryptoConfig::entry               CHANGED: Added overload; deprecated old
+
+ [c=C36/A25/R0 cpp=C19/A13/R0 qt=C13/A6/R0]
+
+ Release-info: https://dev.gnupg.org/T5499
 
 
 Noteworthy changes in version 1.15.1 (2021-01-08)
