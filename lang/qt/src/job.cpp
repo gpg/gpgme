@@ -5,6 +5,8 @@
     Copyright (c) 2004,2005 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2021 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -37,6 +39,7 @@
 #endif
 
 #include "job.h"
+#include "job_p.h"
 
 #include "keylistjob.h"
 #include "listallkeysjob.h"
@@ -71,6 +74,25 @@
 #include <QDebug>
 
 #include <gpg-error.h>
+
+#include <unordered_map>
+
+namespace
+{
+typedef std::unordered_map<const QGpgME::Job*, std::unique_ptr<QGpgME::JobPrivate>> JobPrivateHash;
+Q_GLOBAL_STATIC(JobPrivateHash, d_func)
+}
+
+void QGpgME::setJobPrivate(const Job *job, std::unique_ptr<JobPrivate> d)
+{
+    auto &ref = d_func()->operator[](job);
+    ref = std::move(d);
+}
+
+QGpgME::JobPrivate *QGpgME::getJobPrivate(const Job *job)
+{
+    return d_func()->operator[](job).get();
+}
 
 QGpgME::Job::Job(QObject *parent)
     : QObject(parent)
