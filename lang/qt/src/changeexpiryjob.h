@@ -71,10 +71,21 @@ namespace QGpgME
 class QGPGME_EXPORT ChangeExpiryJob : public Job
 {
     Q_OBJECT
+public:
+    enum Option {
+        Default = 0x00,
+        UpdatePrimaryKey = 0x01,
+        UpdateAllSubkeys = 0x02,
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+
 protected:
     explicit ChangeExpiryJob(QObject *parent);
 public:
     ~ChangeExpiryJob();
+
+    void setOptions(Options options);
+    Options options() const;
 
     /**
        Starts the change-expiry operation. \a key is the key to change
@@ -96,6 +107,8 @@ public:
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ChangeExpiryJob::Options)
 
 }
 

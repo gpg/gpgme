@@ -5,6 +5,8 @@
     Copyright (c) 2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2021 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -55,14 +57,32 @@ QGpgMEChangeExpiryJob::QGpgMEChangeExpiryJob(Context *context)
 QGpgMEChangeExpiryJob::~QGpgMEChangeExpiryJob() {}
 
 static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key &key, const QDateTime &expiry,
-    const std::vector<Subkey> &subkeys)
+    const std::vector<Subkey> &subkeys, ChangeExpiryJob::Options options)
 {
     // convert expiry to "seconds from now"; use 1 second from now if expiry is before the current datetime
     const unsigned long expires = expiry.isValid()
        ? std::max<qint64>(QDateTime::currentDateTime().secsTo(expiry), 1)
        : 0;
 
-    auto err = ctx->setExpire(key, expires, subkeys);
+    // updating the expiration date of the primary key and the subkeys needs to be done in two steps
+    // because --quick-set-expire does not support updating the expiration date of both at the same time
+
+    if (subkeys.empty() || (options & ChangeExpiryJob::UpdatePrimaryKey)) {
+        // update the expiration date of the primary key
+        auto err = ctx->setExpire(key, expires);
+        if (err) {
+            return std::make_tuple(err, QString(), Error());
+        }
+    }
+
+    GpgME::Error err;
+    if (!subkeys.empty()) {
+        // update the expiration date of the specified subkeys
+        err = ctx->setExpire(key, expires, subkeys);
+    } else if (options & ChangeExpiryJob::UpdateAllSubkeys) {
+        // update the expiration date of all subkeys
+        err = ctx->setExpire(key, expires, {}, Context::SetExpireAllSubkeys);
+    }
     return std::make_tuple(err, QString(), Error());
 }
 
@@ -73,13 +93,7 @@ Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry)
 
 Error QGpgMEChangeExpiryJob::start(const Key &key, const QDateTime &expiry, const std::vector<Subkey> &subkeys)
 {
-    run(std::bind(&change_expiry, std::placeholders::_1, key, expiry, subkeys));
-    return Error();
-}
-
-/* For ABI compat not pure virtual. */
-Error ChangeExpiryJob::start(const Key &, const QDateTime &, const std::vector<Subkey> &)
-{
+    run(std::bind(&change_expiry, std::placeholders::_1, key, expiry, subkeys, options()));
     return Error();
 }
 
