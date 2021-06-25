@@ -117,14 +117,14 @@ public:
      *
      * Not pure virtual for ABI compatibility.
      **/
-    virtual void setDupeOk(bool) {};
+    virtual void setDupeOk(bool) {}
 
     /**
      * Add a remark to the signature. This uses rem@gnupg.org as a notation.
      *
      * Not pure virtual for ABI compatibility.
      **/
-    virtual void setRemark(const QString &) {};
+    virtual void setRemark(const QString &) {}
 
     /**
      * If set, then the created signature will be a trust signature. By default,
@@ -143,7 +143,7 @@ public:
      *
      * Not pure virtual for ABI compatibility.
      **/
-    virtual void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) { Q_UNUSED(trust); Q_UNUSED(depth); Q_UNUSED(scope); };
+    virtual void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) { Q_UNUSED(trust); Q_UNUSED(depth); Q_UNUSED(scope); }
 
     /**
      * Sets the expiration date of the key signature to @a expiration. By default,
