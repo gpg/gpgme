@@ -107,31 +107,19 @@ interact_fnc (void *opaque, const char *status, const char *args, int fd)
 }
 
 
-int
-main (int argc, char **argv)
+void
+sign_key (const char *key_fpr, const char *signer_fpr)
 {
   gpgme_ctx_t ctx;
   gpgme_error_t err;
   gpgme_data_t out = NULL;
-  const char *signer_fpr = "A0FF4590BB6122EDEF6E3C542D727CC768697734"; /* Alpha Test */
   gpgme_key_t signing_key = NULL;
-  const char *key_fpr = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"; /* Bravo Test */
   gpgme_key_t key = NULL;
-  gpgme_key_t signed_key = NULL;
-  gpgme_user_id_t signed_uid = NULL;
-  gpgme_key_sig_t key_sig = NULL;
   char *agent_info;
-  int mode;
-
-  (void)argc;
-  (void)argv;
-
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);
   fail_if_err (err);
 
-  /* Sign the key */
   agent_info = getenv("GPG_AGENT_INFO");
   if (!(agent_info && strchr (agent_info, ':')))
     gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
@@ -159,8 +147,23 @@ main (int argc, char **argv)
   gpgme_data_release (out);
   gpgme_key_unref (key);
   gpgme_key_unref (signing_key);
+  gpgme_release (ctx);
+}
 
-  /* Verify the key signature */
+
+void
+verify_key_signature (const char *key_fpr, const char *signer_keyid)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_key_t signed_key = NULL;
+  gpgme_user_id_t signed_uid = NULL;
+  gpgme_key_sig_t key_sig = NULL;
+  int mode;
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
   mode  = gpgme_get_keylist_mode (ctx);
   mode |= GPGME_KEYLIST_MODE_SIGS;
   err = gpgme_set_keylist_mode (ctx, mode);
@@ -168,7 +171,7 @@ main (int argc, char **argv)
   err = gpgme_get_key (ctx, key_fpr, &signed_key, 0);
   fail_if_err (err);
 
-  signed_uid = key->uids;
+  signed_uid = signed_key->uids;
   if (!signed_uid)
     {
       fprintf (stderr, "Signed key has no user IDs\n");
@@ -180,7 +183,7 @@ main (int argc, char **argv)
       exit (1);
     }
   key_sig = signed_uid->signatures->next;
-  if (strcmp ("2D727CC768697734", key_sig->keyid))
+  if (strcmp (signer_keyid, key_sig->keyid))
     {
       fprintf (stderr, "Unexpected key ID in second user ID sig: %s\n",
                 key_sig->keyid);
@@ -196,6 +199,23 @@ main (int argc, char **argv)
 
   gpgme_key_unref (signed_key);
   gpgme_release (ctx);
+}
+
+
+int
+main (int argc, char **argv)
+{
+  const char *signer_fpr = "A0FF4590BB6122EDEF6E3C542D727CC768697734"; /* Alpha Test */
+  const char *signer_keyid = signer_fpr + strlen(signer_fpr) - 16;
+  const char *key_fpr = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"; /* Bravo Test */
+
+  (void)argc;
+  (void)argv;
+
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
+  sign_key (key_fpr, signer_fpr);
+  verify_key_signature (key_fpr, signer_keyid);
 
   return 0;
 }
