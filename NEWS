@@ -1,6 +1,15 @@
 Noteworthy changes in version 1.16.1 (unreleased)
 -------------------------------------------------
 
+ * qt: Extend ChangeExpiryJob to change expiration of primary key
+   and of subkeys at the same time. [#4717]
+
+ * Interface changes relative to the 1.16.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ qt: ChangeExpiryJob::Option                NEW.
+ qt: ChangeExpiryJob::Options               NEW.
+ qt: ChangeExpiryJob::setOptions            NEW.
+ qt: ChangeExpiryJob::options               NEW.
 
 Noteworthy changes in version 1.16.0 (2021-06-24)
 -------------------------------------------------
