@@ -27,11 +27,13 @@ TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME)
 EXTRA_DIST = initial.test
 
 TESTS = initial.test t-keylist t-keylocate t-ownertrust t-tofuinfo \
-        t-encrypt t-verify t-various t-config t-remarks t-trustsignatures
+        t-encrypt t-verify t-various t-config t-remarks t-trustsignatures \
+        t-changeexpiryjob
 
 moc_files = t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
             t-encrypt.moc t-support.hmoc t-wkspublish.moc t-verify.moc \
-            t-various.moc t-config.moc t-remarks.moc t-trustsignatures.moc
+            t-various.moc t-config.moc t-remarks.moc t-trustsignatures.moc \
+            t-changeexpiryjob.moc
 
 AM_LDFLAGS = -no-install
 
@@ -58,6 +60,7 @@ t_various_SOURCES = t-various.cpp $(support_src)
 t_config_SOURCES = t-config.cpp $(support_src)
 t_remarks_SOURCES = t-remarks.cpp $(support_src)
 t_trustsignatures_SOURCES = t-trustsignatures.cpp $(support_src)
+t_changeexpiryjob_SOURCES = t-changeexpiryjob.cpp $(support_src)
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
@@ -66,7 +69,7 @@ BUILT_SOURCES = $(moc_files) pubring-stamp
 
 noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
     run-keyformailboxjob t-wkspublish t-verify t-various t-config t-remarks \
-    t-trustsignatures
+    t-trustsignatures t-changeexpiryjob
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
