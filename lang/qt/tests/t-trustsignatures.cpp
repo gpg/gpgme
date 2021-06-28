@@ -1,4 +1,4 @@
-/* t-remarks.cpp
+/* t-trustsignatures.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2021 g10 Code GmbH

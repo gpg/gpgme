@@ -1,5 +1,5 @@
 /*
-    qgpgmechangeexpiryjob.h
+    qgpgmechangeownertrustjob.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2008 Klarälvdalens Datakonsult AB
