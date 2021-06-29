@@ -43,6 +43,7 @@
 
 #include <QFile>
 #include <QDir>
+#include <QList>
 
 #include "global.h"
 #include "error.h"
@@ -708,6 +709,57 @@ void QGpgMENewCryptoConfigEntry::setURLValueList(const QList<QUrl> &urls)
 bool QGpgMENewCryptoConfigEntry::isDirty() const
 {
     return m_option.dirty();
+}
+
+QVariant QGpgMENewCryptoConfigEntry::defaultValue() const
+{
+    const auto defaultValue = m_option.defaultValue();
+    if (defaultValue.isNull() || defaultValue.numElements() == 0) {
+        return {};
+    }
+    if (defaultValue.numElements() == 1) {
+        switch (m_option.alternateType()) {
+        case NoType:
+            return QVariant{defaultValue.boolValue()};
+        case StringType:
+            return QVariant{QString::fromUtf8(defaultValue.stringValue())};
+        case IntegerType:
+            return QVariant{defaultValue.intValue()};
+        case UnsignedIntegerType:
+            return QVariant{defaultValue.uintValue()};
+        default:
+            // alternateType should always be one of the above four types
+            qCWarning(QGPGME_LOG) << __func__ << ": unsupported alternateType" << m_option.alternateType();
+        }
+    } else {
+        QList<QVariant> list;
+        switch (m_option.alternateType()) {
+        case StringType: {
+            const auto values = defaultValue.stringValues();
+            std::transform(std::begin(values), std::end(values), std::back_inserter(list),
+                          [] (const char *value) { return QVariant{QString::fromUtf8(value)}; });
+            break;
+        }
+        case IntegerType: {
+            const auto values = defaultValue.intValues();
+            std::transform(std::begin(values), std::end(values), std::back_inserter(list),
+                          [] (int value) { return QVariant{value}; });
+            break;
+        }
+        case UnsignedIntegerType: {
+            const auto values = defaultValue.uintValues();
+            std::transform(std::begin(values), std::end(values), std::back_inserter(list),
+                          [] (unsigned int value) { return QVariant{value}; });
+            break;
+        }
+        default:
+            // alternateType should always be one of the above four types
+            qCWarning(QGPGME_LOG) << __func__ << ": unsupported alternateType" << m_option.alternateType() << "for list";
+        }
+        return QVariant{list};
+    }
+
+    return {};
 }
 
 #if 0

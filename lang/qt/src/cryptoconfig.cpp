@@ -44,6 +44,15 @@ QStringList CryptoConfigEntry::stringValueList() const
     return entry->stringValueList();
 }
 
+QVariant CryptoConfigEntry::defaultValue() const
+{
+    const QGpgMENewCryptoConfigEntry *entry = dynamic_cast <const QGpgMENewCryptoConfigEntry*>(this);
+    if (!entry) {
+        return {};
+    }
+    return entry->defaultValue();
+}
+
 QGpgME::CryptoConfigEntry *CryptoConfig::entry(const QString &componentName, const QString &entryName) const
 {
     const CryptoConfigComponent *comp = component(componentName);

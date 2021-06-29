@@ -95,6 +95,7 @@ public:
     bool isDirty() const Q_DECL_OVERRIDE;
 
     QStringList stringValueList() const;
+    QVariant defaultValue() const;
 
 #if 0
     void setDirty(bool b);

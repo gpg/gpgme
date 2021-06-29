@@ -57,27 +57,24 @@ private Q_SLOTS:
             // be unsupported in older versions.
             return;
         }
-        // First set compliance to de-vs
         auto conf = cryptoConfig();
         QVERIFY(conf);
-        auto entry = conf->entry(QStringLiteral("gpg"),
-                QStringLiteral("Configuration"),
-                QStringLiteral("compliance"));
+        auto entry = conf->entry(QStringLiteral("gpg"), QStringLiteral("compliance"));
         QVERIFY(entry);
+        const auto defaultValue = entry->defaultValue().toString();
+        QCOMPARE(defaultValue, QStringLiteral("gnupg"));
+
         entry->setStringValue("de-vs");
         conf->sync(true);
         conf->clear();
-        entry = conf->entry(QStringLiteral("gpg"),
-                QStringLiteral("Configuration"),
-                QStringLiteral("compliance"));
+        entry = conf->entry(QStringLiteral("gpg"), QStringLiteral("compliance"));
         QCOMPARE(entry->stringValue(), QStringLiteral("de-vs"));
+
         entry->resetToDefault();
         conf->sync(true);
         conf->clear();
-        entry = conf->entry(QStringLiteral("gpg"),
-                QStringLiteral("Configuration"),
-                QStringLiteral("compliance"));
-        QCOMPARE(entry->stringValue(), QStringLiteral("gnupg"));
+        entry = conf->entry(QStringLiteral("gpg"), QStringLiteral("compliance"));
+        QCOMPARE(entry->stringValue(), defaultValue);
     }
 
     void initTestCase()

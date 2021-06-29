@@ -44,6 +44,8 @@
 
 #include <vector>
 
+class QVariant;
+
 /* Start reading this file from the bottom up :) */
 
 namespace QGpgME
@@ -258,6 +260,11 @@ public:
      * @return a stringValueList.
      */
     QStringList stringValueList() const;
+
+    /**
+     * Return the default value as a variant (available for all argtypes).
+     */
+    QVariant defaultValue() const;
 };
 
 /**
