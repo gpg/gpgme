@@ -101,11 +101,8 @@ pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 		--import $(srcdir)/secdemo.asc
 	echo x > ./pubring-stamp
 
-gpg.conf:
-# This is required for t-sig-notations.
-	echo no-force-v3-sigs > ./gpg.conf
-# This is required for t-edit-sign.
-	echo allow-weak-key-signatures >> ./gpg.conf
+gpg.conf: $(srcdir)/gpg.conf.in
+	cp $(srcdir)/gpg.conf.in gpg.conf
 
 gpg-agent.conf:
 # This is required for gpg2, which does not support command fd for the

@@ -1,0 +1,5 @@
+# This is required for t-sig-notations.
+no-force-v3-sigs
+
+# This is required for t-edit-sign.
+allow-weak-key-signatures
