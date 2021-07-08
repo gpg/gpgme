@@ -355,7 +355,7 @@ private Q_SLOTS:
         target.update();
         const auto keySignature = target.userID(0).signature(target.userID(0).numSignatures() - 1);
         QVERIFY(!keySignature.neverExpires());
-        const auto expirationDate = QDateTime::fromSecsSinceEpoch(keySignature.expirationTime()).date();
+        const auto expirationDate = QDateTime::fromSecsSinceEpoch(uint_least32_t(keySignature.expirationTime())).date();
         QCOMPARE(expirationDate, QDate(2106, 2, 6));  // expiration date is capped at 2106-02-06
     }
 
