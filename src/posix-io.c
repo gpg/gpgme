@@ -570,7 +570,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
               if (fd_list[i].fd > fd)
                 fd = fd_list[i].fd;
             fd++;
-#if defined(__sun) || defined(__FreeBSD__)
+#if defined(__sun) || defined(__FreeBSD__) || defined(__GLIBC__)
             closefrom (fd);
             max_fds = fd;
 #else /*!__sun */
