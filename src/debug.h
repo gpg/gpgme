@@ -141,7 +141,7 @@ _trace_err (gpg_error_t err, int lvl, const char *func, int line)
   return err;
 }
 
-/* Trace a system call result and return it.  */
+/* Trace a system call result of type int and return it.  */
 #define TRACE_SYSRES(res) \
     _trace_sysres ((res), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
 static inline int
@@ -149,6 +149,38 @@ _trace_sysres (int res, int lvl, const char *func, int line)
 {
   if (res >= 0)
     _gpgme_debug (NULL, lvl, 3, func, NULL, NULL, "result=%d", res);
+  else
+    _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL,
+                  "%s:%d: error: %s (%d)\n",
+                  func, line,  strerror (errno), errno);
+  _gpgme_debug_frame_end ();
+  return res;
+}
+
+/* Trace a system call result of type gpgme_off_t and return it.  */
+#define TRACE_SYSRES_OFF_T(res) \
+    _trace_sysres_off_t ((res), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
+static inline gpgme_off_t
+_trace_sysres_off_t (gpgme_off_t res, int lvl, const char *func, int line)
+{
+  if (res >= 0)
+    _gpgme_debug (NULL, lvl, 3, func, NULL, NULL, "result=%ld", res);
+  else
+    _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL,
+                  "%s:%d: error: %s (%d)\n",
+                  func, line,  strerror (errno), errno);
+  _gpgme_debug_frame_end ();
+  return res;
+}
+
+/* Trace a system call result of type gpgme_ssize_t and return it.  */
+#define TRACE_SYSRES_SSIZE_T(res) \
+    _trace_sysres_ssize_t ((res), _gpgme_trace_level, _gpgme_trace_func, __LINE__)
+static inline gpgme_ssize_t
+_trace_sysres_ssize_t (gpgme_ssize_t res, int lvl, const char *func, int line)
+{
+  if (res >= 0)
+    _gpgme_debug (NULL, lvl, 3, func, NULL, NULL, "result=%zd", res);
   else
     _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL,
                   "%s:%d: error: %s (%d)\n",

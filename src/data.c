@@ -391,7 +391,7 @@ gpgme_data_read (gpgme_data_t dh, void *buffer, size_t size)
       while (res < 0 && errno == EINTR);
     }
 
-  return TRACE_SYSRES ((int)res);
+  return TRACE_SYSRES_SSIZE_T (res);
 }
 
 
@@ -419,7 +419,7 @@ gpgme_data_write (gpgme_data_t dh, const void *buffer, size_t size)
     res = (*dh->cbs->write) (dh, buffer, size);
   while (res < 0 && errno == EINTR);
 
-  return TRACE_SYSRES ((int)res);
+  return TRACE_SYSRES_SSIZE_T (res);
 }
 
 
@@ -452,7 +452,7 @@ gpgme_data_seek (gpgme_data_t dh, gpgme_off_t offset, int whence)
   if (offset >= 0)
     dh->outbound_pending = 0;
 
-  return TRACE_SYSRES ((int)offset);
+  return TRACE_SYSRES_OFF_T (offset);
 }
 
 
