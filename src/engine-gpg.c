@@ -59,7 +59,7 @@ struct arg_and_data_s
   int print_fd;    /* Print the fd number and not the special form of it.  */
   int *arg_locp;   /* Write back the argv idx of this argument when
 		      building command line to this location.  */
-  char arg[1];     /* Used if data above is not used.  */
+  char arg[FLEXIBLE_ARRAY_MEMBER];     /* Used if data above is not used.  */
 };
 
 
@@ -233,7 +233,7 @@ _add_arg (engine_gpg_t gpg, const char *prefix, const char *arg, size_t arglen,
   assert (gpg);
   assert (arg);
 
-  a = malloc (sizeof *a + prefixlen + arglen);
+  a = malloc (offsetof (struct arg_and_data_s, arg) + prefixlen + arglen + 1);
   if (!a)
     return gpg_error_from_syserror ();
 
@@ -307,7 +307,7 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   assert (gpg);
   assert (data);
 
-  a = malloc (sizeof *a - 1);
+  a = malloc (offsetof (struct arg_and_data_s, arg));
   if (!a)
     return gpg_error_from_syserror ();
   a->next = NULL;

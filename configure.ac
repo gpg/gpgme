@@ -543,6 +543,7 @@ AC_CHECK_HEADERS_ONCE([locale.h sys/select.h sys/uio.h argp.h stdint.h
 
 # Type checks.
 AC_C_INLINE
+AC_C_FLEXIBLE_ARRAY_MEMBER
 AC_CHECK_SIZEOF(unsigned int)
 AC_SYS_LARGEFILE
 AC_TYPE_OFF_T
