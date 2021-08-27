@@ -128,6 +128,7 @@ camelcase_headers= \
 private_qgpgme_headers = \
     qgpgme_export.h \
     protocol_p.h \
+    job_p.h \
     qgpgmeadduseridjob.h \
     qgpgmebackend.h \
     qgpgmechangeexpiryjob.h \
