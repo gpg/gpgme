@@ -36,10 +36,10 @@ for F in gpg.conf gpgsm.conf
 do
   if test -f "$GNUPGHOME/$F"
   then
-      mv "$GNUPGHOME/$F" "$GNUPGHOME/$F~"
+      cat "$GNUPGHOME/$F" > "$GNUPGHOME/$F~"
       sed -e "s#^agent-program.*#agent-program ${GPG_AGENT}|--debug-quick-random#" \
           >"$GNUPGHOME/$F" <"$GNUPGHOME/$F~"
-      rm "$GNUPGHOME/$F~"
+      rm -f "$GNUPGHOME/$F~"
   fi
 done
 

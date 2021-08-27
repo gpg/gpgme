@@ -38,8 +38,8 @@ endif
 c_tests = \
         t-encrypt t-encrypt-sym t-encrypt-sign t-sign t-signers		\
 	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
-	t-import t-edit t-keylist t-keylist-sig t-keylist-secret-sig t-wait	\
-	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed t-edit-sign	\
+	t-import t-edit t-keylist t-keylist-sig t-keylist-secret-sig t-wait \
+	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed t-edit-sign \
 	$(tests_unix)
 
 TESTS = initial.test $(c_tests) final.test
