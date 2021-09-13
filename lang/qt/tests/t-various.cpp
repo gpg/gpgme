@@ -230,7 +230,7 @@ private Q_SLOTS:
         std::vector<Subkey> primaryKey;
         primaryKey.push_back(key.subkey(0));
         const auto err = ctx->setExpire(key, 3000, primaryKey);
-        QCOMPARE(err.code(), GPG_ERR_NOT_FOUND);
+        QCOMPARE(err.code(), static_cast<int>(GPG_ERR_NOT_FOUND));
         delete ctx;
     }
 

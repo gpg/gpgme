@@ -151,7 +151,7 @@ private Q_SLOTS:
         delete job;
         QVERIFY(!result.error());
 
-        QCOMPARE(secKeys.size(), 2u);
+        QCOMPARE(secKeys.size(), static_cast<decltype(secKeys.size())>(2));
         std::vector<std::string> secKeyFingerprints = std::accumulate(secKeys.begin(), secKeys.end(), std::vector<std::string>(), accumulateFingerprints);
         QCOMPARE(secKeyFingerprints, std::vector<std::string>({
                 "23FD347A419429BACCD5E72D6BC4778054ACD246",
@@ -162,7 +162,7 @@ private Q_SLOTS:
             QVERIFY(secKeys[0].subkeys()[0].keyGrip());
         }
 
-        QCOMPARE(pubKeys.size(), 26u);
+        QCOMPARE(pubKeys.size(), static_cast<decltype(pubKeys.size())>(26));
         std::vector<std::string> pubKeyFingerprints = std::accumulate(pubKeys.begin(), pubKeys.end(), std::vector<std::string>(), accumulateFingerprints);
         QCOMPARE(pubKeyFingerprints, std::vector<std::string>({
                 "045B2334ADD69FC221076841A5E67F7FA3AE3EA1",
