@@ -841,16 +841,17 @@ _gpgme_access (const char *path, int mode)
 
 
 /* Like CreateProcessA but mapping the arguments to wchar API */
-int _gpgme_create_process_utf8 (const char *application_name_utf8,
-                                char *command_line_utf8,
-                                LPSECURITY_ATTRIBUTES lpProcessAttributes,
-                                LPSECURITY_ATTRIBUTES lpThreadAttributes,
-                                BOOL bInheritHandles,
-                                DWORD dwCreationFlags,
-                                void *lpEnvironment,
-                                char *working_directory_utf8,
-                                LPSTARTUPINFOA si,
-                                LPPROCESS_INFORMATION lpProcessInformation)
+int
+_gpgme_create_process_utf8 (const char *application_name_utf8,
+                            char *command_line_utf8,
+                            LPSECURITY_ATTRIBUTES lpProcessAttributes,
+                            LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                            BOOL bInheritHandles,
+                            DWORD dwCreationFlags,
+                            void *lpEnvironment,
+                            char *working_directory_utf8,
+                            LPSTARTUPINFOA si,
+                            LPPROCESS_INFORMATION lpProcessInformation)
 {
   BOOL ret;
   wchar_t *application_name = utf8_to_wchar0 (application_name_utf8);

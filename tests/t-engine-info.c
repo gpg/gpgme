@@ -118,6 +118,7 @@ main (int argc, char **argv )
                           "libdir",
                           "datadir",
                           "localedir",
+                          "socketdir",
                           "agent-socket",
                           "agent-ssh-socket",
                           "dirmngr-socket",

@@ -44,6 +44,7 @@ enum
     WANT_LIBDIR,
     WANT_DATADIR,
     WANT_LOCALEDIR,
+    WANT_SOCKETDIR,
     WANT_AGENT_SOCKET,
     WANT_AGENT_SSH_SOCKET,
     WANT_DIRMNGR_SOCKET,
@@ -67,6 +68,7 @@ static struct {
   char *libdir;
   char *datadir;
   char *localedir;
+  char *socketdir;
   char *agent_socket;
   char *agent_ssh_socket;
   char *dirmngr_socket;
@@ -152,6 +154,8 @@ parse_output (char *line, int components)
         dirinfo.datadir = strdup (value);
       else if (!strcmp (line, "localedir") && !dirinfo.localedir)
         dirinfo.localedir = strdup (value);
+      else if (!strcmp (line, "socketdir") && !dirinfo.socketdir)
+        dirinfo.socketdir = strdup (value);
       else if (!strcmp (line, "agent-socket") && !dirinfo.agent_socket)
         {
           const char name[] = "S.uiserver";
@@ -310,6 +314,10 @@ get_gpgconf_item (int what)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo: homedir='%s'\n",
                       dirinfo.homedir);
+      if (dirinfo.socketdir)
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
+                      "gpgme-dinfo: sockdir='%s'\n",
+                      dirinfo.socketdir);
       if (dirinfo.agent_socket)
         _gpgme_debug (NULL,DEBUG_INIT, -1, NULL, NULL, NULL,
                       "gpgme-dinfo:   agent='%s'\n",
@@ -336,6 +344,7 @@ get_gpgconf_item (int what)
     case WANT_LIBDIR:     result = dirinfo.libdir; break;
     case WANT_DATADIR:    result = dirinfo.datadir; break;
     case WANT_LOCALEDIR:  result = dirinfo.localedir; break;
+    case WANT_SOCKETDIR:  result = dirinfo.socketdir; break;
     case WANT_AGENT_SOCKET: result = dirinfo.agent_socket; break;
     case WANT_AGENT_SSH_SOCKET: result = dirinfo.agent_ssh_socket; break;
     case WANT_DIRMNGR_SOCKET: result = dirinfo.dirmngr_socket; break;
@@ -476,6 +485,8 @@ gpgme_get_dirinfo (const char *what)
     return get_gpgconf_item (WANT_DATADIR);
   else if (!strcmp (what, "localedir"))
     return get_gpgconf_item (WANT_LOCALEDIR);
+  else if (!strcmp (what, "socketdir"))
+    return get_gpgconf_item (WANT_SOCKETDIR);
   else
     return NULL;
 }
