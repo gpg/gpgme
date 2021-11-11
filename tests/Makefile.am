@@ -37,8 +37,9 @@ noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
 		  run-verify run-encrypt run-identify run-decrypt run-genkey \
 		  run-keysign run-tofu run-swdb run-threaded
 
-run_threaded_LDADD = ../src/libgpgme.la -lpthread @GPG_ERROR_LIBS@ \
-		     @LDADD_FOR_TESTS_KLUDGE@
+run_threaded_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_MT_CFLAGS@
+run_threaded_LDADD = ../src/libgpgme.la \
+		     @GPG_ERROR_MT_LIBS@ @LDADD_FOR_TESTS_KLUDGE@
 
 if RUN_GPG_TESTS
 gpgtests = gpg json
