@@ -7,8 +7,8 @@ api_version=@GPGME_CONFIG_API_VERSION@
 
 Name: gpgme
 Description: GnuPG Made Easy to access GnuPG
-Requires: gpg-error, libassuan
+Requires.private: gpg-error, libassuan
 Version: @PACKAGE_VERSION@
-Cflags: @GPGME_CONFIG_CFLAGS@
-Libs: @GPGME_CONFIG_LIBS@
+Cflags: -I${includedir} @GPGME_CONFIG_CFLAGS@
+Libs: -L${libdir} @GPGME_CONFIG_LIBS@
 URL: https://www.gnupg.org/software/gpgme/index.html
