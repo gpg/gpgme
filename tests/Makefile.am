@@ -28,7 +28,13 @@ TESTS = t-version t-data t-engine-info
 EXTRA_DIST = start-stop-agent t-data-1.txt t-data-2.txt ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
+
+if HAVE_W32_SYSTEM
+AM_LDFLAGS = -no-fast-install
+else
 AM_LDFLAGS = -no-install
+endif
+
 LDADD = ../src/libgpgme.la @GPG_ERROR_LIBS@ @LDADD_FOR_TESTS_KLUDGE@
 
 noinst_HEADERS = run-support.h
