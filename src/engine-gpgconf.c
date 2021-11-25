@@ -445,8 +445,10 @@ gpgconf_parse_option (gpgme_conf_opt_t opt,
             case GPGME_CONF_PUB_KEY:
             case GPGME_CONF_SEC_KEY:
             case GPGME_CONF_ALIAS_LIST:
-	      /* Skip quote character.  */
-	      line++;
+	      /* Skip quote character.  It is required by specs but
+               * technically not always needed.  */
+              if (*line == '\"' && line[1])
+                line++;
 
 	      err = _gpgme_decode_percent_string (line, &arg->value.string,
 						  0, 0);
