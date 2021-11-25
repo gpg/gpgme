@@ -38,8 +38,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <pthread.h>
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#ifdef HAVE_POLL_H
+# include <poll.h>
+#else
+# ifdef HAVE_SYS_SELECT_H
+#  include <sys/select.h>
+# else
+#  ifdef HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  endif
+# endif
 #endif
 
 #include <gpgme.h>
@@ -116,6 +124,60 @@ io_event (void *data, gpgme_event_io_t type, void *type_data)
 }
 
 
+#ifdef HAVE_POLL_H
+static int
+do_select (void)
+{
+  struct pollfd poll_fds[FDLIST_MAX];
+  nfds_t poll_nfds;
+  int i, n;
+  int any = 0;
+
+  pthread_mutex_lock (&lock);
+  poll_nfds = 0;
+  for (i = 0; i < FDLIST_MAX; i++)
+    if (fdlist[i].fd != -1)
+      {
+        poll_fds[poll_nfds].fd = fdlist[i].fd;
+        poll_fds[poll_nfds].events = 0;
+        poll_fds[poll_nfds].revents = 0;
+        if (fdlist[i].dir)
+          poll_fds[poll_nfds].events |= POLLIN;
+        else
+          poll_fds[poll_nfds].events |= POLLOUT;
+        poll_nfds++;
+      }
+  pthread_mutex_unlock (&lock);
+
+  do
+    {
+      n = poll (poll_fds, poll_nfds, 1000);
+    }
+  while (n < 0 && (errno == EINTR || errno == EAGAIN));
+
+  if (n < 0)
+    return n;	/* Error or timeout.  */
+
+  pthread_mutex_lock (&lock);
+  poll_nfds = 0;
+  for (i = 0; i < FDLIST_MAX && n; i++)
+    {
+      if (fdlist[i].fd != -1)
+	{
+	  if ((poll_fds[poll_nfds++].revents
+               & (fdlist[i].dir ? (POLLIN|POLLHUP) : POLLOUT)))
+	    {
+	      assert (n);
+	      n--;
+	      any = 1;
+	      (*fdlist[i].fnc) (fdlist[i].fnc_data, fdlist[i].fd);
+	    }
+	}
+    }
+  pthread_mutex_unlock (&lock);
+  return any;
+}
+#else
 static int
 do_select (void)
 {
@@ -162,6 +224,7 @@ do_select (void)
   pthread_mutex_unlock (&lock);
   return any;
 }
+#endif
 
 static int
 my_wait (void)

@@ -538,7 +538,7 @@ AM_CONDITIONAL(RUN_G13_TESTS, test "$run_g13_test" = "yes")
 
 # Checks for header files.
 AC_CHECK_HEADERS_ONCE([locale.h sys/select.h sys/uio.h argp.h stdint.h
-                       unistd.h sys/time.h sys/types.h sys/stat.h])
+                       unistd.h poll.h sys/time.h sys/types.h sys/stat.h])
 
 
 # Type checks.

@@ -26,11 +26,15 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>
+#ifdef HAVE_POLL_H
+# include <poll.h>
 #else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
+# ifdef HAVE_SYS_SELECT_H
+#  include <sys/select.h>
+# else
+#  ifdef HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  endif
 # endif
 #endif
 #ifdef HAVE_SYS_TYPES_H
@@ -89,6 +93,7 @@ ath_write (int fd, const void *buf, size_t nbytes)
 }
 
 
+#if !defined(HAVE_POLL_H)
 gpgme_ssize_t
 ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
 	    struct timeval *timeout)
@@ -99,7 +104,7 @@ ath_select (int nfd, fd_set *rset, fd_set *wset, fd_set *eset,
   return select (nfd, rset, wset, eset, timeout);
 #endif
 }
-
+#endif
 
 gpgme_ssize_t
 ath_waitpid (pid_t pid, int *status, int options)
