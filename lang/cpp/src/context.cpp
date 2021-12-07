@@ -462,6 +462,30 @@ Error Context::setLocale(int cat, const char *val)
     return Error(d->lasterr = gpgme_set_locale(d->ctx, cat, val));
 }
 
+static GpgME::EngineInfo get_engine_info(gpgme_engine_info_t engineInfos, gpgme_protocol_t protocol)
+{
+    if (!engineInfos) {
+        return EngineInfo{};
+    }
+
+    for (gpgme_engine_info_t i = engineInfos ; i ; i = i->next) {
+        if (i->protocol == protocol) {
+            return EngineInfo{i};
+        }
+    }
+
+    return EngineInfo{};
+}
+
+static GpgME::EngineInfo get_static_engine_info(gpgme_protocol_t protocol)
+{
+    gpgme_engine_info_t ei = nullptr;
+    if (gpgme_get_engine_info(&ei)) {
+        return EngineInfo{};
+    }
+    return get_engine_info(ei, protocol);
+}
+
 EngineInfo Context::engineInfo() const
 {
     return EngineInfo(gpgme_ctx_get_engine_info(d->ctx));
@@ -1794,20 +1818,7 @@ GpgME::Error GpgME::setDefaultLocale(int cat, const char *val)
 
 GpgME::EngineInfo GpgME::engineInfo(GpgME::Protocol proto)
 {
-    gpgme_engine_info_t ei = nullptr;
-    if (gpgme_get_engine_info(&ei)) {
-        return EngineInfo();
-    }
-
-    const gpgme_protocol_t p = proto == CMS ? GPGME_PROTOCOL_CMS : GPGME_PROTOCOL_OpenPGP ;
-
-    for (gpgme_engine_info_t i = ei ; i ; i = i->next) {
-        if (i->protocol == p) {
-            return EngineInfo(i);
-        }
-    }
-
-    return EngineInfo();
+    return get_static_engine_info(proto == CMS ? GPGME_PROTOCOL_CMS : GPGME_PROTOCOL_OpenPGP);
 }
 
 const char *GpgME::dirInfo(const char *what)
@@ -1845,20 +1856,7 @@ static gpgme_protocol_t engine2protocol(const GpgME::Engine engine)
 
 GpgME::EngineInfo GpgME::engineInfo(GpgME::Engine engine)
 {
-    gpgme_engine_info_t ei = nullptr;
-    if (gpgme_get_engine_info(&ei)) {
-        return EngineInfo();
-    }
-
-    const gpgme_protocol_t p = engine2protocol(engine);
-
-    for (gpgme_engine_info_t i = ei ; i ; i = i->next) {
-        if (i->protocol == p) {
-            return EngineInfo(i);
-        }
-    }
-
-    return EngineInfo();
+    return get_static_engine_info(engine2protocol(engine));
 }
 
 GpgME::Error GpgME::checkEngine(GpgME::Engine engine)
