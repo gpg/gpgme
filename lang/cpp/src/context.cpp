@@ -488,7 +488,7 @@ static GpgME::EngineInfo get_static_engine_info(gpgme_protocol_t protocol)
 
 EngineInfo Context::engineInfo() const
 {
-    return EngineInfo(gpgme_ctx_get_engine_info(d->ctx));
+    return get_engine_info(gpgme_ctx_get_engine_info(d->ctx), gpgme_get_protocol(d->ctx));
 }
 
 Error Context::setEngineFileName(const char *filename)
