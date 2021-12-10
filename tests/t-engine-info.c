@@ -127,6 +127,11 @@ main (int argc, char **argv )
                           "gpg-name",
                           "gpgsm-name",
                           "g13-name",
+                          "keyboxd-name",
+                          "agent-name",
+                          "scdaemon-name",
+                          "dirmngr-name",
+                          "pinentry-name",
                           "gpg-wks-client-name",
                           NULL };
     const char *s;
