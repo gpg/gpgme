@@ -91,7 +91,8 @@ GPGMEPP_EXPORT EngineInfo engineInfo(Engine engine);
 homedir, sysconfdir, bindir, libexecdir, libdir,
 datadir, localedir, agent-socket, agent-ssh-socket,
 dirmngr-socket, uiserver-socket, gpgconf-name, gpg-name,
-gpgsm-name, g13-name, socketdir.
+gpgsm-name, g13-name, keyboxd-name, agent-name, scdaemon-name,
+dirmngr-name, pinentry-name, socketdir.
 
 This may be extended in the future.
 */
