@@ -32,5 +32,14 @@ AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
 run_getkey_SOURCES = run-getkey.cpp
 run_keylist_SOURCES = run-keylist.cpp
 run_verify_SOURCES = run-verify.cpp
+if !HAVE_W32_SYSTEM
+run_wkdlookup_SOURCES = run-wkdlookup.cpp
+endif
 
-noinst_PROGRAMS = run-getkey run-keylist run-verify
+if HAVE_W32_SYSTEM
+programs_unix =
+else
+programs_unix = run-wkdlookup
+endif
+
+noinst_PROGRAMS = run-getkey run-keylist run-verify $(programs_unix)
