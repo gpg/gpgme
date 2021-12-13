@@ -214,6 +214,7 @@ main (int argc, char *argv[])
   gpgme_error_t err;
   gpgme_data_t in;
   gpgme_import_result_t result;
+  gpgme_key_t key;
   char *pubkey_1_asc = make_filename ("pubkey-1.asc");
   char *seckey_1_asc = make_filename ("seckey-1.asc");
 
@@ -223,6 +224,9 @@ main (int argc, char *argv[])
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
   err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  err = gpgme_set_ctx_flag (ctx, "key-origin", "wkd,https://openpgpkey.gnupg.org");
   fail_if_err (err);
 
   err = gpgme_data_new_from_file (&in, pubkey_1_asc, 1);
@@ -246,5 +250,24 @@ main (int argc, char *argv[])
   gpgme_data_release (in);
 
   gpgme_release (ctx);
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  err = gpgme_get_key (ctx, "0xADAB7FCC1F4DE2616ECFA402AF82244F9CD9FD55", &key, 0);
+  fail_if_err (err);
+
+  if (!key)
+    {
+      fprintf (stderr, "Imported key not found\n");
+      exit (1);
+    }
+  if (key->origin != GPGME_KEYORG_WKD)
+    {
+      fprintf (stderr, "Key has unexpected origin: %d\n", key->origin);
+      exit (1);
+    }
+
+
   return 0;
 }

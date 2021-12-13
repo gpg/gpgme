@@ -141,7 +141,8 @@ gpgme_error_t _gpgme_engine_op_tofu_policy (engine_t engine,
                                             gpgme_tofu_policy_t policy);
 gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 				       gpgme_data_t keydata,
-                                       gpgme_key_t *keyarray);
+                                       gpgme_key_t *keyarray,
+                                       const char *key_origin);
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,
 					int secret_only,

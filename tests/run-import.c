@@ -46,6 +46,7 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --key-origin     use the specified key origin\n"
          "  --url            import from given URLs\n"
          "  -0               URLs are delimited by a nul\n"
          , stderr);
@@ -63,6 +64,7 @@ main (int argc, char **argv)
   gpgme_import_result_t impres;
   gpgme_data_t data;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
+  char *key_origin = NULL;
 
   if (argc)
     { argc--; argv++; }
@@ -101,6 +103,14 @@ main (int argc, char **argv)
           protocol = GPGME_PROTOCOL_CMS;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--key-origin"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          key_origin = strdup (*argv);
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -114,6 +124,12 @@ main (int argc, char **argv)
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
+
+  if (key_origin)
+    {
+      err = gpgme_set_ctx_flag (ctx, "key-origin", key_origin);
+      fail_if_err (err);
+    }
 
   for (; argc; argc--, argv++)
     {

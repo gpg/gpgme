@@ -2766,7 +2766,8 @@ string_from_data (gpgme_data_t data, int delim,
 
 
 static gpgme_error_t
-gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
+gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
+            const char *key_origin)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -2830,6 +2831,12 @@ gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
   else
     {
       err = add_arg (gpg, "--import");
+      if (!err && key_origin)
+        {
+          err = add_arg (gpg, "--key-origin");
+          if (!err)
+            err = add_arg (gpg, key_origin);
+        }
       if (!err)
         err = add_arg (gpg, "--");
       if (!err)

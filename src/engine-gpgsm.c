@@ -1696,12 +1696,14 @@ gpgsm_genkey (void *engine,
 
 
 static gpgme_error_t
-gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray)
+gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray, const char *key_origin)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
   gpgme_data_encoding_t dataenc;
   int idx;
+
+  (void)key_origin;
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);

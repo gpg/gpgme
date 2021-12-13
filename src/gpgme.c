@@ -254,6 +254,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->auto_key_locate);
   free (ctx->trust_model);
   free (ctx->cert_expire);
+  free (ctx->key_origin);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -586,6 +587,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->cert_expire)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "key-origin"))
+    {
+      free (ctx->key_origin);
+      ctx->key_origin = strdup (value);
+      if (!ctx->key_origin)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -658,6 +666,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "cert-expire"))
     {
       return ctx->cert_expire? ctx->cert_expire : "";
+    }
+  else if (!strcmp (name, "key-origin"))
+    {
+      return ctx->key_origin? ctx->key_origin : "";
     }
   else
     return NULL;
