@@ -1,8 +1,9 @@
-/* t-support.h
+/*
+    qgpgmewkdlookupjob.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
-    Software engineering by Intevation GmbH
+    Copyright (c) 2021 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -29,56 +30,41 @@
     you do not wish to do so, delete this exception statement from
     your version.
 */
-#ifndef T_SUPPORT_H
-#define T_SUPPORT_H
 
-#include "interfaces/passphraseprovider.h"
-#include <QObject>
-#include <QTest>
+#ifndef __QGPGME_QGPGMEWKDLOOKUPJOB_H__
+#define __QGPGME_QGPGMEWKDLOOKUPJOB_H__
 
-#include <gpg-error.h>
+#include "threadedjobmixin.h"
+#include "wkdlookupjob.h"
+#include "wkdlookupresult.h"
 
-namespace QTest
+namespace QGpgME
 {
-template <>
-inline char *toString(const std::string &s)
-{
-    return QTest::toString(s.c_str());
-}
-}
+class WKDLookupResult;
 
-namespace GpgME
-{
-class TestPassphraseProvider : public PassphraseProvider
-{
-public:
-    char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
-                        bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
-    {
-        char *ret;
-        gpgrt_asprintf(&ret, "abc");
-        return ret;
-    }
-};
-} // namespace GpgME
-
-void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
-/* Is the passphrase Provider / loopback Supported */
-bool loopbackSupported();
-
-class QGpgMETest : public QObject
+class QGpgMEWKDLookupJob
+#ifdef Q_MOC_RUN
+    : public WKDLookupJob
+#else
+    : public _detail::ThreadedJobMixin<WKDLookupJob, std::tuple<WKDLookupResult, QString, GpgME::Error> >
+#endif
 {
     Q_OBJECT
-protected:
-    bool copyKeyrings(const QString &from, const QString& to);
-
+#ifdef Q_MOC_RUN
 public Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
+    void slotFinished();
+#endif
+public:
+    explicit QGpgMEWKDLookupJob(GpgME::Context *context);
+    ~QGpgMEWKDLookupJob();
+
+    /* from WKDLookupJob */
+    GpgME::Error start(const QString &email) Q_DECL_OVERRIDE;
+
+    /* from WKDLookupJob */
+    WKDLookupResult exec(const QString &email) Q_DECL_OVERRIDE;
 };
 
-/* Timeout, in milliseconds, for use with QSignalSpy to wait on
-   signals.  */
-#define QSIGNALSPY_TIMEOUT	60000
+}
 
-#endif // T_SUPPORT_H
+#endif // __QGPGME_QGPGMEWKDLOOKUPJOB_H__

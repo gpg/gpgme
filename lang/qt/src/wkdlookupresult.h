@@ -1,8 +1,9 @@
-/* t-support.h
+/*
+    wkdlookupresult.h - wraps the result of a WKDLookupJob
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
-    Software engineering by Intevation GmbH
+    Copyright (c) 2021 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -29,56 +30,54 @@
     you do not wish to do so, delete this exception statement from
     your version.
 */
-#ifndef T_SUPPORT_H
-#define T_SUPPORT_H
 
-#include "interfaces/passphraseprovider.h"
-#include <QObject>
-#include <QTest>
+#ifndef __QGPGME_WKDLOOKUPRESULT_H__
+#define __QGPGME_WKDLOOKUPRESULT_H__
 
-#include <gpg-error.h>
+#include "qgpgme_export.h"
 
-namespace QTest
-{
-template <>
-inline char *toString(const std::string &s)
-{
-    return QTest::toString(s.c_str());
-}
-}
+#include <gpgme++/result.h>
+
+#include <memory>
 
 namespace GpgME
 {
-class TestPassphraseProvider : public PassphraseProvider
+class Data;
+class Error;
+}
+
+namespace QGpgME
+{
+
+class QGPGME_EXPORT WKDLookupResult : public GpgME::Result
 {
 public:
-    char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
-                        bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
-    {
-        char *ret;
-        gpgrt_asprintf(&ret, "abc");
-        return ret;
-    }
+    WKDLookupResult();
+    ~WKDLookupResult();
+
+    explicit WKDLookupResult(const GpgME::Error &err);
+    explicit WKDLookupResult(const GpgME::Data &keyData, const std::string &source, const GpgME::Error &err);
+
+    WKDLookupResult(const WKDLookupResult &other);
+    WKDLookupResult &operator=(const WKDLookupResult &other);
+
+    WKDLookupResult(WKDLookupResult &&other);
+    WKDLookupResult &operator=(WKDLookupResult &&other);
+
+    void swap(WKDLookupResult &other) noexcept;
+
+    bool isNull() const;
+
+    GpgME::Data keyData() const;
+    std::string source() const;
+
+private:
+    class Private;
+    std::unique_ptr<Private> d;
 };
-} // namespace GpgME
 
-void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
-/* Is the passphrase Provider / loopback Supported */
-bool loopbackSupported();
+QGPGME_EXPORT void swap(WKDLookupResult &a, WKDLookupResult &b);
 
-class QGpgMETest : public QObject
-{
-    Q_OBJECT
-protected:
-    bool copyKeyrings(const QString &from, const QString& to);
+}
 
-public Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
-};
-
-/* Timeout, in milliseconds, for use with QSignalSpy to wait on
-   signals.  */
-#define QSIGNALSPY_TIMEOUT	60000
-
-#endif // T_SUPPORT_H
+#endif // __QGPGME_WKDLOOKUPRESULT_H__

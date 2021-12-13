@@ -58,6 +58,7 @@
 #include "qgpgmechangepasswdjob.h"
 #include "qgpgmeadduseridjob.h"
 #include "qgpgmekeyformailboxjob.h"
+#include "qgpgmewkdlookupjob.h"
 #include "qgpgmewkspublishjob.h"
 #include "qgpgmetofupolicyjob.h"
 #include "qgpgmequickjob.h"
@@ -390,6 +391,18 @@ public:
             return nullptr;
         }
         return new QGpgME::QGpgMEKeyForMailboxJob(context);
+    }
+
+    QGpgME::WKDLookupJob *wkdLookupJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        auto context = GpgME::Context::createForEngine(GpgME::AssuanEngine);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMEWKDLookupJob(context.release());
     }
 
     QGpgME::WKSPublishJob *wksPublishJob() const Q_DECL_OVERRIDE

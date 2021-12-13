@@ -36,12 +36,12 @@ qgpgme_sources = \
     qgpgmerefreshkeysjob.cpp \
     qgpgmesecretkeyexportjob.cpp qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
-    qgpgmeverifyopaquejob.cpp threadedjobmixin.cpp \
+    qgpgmeverifyopaquejob.cpp qgpgmewkdlookupjob.cpp threadedjobmixin.cpp \
     qgpgmekeyformailboxjob.cpp qgpgme_debug.cpp \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     qgpgmegpgcardjob.cpp changeexpiryjob.cpp \
-    dn.cpp cryptoconfig.cpp
+    dn.cpp cryptoconfig.cpp wkdlookupresult.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
@@ -81,6 +81,8 @@ qgpgme_headers= \
     verifydetachedjob.h \
     defaultkeygenerationjob.h \
     tofupolicyjob.h \
+    wkdlookupjob.h \
+    wkdlookupresult.h \
     wkspublishjob.h \
     gpgcardjob.h \
     dn.h
@@ -121,6 +123,8 @@ camelcase_headers= \
     VerifyDetachedJob \
     KeyForMailboxJob \
     DefaultKeyGenerationJob \
+    WKDLookupJob \
+    WKDLookupResult \
     WKSPublishJob \
     TofuPolicyJob \
     GpgCardJob
@@ -152,6 +156,7 @@ private_qgpgme_headers = \
     qgpgmesignkeyjob.h \
     qgpgmeverifydetachedjob.h \
     qgpgmeverifyopaquejob.h \
+    qgpgmewkdlookupjob.h \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
     qgpgmetofupolicyjob.h \
@@ -201,6 +206,7 @@ qgpgme_moc_sources = \
     qgpgmesignkeyjob.moc \
     qgpgmeverifydetachedjob.moc \
     qgpgmeverifyopaquejob.moc \
+    qgpgmewkdlookupjob.moc \
     qgpgmewkspublishjob.moc \
     tofupolicyjob.moc \
     qgpgmetofupolicyjob.moc \
@@ -211,6 +217,7 @@ qgpgme_moc_sources = \
     specialjob.moc \
     verifydetachedjob.moc \
     verifyopaquejob.moc \
+    wkdlookupjob.moc \
     keyformailboxjob.moc \
     wkspublishjob.moc \
     qgpgmekeyformailboxjob.moc \

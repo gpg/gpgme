@@ -1,8 +1,9 @@
-/* t-support.h
+/*
+    wkdlookupjob.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
-    Software engineering by Intevation GmbH
+    Copyright (c) 2021 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -29,56 +30,49 @@
     you do not wish to do so, delete this exception statement from
     your version.
 */
-#ifndef T_SUPPORT_H
-#define T_SUPPORT_H
 
-#include "interfaces/passphraseprovider.h"
-#include <QObject>
-#include <QTest>
+#ifndef __QGPGME_WKDLOOKUPJOB_H__
+#define __QGPGME_WKDLOOKUPJOB_H__
 
-#include <gpg-error.h>
+#include "job.h"
+#include "qgpgme_export.h"
 
-namespace QTest
-{
-template <>
-inline char *toString(const std::string &s)
-{
-    return QTest::toString(s.c_str());
-}
-}
+class QString;
 
 namespace GpgME
 {
-class TestPassphraseProvider : public PassphraseProvider
+class Data;
+class Error;
+}
+
+namespace QGpgME
 {
-public:
-    char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
-                        bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
-    {
-        char *ret;
-        gpgrt_asprintf(&ret, "abc");
-        return ret;
-    }
-};
-} // namespace GpgME
 
-void killAgent(const QString &dir = qgetenv("GNUPGHOME"));
-/* Is the passphrase Provider / loopback Supported */
-bool loopbackSupported();
+class WKDLookupResult;
 
-class QGpgMETest : public QObject
+class QGPGME_EXPORT WKDLookupJob : public Job
 {
     Q_OBJECT
 protected:
-    bool copyKeyrings(const QString &from, const QString& to);
+    explicit WKDLookupJob(QObject *parent);
 
-public Q_SLOTS:
-    void initTestCase();
-    void cleanupTestCase();
+public:
+    ~WKDLookupJob();
+
+    /**
+      Starts a key lookup operation for the email address \a email via WKD.
+    */
+    virtual GpgME::Error start(const QString &email) = 0;
+
+    /**
+      Runs a key lookup operation for the email address \a email via WKD.
+    */
+    virtual WKDLookupResult exec(const QString &email) = 0;
+
+Q_SIGNALS:
+    void result(const WKDLookupResult &result, const QString &auditLogAsHtml = {}, const GpgME::Error &auditLogError = {});
 };
 
-/* Timeout, in milliseconds, for use with QSignalSpy to wait on
-   signals.  */
-#define QSIGNALSPY_TIMEOUT	60000
+}
 
-#endif // T_SUPPORT_H
+#endif // __QGPGME_WKDLOOKUPJOB_H__

@@ -64,6 +64,7 @@
 #include "adduseridjob.h"
 #include "specialjob.h"
 #include "keyformailboxjob.h"
+#include "wkdlookupjob.h"
 #include "wkspublishjob.h"
 #include "tofupolicyjob.h"
 #include "threadedjobmixin.h"
@@ -161,6 +162,7 @@ make_job_subclass(RefreshKeysJob)
 make_job_subclass(AddUserIDJob)
 make_job_subclass(SpecialJob)
 make_job_subclass(KeyForMailboxJob)
+make_job_subclass(WKDLookupJob)
 make_job_subclass(WKSPublishJob)
 make_job_subclass(TofuPolicyJob)
 make_job_subclass(QuickJob)
@@ -194,6 +196,7 @@ make_job_subclass(GpgCardJob)
 #include "adduseridjob.moc"
 #include "specialjob.moc"
 #include "keyformailboxjob.moc"
+#include "wkdlookupjob.moc"
 #include "wkspublishjob.moc"
 #include "tofupolicyjob.moc"
 #include "quickjob.moc"

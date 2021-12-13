@@ -64,6 +64,7 @@ class ChangePasswdJob;
 class AddUserIDJob;
 class SpecialJob;
 class KeyForMailboxJob;
+class WKDLookupJob;
 class WKSPublishJob;
 class TofuPolicyJob;
 class QuickJob;
@@ -154,6 +155,9 @@ public:
     virtual KeyListJob *locateKeysJob() const = 0;
     /** Find the best key to use for a mailbox. */
     virtual KeyForMailboxJob *keyForMailboxJob() const = 0;
+
+    /** This job looks up a key via WKD without importing it. */
+    virtual WKDLookupJob *wkdLookupJob() const = 0;
 
     /** A Job for interacting with gnupg's wks tools. */
     virtual WKSPublishJob *wksPublishJob() const = 0;
