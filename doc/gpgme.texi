@@ -5031,7 +5031,7 @@ retrieved with @code{gpgme_op_import_result}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import was completed successfully, @code{GPG_ERR_INV_VALUE} if
-@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
+@var{ctx} or @var{keydata} is not a valid pointer,
 and @code{GPG_ERR_NO_DATA} if @var{keydata} is an empty data buffer.
 @end deftypefun
 
@@ -5074,8 +5074,8 @@ keydata using @code{gpgme_op_export} and @code{gpgme_op_import}.
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 import was completed successfully, @code{GPG_ERR_INV_VALUE} if
 @var{ctx} is not a valid pointer, @code{GPG_ERR_CONFLICT} if the key
-listing mode does not match, and @code{GPG_ERR_NO_DATA} if no keys are
-considered for export.
+listing mode does not match, and @code{GPG_ERR_NO_DATA} if no keys were
+considered for import.
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_import_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t *@var{keys}})
@@ -5086,10 +5086,10 @@ The function @code{gpgme_op_import_keys_start} initiates a
 @code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
-import was completed successfully, @code{GPG_ERR_INV_VALUE} if
-@var{keydata} if @var{ctx} or @var{keydata} is not a valid pointer,
-@code{GPG_ERR_CONFLICT} if the key listing mode does not match, and
-@code{GPG_ERR_NO_DATA} if no keys are considered for export.
+import was started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, @code{GPG_ERR_CONFLICT} if the key
+listing mode does not match, and @code{GPG_ERR_NO_DATA} if no keys were
+considered for import.
 @end deftypefun
 
 @deftp {Data type} {gpgme_import_status_t}
