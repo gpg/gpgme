@@ -92,6 +92,7 @@ class GpgCardJob;
  * {
  *    // keys and resuls can now be used.
  * });
+ * job->start({QStringLiteral("alfa@example.net")}, false);
  * \endcode
  *
  * \code
