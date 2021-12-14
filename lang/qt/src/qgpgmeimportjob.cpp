@@ -55,10 +55,36 @@ QGpgMEImportJob::QGpgMEImportJob(Context *context)
     lateInitialization();
 }
 
-QGpgMEImportJob::~QGpgMEImportJob() {}
+QGpgMEImportJob::~QGpgMEImportJob() = default;
 
-static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData)
+static const char *originToString(Key::Origin origin)
 {
+    static const std::map<Key::Origin, const char *> mapping = {
+        { Key::OriginUnknown, "unknown" },
+        { Key::OriginKS,      "ks" },
+        { Key::OriginDane,    "dane" },
+        { Key::OriginWKD,     "wkd" },
+        { Key::OriginURL,     "url" },
+        { Key::OriginFile,    "file" },
+        { Key::OriginSelf,    "self" },
+    };
+    const auto it = mapping.find(origin);
+    return (it != std::end(mapping)) ? it->second : nullptr;
+}
+
+static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData, Key::Origin keyOrigin, const QString &keyOriginUrl)
+{
+    if (keyOrigin != Key::OriginUnknown) {
+        if (const auto origin = originToString(keyOrigin)) {
+            std::string value{origin};
+            if (!keyOriginUrl.isEmpty()) {
+                value += ",";
+                value += keyOriginUrl.toStdString();
+            }
+            ctx->setFlag("key-origin", value.c_str());
+        }
+    }
+
     QGpgME::QByteArrayDataProvider dp(certData);
     Data data(&dp);
 
@@ -70,13 +96,13 @@ static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &c
 
 Error QGpgMEImportJob::start(const QByteArray &certData)
 {
-    run(std::bind(&import_qba, std::placeholders::_1, certData));
+    run(std::bind(&import_qba, std::placeholders::_1, certData, keyOrigin(), keyOriginUrl()));
     return Error();
 }
 
 GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
 {
-    const result_type r = import_qba(context(), keyData);
+    const result_type r = import_qba(context(), keyData, keyOrigin(), keyOriginUrl());
     resultHook(r);
     return mResult;
 }

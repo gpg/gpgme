@@ -40,6 +40,8 @@
 
 #include <QtCore/QByteArray>
 
+#include <gpgme++/key.h>
+
 namespace GpgME
 {
 class Error;
@@ -68,7 +70,11 @@ class QGPGME_EXPORT ImportJob : public AbstractImportJob
 protected:
     explicit ImportJob(QObject *parent);
 public:
-    ~ImportJob();
+    ~ImportJob() override;
+
+    void setKeyOrigin(GpgME::Key::Origin origin, const QString &url = {});
+    GpgME::Key::Origin keyOrigin() const;
+    QString keyOriginUrl() const;
 
     /**
        Starts the importing operation. \a keyData contains the data to
