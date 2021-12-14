@@ -59,6 +59,12 @@ void QGpgMETest::cleanupTestCase()
     killAgent();
 }
 
+// static
+bool QGpgMETest::doOnlineTests()
+{
+    return !qgetenv("DO_ONLINE_TESTS").isEmpty();
+}
+
 bool QGpgMETest::copyKeyrings(const QString &src, const QString &dest)
 {
     bool is21dir = QFileInfo(src + QDir::separator() + QStringLiteral("pubring.kbx")).exists();

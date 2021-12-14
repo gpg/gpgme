@@ -75,11 +75,13 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 
-#ifndef DO_ONLINE_TESTS
     void testWKDLookupAsync()
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < requiredVersion) {
             QSKIP("dirmngr does not yet support WKD lookup");
+        }
+        if (!doOnlineTests()) {
+            QSKIP("Set DO_ONLINE_TESTS environment variable to run this test.");
         }
         const QString email = QLatin1String{"wk@gnupg.org"};
 
@@ -106,6 +108,9 @@ private Q_SLOTS:
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < requiredVersion) {
             QSKIP("dirmngr does not yet support WKD lookup");
         }
+        if (!doOnlineTests()) {
+            QSKIP("Set DO_ONLINE_TESTS environment variable to run this test.");
+        }
         const QString email = QLatin1String{"wk@gnupg.org"};
 
         auto *job = openpgp()->wkdLookupJob();
@@ -122,6 +127,9 @@ private Q_SLOTS:
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < requiredVersion) {
             QSKIP("dirmngr does not yet support WKD lookup");
+        }
+        if (!doOnlineTests()) {
+            QSKIP("Set DO_ONLINE_TESTS environment variable to run this test.");
         }
         const QString email = QLatin1String{"alfa@example.net"};
 
@@ -140,7 +148,6 @@ private Q_SLOTS:
         QCOMPARE(result.source(), "");
         QVERIFY(result.keyData().isNull());
     }
-#endif
 };
 
 QTEST_MAIN(WKDLookupTest)

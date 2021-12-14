@@ -70,6 +70,8 @@ class QGpgMETest : public QObject
 {
     Q_OBJECT
 protected:
+    static bool doOnlineTests();
+
     bool copyKeyrings(const QString &from, const QString& to);
 
 public Q_SLOTS:
