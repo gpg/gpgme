@@ -55,8 +55,8 @@ public:
     WKDLookupResult();
     ~WKDLookupResult();
 
-    explicit WKDLookupResult(const GpgME::Error &err);
-    explicit WKDLookupResult(const GpgME::Data &keyData, const std::string &source, const GpgME::Error &err);
+    explicit WKDLookupResult(const std::string &pattern, const GpgME::Error &err);
+    explicit WKDLookupResult(const std::string &pattern, const GpgME::Data &keyData, const std::string &source, const GpgME::Error &err);
 
     WKDLookupResult(const WKDLookupResult &other);
     WKDLookupResult &operator=(const WKDLookupResult &other);
@@ -68,6 +68,7 @@ public:
 
     bool isNull() const;
 
+    std::string pattern() const;
     GpgME::Data keyData() const;
     std::string source() const;
 

@@ -45,6 +45,7 @@ using namespace GpgME;
 class WKDLookupResult::Private
 {
 public:
+    std::string pattern;
     GpgME::Data keyData;
     std::string source;
 };
@@ -53,15 +54,15 @@ WKDLookupResult::WKDLookupResult() = default;
 
 WKDLookupResult::~WKDLookupResult() = default;
 
-WKDLookupResult::WKDLookupResult(const Error &error)
+WKDLookupResult::WKDLookupResult(const std::string &pattern, const Error &error)
     : Result{error}
-    , d{}
+    , d{new Private{pattern, {}, {}}}
 {
 }
 
-WKDLookupResult::WKDLookupResult(const Data &keyData, const std::string &source, const Error &error)
+WKDLookupResult::WKDLookupResult(const std::string &pattern, const Data &keyData, const std::string &source, const Error &error)
     : Result{error}
-    , d{new Private{keyData, source}}
+    , d{new Private{pattern, keyData, source}}
 {
 }
 
@@ -93,6 +94,11 @@ void WKDLookupResult::swap(WKDLookupResult &other) noexcept
 bool WKDLookupResult::isNull() const
 {
     return !d && !bool(error());
+}
+
+std::string WKDLookupResult::pattern() const
+{
+    return d ? d->pattern : std::string{};
 }
 
 Data WKDLookupResult::keyData() const

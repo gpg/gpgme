@@ -118,11 +118,11 @@ static GpgME::Error setUpDirmngrAssuanConnection(Context *ctx)
     return err;
 }
 
-static GpgME::Error run_wkd_get(Context *ctx, const QString &email)
+static GpgME::Error run_wkd_get(Context *ctx, const std::string &email)
 {
     Error err;
 
-    const auto cmd = std::string{"WKD_GET "} + email.toUtf8().toStdString();
+    const auto cmd = std::string{"WKD_GET "} + email;
     err = ctx->assuanTransact(cmd.c_str());
     if (err.code() == GPG_ERR_NO_NAME || err.code() == GPG_ERR_NO_DATA) {
         // ignore those benign errors; GPG_ERR_NO_NAME indicates that the domain
@@ -146,8 +146,9 @@ static QGpgMEWKDLookupJob::result_type lookup_keys(Context *ctx, const QString &
 
     Error err = setUpDirmngrAssuanConnection(ctx);
 
+    const auto pattern = email.toUtf8().toStdString();
     if (!err) {
-        err = run_wkd_get(ctx, email);
+        err = run_wkd_get(ctx, pattern);
     }
 
     if (!err) {
@@ -156,14 +157,14 @@ static QGpgMEWKDLookupJob::result_type lookup_keys(Context *ctx, const QString &
         const auto rawData = transaction->data();
         if (rawData.size() == 0) {
             qCDebug(QGPGME_LOG) << "No key found for" << email;
-            result = WKDLookupResult{GpgME::Data::null, {}, {}};
+            result = WKDLookupResult{pattern, GpgME::Data::null, {}, {}};
         } else {
             qCDebug(QGPGME_LOG) << "Found key for" << email << "at" << source.c_str();
-            result = WKDLookupResult{GpgME::Data{rawData.c_str(), rawData.size()}, source, {}};
+            result = WKDLookupResult{pattern, GpgME::Data{rawData.c_str(), rawData.size()}, source, {}};
         }
     }
 
-    return std::make_tuple(err ? WKDLookupResult{err} : result, QString{}, Error{});
+    return std::make_tuple(err ? WKDLookupResult{pattern, err} : result, QString{}, Error{});
 }
 
 Error QGpgMEWKDLookupJob::start(const QString &email)

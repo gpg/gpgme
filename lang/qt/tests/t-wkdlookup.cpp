@@ -97,6 +97,7 @@ private Q_SLOTS:
         QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         QVERIFY(result.error().code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.pattern(), "wk@gnupg.org");
         QCOMPARE(result.source(), "https://openpgpkey.gnupg.org");
         const auto keys = result.keyData().toKeys(GpgME::OpenPGP);
         QVERIFY(keys.size() == 1);
@@ -117,6 +118,7 @@ private Q_SLOTS:
         const auto result = job->exec(email);
 
         QVERIFY(result.error().code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.pattern(), "wk@gnupg.org");
         QCOMPARE(result.source(), "https://openpgpkey.gnupg.org");
         const auto keys = result.keyData().toKeys(GpgME::OpenPGP);
         QVERIFY(keys.size() == 1);
@@ -145,6 +147,7 @@ private Q_SLOTS:
         QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
         QVERIFY(result.error().code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.pattern(), "alfa@example.net");
         QCOMPARE(result.source(), "");
         QVERIFY(result.keyData().isNull());
     }
