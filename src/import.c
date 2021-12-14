@@ -282,7 +282,8 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  return _gpgme_engine_op_import (ctx->engine, keydata, NULL, ctx->key_origin);
+  return _gpgme_engine_op_import (ctx->engine, keydata, NULL, ctx->import_filter,
+                                  ctx->key_origin);
 }
 
 
@@ -365,7 +366,8 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  return _gpgme_engine_op_import (ctx->engine, NULL, keys, ctx->key_origin);
+  return _gpgme_engine_op_import (ctx->engine, NULL, keys, ctx->import_filter,
+                                  ctx->key_origin);
 }
 
 

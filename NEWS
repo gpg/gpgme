@@ -3,12 +3,15 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * New context flag "key-origin".  [#5733]
 
+ * New context flag "import-filter".  [#5739]
+
  * qt: Extend ChangeExpiryJob to change expiration of primary key
    and of subkeys at the same time. [#4717]
 
  * Interface changes relative to the 1.16.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_ctx_flag                    EXTENDED: New flag 'key-origin'.
+ gpgme_set_ctx_flag                    EXTENDED: New flag 'import-filter'.
  qt: ChangeExpiryJob::Option                NEW.
  qt: ChangeExpiryJob::Options               NEW.
  qt: ChangeExpiryJob::setOptions            NEW.

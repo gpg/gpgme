@@ -850,7 +850,8 @@ _gpgme_engine_op_tofu_policy (engine_t engine,
 
 gpgme_error_t
 _gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata,
-                         gpgme_key_t *keyarray, const char *key_origin)
+                         gpgme_key_t *keyarray, const char *import_filter,
+                         const char *key_origin)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -858,7 +859,8 @@ _gpgme_engine_op_import (engine_t engine, gpgme_data_t keydata,
   if (!engine->ops->import)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->import) (engine->engine, keydata, keyarray, key_origin);
+  return (*engine->ops->import) (engine->engine, keydata, keyarray, import_filter,
+                                 key_origin);
 }
 
 

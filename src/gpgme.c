@@ -255,6 +255,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->trust_model);
   free (ctx->cert_expire);
   free (ctx->key_origin);
+  free (ctx->import_filter);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -594,6 +595,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->key_origin)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "import-filter"))
+    {
+      free (ctx->import_filter);
+      ctx->import_filter = strdup (value);
+      if (!ctx->import_filter)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -670,6 +678,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "key-origin"))
     {
       return ctx->key_origin? ctx->key_origin : "";
+    }
+  else if (!strcmp (name, "import-filter"))
+    {
+      return ctx->import_filter? ctx->import_filter : "";
     }
   else
     return NULL;

@@ -64,6 +64,7 @@ main (int argc, char **argv)
   gpgme_import_result_t impres;
   gpgme_data_t data;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
+  char *import_filter = NULL;
   char *key_origin = NULL;
 
   if (argc)
@@ -103,6 +104,14 @@ main (int argc, char **argv)
           protocol = GPGME_PROTOCOL_CMS;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--import-filter"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          import_filter = strdup (*argv);
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--key-origin"))
         {
           argc--; argv++;
@@ -125,6 +134,11 @@ main (int argc, char **argv)
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
 
+  if (import_filter)
+    {
+      err = gpgme_set_ctx_flag (ctx, "import-filter", import_filter);
+      fail_if_err (err);
+    }
   if (key_origin)
     {
       err = gpgme_set_ctx_flag (ctx, "key-origin", key_origin);

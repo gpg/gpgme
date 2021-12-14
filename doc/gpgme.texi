@@ -3207,6 +3207,12 @@ The string given in @var{value} is passed to the GnuPG engine to set
 the origin of imported keys.  Valid values are documented in the GnuPG
 manual and the gpg man page under the option @option{--key-origin}.
 
+@item "import-filter"
+@since{1.16.1}
+The string given in @var{value} is passed to the GnuPG engine to use as
+filter when importing keys.  Valid values are documented in the GnuPG
+manual and the gpg man page under the option @option{--import-filter}.
+
 @end table
 
 This function returns @code{0} on success.
