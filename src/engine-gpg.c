@@ -2831,7 +2831,7 @@ gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
   else
     {
       err = add_arg (gpg, "--import");
-      if (!err && key_origin)
+      if (!err && key_origin && have_gpg_version (gpg, "2.1.22"))
         {
           err = add_arg (gpg, "--key-origin");
           if (!err)
