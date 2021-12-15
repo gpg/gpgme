@@ -69,6 +69,59 @@ private Q_SLOTS:
         qputenv("GNUPGHOME", tempGpgHome.path().toLocal8Bit());
     }
 
+    void testImportWithImportFilter()
+    {
+        if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.14") {
+            QSKIP("gpg does not yet support the --import-filter option");
+        }
+
+        // pub   ed25519 2021-12-15 [SC]
+        //       E7A0841292ACC9465D3142652FB3A6F51FBF28A2
+        // uid           [ultimate] importWithImportFilter@example.com
+        // uid           [ultimate] importWithImportFilter@example.net
+        // sub   cv25519 2021-12-15 [E]
+        static const char keyFpr[] = "E7A0841292ACC9465D3142652FB3A6F51FBF28A2";
+        static const char keyData[] =
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+            "\n"
+            "mDMEYbm2PhYJKwYBBAHaRw8BAQdACzxBWtNNsmJ6rzpZkjh1yBe+Ajsk9NR8umEu\n"
+            "Da3HLgG0ImltcG9ydFdpdGhJbXBvcnRGaWx0ZXJAZXhhbXBsZS5uZXSIlAQTFgoA\n"
+            "PBYhBOeghBKSrMlGXTFCZS+zpvUfvyiiBQJhubY+AhsDBQsJCAcCAyICAQYVCgkI\n"
+            "CwIEFgIDAQIeBwIXgAAKCRAvs6b1H78oosRgAQCc/ke6q076nvzIE2UzT83JK/B6\n"
+            "lxSV7Fb8bKltOMpvsAD+Phap3EzA8jdMyKoO0FM926bw5lX7QROfeZ/JBYqyPwC0\n"
+            "ImltcG9ydFdpdGhJbXBvcnRGaWx0ZXJAZXhhbXBsZS5jb22IlAQTFgoAPBYhBOeg\n"
+            "hBKSrMlGXTFCZS+zpvUfvyiiBQJhubZlAhsDBQsJCAcCAyICAQYVCgkICwIEFgID\n"
+            "AQIeBwIXgAAKCRAvs6b1H78oohPWAQC/u9UXzkxRkrB2huaTZCsyimWEGZIMmxWd\n"
+            "tE+vN9/IvQD/Yzia+xRS6yca3Yz6iW8xS844ZqRxvkUEHjtJXSOzagm4OARhubY+\n"
+            "EgorBgEEAZdVAQUBAQdANQFjmDctY3N0/ELPZtj9tapwFs4vrmTVpx/SCfZmihkD\n"
+            "AQgHiHgEGBYKACAWIQTnoIQSkqzJRl0xQmUvs6b1H78oogUCYbm2PgIbDAAKCRAv\n"
+            "s6b1H78oovGyAP41ySzvvDpV7XDJBOAFxvWLmywa5IcO7Lrg7y1efoWj0AD+Kk/B\n"
+            "s7jGLdoG51h670h50MMoYCANB6MwAdSP+qZUlQg=\n"
+            "=/3O0\n"
+            "-----END PGP PUBLIC KEY BLOCK-----\n";
+
+        auto *job = openpgp()->importJob();
+        job->setImportFilter(QLatin1String{"keep-uid=mbox = importWithImportFilter@example.net"});
+        connect(job, &ImportJob::result, this,
+                [this](ImportResult result, QString, Error)
+        {
+            QVERIFY(!result.error());
+            QVERIFY(!result.imports().empty());
+            QVERIFY(result.numImported());
+            Q_EMIT asyncDone();
+        });
+        job->start(QByteArray{keyData});
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
+        QVERIFY(spy.wait());
+
+        auto ctx = Context::createForProtocol(GpgME::OpenPGP);
+        GpgME::Error err;
+        const auto key = ctx->key(keyFpr, err, false);
+        QVERIFY(!key.isNull());
+        QCOMPARE(key.numUserIDs(), 1);
+        QCOMPARE(key.userID(0).id(), "importWithImportFilter@example.net");
+    }
+
     void testImportWithKeyOrigin()
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.22") {

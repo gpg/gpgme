@@ -53,9 +53,22 @@ struct ImportJobPrivate : public JobPrivate
 
     ~ImportJobPrivate() override = default;
 
+    QString m_importFilter;
     Key::Origin m_keyOrigin = Key::OriginUnknown;
     QString m_keyOriginUrl;
 };
+}
+
+void QGpgME::ImportJob::setImportFilter(const QString &filter)
+{
+    const auto d = jobPrivate<ImportJobPrivate>(this);
+    d->m_importFilter = filter;
+}
+
+QString QGpgME::ImportJob::importFilter() const
+{
+    const auto d = jobPrivate<ImportJobPrivate>(this);
+    return d->m_importFilter;
 }
 
 void ImportJob::setKeyOrigin(GpgME::Key::Origin origin, const QString &url)

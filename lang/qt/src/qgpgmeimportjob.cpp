@@ -40,11 +40,9 @@
 
 #include "dataprovider.h"
 
-#include "context.h"
-#include "data.h"
-#include "key.h"
-
-#include <cassert>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/key.h>
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -72,8 +70,12 @@ static const char *originToString(Key::Origin origin)
     return (it != std::end(mapping)) ? it->second : nullptr;
 }
 
-static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData, Key::Origin keyOrigin, const QString &keyOriginUrl)
+static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData, const QString &importFilter,
+                                               Key::Origin keyOrigin, const QString &keyOriginUrl)
 {
+    if (!importFilter.isEmpty()) {
+        ctx->setFlag("import-filter", importFilter.toStdString().c_str());
+    }
     if (keyOrigin != Key::OriginUnknown) {
         if (const auto origin = originToString(keyOrigin)) {
             std::string value{origin};
@@ -96,13 +98,13 @@ static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &c
 
 Error QGpgMEImportJob::start(const QByteArray &certData)
 {
-    run(std::bind(&import_qba, std::placeholders::_1, certData, keyOrigin(), keyOriginUrl()));
+    run(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), keyOrigin(), keyOriginUrl()));
     return Error();
 }
 
 GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
 {
-    const result_type r = import_qba(context(), keyData, keyOrigin(), keyOriginUrl());
+    const result_type r = import_qba(context(), keyData, importFilter(), keyOrigin(), keyOriginUrl());
     resultHook(r);
     return mResult;
 }
