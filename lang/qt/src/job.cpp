@@ -105,6 +105,7 @@ QGpgME::Job::Job(QObject *parent)
 
 QGpgME::Job::~Job()
 {
+    ::d_func()->erase(this);
 }
 
 QString QGpgME::Job::auditLogAsHtml() const
