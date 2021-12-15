@@ -45,41 +45,51 @@
 
 #include <QDebug>
 #include <QSignalSpy>
+#include <QTemporaryDir>
 #include <QTest>
 
 using namespace QGpgME;
 using namespace GpgME;
 
-static const char keyFpr[] = "5C5C428FABCC20F6913464BCCA6FB442887289B3";
-
-static const char keyData[] = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
-"\n"
-"mDMEYbhuixYJKwYBBAHaRw8BAQdAulOM3IksCjdOJluEVlwalD8oZ5oa6wCw3EgW\n"
-"NswXXb60H2ltcG9ydFdpdGhLZXlPcmlnaW5AZXhhbXBsZS5uZXSIlAQTFgoAPBYh\n"
-"BFxcQo+rzCD2kTRkvMpvtEKIcomzBQJhuG6LAhsDBQsJCAcCAyICAQYVCgkICwIE\n"
-"FgIDAQIeBwIXgAAKCRDKb7RCiHKJs+cIAQDaeoOw1OCAGpZQb8xJmLJHul5dLLzU\n"
-"RBdHauMx9NROmQEA23QUVedc7walQjNKFzyIJA/YqRdbAKPiLonRBmxk9Ay4OARh\n"
-"uG6LEgorBgEEAZdVAQUBAQdAMVdO9mNWIP/q8PtNOnBGlPyhx/vs07sF5sXk50A+\n"
-"61QDAQgHiHgEGBYKACAWIQRcXEKPq8wg9pE0ZLzKb7RCiHKJswUCYbhuiwIbDAAK\n"
-"CRDKb7RCiHKJs/x6AP0SEbZqW4iLCz2i1JntQghK5qpSZOVqsBTcARd6pcJ/cwEA\n"
-"mrwskWazuS9+GVbHT5RATWOXnGaj+AICSDPE6qHtGgA=\n"
-"=putz\n"
-"-----END PGP PUBLIC KEY BLOCK-----\n";
-
 class ImportTest : public QGpgMETest
 {
     Q_OBJECT
+
+private:
+    QTemporaryDir tempGpgHome;
 
 Q_SIGNALS:
     void asyncDone();
 
 private Q_SLOTS:
+    void initTestCase()
+    {
+        QGpgMETest::initTestCase();
+        QVERIFY2(tempGpgHome.isValid(), "Failed to create temporary GNUPGHOME");
+        qputenv("GNUPGHOME", tempGpgHome.path().toLocal8Bit());
+    }
 
     void testImportWithKeyOrigin()
     {
         if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.22") {
             QSKIP("gpg does not yet support the --key-origin option");
         }
+
+        static const char keyFpr[] = "5C5C428FABCC20F6913464BCCA6FB442887289B3";
+        static const char keyData[] =
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+            "\n"
+            "mDMEYbhuixYJKwYBBAHaRw8BAQdAulOM3IksCjdOJluEVlwalD8oZ5oa6wCw3EgW\n"
+            "NswXXb60H2ltcG9ydFdpdGhLZXlPcmlnaW5AZXhhbXBsZS5uZXSIlAQTFgoAPBYh\n"
+            "BFxcQo+rzCD2kTRkvMpvtEKIcomzBQJhuG6LAhsDBQsJCAcCAyICAQYVCgkICwIE\n"
+            "FgIDAQIeBwIXgAAKCRDKb7RCiHKJs+cIAQDaeoOw1OCAGpZQb8xJmLJHul5dLLzU\n"
+            "RBdHauMx9NROmQEA23QUVedc7walQjNKFzyIJA/YqRdbAKPiLonRBmxk9Ay4OARh\n"
+            "uG6LEgorBgEEAZdVAQUBAQdAMVdO9mNWIP/q8PtNOnBGlPyhx/vs07sF5sXk50A+\n"
+            "61QDAQgHiHgEGBYKACAWIQRcXEKPq8wg9pE0ZLzKb7RCiHKJswUCYbhuiwIbDAAK\n"
+            "CRDKb7RCiHKJs/x6AP0SEbZqW4iLCz2i1JntQghK5qpSZOVqsBTcARd6pcJ/cwEA\n"
+            "mrwskWazuS9+GVbHT5RATWOXnGaj+AICSDPE6qHtGgA=\n"
+            "=putz\n"
+            "-----END PGP PUBLIC KEY BLOCK-----\n";
 
         auto *job = openpgp()->importJob();
         job->setKeyOrigin(GpgME::Key::OriginWKD, "https://example.net");
