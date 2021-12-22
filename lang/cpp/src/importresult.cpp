@@ -48,7 +48,9 @@ public:
         // We just need to handle the pointers in the structs:
         for (gpgme_import_status_t is = r.imports ; is ; is = is->next) {
             gpgme_import_status_t copy = new _gpgme_import_status(*is);
-            copy->fpr = strdup(is->fpr);
+            if (is->fpr) {
+                copy->fpr = strdup(is->fpr);
+            }
             copy->next = nullptr;
             imports.push_back(copy);
         }
