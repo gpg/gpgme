@@ -103,7 +103,7 @@ gpgme_op_import_result (gpgme_ctx_t ctx)
       while (impstat)
 	{
 	  TRACE_LOG  ("import[%i] for %s = 0x%x (%s)",
-		      i, impstat->fpr, impstat->status,
+		      i, impstat->fpr ? impstat->fpr : "null", impstat->status,
                       gpgme_strerror (impstat->result));
 	  impstat = impstat->next;
 	  i++;
@@ -223,6 +223,49 @@ parse_import_res (char *args, gpgme_import_result_t result)
 }
 
 
+/* Parses an error on a status line and adds a corresponding import status.
+   Currently, only supports "import.parsep12 11".  */
+static gpgme_error_t
+parse_error (char *args, gpgme_import_status_t *import_status)
+{
+  gpgme_import_status_t import;
+  char *tail;
+  long int nr;
+
+  tail = strchr (args, ' ');
+  if (!tail)
+    return 0;
+
+  *tail = '\0';
+  if (strcmp( args, "import.parsep12" ))
+    return 0;
+
+  args = tail + 1;
+
+  gpg_err_set_errno (0);
+  nr = strtol (args, &tail, 0);
+  if (errno || args == tail || !(*tail == ' ' || !*tail))
+    {
+      /* The crypto backend does not behave.  */
+      return trace_gpg_error (GPG_ERR_INV_ENGINE);
+    }
+  if (nr != GPG_ERR_BAD_PASSPHRASE)
+    return 0;
+
+  import = malloc (sizeof (*import));
+  if (!import)
+    return gpg_error_from_syserror ();
+  import->next = NULL;
+
+  import->result = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+  import->status = 0;
+  import->fpr = 0;
+
+  *import_status = import;
+  return 0;
+}
+
+
 static gpgme_error_t
 import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
@@ -250,6 +293,15 @@ import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
     case GPGME_STATUS_IMPORT_RES:
       err = parse_import_res (args, &opd->result);
+      break;
+
+    case GPGME_STATUS_ERROR:
+      err = parse_error (args, opd->lastp);
+      if (err)
+        return err;
+
+      if (*opd->lastp)
+        opd->lastp = &(*opd->lastp)->next;
       break;
 
     default:

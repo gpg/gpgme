@@ -5115,7 +5115,9 @@ This is a pointer to the next status structure in the linked list, or
 @code{NULL} if this is the last element.
 
 @item char *fpr
-This is the fingerprint of the key that was considered.
+This is the fingerprint of the key that was considered, or @code{NULL}
+if the fingerprint of the key is not known, e.g. because the key to
+import was encrypted and decryption failed.
 
 @item gpgme_error_t result
 If the import was not successful, this is the error value that caused

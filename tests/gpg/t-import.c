@@ -149,16 +149,17 @@ check_result (gpgme_import_result_t result, const char *fpr, int secret)
 	  exit (1);
 	}
     }
-  if (strcmp (fpr, result->imports->fpr))
+  if (!result->imports->fpr || strcmp (fpr, result->imports->fpr))
     {
       fprintf (stderr, "Unexpected fingerprint %s\n",
-	       result->imports->fpr);
+	       result->imports->fpr ? result->imports->fpr : "null");
       exit (1);
     }
-  if (result->imports->next && strcmp (fpr, result->imports->next->fpr))
+  if (result->imports->next
+  && (!result->imports->next->fpr || strcmp (fpr, result->imports->next->fpr)))
     {
       fprintf (stderr, "Unexpected fingerprint on second status %s\n",
-	       result->imports->next->fpr);
+	       result->imports->next->fpr ? result->imports->next->fpr : "null");
       exit (1);
     }
   if (result->imports->result != 0)

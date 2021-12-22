@@ -517,7 +517,8 @@ delete_impres (gpgme_import_result_t r, gpgme_protocol_t proto)
 
   for (st=r->imports; st; st = st->next)
     {
-      delete_fpr (st->fpr, proto);
+      if (st->fpr)
+        delete_fpr (st->fpr, proto);
     }
 }
 
