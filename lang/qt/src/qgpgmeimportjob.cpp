@@ -90,7 +90,23 @@ static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &c
     QGpgME::QByteArrayDataProvider dp(certData);
     Data data(&dp);
 
-    const ImportResult res = ctx->importKeys(data);
+    ImportResult res = ctx->importKeys(data);
+    // HACK: If the import failed with an error, then check if res.imports()
+    // contains only import statuses with "bad passphrase" error; if yes, this
+    // means that the user probably entered a wrong password to decrypt an
+    // encrypted key for import. In this case, return a result with "bad
+    // passphrase" error instead of the original error.
+    // We check if all import statuses instead of any import status has a
+    // "bad passphrase" error to avoid breaking imports that partially worked.
+    // See https://dev.gnupg.org/T5713.
+    const auto imports = res.imports();
+    if (res.error() && !imports.empty()
+        && std::all_of(std::begin(imports), std::end(imports),
+                       [](const Import &import) {
+                           return import.error().code() == GPG_ERR_BAD_PASSPHRASE;
+                       })) {
+        res = ImportResult{Error{GPG_ERR_BAD_PASSPHRASE}};
+    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(res, log, ae);
