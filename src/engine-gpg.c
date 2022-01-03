@@ -2354,7 +2354,8 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL
                 |GPGME_EXPORT_MODE_SSH
-                |GPGME_EXPORT_MODE_SECRET)))
+                |GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_SECRET_SUBKEY)))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if ((mode & GPGME_EXPORT_MODE_MINIMAL))
@@ -2379,7 +2380,9 @@ export_common (engine_gpg_t gpg, gpgme_export_mode_t mode,
     }
   else
     {
-      if ((mode & GPGME_EXPORT_MODE_SECRET))
+      if ((mode & GPGME_EXPORT_MODE_SECRET_SUBKEY))
+        err = add_arg (gpg, "--export-secret-subkeys");
+      else if ((mode & GPGME_EXPORT_MODE_SECRET))
         err = add_arg (gpg, "--export-secret-keys");
       else
         err = add_arg (gpg, "--export");

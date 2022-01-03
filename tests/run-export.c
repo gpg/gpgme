@@ -128,6 +128,11 @@ main (int argc, char **argv)
           mode |= GPGME_EXPORT_MODE_SECRET;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--secret-subkey"))
+        {
+          mode |= GPGME_EXPORT_MODE_SECRET_SUBKEY;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--raw"))
         {
           mode |= GPGME_EXPORT_MODE_RAW;
@@ -165,6 +170,16 @@ main (int argc, char **argv)
       mode = GPGME_EXPORT_MODE_SSH; /* Set only this bit for this test.  */
       keyarray[0] = NULL;
 
+      err = gpgme_op_export_ext (ctx, (const char**)argv, mode, out);
+      fail_if_err (err);
+    }
+  else if ((mode & GPGME_EXPORT_MODE_SECRET_SUBKEY))
+    {
+      keyarray[0] = NULL;
+
+      printf ("exporting secret subkeys!\n");
+
+      gpgme_set_armor (ctx, 1);
       err = gpgme_op_export_ext (ctx, (const char**)argv, mode, out);
       fail_if_err (err);
     }

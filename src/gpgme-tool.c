@@ -2688,6 +2688,8 @@ cmd_export (assuan_context_t ctx, char *line)
     mode |= GPGME_EXPORT_MODE_MINIMAL;
   if (has_option (line, "--secret"))
     mode |= GPGME_EXPORT_MODE_SECRET;
+  if (has_option (line, "--secret-subkey"))
+    mode |= GPGME_EXPORT_MODE_SECRET_SUBKEY;
   if (has_option (line, "--raw"))
     mode |= GPGME_EXPORT_MODE_RAW;
   if (has_option (line, "--pkcs12"))

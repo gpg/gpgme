@@ -4893,13 +4893,22 @@ OpenPGP key is exported in the OpenSSH public key format.  This
 accepts just a single key; to force the export of a specific subkey
 a fingerprint pattern with an appended exclamation mark may be used.
 
-
 @item GPGME_EXPORT_MODE_SECRET
 @since{1.6.0}
 
 Instead of exporting the public key, the secret key is exported.  This
 may not be combined with @code{GPGME_EXPORT_MODE_EXTERN}.  For X.509
 the export format is PKCS#8.
+
+@item GPGME_EXPORT_MODE_SECRET_SUBKEY
+@since{1.17.0}
+
+If this bit is set, then a secret subkey is exported.  The subkey to
+export must be specified with fingerprint pattern with an appended
+exclamation mark.  This is currently only allowed for OpenPGP keys.
+This flag may not be combined with @code{GPGME_EXPORT_MODE_EXTERN}.
+This flag is not supported by the export functions that take an array
+of keys.
 
 @item GPGME_EXPORT_MODE_RAW
 @since{1.6.0}
