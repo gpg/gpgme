@@ -1512,6 +1512,12 @@ gpgsm_export (void *engine, const char *pattern, gpgme_export_mode_t mode,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if ((mode & ~(GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_RAW
+                |GPGME_EXPORT_MODE_PKCS12)))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (!pattern)
     pattern = "";
 
@@ -1558,6 +1564,12 @@ gpgsm_export_ext (void *engine, const char *pattern[], gpgme_export_mode_t mode,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if ((mode & ~(GPGME_EXPORT_MODE_SECRET
+                |GPGME_EXPORT_MODE_MINIMAL
+                |GPGME_EXPORT_MODE_RAW
+                |GPGME_EXPORT_MODE_PKCS12)))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (pattern && *pattern)
     {
