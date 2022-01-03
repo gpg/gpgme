@@ -128,6 +128,16 @@ check_mode (gpgme_export_mode_t mode, gpgme_protocol_t protocol,
                 |GPGME_EXPORT_MODE_PKCS12)))
     return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
 
+  if ((mode & GPGME_EXPORT_MODE_SSH))
+    {
+       if ((mode & (GPGME_EXPORT_MODE_EXTERN
+                    |GPGME_EXPORT_MODE_MINIMAL
+                    |GPGME_EXPORT_MODE_SECRET
+                    |GPGME_EXPORT_MODE_RAW
+                    |GPGME_EXPORT_MODE_PKCS12)))
+          return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
+    }
+
   if ((mode & GPGME_EXPORT_MODE_SECRET))
     {
       if ((mode & GPGME_EXPORT_MODE_EXTERN))
