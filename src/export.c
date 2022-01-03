@@ -117,13 +117,9 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
-	      gpgme_export_mode_t mode, gpgme_data_t keydata)
+check_mode (gpgme_export_mode_t mode, gpgme_protocol_t protocol,
+            gpgme_data_t keydata)
 {
-  gpgme_error_t err;
-  void *hook;
-  op_data_t opd;
-
   if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
                 |GPGME_EXPORT_MODE_MINIMAL
                 |GPGME_EXPORT_MODE_SECRET
@@ -140,7 +136,7 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
           && (mode & GPGME_EXPORT_MODE_PKCS12))
         return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
 
-      if (ctx->protocol != GPGME_PROTOCOL_CMS
+      if (protocol != GPGME_PROTOCOL_CMS
           && (mode & (GPGME_EXPORT_MODE_RAW|GPGME_EXPORT_MODE_PKCS12)))
         return gpg_error (GPG_ERR_INV_FLAG);  /* Only supported for X.509.  */
     }
@@ -155,6 +151,22 @@ export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
       if (!keydata)
         return gpg_error (GPG_ERR_INV_VALUE);
     }
+
+  return 0;
+}
+
+
+static gpgme_error_t
+export_start (gpgme_ctx_t ctx, int synchronous, const char *pattern,
+	      gpgme_export_mode_t mode, gpgme_data_t keydata)
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  err = check_mode (mode, ctx->protocol, keydata);
+  if (err)
+    return err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
@@ -227,37 +239,9 @@ export_ext_start (gpgme_ctx_t ctx, int synchronous, const char *pattern[],
   void *hook;
   op_data_t opd;
 
-  if ((mode & ~(GPGME_EXPORT_MODE_EXTERN
-                |GPGME_EXPORT_MODE_MINIMAL
-                |GPGME_EXPORT_MODE_SECRET
-                |GPGME_EXPORT_MODE_SSH
-                |GPGME_EXPORT_MODE_RAW
-                |GPGME_EXPORT_MODE_PKCS12)))
-    return gpg_error (GPG_ERR_INV_VALUE); /* Invalid flags in MODE.  */
-
-  if ((mode & GPGME_EXPORT_MODE_SECRET))
-    {
-      if ((mode & GPGME_EXPORT_MODE_EXTERN))
-        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
-      if ((mode & GPGME_EXPORT_MODE_RAW)
-          && (mode & GPGME_EXPORT_MODE_PKCS12))
-        return gpg_error (GPG_ERR_INV_FLAG);  /* Combination not allowed. */
-
-      if (ctx->protocol != GPGME_PROTOCOL_CMS
-          && (mode & (GPGME_EXPORT_MODE_RAW|GPGME_EXPORT_MODE_PKCS12)))
-        return gpg_error (GPG_ERR_INV_FLAG);  /* Only supported for X.509.  */
-    }
-
-  if ((mode & GPGME_EXPORT_MODE_EXTERN))
-    {
-      if (keydata)
-        return gpg_error (GPG_ERR_INV_VALUE);
-    }
-  else
-    {
-      if (!keydata)
-        return gpg_error (GPG_ERR_INV_VALUE);
-    }
+  err = check_mode (mode, ctx->protocol, keydata);
+  if (err)
+    return err;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
