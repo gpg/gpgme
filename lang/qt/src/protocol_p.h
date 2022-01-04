@@ -254,6 +254,17 @@ public:
         return new QGpgME::QGpgMEExportJob(context, GpgME::Context::ExportSecret);
     }
 
+    QGpgME::ExportJob *secretSubkeyExportJob(bool armor) const Q_DECL_OVERRIDE
+    {
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+
+        context->setArmor(armor);
+        return new QGpgME::QGpgMEExportJob(context, GpgME::Context::ExportSecretSubkey);
+    }
+
     QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE
     {
         if (mProtocol != GpgME::CMS) { // fixme: add support for gpg, too

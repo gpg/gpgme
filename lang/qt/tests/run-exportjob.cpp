@@ -52,13 +52,16 @@ static void showUsageAndExitWithCode(int exitCode)
     cerr << "Usage: run-exportjob [OPTION]... [PATTERN]...\n"
          "Options:\n"
          "  --secret         export secret keys instead of public keys\n"
+         "  --secret-subkey  export secret subkeys instead of public keys\n";
 
     exit(exitCode);
 }
 
 static auto createExportJob(unsigned int mode)
 {
-    if (mode & Context::ExportSecret) {
+    if (mode & Context::ExportSecretSubkey) {
+        return QGpgME::openpgp()->secretSubkeyExportJob(/*armor=*/true);
+    } else if (mode & Context::ExportSecret) {
         return QGpgME::openpgp()->secretKeyExportJob(/*armor=*/true);
     }
     return QGpgME::openpgp()->publicKeyExportJob(/*armor=*/true);
@@ -89,6 +92,9 @@ int main(int argc, char *argv[])
             showUsageAndExitWithCode(0);
         } else if (arg == QLatin1String{"--secret"}) {
             exportMode = Context::ExportSecret;
+            arguments.pop_front();
+        } else if (arg == QLatin1String{"--secret-subkey"}) {
+            exportMode = Context::ExportSecretSubkey;
             arguments.pop_front();
         } else {
             cerr << "Error: Invalid option " << arg.toStdString() << std::endl;
