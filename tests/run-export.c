@@ -59,6 +59,7 @@ show_usage (int ex)
          "  --ssh            export as ssh public key\n"
          "  --extern         send keys to the keyserver (TAKE CARE!)\n"
          "  --secret         export secret keys instead of public keys\n"
+         "  --secret-subkey  export secret subkeys instead of public keys\n"
          "  --raw            use PKCS#1 as secret key format\n"
          "  --pkcs12         use PKCS#12 as secret key format\n"
          , stderr);

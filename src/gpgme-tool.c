@@ -2658,7 +2658,8 @@ cmd_import (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export[] =
-  "EXPORT [--extern] [--minimal] [--secret [--pkcs12] [--raw]] [<pattern>]\n"
+  "EXPORT [--extern] [--minimal]\n"
+  " [--secret [--pkcs12] [--raw]|--secret-subkey] [<pattern>]\n"
   "\n"
   "Export the keys described by PATTERN.  Write the\n"
   "the output to the object set by the last OUTPUT command.";
