@@ -34,7 +34,7 @@ qgpgme_sources = \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
     qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
     qgpgmerefreshkeysjob.cpp \
-    qgpgmesecretkeyexportjob.cpp qgpgmesignencryptjob.cpp \
+    qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp qgpgmewkdlookupjob.cpp threadedjobmixin.cpp \
     qgpgmekeyformailboxjob.cpp qgpgme_debug.cpp \
@@ -150,7 +150,6 @@ private_qgpgme_headers = \
     qgpgmekeylistjob.h \
     qgpgmelistallkeysjob.h \
     qgpgmerefreshkeysjob.h \
-    qgpgmesecretkeyexportjob.h \
     qgpgmesignencryptjob.h \
     qgpgmesignjob.h \
     qgpgmesignkeyjob.h \
@@ -200,7 +199,6 @@ qgpgme_moc_sources = \
     qgpgmekeylistjob.moc \
     qgpgmelistallkeysjob.moc \
     qgpgmerefreshkeysjob.moc \
-    qgpgmesecretkeyexportjob.moc \
     qgpgmesignencryptjob.moc \
     qgpgmesignjob.moc \
     qgpgmesignkeyjob.moc \
