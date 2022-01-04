@@ -582,36 +582,67 @@ KeyGenerationResult Context::keyGenerationResult() const
     }
 }
 
-Error Context::exportPublicKeys(const char *pattern, Data &keyData, unsigned int flags)
+Error Context::exportKeys(const char *pattern, Data &keyData, unsigned int mode)
 {
     d->lastop = Private::Export;
     Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export(d->ctx, pattern, flags, dp ? dp->data : nullptr));
+    return Error(d->lasterr = gpgme_op_export(d->ctx, pattern, mode, dp ? dp->data : nullptr));
 }
 
-Error Context::exportPublicKeys(const char *patterns[], Data &keyData, unsigned int flags)
+Error Context::exportKeys(const char *patterns[], Data &keyData, unsigned int mode)
 {
     d->lastop = Private::Export;
     Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_ext(d->ctx, patterns, flags, dp ? dp->data : nullptr));
+    return Error(d->lasterr = gpgme_op_export_ext(d->ctx, patterns, mode, dp ? dp->data : nullptr));
 }
 
-Error Context::startPublicKeyExport(const char *pattern, Data &keyData, unsigned int flags)
+Error Context::startKeyExport(const char *pattern, Data &keyData, unsigned int mode)
 {
     d->lastop = Private::Export;
     Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_start(d->ctx, pattern, flags, dp ? dp->data : nullptr));
+    return Error(d->lasterr = gpgme_op_export_start(d->ctx, pattern, mode, dp ? dp->data : nullptr));
 }
 
-Error Context::startPublicKeyExport(const char *patterns[], Data &keyData, unsigned int flags)
+Error Context::startKeyExport(const char *patterns[], Data &keyData, unsigned int mode)
 {
     d->lastop = Private::Export;
     Data::Private *const dp = keyData.impl();
-    return Error(d->lasterr = gpgme_op_export_ext_start(d->ctx, patterns, flags, dp ? dp->data : nullptr));
+    return Error(d->lasterr = gpgme_op_export_ext_start(d->ctx, patterns, mode, dp ? dp->data : nullptr));
 }
 
+Error Context::exportPublicKeys(const char *pattern, Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecret) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return exportKeys(pattern, keyData, mode);
+}
 
-/* Same as above but without flags  */
+Error Context::exportPublicKeys(const char *patterns[], Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecret) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return exportKeys(patterns, keyData, mode);
+}
+
+Error Context::startPublicKeyExport(const char *pattern, Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecret) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return startKeyExport(pattern, keyData, mode);
+}
+
+Error Context::startPublicKeyExport(const char *patterns[], Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecret) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return startKeyExport(patterns, keyData, mode);
+}
+
+/* Same as above but without mode  */
 Error Context::exportPublicKeys(const char *pattern, Data &keyData)
 {
     return exportPublicKeys(pattern, keyData, 0);
@@ -630,6 +661,38 @@ Error Context::startPublicKeyExport(const char *pattern, Data &keyData)
 Error Context::startPublicKeyExport(const char *patterns[], Data &keyData)
 {
     return startPublicKeyExport(patterns, keyData, 0);
+}
+
+Error Context::exportSecretKeys(const char *pattern, Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecretSubkey) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return exportKeys(pattern, keyData, mode|ExportSecret);
+}
+
+Error Context::exportSecretKeys(const char *patterns[], Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecretSubkey) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return exportKeys(patterns, keyData, mode|ExportSecret);
+}
+
+Error Context::startSecretKeyExport(const char *pattern, Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecretSubkey) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return startKeyExport(pattern, keyData, mode|ExportSecret);
+}
+
+Error Context::startSecretKeyExport(const char *patterns[], Data &keyData, unsigned int mode)
+{
+    if (mode & ExportSecretSubkey) {
+        return Error::fromCode(GPG_ERR_INV_FLAG);
+    }
+    return startKeyExport(patterns, keyData, mode|ExportSecret);
 }
 
 ImportResult Context::importKeys(const Data &data)

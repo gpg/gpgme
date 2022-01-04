@@ -194,13 +194,24 @@ public:
     };
 
     GpgME::Error exportPublicKeys(const char *pattern, Data &keyData);
-    GpgME::Error exportPublicKeys(const char *pattern, Data &keyData, unsigned int flags);
+    GpgME::Error exportPublicKeys(const char *pattern, Data &keyData, unsigned int mode);
     GpgME::Error exportPublicKeys(const char *pattern[], Data &keyData);
-    GpgME::Error exportPublicKeys(const char *pattern[], Data &keyData, unsigned int export_mode);
+    GpgME::Error exportPublicKeys(const char *pattern[], Data &keyData, unsigned int mode);
     GpgME::Error startPublicKeyExport(const char *pattern, Data &keyData);
-    GpgME::Error startPublicKeyExport(const char *pattern, Data &keyData, unsigned int flags);
+    GpgME::Error startPublicKeyExport(const char *pattern, Data &keyData, unsigned int mode);
     GpgME::Error startPublicKeyExport(const char *pattern[], Data &keyData);
-    GpgME::Error startPublicKeyExport(const char *pattern[], Data &keyData, unsigned int export_mode);
+    GpgME::Error startPublicKeyExport(const char *pattern[], Data &keyData, unsigned int mode);
+
+    GpgME::Error exportSecretKeys(const char *pattern, Data &keyData, unsigned int mode = ExportSecret);
+    GpgME::Error exportSecretKeys(const char *pattern[], Data &keyData, unsigned int mode = ExportSecret);
+    GpgME::Error startSecretKeyExport(const char *pattern, Data &keyData, unsigned int mode = ExportSecret);
+    GpgME::Error startSecretKeyExport(const char *pattern[], Data &keyData, unsigned int mode = ExportSecret);
+
+    // generic export functions; prefer using the specific public/secret key export functions
+    GpgME::Error exportKeys(const char *pattern, Data &keyData, unsigned int mode = ExportDefault);
+    GpgME::Error exportKeys(const char *pattern[], Data &keyData, unsigned int mode = ExportDefault);
+    GpgME::Error startKeyExport(const char *pattern, Data &keyData, unsigned int mode = ExportDefault);
+    GpgME::Error startKeyExport(const char *pattern[], Data &keyData, unsigned int mode = ExportDefault);
 
     //
     // Key Import
