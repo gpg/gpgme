@@ -528,12 +528,6 @@ Error Context::startKeyListing(const char *pattern, bool secretOnly)
 Error Context::startKeyListing(const char *patterns[], bool secretOnly)
 {
     d->lastop = Private::KeyList;
-#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
-    if (!patterns || !patterns[0] || !patterns[1]) {
-        // max. one pattern -> use the non-ext version
-        return startKeyListing(patterns ? patterns[0] : nullptr, secretOnly);
-    }
-#endif
     return Error(d->lasterr = gpgme_op_keylist_ext_start(d->ctx, patterns, int(secretOnly), 0));
 }
 
@@ -598,12 +592,6 @@ Error Context::exportPublicKeys(const char *pattern, Data &keyData, unsigned int
 Error Context::exportPublicKeys(const char *patterns[], Data &keyData, unsigned int flags)
 {
     d->lastop = Private::Export;
-#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
-    if (!patterns || !patterns[0] || !patterns[1]) {
-        // max. one pattern -> use the non-ext version
-        return exportPublicKeys(patterns ? patterns[0] : nullptr, keyData, flags);
-    }
-#endif
     Data::Private *const dp = keyData.impl();
     return Error(d->lasterr = gpgme_op_export_ext(d->ctx, patterns, flags, dp ? dp->data : nullptr));
 }
@@ -618,12 +606,6 @@ Error Context::startPublicKeyExport(const char *pattern, Data &keyData, unsigned
 Error Context::startPublicKeyExport(const char *patterns[], Data &keyData, unsigned int flags)
 {
     d->lastop = Private::Export;
-#ifndef HAVE_GPGME_EXT_KEYLIST_MODE_EXTERNAL_NONBROKEN
-    if (!patterns || !patterns[0] || !patterns[1]) {
-        // max. one pattern -> use the non-ext version
-        return startPublicKeyExport(patterns ? patterns[0] : nullptr, keyData, flags);
-    }
-#endif
     Data::Private *const dp = keyData.impl();
     return Error(d->lasterr = gpgme_op_export_ext_start(d->ctx, patterns, flags, dp ? dp->data : nullptr));
 }
