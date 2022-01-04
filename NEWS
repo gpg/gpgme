@@ -7,11 +7,22 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * New export mode to export secret subkeys.  [#5757]
 
+ * cpp,qt: Add support for export of secret keys and secret subkeys.
+   [#5757]
+
  * qt: Extend ChangeExpiryJob to change expiration of primary key
    and of subkeys at the same time. [#4717]
 
  * Interface changes relative to the 1.16.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ qt: Protocol::secretSubkeyExportJob        NEW.
+ cpp: Context::exportSecretSubkeys          NEW.
+ cpp: Context::startSecretSubkeyExport      NEW.
+ qt: Protocol::secretKeyExportJob      CHANGED: Param 'charset' is ignored.
+ cpp: Context::exportKeys                   NEW.
+ cpp: Context::startKeyExport               NEW.
+ cpp: Context::exportSecretKeys             NEW.
+ cpp: Context::startSecretKeyExport         NEW.
  GPGME_EXPORT_MODE_SECRET_SUBKEY            NEW.
  gpgme_set_ctx_flag                    EXTENDED: New flag 'key-origin'.
  gpgme_set_ctx_flag                    EXTENDED: New flag 'import-filter'.
