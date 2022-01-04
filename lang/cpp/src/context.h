@@ -189,7 +189,7 @@ public:
         ExportSecret = 16,
         ExportRaw = 32,
         ExportPKCS12 = 64,
-        ExportNoUID = 128,
+        ExportNoUID = 128, // obsolete; has no effect
         ExportSSH = 256,
     };
 
