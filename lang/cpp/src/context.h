@@ -191,6 +191,7 @@ public:
         ExportPKCS12 = 64,
         ExportNoUID = 128, // obsolete; has no effect
         ExportSSH = 256,
+        ExportSecretSubkey = 512,
     };
 
     GpgME::Error exportPublicKeys(const char *pattern, Data &keyData);
@@ -206,6 +207,11 @@ public:
     GpgME::Error exportSecretKeys(const char *pattern[], Data &keyData, unsigned int mode = ExportSecret);
     GpgME::Error startSecretKeyExport(const char *pattern, Data &keyData, unsigned int mode = ExportSecret);
     GpgME::Error startSecretKeyExport(const char *pattern[], Data &keyData, unsigned int mode = ExportSecret);
+
+    GpgME::Error exportSecretSubkeys(const char *pattern, Data &keyData, unsigned int mode = ExportSecretSubkey);
+    GpgME::Error exportSecretSubkeys(const char *pattern[], Data &keyData, unsigned int mode = ExportSecretSubkey);
+    GpgME::Error startSecretSubkeyExport(const char *pattern, Data &keyData, unsigned int mode = ExportSecretSubkey);
+    GpgME::Error startSecretSubkeyExport(const char *pattern[], Data &keyData, unsigned int mode = ExportSecretSubkey);
 
     // generic export functions; prefer using the specific public/secret key export functions
     GpgME::Error exportKeys(const char *pattern, Data &keyData, unsigned int mode = ExportDefault);
