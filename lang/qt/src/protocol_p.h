@@ -5,6 +5,8 @@
     Copyright (c) 2004,2005 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 by g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -42,7 +44,6 @@
 #include "qgpgmedecryptverifyjob.h"
 #include "qgpgmerefreshkeysjob.h"
 #include "qgpgmedeletejob.h"
-#include "qgpgmesecretkeyexportjob.h"
 #include "qgpgmedownloadjob.h"
 #include "qgpgmesignencryptjob.h"
 #include "qgpgmeencryptjob.h"
@@ -242,14 +243,15 @@ public:
         return new QGpgME::QGpgMEExportJob(context);
     }
 
-    QGpgME::ExportJob *secretKeyExportJob(bool armor, const QString &charset) const Q_DECL_OVERRIDE
+    QGpgME::ExportJob *secretKeyExportJob(bool armor, const QString &) const Q_DECL_OVERRIDE
     {
-        if (mProtocol != GpgME::CMS) { // fixme: add support for gpg, too
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
             return nullptr;
         }
 
-        // this operation is not supported by gpgme, so we have to call gpgsm ourselves:
-        return new QGpgME::QGpgMESecretKeyExportJob(armor, charset);
+        context->setArmor(armor);
+        return new QGpgME::QGpgMEExportJob(context, GpgME::Context::ExportSecret);
     }
 
     QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE

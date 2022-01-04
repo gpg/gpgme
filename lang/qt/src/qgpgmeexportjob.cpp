@@ -5,6 +5,8 @@
     Copyright (c) 2004,2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 by g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -52,23 +54,28 @@ using namespace QGpgME;
 using namespace GpgME;
 
 QGpgMEExportJob::QGpgMEExportJob(Context *context)
-    : mixin_type(context),
-      m_flags(0)
+    : QGpgMEExportJob{context, 0}
+{
+}
+
+QGpgMEExportJob::QGpgMEExportJob(Context *context, unsigned int forcedMode)
+    : mixin_type{context}
+    , m_exportMode{forcedMode}
+    , m_additionalExportModeFlags{0}
 {
     lateInitialization();
 }
 
-QGpgMEExportJob::~QGpgMEExportJob() {}
+QGpgMEExportJob::~QGpgMEExportJob() = default;
 
-static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &patterns, unsigned int flags)
+static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &patterns, unsigned int mode)
 {
-
     const _detail::PatternConverter pc(patterns);
 
     QGpgME::QByteArrayDataProvider dp;
     Data data(&dp);
 
-    const Error err = ctx->exportPublicKeys(pc.patterns(), data, flags);
+    const Error err = ctx->exportKeys(pc.patterns(), data, mode);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(err, dp.data(), log, ae);
@@ -76,13 +83,14 @@ static QGpgMEExportJob::result_type export_qba(Context *ctx, const QStringList &
 
 Error QGpgMEExportJob::start(const QStringList &patterns)
 {
-    run(std::bind(&export_qba, std::placeholders::_1, patterns, m_flags));
+    auto mode = m_exportMode | m_additionalExportModeFlags;
+    run(std::bind(&export_qba, std::placeholders::_1, patterns, mode));
     return Error();
 }
 
 void QGpgMEExportJob::setExportFlags(unsigned int flags)
 {
-    m_flags = flags;
+    m_additionalExportModeFlags = flags;
 }
 
 /* For ABI compat not pure virtual. */

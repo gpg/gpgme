@@ -66,6 +66,7 @@ t_trustsignatures_SOURCES = t-trustsignatures.cpp $(support_src)
 t_changeexpiryjob_SOURCES = t-changeexpiryjob.cpp $(support_src)
 t_wkdlookup_SOURCES = t-wkdlookup.cpp $(support_src)
 t_import_SOURCES = t-import.cpp $(support_src)
+run_exportjob_SOURCES = run-exportjob.cpp
 run_importjob_SOURCES = run-importjob.cpp
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 
@@ -75,7 +76,8 @@ BUILT_SOURCES = $(moc_files) pubring-stamp
 
 noinst_PROGRAMS = t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
     run-keyformailboxjob t-wkspublish t-verify t-various t-config t-remarks \
-    t-trustsignatures t-changeexpiryjob t-wkdlookup t-import run-importjob
+    t-trustsignatures t-changeexpiryjob t-wkdlookup t-import run-importjob \
+    run-exportjob
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \

@@ -126,8 +126,8 @@ public:
     virtual ImportJob            *importJob() const = 0;
     virtual ImportFromKeyserverJob *importFromKeyserverJob() const = 0;
     virtual ExportJob            *publicKeyExportJob(bool armor = false) const = 0;
-    // @param charset the encoding of the passphrase in the exported file
-    virtual ExportJob            *secretKeyExportJob(bool armor = false, const QString &charset = QString()) const = 0;
+    // the second parameter is ignored; the passphrase in the exported file is always utf-8 encoded
+    virtual ExportJob            *secretKeyExportJob(bool armor = false, const QString & = QString()) const = 0;
     virtual DownloadJob          *downloadJob(bool armor = false) const = 0;
     virtual DeleteJob            *deleteJob() const = 0;
     virtual SignEncryptJob       *signEncryptJob(bool armor = false, bool textMode = false) const = 0;

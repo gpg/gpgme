@@ -5,6 +5,8 @@
     Copyright (c) 2004,2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 by g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -56,15 +58,21 @@ public Q_SLOTS:
 #endif
 public:
     explicit QGpgMEExportJob(GpgME::Context *context);
-    ~QGpgMEExportJob();
+    // Creates an export job with forced export mode @p exportMode. The
+    // export mode flags set with @p exportMode cannot be overridden with
+    // setExportFlags.
+    explicit QGpgMEExportJob(GpgME::Context *context, unsigned int exportMode);
+    ~QGpgMEExportJob() Q_DECL_OVERRIDE;
 
     /* from ExportJob */
-    void setExportFlags (unsigned int flags) Q_DECL_OVERRIDE;
+    void setExportFlags(unsigned int flags) Q_DECL_OVERRIDE;
 
     /* from ExportJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
+
 private:
-    unsigned int m_flags;
+    unsigned int m_exportMode;
+    unsigned int m_additionalExportModeFlags;
 };
 
 }
