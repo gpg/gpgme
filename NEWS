@@ -7,6 +7,8 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * New export mode to export secret subkeys.  [#5757]
 
+ * Detect errors during the export of secret keys.  [#5766]
+
  * cpp,qt: Add support for export of secret keys and secret subkeys.
    [#5757]
 

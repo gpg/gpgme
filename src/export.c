@@ -105,7 +105,8 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
         return err;
       else if (opd->err)
         ; /* We only want to report the first error.  */
-      else if (!strcmp (loc, "keyserver_send"))
+      else if (!strcmp (loc, "keyserver_send")
+               || !strcmp (loc, "export_keys.secret"))
         opd->err = err;
       break;
 
