@@ -12,6 +12,8 @@ Noteworthy changes in version 1.16.1 (unreleased)
  * cpp,qt: Add support for export of secret keys and secret subkeys.
    [#5757]
 
+ * cpp: Support for adding existing subkeys to other keys.  [#5770]
+
  * qt: Extend ChangeExpiryJob to change expiration of primary key
    and of subkeys at the same time. [#4717]
 
@@ -25,6 +27,7 @@ Noteworthy changes in version 1.16.1 (unreleased)
  cpp: Context::startKeyExport               NEW.
  cpp: Context::exportSecretKeys             NEW.
  cpp: Context::startSecretKeyExport         NEW.
+ cpp: GpgAddExistingSubkeyEditInteractor    NEW.
  GPGME_EXPORT_MODE_SECRET_SUBKEY            NEW.
  gpgme_set_ctx_flag                    EXTENDED: New flag 'key-origin'.
  gpgme_set_ctx_flag                    EXTENDED: New flag 'import-filter'.

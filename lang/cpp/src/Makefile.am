@@ -33,6 +33,7 @@ main_sources = \
     engineinfo.cpp gpgsetexpirytimeeditinteractor.cpp \
     gpgsetownertrusteditinteractor.cpp gpgsignkeyeditinteractor.cpp \
     gpgadduserideditinteractor.cpp gpggencardkeyinteractor.cpp \
+    gpgaddexistingsubkeyeditinteractor.cpp \
     defaultassuantransaction.cpp \
     scdgetinfoassuantransaction.cpp gpgagentgetinfoassuantransaction.cpp \
     statusconsumerassuantransaction.cpp \
@@ -46,6 +47,7 @@ gpgmepp_headers = \
     gpgmefw.h gpgsetexpirytimeeditinteractor.h \
     gpgsetownertrusteditinteractor.h gpgsignkeyeditinteractor.h \
     gpggencardkeyinteractor.h \
+    gpgaddexistingsubkeyeditinteractor.h \
     importresult.h keygenerationresult.h key.h keylistresult.h \
     notation.h result.h scdgetinfoassuantransaction.h signingresult.h \
     statusconsumerassuantransaction.h \
