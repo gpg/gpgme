@@ -52,9 +52,6 @@ class TestChangeExpiryJob: public QGpgMETest
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void asyncDone();
-
 private Q_SLOTS:
     void test_change_expiration_default_without_subkeys()
     {

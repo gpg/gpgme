@@ -54,9 +54,6 @@ class TestRemarks: public QGpgMETest
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void asyncDone();
-
 public:
     // This test is disabled (no slot) because the behavior
     // is not clearly defined. Better to prevent that

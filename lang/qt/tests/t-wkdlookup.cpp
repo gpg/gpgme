@@ -70,9 +70,6 @@ class WKDLookupTest : public QGpgMETest
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void asyncDone();
-
 private Q_SLOTS:
 
     void testWKDLookupAsync()

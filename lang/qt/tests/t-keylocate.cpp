@@ -51,9 +51,6 @@ class KeyLocateTest : public QGpgMETest
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void asyncDone();
-
 private Q_SLOTS:
 
 #ifdef DO_ONLINE_TESTS

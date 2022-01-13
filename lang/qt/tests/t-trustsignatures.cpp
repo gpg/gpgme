@@ -52,9 +52,6 @@ class TestTrustSignatures: public QGpgMETest
 {
     Q_OBJECT
 
-Q_SIGNALS:
-    void asyncDone();
-
 private Q_SLOTS:
     void test_tsign_single_uid_key_and_then_tsign_it_again()
     {

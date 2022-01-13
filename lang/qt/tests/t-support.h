@@ -69,6 +69,10 @@ bool loopbackSupported();
 class QGpgMETest : public QObject
 {
     Q_OBJECT
+
+Q_SIGNALS:
+    void asyncDone();
+
 protected:
     static bool doOnlineTests();
 

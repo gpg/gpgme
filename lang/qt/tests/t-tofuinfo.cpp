@@ -116,8 +116,6 @@ static const char conflictMsg2[] = "-----BEGIN PGP MESSAGE-----\n"
 class TofuInfoTest: public QGpgMETest
 {
     Q_OBJECT
-Q_SIGNALS:
-    void asyncDone();
 
 private:
     bool testSupported()

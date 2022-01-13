@@ -58,9 +58,6 @@ class ImportTest : public QGpgMETest
 private:
     QTemporaryDir tempGpgHome;
 
-Q_SIGNALS:
-    void asyncDone();
-
 private Q_SLOTS:
     void initTestCase()
     {
