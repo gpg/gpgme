@@ -64,7 +64,6 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] NAME [VERSION]\n\n"
          "Options:\n"
          "  --verbose        run in verbose mode\n"
-         "  --status         print status lines from the backend\n"
          , stderr);
   exit (ex);
 }
