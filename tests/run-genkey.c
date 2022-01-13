@@ -131,15 +131,23 @@ progress_cb (void *opaque, const char *what, int type, int current, int total)
 
 
 static unsigned long
-parse_expire_string (const char *string)
+parse_expire_string (const char *string, unsigned int *flags)
 {
-  unsigned long seconds;
+  unsigned long seconds = 0;
 
-  if (!string || !*string || !strcmp (string, "none")
-      || !strcmp (string, "never") || !strcmp (string, "-"))
-    seconds = 0;
+  if (!string || !*string || !strcmp (string, "-"))
+    ;
+  else if (!strcmp (string, "none") || !strcmp (string, "never"))
+    {
+      if (flags)
+        *flags |= GPGME_CREATE_NOEXPIRE;
+    }
   else if (strspn (string, "01234567890") == strlen (string))
-    seconds = strtoul (string, NULL, 10);
+    {
+      seconds = strtoul (string, NULL, 10);
+      if (!seconds && flags)
+        *flags |= GPGME_CREATE_NOEXPIRE;
+    }
   else
     {
       fprintf (stderr, PGM ": invalid value '%s'\n", string);
@@ -370,7 +378,7 @@ main (int argc, char **argv)
         }
       userid = argv[0];
       argc--; argv++;
-      expire = parse_expire_string (argv[0]);
+      expire = parse_expire_string (argv[0], NULL);
       argc--; argv++;
       if (argc > 1)
         {
@@ -414,7 +422,7 @@ main (int argc, char **argv)
       if (argc > 2)
         flags |= parse_usage_string (argv[2]);
       if (argc > 3)
-        expire = parse_expire_string (argv[3]);
+        expire = parse_expire_string (argv[3], &flags);
     }
 
   init_gpgme (protocol);
