@@ -38,6 +38,16 @@
 
 #include <gpg-error.h>
 
+namespace GpgME
+{
+class Context;
+}
+
+namespace QGpgME
+{
+class Job;
+}
+
 namespace QTest
 {
 template <>
@@ -78,9 +88,15 @@ protected:
 
     bool copyKeyrings(const QString &from, const QString& to);
 
+    void hookUpPassphraseProvider(GpgME::Context *context);
+    void hookUpPassphraseProvider(QGpgME::Job *job);
+
 public Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
+
+private:
+    GpgME::TestPassphraseProvider mPassphraseProvider;
 };
 
 /* Timeout, in milliseconds, for use with QSignalSpy to wait on

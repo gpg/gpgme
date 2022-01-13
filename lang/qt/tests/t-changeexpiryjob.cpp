@@ -76,12 +76,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<ChangeExpiryJob>{openpgp()->changeExpiryJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Use defaults of job
 
@@ -144,12 +139,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<ChangeExpiryJob>{openpgp()->changeExpiryJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Use defaults of job
 
@@ -212,12 +202,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<ChangeExpiryJob>{openpgp()->changeExpiryJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Set up the job
             job->setOptions(ChangeExpiryJob::UpdatePrimaryKey);
@@ -280,12 +265,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<ChangeExpiryJob>{openpgp()->changeExpiryJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Set up the job
             job->setOptions(ChangeExpiryJob::UpdatePrimaryKey);
@@ -353,12 +333,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<ChangeExpiryJob>{openpgp()->changeExpiryJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Set up the job
             job->setOptions(ChangeExpiryJob::UpdatePrimaryKey | ChangeExpiryJob::UpdateAllSubkeys);

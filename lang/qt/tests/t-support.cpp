@@ -35,7 +35,8 @@
 #endif
 
 #include "t-support.h"
-#include "context.h"
+
+#include "job.h"
 
 #include <QTest>
 
@@ -44,7 +45,11 @@
 #include <QObject>
 #include <QDir>
 
+#include "context.h"
 #include "engineinfo.h"
+
+using namespace GpgME;
+using namespace QGpgME;
 
 void QGpgMETest::initTestCase()
 {
@@ -90,6 +95,17 @@ bool QGpgMETest::copyKeyrings(const QString &src, const QString &dest)
         }
     }
     return true;
+}
+
+void QGpgMETest::hookUpPassphraseProvider(GpgME::Context *context)
+{
+    context->setPassphraseProvider(&mPassphraseProvider);
+    context->setPinentryMode(Context::PinentryLoopback);
+}
+
+void QGpgMETest::hookUpPassphraseProvider(QGpgME::Job *job)
+{
+    hookUpPassphraseProvider(Job::context(job));
 }
 
 void killAgent(const QString& dir)

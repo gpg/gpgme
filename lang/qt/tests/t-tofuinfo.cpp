@@ -153,10 +153,7 @@ private:
     void signAndVerify(const QString &what, const GpgME::Key &key, int expected)
     {
         auto job = openpgp()->signJob();
-        auto ctx = Job::context(job);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         std::vector<Key> keys;
         keys.push_back(key);

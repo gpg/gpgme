@@ -80,12 +80,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Setup the job
             job->setExportable(true);
@@ -128,12 +123,7 @@ private Q_SLOTS:
             // Create the job
             auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job.get());
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job.get());
 
             // Setup the job
             job->setExportable(true);
@@ -201,12 +191,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-             TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);
@@ -249,12 +234,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);
@@ -322,12 +302,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);
@@ -371,12 +346,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);
@@ -444,12 +414,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);
@@ -492,12 +457,7 @@ private Q_SLOTS:
             // Create the job
             auto job = openpgp()->signKeyJob();//std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
             QVERIFY(job);
-
-            // Hack in the passphrase provider
-            auto jobCtx = Job::context(job);
-            TestPassphraseProvider provider;
-            jobCtx->setPassphraseProvider(&provider);
-            jobCtx->setPinentryMode(Context::PinentryLoopback);
+            hookUpPassphraseProvider(job);
 
             // Setup the job
             job->setExportable(true);

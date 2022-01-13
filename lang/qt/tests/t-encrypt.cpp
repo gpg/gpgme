@@ -89,10 +89,7 @@ private Q_SLOTS:
             return;
         }
         auto decJob = openpgp()->decryptJob();
-        auto ctx = Job::context(decJob);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(decJob);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
         QVERIFY(!decResult.error());
@@ -160,10 +157,8 @@ private Q_SLOTS:
             return;
         }
         auto job = openpgp()->encryptJob();
+        hookUpPassphraseProvider(job);
         auto ctx = Job::context(job);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setArmor(true);
         ctx->setTextMode(true);
         QByteArray cipherText;
@@ -176,9 +171,7 @@ private Q_SLOTS:
         killAgent(mDir.path());
 
         auto decJob = openpgp()->decryptJob();
-        auto ctx2 = Job::context(decJob);
-        ctx2->setPassphraseProvider(&provider);
-        ctx2->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(decJob);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);
         QVERIFY(!result.error());
@@ -201,13 +194,9 @@ private Q_SLOTS:
         delete listjob;
 
         auto job = openpgp()->signEncryptJob(/*ASCII Armor */true, /* Textmode */ true);
-
-        auto encSignCtx = Job::context(job);
-        TestPassphraseProvider provider1;
-        encSignCtx->setPassphraseProvider(&provider1);
-        encSignCtx->setPinentryMode(Context::PinentryLoopback);
-
         QVERIFY(job);
+        hookUpPassphraseProvider(job);
+
         QByteArray cipherText;
         auto result = job->exec(keys, keys, QStringLiteral("Hello World").toUtf8(), Context::AlwaysTrust, cipherText);
         delete job;
@@ -222,10 +211,8 @@ private Q_SLOTS:
         }
 
         auto decJob = openpgp()->decryptJob();
+        hookUpPassphraseProvider(decJob);
         auto ctx = Job::context(decJob);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setDecryptionFlags(Context::DecryptUnwrap);
 
         QByteArray plainText;
@@ -266,9 +253,8 @@ private:
         delete listjob;
 
         auto job = openpgp()->encryptJob();
+        hookUpPassphraseProvider(job);
         auto ctx = Job::context(job);
-        ctx->setPassphraseProvider(new TestPassphraseProvider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
         ctx->setArmor(true);
         ctx->setTextMode(true);
         QByteArray cipherText;
@@ -294,9 +280,8 @@ private:
         agentConf.close();
 
         auto decJob = openpgp()->decryptJob();
+        hookUpPassphraseProvider(decJob);
         auto ctx2 = Job::context(decJob);
-        ctx2->setPassphraseProvider(new TestPassphraseProvider);
-        ctx2->setPinentryMode(Context::PinentryLoopback);
         ctx2->setTextMode(true);
         QByteArray plainText;
         auto decResult = decJob->exec(cipherText, plainText);

@@ -74,12 +74,7 @@ public:
         // Create the job
         auto job = openpgp()->signKeyJob();
         QVERIFY (job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job);
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         // Setup the job
         job->setExportable(false);
@@ -130,12 +125,7 @@ private Q_SLOTS:
         // Create the job
         auto job = openpgp()->signKeyJob();
         QVERIFY (job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job);
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         // Setup the job
         job->setExportable(true);
@@ -167,11 +157,7 @@ private Q_SLOTS:
         // Now replace the remark
         auto job3 = openpgp()->signKeyJob();
         QVERIFY (job3);
-
-        // Hack in the passphrase provider
-        auto jobCtx3 = Job::context(job3);
-        jobCtx3->setPassphraseProvider(&provider);
-        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job3);
 
         // Setup the job
         job3->setExportable(false);
@@ -226,12 +212,7 @@ private Q_SLOTS:
         // Create the job
         auto job = openpgp()->signKeyJob();
         QVERIFY (job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job);
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         // Setup the first job
         job->setExportable(false);
@@ -254,11 +235,7 @@ private Q_SLOTS:
         // Now another remark from zulu
         auto job3 = openpgp()->signKeyJob();
         QVERIFY (job3);
-
-        // Hack in the passphrase provider
-        auto jobCtx3 = Job::context(job3);
-        jobCtx3->setPassphraseProvider(&provider);
-        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job3);
 
         // Setup the job
         job3->setExportable(false);
@@ -312,12 +289,7 @@ private Q_SLOTS:
         // Create the job
         auto job = openpgp()->signKeyJob();
         QVERIFY (job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job);
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         // Setup the job
         job->setExportable(false);
@@ -349,11 +321,7 @@ private Q_SLOTS:
         // Now replace the remark
         auto job3 = openpgp()->signKeyJob();
         QVERIFY (job3);
-
-        // Hack in the passphrase provider
-        auto jobCtx3 = Job::context(job3);
-        jobCtx3->setPassphraseProvider(&provider);
-        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job3);
 
         // Setup the job
         job3->setExportable(false);
@@ -402,12 +370,7 @@ private Q_SLOTS:
         // Create the job
         auto job = openpgp()->signKeyJob();
         QVERIFY (job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job);
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job);
 
         // Setup the job
         job->setExportable(false);
@@ -438,11 +401,7 @@ private Q_SLOTS:
         // Try to replace it without dupeOK
         auto job2 = openpgp()->signKeyJob();
         QVERIFY (job2);
-
-        // Hack in the passphrase provider
-        auto jobCtx2 = Job::context(job2);
-        jobCtx2->setPassphraseProvider(&provider);
-        jobCtx2->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job2);
 
         // Setup the job
         job2->setExportable(false);
@@ -463,11 +422,7 @@ private Q_SLOTS:
         // Now replace the remark
         auto job3 = openpgp()->signKeyJob();
         QVERIFY (job3);
-
-        // Hack in the passphrase provider
-        auto jobCtx3 = Job::context(job3);
-        jobCtx3->setPassphraseProvider(&provider);
-        jobCtx3->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job3);
 
         // Setup the job
         job3->setExportable(false);

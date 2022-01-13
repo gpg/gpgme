@@ -134,9 +134,7 @@ private Q_SLOTS:
 
         auto ctx = Context::createForProtocol(key.protocol());
         QVERIFY (ctx);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(ctx);
 
         QVERIFY(!ctx->addUid(key, uid));
         delete ctx;
@@ -187,9 +185,7 @@ private Q_SLOTS:
 
         auto ctx = Context::createForProtocol(key.protocol());
         QVERIFY (ctx);
-        TestPassphraseProvider provider;
-        ctx->setPassphraseProvider(&provider);
-        ctx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(ctx);
 
         // change expiration of the main key
         QVERIFY(!ctx->setExpire(key, 1000));
@@ -256,12 +252,7 @@ private Q_SLOTS:
         // Create the job
         auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
         QVERIFY(job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job.get());
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job.get());
 
         // Setup the job
         job->setExportable(true);
@@ -316,12 +307,7 @@ private Q_SLOTS:
         // Create the job
         auto job = std::unique_ptr<SignKeyJob>{openpgp()->signKeyJob()};
         QVERIFY(job);
-
-        // Hack in the passphrase provider
-        auto jobCtx = Job::context(job.get());
-        TestPassphraseProvider provider;
-        jobCtx->setPassphraseProvider(&provider);
-        jobCtx->setPinentryMode(Context::PinentryLoopback);
+        hookUpPassphraseProvider(job.get());
 
         // Setup the job
         job->setExportable(true);
