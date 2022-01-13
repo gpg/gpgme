@@ -27,6 +27,7 @@ qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
+    qgpgmeaddexistingsubkeyjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
     qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
@@ -46,6 +47,7 @@ qgpgme_sources = \
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
     abstractimportjob.h \
+    addexistingsubkeyjob.h \
     adduseridjob.h \
     changeexpiryjob.h \
     changeownertrustjob.h \
@@ -88,6 +90,7 @@ qgpgme_headers= \
     dn.h
 
 camelcase_headers= \
+    AddExistingSubkeyJob \
     AddUserIDJob \
     AbstractImportJob \
     ChangeExpiryJob \
@@ -133,6 +136,7 @@ private_qgpgme_headers = \
     qgpgme_export.h \
     protocol_p.h \
     job_p.h \
+    qgpgmeaddexistingsubkeyjob.h \
     qgpgmeadduseridjob.h \
     qgpgmebackend.h \
     qgpgmechangeexpiryjob.h \
@@ -165,6 +169,7 @@ private_qgpgme_headers = \
 
 qgpgme_moc_sources = \
     abstractimportjob.moc \
+    addexistingsubkeyjob.moc \
     adduseridjob.moc \
     changeexpiryjob.moc \
     changeownertrustjob.moc \
@@ -183,6 +188,7 @@ qgpgme_moc_sources = \
     keylistjob.moc \
     listallkeysjob.moc \
     multideletejob.moc \
+    qgpgmeaddexistingsubkeyjob.moc \
     qgpgmeadduseridjob.moc \
     qgpgmechangeexpiryjob.moc \
     qgpgmechangeownertrustjob.moc \

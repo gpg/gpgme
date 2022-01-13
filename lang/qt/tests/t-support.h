@@ -48,6 +48,32 @@ namespace QGpgME
 class Job;
 }
 
+/// generic variant of QVERIFY returning \a returnValue on failure
+#define VERIFY_OR_RETURN_VALUE(statement, returnValue) \
+do {\
+    if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
+        return returnValue;\
+} while (false)
+
+/// generic variant of QCOMPARE returning \a returnValue on failure
+#define COMPARE_OR_RETURN_VALUE(actual, expected, returnValue) \
+do {\
+    if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
+        return returnValue;\
+} while (false)
+
+/// variant of QVERIFY returning a default constructed object on failure
+#define VERIFY_OR_OBJECT(statement) VERIFY_OR_RETURN_VALUE(statement, {})
+
+/// variant of QCOMPARE returning a default constructed object on failure
+#define COMPARE_OR_OBJECT(actual, expected) COMPARE_OR_RETURN_VALUE(actual, expected, {})
+
+/// variant of QVERIFY returning \c false on failure
+#define VERIFY_OR_FALSE(statement) VERIFY_OR_RETURN_VALUE(statement, false)
+
+/// variant of QCOMPARE returning \c false on failure
+#define COMPARE_OR_FALSE(actual, expected) COMPARE_OR_RETURN_VALUE(actual, expected, false)
+
 namespace QTest
 {
 template <>
@@ -87,6 +113,8 @@ protected:
     static bool doOnlineTests();
 
     bool copyKeyrings(const QString &from, const QString& to);
+
+    bool importSecretKeys(const char *keyData, int expectedKeys = 1);
 
     void hookUpPassphraseProvider(GpgME::Context *context);
     void hookUpPassphraseProvider(QGpgME::Job *job);

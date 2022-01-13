@@ -12,7 +12,7 @@ Noteworthy changes in version 1.16.1 (unreleased)
  * cpp,qt: Add support for export of secret keys and secret subkeys.
    [#5757]
 
- * cpp: Support for adding existing subkeys to other keys.  [#5770]
+ * cpp,qt: Support for adding existing subkeys to other keys.  [#5770]
 
  * qt: Extend ChangeExpiryJob to change expiration of primary key
    and of subkeys at the same time. [#4717]
@@ -35,6 +35,8 @@ Noteworthy changes in version 1.16.1 (unreleased)
  qt: ChangeExpiryJob::Options               NEW.
  qt: ChangeExpiryJob::setOptions            NEW.
  qt: ChangeExpiryJob::options               NEW.
+ qt: AddExistingSubkeyJob                   NEW.
+ qt: Protocol::addExistingSubkeyJob         NEW.
 
 Noteworthy changes in version 1.16.0 (2021-06-24)
 -------------------------------------------------

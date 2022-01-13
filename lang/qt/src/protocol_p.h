@@ -57,6 +57,7 @@
 #include "qgpgmechangeexpiryjob.h"
 #include "qgpgmechangeownertrustjob.h"
 #include "qgpgmechangepasswdjob.h"
+#include "qgpgmeaddexistingsubkeyjob.h"
 #include "qgpgmeadduseridjob.h"
 #include "qgpgmekeyformailboxjob.h"
 #include "qgpgmewkdlookupjob.h"
@@ -369,6 +370,19 @@ public:
             return nullptr;
         }
         return new QGpgME::QGpgMEChangeOwnerTrustJob(context);
+    }
+
+    QGpgME:: AddExistingSubkeyJob *addExistingSubkeyJob() const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;    // only supported by gpg
+        }
+
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMEAddExistingSubkeyJob{context};
     }
 
     QGpgME::AddUserIDJob *addUserIDJob() const Q_DECL_OVERRIDE

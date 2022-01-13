@@ -61,6 +61,7 @@
 #include "downloadjob.h"
 #include "deletejob.h"
 #include "refreshkeysjob.h"
+#include "addexistingsubkeyjob.h"
 #include "adduseridjob.h"
 #include "specialjob.h"
 #include "keyformailboxjob.h"
@@ -160,6 +161,7 @@ make_job_subclass(ChangePasswdJob)
 make_job_subclass(DownloadJob)
 make_job_subclass(DeleteJob)
 make_job_subclass(RefreshKeysJob)
+make_job_subclass(AddExistingSubkeyJob)
 make_job_subclass(AddUserIDJob)
 make_job_subclass(SpecialJob)
 make_job_subclass(KeyForMailboxJob)
@@ -194,6 +196,7 @@ make_job_subclass(GpgCardJob)
 #include "downloadjob.moc"
 #include "deletejob.moc"
 #include "refreshkeysjob.moc"
+#include "addexistingsubkeyjob.moc"
 #include "adduseridjob.moc"
 #include "specialjob.moc"
 #include "keyformailboxjob.moc"

@@ -40,6 +40,7 @@
 #include "qgpgme_export.h"
 
 namespace QGpgME {
+class AddExistingSubkeyJob;
 class CryptoConfig;
 class KeyListJob;
 class ListAllKeysJob;
@@ -138,6 +139,7 @@ public:
     virtual SignKeyJob           *signKeyJob() const = 0;
     virtual ChangePasswdJob      *changePasswdJob() const = 0;
     virtual ChangeOwnerTrustJob  *changeOwnerTrustJob() const = 0;
+    virtual AddExistingSubkeyJob *addExistingSubkeyJob() const = 0;
     virtual AddUserIDJob         *addUserIDJob() const = 0;
     virtual SpecialJob           *specialJob(const char *type, const QMap<QString, QVariant> &args) const = 0;
 
