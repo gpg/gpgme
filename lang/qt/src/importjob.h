@@ -38,8 +38,6 @@
 #include "abstractimportjob.h"
 #include "qgpgme_export.h"
 
-#include <QtCore/QByteArray>
-
 #ifdef BUILDING_QGPGME
 # include <key.h>
 #else
