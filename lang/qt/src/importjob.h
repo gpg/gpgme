@@ -40,7 +40,11 @@
 
 #include <QtCore/QByteArray>
 
-#include <gpgme++/key.h>
+#ifdef BUILDING_QGPGME
+# include <key.h>
+#else
+# include <gpgme++/key.h>
+#endif
 
 namespace GpgME
 {

@@ -41,7 +41,7 @@
 #include "protocol.h"
 #include "importjob.h"
 
-#include <gpgme++/importresult.h>
+#include <importresult.h>
 
 #include <QDebug>
 #include <QSignalSpy>
