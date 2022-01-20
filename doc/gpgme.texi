@@ -3662,7 +3662,7 @@ database pertaining to the user ID.
 The tofu info structure has the following members:
 
 @table @code
-@item gpgme_key_sig_t next
+@item gpgme_tofu_info_t next
 This is a pointer to the next tofu info structure in the linked
 list, or @code{NULL} if this is the last element.
 
