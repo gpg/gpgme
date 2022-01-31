@@ -280,5 +280,8 @@ EXPORTS
     gpgme_op_revsig                       @207
     gpgme_op_revsig_start                 @208
 
+    gpgme_op_receive_keys                 @209
+    gpgme_op_receive_keys_start           @210
+
 ; END
 

@@ -334,8 +334,8 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  return _gpgme_engine_op_import (ctx->engine, keydata, NULL, ctx->import_filter,
-                                  ctx->key_origin);
+  return _gpgme_engine_op_import (ctx->engine, keydata, NULL, NULL,
+                                  ctx->import_filter, ctx->key_origin);
 }
 
 
@@ -418,8 +418,8 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
 
   _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
 
-  return _gpgme_engine_op_import (ctx->engine, NULL, keys, ctx->import_filter,
-                                  ctx->key_origin);
+  return _gpgme_engine_op_import (ctx->engine, NULL, keys, NULL,
+                                  ctx->import_filter, ctx->key_origin);
 }
 
 
@@ -486,6 +486,94 @@ gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t *keys)
     }
 
   err = _gpgme_op_import_keys_start (ctx, 1, keys);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  return TRACE_ERR (err);
+}
+
+
+static gpgme_error_t
+_gpgme_op_receive_keys_start (gpgme_ctx_t ctx, int synchronous, const char *keyids[])
+{
+  gpgme_error_t err;
+  void *hook;
+  op_data_t opd;
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
+			       sizeof (*opd), release_op_data);
+  opd = hook;
+  if (err)
+    return err;
+  opd->lastp = &opd->result.imports;
+
+  if (!keyids || !*keyids)
+    return gpg_error (GPG_ERR_NO_DATA);
+
+  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+
+  return _gpgme_engine_op_import (ctx->engine, NULL, NULL, keyids,
+                                  ctx->import_filter, ctx->key_origin);
+}
+
+
+/* Asynchronous version of gpgme_op_receive_keys.  */
+gpgme_error_t
+gpgme_op_receive_keys_start (gpgme_ctx_t ctx, const char *keyids[])
+{
+  gpgme_error_t err;
+
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_receive_keys_start", ctx, "");
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if (_gpgme_debug_trace () && keyids)
+    {
+      int i = 0;
+
+      while (keyids[i] && *keyids[i])
+	{
+	  TRACE_LOG  ("keyids[%i] = %s", i, keyids[i]);
+	  i++;
+	}
+    }
+
+  err = _gpgme_op_receive_keys_start (ctx, 1, keyids);
+  return TRACE_ERR (err);
+}
+
+
+/* Retrieve the keys from the array KEYIDS from a keyserver and import
+   them into the keyring.
+
+   KEYIDS is a NULL terminated array of .  The result
+   is the usual import result structure.  */
+gpgme_error_t
+gpgme_op_receive_keys (gpgme_ctx_t ctx, const char *keyids[])
+{
+  gpgme_error_t err;
+
+  TRACE_BEG (DEBUG_CTX, "gpgme_op_receive_keys", ctx, "");
+
+  if (!ctx)
+    return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
+
+  if (_gpgme_debug_trace () && keyids)
+    {
+      int i = 0;
+
+      while (keyids[i] && *keyids[i])
+	{
+	  TRACE_LOG  ("keyids[%i] = %s", i, keyids[i]);
+	  i++;
+	}
+    }
+
+  err = _gpgme_op_receive_keys_start (ctx, 1, keyids);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);

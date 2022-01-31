@@ -96,6 +96,7 @@ struct engine_ops
 			   gpgme_data_t pubkey, gpgme_data_t seckey);
   gpgme_error_t (*import) (void *engine, gpgme_data_t keydata,
                            gpgme_key_t *keyarray,
+                           const char *keyids[],
                            const char *import_filter,
                            const char *key_origin);
   gpgme_error_t (*keylist) (void *engine, const char *pattern,

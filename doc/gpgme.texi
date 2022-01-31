@@ -5108,6 +5108,36 @@ listing mode does not match, and @code{GPG_ERR_NO_DATA} if no keys were
 considered for import.
 @end deftypefun
 
+@deftypefun gpgme_error_t gpgme_op_receive_keys (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{keyids}[]})
+@since{1.17.0}
+
+The function @code{gpgme_op_receive_keys} adds the keys described by
+the @code{NULL} terminated array @var{keyids} to the key ring of the
+crypto engine used by @var{ctx}.  It is used to retrieve and import keys
+from an external source.  This function currently works only for OpenPGP.
+
+After the operation completed successfully, the result can be
+retrieved with @code{gpgme_op_import_result}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import was completed successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and @code{GPG_ERR_NO_DATA} if no keys
+were considered for import.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_receive_keys_start (@w{gpgme_ctx_t @var{ctx}}, @w{const char *@var{keyids}[]})
+@since{1.17.0}
+
+The function @code{gpgme_op_receive_keys_start} initiates a
+@code{gpgme_op_receive_keys} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+import was started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx} is not a valid pointer, and @code{GPG_ERR_NO_DATA} if no keys
+were considered for import.
+@end deftypefun
+
 @deftp {Data type} {gpgme_import_status_t}
 This is a pointer to a structure used to store a part of the result of
 a @code{gpgme_op_import} operation.  For each considered key one

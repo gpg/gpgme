@@ -1738,6 +1738,12 @@ gpgme_error_t gpgme_op_import (gpgme_ctx_t ctx, gpgme_data_t keydata);
 gpgme_error_t gpgme_op_import_keys_start (gpgme_ctx_t ctx, gpgme_key_t keys[]);
 gpgme_error_t gpgme_op_import_keys (gpgme_ctx_t ctx, gpgme_key_t keys[]);
 
+/* Import the keys given by the array KEYIDS from a keyserver into the
+ * keyring.  */
+gpgme_error_t gpgme_op_receive_keys_start (gpgme_ctx_t ctx,
+                                           const char *keyids[]);
+gpgme_error_t gpgme_op_receive_keys (gpgme_ctx_t ctx, const char *keyids[]);
+
 
 /* Export the keys found by PATTERN into KEYDATA.  */
 gpgme_error_t gpgme_op_export_start (gpgme_ctx_t ctx, const char *pattern,

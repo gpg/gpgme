@@ -2770,19 +2770,34 @@ string_from_data (gpgme_data_t data, int delim,
 
 static gpgme_error_t
 gpg_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
-            const char *import_filter, const char *key_origin)
+            const char *keyids[], const char *import_filter,
+            const char *key_origin)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
   int idx;
   gpgme_data_encoding_t dataenc;
 
-  if (keydata && keyarray)
+  if ((keydata && keyarray) || (keydata && keyids) || (keyarray && keyids))
     return gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
 
   dataenc = gpgme_data_get_encoding (keydata);
 
-  if (keyarray)
+  if (keyids)
+    {
+      err = add_arg (gpg, "--recv-keys");
+      if (!err && import_filter && have_gpg_version (gpg, "2.1.14"))
+        {
+          err = add_arg (gpg, "--import-filter");
+          if (!err)
+            err = add_arg (gpg, import_filter);
+        }
+      if (!err)
+        err = add_arg (gpg, "--");
+      while (!err && *keyids && **keyids)
+        err = add_arg (gpg, *(keyids++));
+    }
+  else if (keyarray)
     {
       err = add_arg (gpg, "--recv-keys");
       if (!err && import_filter && have_gpg_version (gpg, "2.1.14"))

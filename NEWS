@@ -9,6 +9,9 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * Detect errors during the export of secret keys.  [#5766]
 
+ * New function gpgme_op_receive_keys to import keys from a keyserver
+   without first running a key listing.  [#5808]
+
  * cpp,qt: Add support for export of secret keys and secret subkeys.
    [#5757]
 
@@ -19,6 +22,8 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * Interface changes relative to the 1.16.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_op_receive_keys                      NEW.
+ gpgme_op_receive_keys_start                NEW.
  qt: Protocol::secretSubkeyExportJob        NEW.
  cpp: Context::exportSecretSubkeys          NEW.
  cpp: Context::startSecretSubkeyExport      NEW.

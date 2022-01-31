@@ -1709,7 +1709,8 @@ gpgsm_genkey (void *engine,
 
 static gpgme_error_t
 gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
-              const char *import_filter, const char *key_origin)
+              const char *keyids[], const char *import_filter,
+              const char *key_origin)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
@@ -1721,6 +1722,9 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (keyids)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if (keydata && keyarray)
     return gpg_error (GPG_ERR_INV_VALUE); /* Only one is allowed.  */
