@@ -37,7 +37,8 @@ main_sources = \
     defaultassuantransaction.cpp \
     scdgetinfoassuantransaction.cpp gpgagentgetinfoassuantransaction.cpp \
     statusconsumerassuantransaction.cpp \
-    vfsmountresult.cpp configuration.cpp tofuinfo.cpp swdbresult.cpp
+    vfsmountresult.cpp configuration.cpp tofuinfo.cpp swdbresult.cpp \
+    util.cpp
 
 gpgmepp_headers = \
     configuration.h context.h data.h decryptionresult.h \

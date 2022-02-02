@@ -1,8 +1,10 @@
 /*
-  util.h - some inline helper functions
+  util.h - some internal helpers
   Copyright (C) 2004 Klarälvdalens Datakonsult AB
   2016 Bundesamt für Sicherheit in der Informationstechnik
   Software engineering by Intevation GmbH
+  Copyright (c) 2022 g10 Code GmbH
+  Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
   This file is part of GPGME++.
 
@@ -174,5 +176,26 @@ static inline gpgme_sig_notation_flags_t  add_to_gpgme_sig_notation_flags_t(unsi
     }
     return static_cast<gpgme_sig_notation_flags_t>(result);
 }
+
+/**
+ * Adapter for passing a vector of strings as NULL-terminated array of
+ * const char* to the C-interface of gpgme.
+ */
+class StringsToCStrings
+{
+public:
+    explicit StringsToCStrings(const std::vector<std::string> &v);
+    ~StringsToCStrings() = default;
+
+    StringsToCStrings(const StringsToCStrings &) = delete;
+    StringsToCStrings &operator=(const StringsToCStrings &) = delete;
+    StringsToCStrings(StringsToCStrings &&) = delete;
+    StringsToCStrings &operator=(StringsToCStrings &&) = delete;
+
+    const char **c_strs() const;
+private:
+    const std::vector<std::string> m_strings;
+    mutable std::vector<const char *> m_cstrings;
+};
 
 #endif // __GPGMEPP_UTIL_H__
