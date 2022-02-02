@@ -70,6 +70,7 @@ class WKSPublishJob;
 class TofuPolicyJob;
 class QuickJob;
 class GpgCardJob;
+class ReceiveKeysJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -126,6 +127,7 @@ public:
     virtual KeyGenerationJob     *keyGenerationJob() const = 0;
     virtual ImportJob            *importJob() const = 0;
     virtual ImportFromKeyserverJob *importFromKeyserverJob() const = 0;
+    virtual ReceiveKeysJob       *receiveKeysJob() const = 0;
     virtual ExportJob            *publicKeyExportJob(bool armor = false) const = 0;
     // the second parameter is ignored; the passphrase in the exported file is always utf-8 encoded
     virtual ExportJob            *secretKeyExportJob(bool armor = false, const QString & = QString()) const = 0;

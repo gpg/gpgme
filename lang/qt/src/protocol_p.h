@@ -64,6 +64,7 @@
 #include "qgpgmewkspublishjob.h"
 #include "qgpgmetofupolicyjob.h"
 #include "qgpgmequickjob.h"
+#include "qgpgmereceivekeysjob.h"
 
 namespace
 {
@@ -231,6 +232,19 @@ public:
             return nullptr;
         }
         return new QGpgME::QGpgMEImportFromKeyserverJob(context);
+    }
+
+    QGpgME::ReceiveKeysJob *receiveKeysJob() const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMEReceiveKeysJob{context};
     }
 
     QGpgME::ExportJob *publicKeyExportJob(bool armor) const Q_DECL_OVERRIDE

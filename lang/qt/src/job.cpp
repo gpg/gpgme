@@ -71,6 +71,7 @@
 #include "threadedjobmixin.h"
 #include "quickjob.h"
 #include "gpgcardjob.h"
+#include "receivekeysjob.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -154,6 +155,7 @@ make_job_subclass(KeyGenerationJob)
 make_job_subclass(AbstractImportJob)
 make_job_subclass_ext(ImportJob, AbstractImportJob)
 make_job_subclass_ext(ImportFromKeyserverJob, AbstractImportJob)
+make_job_subclass_ext(ReceiveKeysJob, AbstractImportJob)
 make_job_subclass(ExportJob)
 make_job_subclass(ChangeExpiryJob)
 make_job_subclass(ChangeOwnerTrustJob)
@@ -205,3 +207,4 @@ make_job_subclass(GpgCardJob)
 #include "tofupolicyjob.moc"
 #include "quickjob.moc"
 #include "gpgcardjob.moc"
+#include "receivekeysjob.moc"
