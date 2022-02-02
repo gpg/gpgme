@@ -50,6 +50,7 @@
 
 #include <gpgme.h>
 
+#include <functional>
 #include <istream>
 #include <numeric>
 #ifndef NDEBUG
@@ -797,6 +798,22 @@ Error Context::startKeyImport(const std::vector<Key> &kk)
     Error err = Error(d->lasterr = gpgme_op_import_keys_start(d->ctx, keys));
     delete[] keys;
     return err;
+}
+
+ImportResult Context::importKeys(const std::vector<std::string> &keyIds)
+{
+    d->lastop = Private::Import;
+    const StringsToCStrings keyids{keyIds};
+    d->lasterr = gpgme_op_receive_keys(d->ctx, keyids.c_strs());
+    return ImportResult(d->ctx, Error(d->lasterr));
+}
+
+Error Context::startKeyImport(const std::vector<std::string> &keyIds)
+{
+    d->lastop = Private::Import;
+    const StringsToCStrings keyids{keyIds};
+    d->lasterr = gpgme_op_receive_keys_start(d->ctx, keyids.c_strs());
+    return Error(d->lasterr);
 }
 
 ImportResult Context::importResult() const

@@ -31,6 +31,7 @@
 #include "verificationresult.h" // for Signature::Notation
 
 #include <memory>
+#include <string>
 #include <vector>
 #include <utility>
 #include <iosfwd>
@@ -225,8 +226,10 @@ public:
 
     ImportResult importKeys(const Data &data);
     ImportResult importKeys(const std::vector<Key> &keys);
+    ImportResult importKeys(const std::vector<std::string> &keyIds);
     GpgME::Error startKeyImport(const Data &data);
     GpgME::Error startKeyImport(const std::vector<Key> &keys);
+    GpgME::Error startKeyImport(const std::vector<std::string> &keyIds);
     ImportResult importResult() const;
 
     //
