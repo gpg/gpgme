@@ -42,7 +42,8 @@ qgpgme_sources = \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     qgpgmegpgcardjob.cpp changeexpiryjob.cpp importjob.cpp \
-    dn.cpp cryptoconfig.cpp wkdlookupresult.cpp
+    dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
+    util.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
@@ -165,7 +166,8 @@ private_qgpgme_headers = \
     qgpgmetofupolicyjob.h \
     qgpgmegpgcardjob.h \
     qgpgmequickjob.h \
-    threadedjobmixin.h
+    threadedjobmixin.h \
+    util.h
 
 qgpgme_moc_sources = \
     abstractimportjob.moc \
