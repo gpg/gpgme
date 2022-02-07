@@ -34,6 +34,7 @@
 #include "util.h"
 
 #include <QStringList>
+#include <functional>
 
 std::vector<std::string> toStrings(const QStringList &l)
 {
