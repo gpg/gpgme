@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.16.1 (unreleased)
+Noteworthy changes in version 1.17.0 (2022-02-07)
 -------------------------------------------------
 
  * New context flag "key-origin".  [#5733]
@@ -12,6 +12,22 @@ Noteworthy changes in version 1.16.1 (unreleased)
  * New function gpgme_op_receive_keys to import keys from a keyserver
    without first running a key listing.  [#5808]
 
+ * Detect bad passphrase error in certificate import.  [T5713]
+
+ * Allow setting --key-origin when importing keys.  [T5733]
+
+ * Support components "keyboxd", "gpg-agent", "scdaemon", "dirmngr",
+   "pinentry", and "socketdir" in gpgme_get_dirinfo.  [T5727,T5613]
+
+ * Under Unix use poll(2) instead of select(2), when available.
+   [T2385]
+
+ * Do not use --flat_namespace when linking for macOS.  [T5610]
+
+ * Fix results returned by gpgme_data_* functions.  [T5481]
+
+ * Support closefrom also for glibc.  [rM4b64774b6d]
+
  * cpp,qt: Add support for export of secret keys and secret subkeys.
    [#5757]
 
@@ -19,6 +35,10 @@ Noteworthy changes in version 1.16.1 (unreleased)
 
  * qt: Extend ChangeExpiryJob to change expiration of primary key
    and of subkeys at the same time. [#4717]
+
+ * qt: Expect UTF-8 on stderr on Windows.  [rM8fe1546282]
+
+ * qt: Allow retrieving the default value of a config entry.  [T5515]
 
  * Interface changes relative to the 1.16.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,6 +62,11 @@ Noteworthy changes in version 1.16.1 (unreleased)
  qt: ChangeExpiryJob::options               NEW.
  qt: AddExistingSubkeyJob                   NEW.
  qt: Protocol::addExistingSubkeyJob         NEW.
+
+ [c=C37/A26/R0 cpp=C20/A14/R0 qt=C14/A7/R0]
+
+ Release-info: https://dev.gnupg.org/T5819
+
 
 Noteworthy changes in version 1.16.0 (2021-06-24)
 -------------------------------------------------
