@@ -50,7 +50,11 @@ Noteworthy changes in version 1.17.0 (2022-02-07)
  * cpp,qt: Support for adding existing subkeys to other keys.  [#5770]
 
  * qt: Extend ChangeExpiryJob to change expiration of primary key
-   and of subkeys at the same time. [#4717]
+   and of subkeys at the same time.  [#4717]
+
+ * qt: Support WKD lookup without implicit import.  [#5728]
+
+ * qt: Allow specifying an import filter when importing keys.  [#5739]
 
  * qt: Expect UTF-8 on stderr on Windows.  [rM8fe1546282]
 
@@ -76,6 +80,15 @@ Noteworthy changes in version 1.17.0 (2022-02-07)
  qt: ChangeExpiryJob::Options               NEW.
  qt: ChangeExpiryJob::setOptions            NEW.
  qt: ChangeExpiryJob::options               NEW.
+ qt: CryptoConfigEntry::defaultValue        NEW.
+ qt: WKDLookupJob                           NEW.
+ qt: WKDLookupResult                        NEW.
+ qt: Protocol::wkdLookupJob                 NEW.
+ qt: ImportJob::setKeyOrigin                NEW.
+ qt: ImportJob::keyOrigin                   NEW.
+ qt: ImportJob::keyOriginUrl                NEW.
+ qt: setImportFilter                        NEW.
+ qt: importFilter                           NEW.
  qt: AddExistingSubkeyJob                   NEW.
  qt: Protocol::addExistingSubkeyJob         NEW.
 
