@@ -127,11 +127,9 @@ public:
     virtual KeyGenerationJob     *keyGenerationJob() const = 0;
     virtual ImportJob            *importJob() const = 0;
     virtual ImportFromKeyserverJob *importFromKeyserverJob() const = 0;
-    virtual ReceiveKeysJob       *receiveKeysJob() const = 0;
     virtual ExportJob            *publicKeyExportJob(bool armor = false) const = 0;
     // the second parameter is ignored; the passphrase in the exported file is always utf-8 encoded
     virtual ExportJob            *secretKeyExportJob(bool armor = false, const QString & = QString()) const = 0;
-    virtual ExportJob            *secretSubkeyExportJob(bool armor = false) const = 0;
     virtual DownloadJob          *downloadJob(bool armor = false) const = 0;
     virtual DeleteJob            *deleteJob() const = 0;
     virtual SignEncryptJob       *signEncryptJob(bool armor = false, bool textMode = false) const = 0;
@@ -141,7 +139,6 @@ public:
     virtual SignKeyJob           *signKeyJob() const = 0;
     virtual ChangePasswdJob      *changePasswdJob() const = 0;
     virtual ChangeOwnerTrustJob  *changeOwnerTrustJob() const = 0;
-    virtual AddExistingSubkeyJob *addExistingSubkeyJob() const = 0;
     virtual AddUserIDJob         *addUserIDJob() const = 0;
     virtual SpecialJob           *specialJob(const char *type, const QMap<QString, QVariant> &args) const = 0;
 
@@ -161,9 +158,6 @@ public:
     /** Find the best key to use for a mailbox. */
     virtual KeyForMailboxJob *keyForMailboxJob() const = 0;
 
-    /** This job looks up a key via WKD without importing it. */
-    virtual WKDLookupJob *wkdLookupJob() const = 0;
-
     /** A Job for interacting with gnupg's wks tools. */
     virtual WKSPublishJob *wksPublishJob() const = 0;
 
@@ -172,6 +166,13 @@ public:
 
     /** A Job for the quick commands */
     virtual QuickJob *quickJob() const = 0;
+
+    /** This job looks up a key via WKD without importing it. */
+    virtual WKDLookupJob *wkdLookupJob() const = 0;
+
+    virtual ExportJob *secretSubkeyExportJob(bool armor = false) const = 0;
+    virtual AddExistingSubkeyJob *addExistingSubkeyJob() const = 0;
+    virtual ReceiveKeysJob *receiveKeysJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.
