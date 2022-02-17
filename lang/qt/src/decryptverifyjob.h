@@ -85,8 +85,6 @@ public:
       If \a plainText is non-null, the plaintext is written
       there. Otherwise, it will be delivered in the third argument
       of result().
-
-      \throws GpgME::Exception if starting fails
     */
     virtual void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText = std::shared_ptr<QIODevice>()) = 0;
 

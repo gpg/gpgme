@@ -81,11 +81,6 @@ public:
     virtual GpgME::Error start(const QByteArray &signature,
             const QByteArray &signedData) = 0;
 
-    /*!
-      \overload
-
-      \throws GpgME::Exception if starting fails.
-    */
     virtual void start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData) = 0;
 
     virtual GpgME::VerificationResult exec(const QByteArray &signature,

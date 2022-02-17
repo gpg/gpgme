@@ -95,8 +95,6 @@ public:
       If \a signature is non-null the signature is written
       there. Otherwise, it will be delivered in the second argument of
       result().
-
-      \throws GpgME::Exception if starting fails
     */
     virtual void start(const std::vector<GpgME::Key> &signers,
                        const std::shared_ptr<QIODevice> &plainText,

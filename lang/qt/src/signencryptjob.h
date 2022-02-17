@@ -106,8 +106,6 @@ public:
       If \a cipherText is non-null, the ciphertext is written
       there. Otherwise, it will be delivered in the third argument of
       result().
-
-      \throws GpgME::Exception if starting fails
     */
     virtual void start(const std::vector<GpgME::Key> &signers,
                        const std::vector<GpgME::Key> &recipients,
