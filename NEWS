@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.17.1 (unreleased)
+Noteworthy changes in version 1.17.1 (2022-03-06)
 -------------------------------------------------
+
+ * qt: Fix a bug in the ABI compatibility of 1.17.0.  [T5834]
+
+ [c=C37/A26/R0 cpp=C20/A14/R0 qt=C15/A0/R0]
+
+ Release-info: https://dev.gnupg.org/T5819
 
 
 Noteworthy changes in version 1.17.0 (2022-02-07)
