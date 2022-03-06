@@ -1,3 +1,9 @@
+Noteworthy changes in version 1.17.2 (unreleased)
+-------------------------------------------------
+
+ Release-info: https://dev.gnupg.org/Txxxx
+
+
 Noteworthy changes in version 1.17.1 (2022-03-06)
 -------------------------------------------------
 
@@ -5,7 +11,7 @@ Noteworthy changes in version 1.17.1 (2022-03-06)
 
  [c=C37/A26/R0 cpp=C20/A14/R0 qt=C15/A0/R0]
 
- Release-info: https://dev.gnupg.org/T5819
+ Release-info: https://dev.gnupg.org/T5872
 
 
 Noteworthy changes in version 1.17.0 (2022-02-07)
