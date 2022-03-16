@@ -3179,7 +3179,7 @@ gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 
 static gpgme_error_t
-gpg_keylist_data (void *engine, gpgme_data_t data)
+gpg_keylist_data (void *engine, gpgme_keylist_mode_t mode, gpgme_data_t data)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
@@ -3198,6 +3198,9 @@ gpg_keylist_data (void *engine, gpgme_data_t data)
     err = add_arg (gpg, "--dry-run");
   if (!err)
     err = add_arg (gpg, "--import");
+  if (!err && (mode & GPGME_KEYLIST_MODE_SIGS)
+      && have_gpg_version (gpg, "2.0.10"))
+    err = add_arg (gpg, "--with-sig-check");
   if (!err)
     err = add_arg (gpg, "--");
   if (!err)

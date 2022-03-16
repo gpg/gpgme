@@ -1216,7 +1216,7 @@ gpgme_op_keylist_from_data_start (gpgme_ctx_t ctx, gpgme_data_t data,
   if (err)
     return TRACE_ERR (err);
 
-  err = _gpgme_engine_op_keylist_data (ctx->engine, data);
+  err = _gpgme_engine_op_keylist_data (ctx->engine, ctx->keylist_mode, data);
   return TRACE_ERR (err);
 }
 
