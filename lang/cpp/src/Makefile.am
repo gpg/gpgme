@@ -71,7 +71,8 @@ nodist_gpgmeppinclude_HEADERS = gpgmepp_version.h
 libgpgmepp_la_SOURCES = $(main_sources) $(gpgmepp_headers) context_vanilla.cpp \
                         $(interface_headers) $(private_gpgmepp_headers)
 
-AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+AM_CPPFLAGS = -I$(top_builddir)/src \
+              @GPGME_CPP_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_GPGMEPP -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
