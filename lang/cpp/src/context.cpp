@@ -1154,6 +1154,7 @@ Error Context::startCombinedDecryptionAndVerification(const Data &cipherText, Da
     return startCombinedDecryptionAndVerification(cipherText, plainText, DecryptNone);
 }
 
+namespace {
 unsigned int to_auditlog_flags(unsigned int flags)
 {
     unsigned int result = 0;
@@ -1167,6 +1168,7 @@ unsigned int to_auditlog_flags(unsigned int flags)
         result |= GPGME_AUDITLOG_DIAG;
     }
     return result;
+}
 }
 
 Error Context::startGetAuditLog(Data &output, unsigned int flags)
