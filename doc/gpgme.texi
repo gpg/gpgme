@@ -4137,22 +4137,6 @@ be completed by calling @code{gpgme_wait} on the context.
 @end deftypefun
 
 
-@deftypefun gpgme_error_t gpgme_op_revuid_start @
-      (@w{gpgme_ctx_t @var{ctx}}, @
-       @w{gpgme_key_t @var{key}}, @
-       @w{const char *@var{userid}}, @
-       @w{unsigned int @var{flags}});
-
-@since{1.14.1}
-
-The function @code{gpgme_op_setexpire_start} initiates a
-@code{gpgme_op_setexpire} operation; see there for details.  It must
-be completed by calling @code{gpgme_wait} on the context.
-@xref{Waiting For Completion}.
-
-@end deftypefun
-
-
 @node Generating Keys
 @subsection Generating Keys
 @cindex key, creation
