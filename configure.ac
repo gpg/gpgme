@@ -402,6 +402,16 @@ if test "$found" = "1"; then
         fi
     fi
 fi
+
+# Check if compiler supports visibility attribute (if qt is enabled)
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+    AX_GCC_FUNC_ATTRIBUTE(visibility)
+    if test "$ax_cv_have_func_attribute_visibility" = "yes"; then
+        GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fvisibility=hidden"
+    fi
+fi
+
 AM_CONDITIONAL([HAVE_DOXYGEN],
                [test -n "$DOXYGEN"])
 if test -n "$GRAPHVIZ"; then
