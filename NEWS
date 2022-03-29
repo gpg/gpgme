@@ -3,6 +3,8 @@ Noteworthy changes in version 1.17.2 (unreleased)
 
  Release-info: https://dev.gnupg.org/Txxxx
 
+ * cpp, qt: Do not export internal symbols anymore.  [T5906]
+
 
 Noteworthy changes in version 1.17.1 (2022-03-06)
 -------------------------------------------------
