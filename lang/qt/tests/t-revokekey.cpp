@@ -38,6 +38,7 @@
 #include <protocol.h>
 #include <revokekeyjob.h>
 
+#include <QProcess>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -131,6 +132,8 @@ private Q_SLOTS:
         QVERIFY(result.code() == GPG_ERR_NO_ERROR);
         key.update();
         QVERIFY(key.isRevoked());
+        verifyReason(key, RevocationReason::NoLongerUsed,
+                     {"This key is not used anymore."});
     }
 
     void testSync_noReasonDescription()
@@ -148,6 +151,7 @@ private Q_SLOTS:
         QVERIFY(result.code() == GPG_ERR_NO_ERROR);
         key.update();
         QVERIFY(key.isRevoked());
+        verifyReason(key, RevocationReason::Unspecified, {});
     }
 
     void testSync_oneLineReasonDescription()
@@ -166,6 +170,8 @@ private Q_SLOTS:
         QVERIFY(result.code() == GPG_ERR_NO_ERROR);
         key.update();
         QVERIFY(key.isRevoked());
+        verifyReason(key, RevocationReason::Compromised,
+                     {"The secret key was stolen."});
     }
 
     void testSync_twoLinesReasonDescription()
@@ -185,6 +191,9 @@ private Q_SLOTS:
         QVERIFY(result.code() == GPG_ERR_NO_ERROR);
         key.update();
         QVERIFY(key.isRevoked());
+        verifyReason(key, RevocationReason::Superseded,
+                     {"This key has been superseded by key",
+                      "0000 1111 2222 3333 4444 5555 6666 7777 8888 9999."});
     }
 
 private:
@@ -198,6 +207,63 @@ private:
         VERIFY_OR_OBJECT(!err);
         VERIFY_OR_OBJECT(!key.isNull());
         return key;
+    }
+
+    bool verifyReason(const Key &key, RevocationReason reason, const QStringList &description)
+    {
+        static const auto startTimeout = std::chrono::milliseconds{1000};
+        static const auto finishTimeout = std::chrono::milliseconds{2000};
+        static const QStringList hexCodeForReason = {
+            QStringLiteral("00"), /* no particular reason */
+            QStringLiteral("02"), /* key has been compromised */
+            QStringLiteral("01"), /* key is superseded */
+            QStringLiteral("03")  /* key is no longer used */
+        };
+
+        QProcess p;
+        p.setProgram(dirInfo("gpg-name"));
+        p.setArguments({QStringLiteral("-K"),
+                        QStringLiteral("--with-colon"),
+                        QStringLiteral("--with-sig-list"),
+                        QLatin1String{key.primaryFingerprint()}
+        });
+
+        p.start();
+
+        if (!p.waitForStarted(startTimeout.count())) {
+            qWarning() << "Timeout while waiting for start of" << p.program() << p.arguments().join(u' ');
+            return false;
+        }
+        if (!p.waitForFinished(finishTimeout.count())) {
+            qWarning() << "Timeout while waiting for completion of" << p.program() << p.arguments().join(u' ');
+            return false;
+        }
+        if (p.exitStatus() != QProcess::NormalExit) {
+            qWarning() << p.program() << "terminated abnormally with exit status" << p.exitStatus();
+            return false;
+        }
+
+        const auto lines = QString::fromUtf8(p.readAllStandardOutput()).split(u'\n');
+        for (const auto &l : lines) {
+            const auto fields = l.split(u':');
+            if (fields[0] == QLatin1String{"rev"}) {
+                // or "rev" the signature class may be followed by a comma
+                // and a 2 digit hexnumber with the revocation reason
+                const auto sigClass = fields.value(10);
+                const auto revReason = sigClass.split(u',').value(1);
+                COMPARE_OR_FALSE(revReason, hexCodeForReason.value(static_cast<int>(reason)));
+
+                // decode the \n in the C-style quoted comment field
+                const auto comment = fields.value(20).replace(QStringLiteral("\\n"), QStringLiteral("\n"));
+                COMPARE_OR_FALSE(comment, description.join(u'\n'));
+                return true;
+            }
+            if (fields[0] == QLatin1String{"uid"}) {
+                qWarning() << "Found uid before rev in key listing:\n" << stdout;
+                return false;
+            }
+        }
+        return false;
     }
 
 private:
