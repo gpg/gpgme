@@ -72,6 +72,13 @@ enum KeyListMode {
 
 enum SignatureMode { NormalSignatureMode, Detached, Clearsigned };
 
+enum class RevocationReason {
+    Unspecified = 0,
+    Compromised = 1,
+    Superseded = 2,
+    NoLongerUsed = 3
+};
+
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, Protocol proto);
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, Engine eng);
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, KeyListMode mode);

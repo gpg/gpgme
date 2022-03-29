@@ -5,6 +5,13 @@ Noteworthy changes in version 1.17.2 (unreleased)
 
  * cpp, qt: Do not export internal symbols anymore.  [T5906]
 
+ * cpp: Support revocation of own OpenPGP keys.  [#5904]
+
+ * Interface changes relative to the 1.17.1 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: RevocationReason                      NEW.
+ cpp: GpgRevokeKeyEditInteractor            NEW.
+
 
 Noteworthy changes in version 1.17.1 (2022-03-06)
 -------------------------------------------------
