@@ -65,6 +65,7 @@
 #include "qgpgmetofupolicyjob.h"
 #include "qgpgmequickjob.h"
 #include "qgpgmereceivekeysjob.h"
+#include "qgpgmerevokekeyjob.h"
 
 namespace
 {
@@ -480,6 +481,18 @@ public:
             return nullptr;
         }
         return new QGpgME::QGpgMEQuickJob(context);
+    }
+
+    QGpgME::RevokeKeyJob *revokeKeyJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMERevokeKeyJob(context);
     }
 };
 

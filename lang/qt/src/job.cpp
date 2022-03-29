@@ -72,6 +72,7 @@
 #include "quickjob.h"
 #include "gpgcardjob.h"
 #include "receivekeysjob.h"
+#include "revokekeyjob.h"
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -172,6 +173,7 @@ make_job_subclass(WKSPublishJob)
 make_job_subclass(TofuPolicyJob)
 make_job_subclass(QuickJob)
 make_job_subclass(GpgCardJob)
+make_job_subclass(RevokeKeyJob)
 
 #undef make_job_subclass
 
@@ -208,3 +210,4 @@ make_job_subclass(GpgCardJob)
 #include "quickjob.moc"
 #include "gpgcardjob.moc"
 #include "receivekeysjob.moc"
+#include "revokekeyjob.moc"

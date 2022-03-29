@@ -36,6 +36,7 @@ qgpgme_sources = \
     qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
     qgpgmereceivekeysjob.cpp \
     qgpgmerefreshkeysjob.cpp \
+    qgpgmerevokekeyjob.cpp \
     qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp qgpgmewkdlookupjob.cpp threadedjobmixin.cpp \
@@ -70,6 +71,7 @@ qgpgme_headers= \
     qgpgmenewcryptoconfig.h \
     quickjob.h \
     receivekeysjob.h \
+    revokekeyjob.h \
     specialjob.h \
     signjob.h \
     signkeyjob.h \
@@ -114,6 +116,7 @@ camelcase_headers= \
     QGpgMENewCryptoConfig \
     QuickJob \
     ReceiveKeysJob \
+    RevokeKeyJob \
     SpecialJob \
     SignJob \
     SignKeyJob \
@@ -159,6 +162,7 @@ private_qgpgme_headers = \
     qgpgmelistallkeysjob.h \
     qgpgmereceivekeysjob.h \
     qgpgmerefreshkeysjob.h \
+    qgpgmerevokekeyjob.h \
     qgpgmesignencryptjob.h \
     qgpgmesignjob.h \
     qgpgmesignkeyjob.h \
@@ -212,6 +216,7 @@ qgpgme_moc_sources = \
     qgpgmelistallkeysjob.moc \
     qgpgmereceivekeysjob.moc \
     qgpgmerefreshkeysjob.moc \
+    qgpgmerevokekeyjob.moc \
     qgpgmesignencryptjob.moc \
     qgpgmesignjob.moc \
     qgpgmesignkeyjob.moc \
@@ -223,6 +228,7 @@ qgpgme_moc_sources = \
     qgpgmetofupolicyjob.moc \
     receivekeysjob.moc \
     refreshkeysjob.moc \
+    revokekeyjob.moc \
     signencryptjob.moc \
     signjob.moc \
     signkeyjob.moc \

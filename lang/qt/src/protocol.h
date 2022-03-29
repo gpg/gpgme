@@ -71,6 +71,7 @@ class TofuPolicyJob;
 class QuickJob;
 class GpgCardJob;
 class ReceiveKeysJob;
+class RevokeKeyJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -173,6 +174,8 @@ public:
     virtual ExportJob *secretSubkeyExportJob(bool armor = false) const = 0;
     virtual AddExistingSubkeyJob *addExistingSubkeyJob() const = 0;
     virtual ReceiveKeysJob *receiveKeysJob() const = 0;
+
+    virtual RevokeKeyJob *revokeKeyJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.
