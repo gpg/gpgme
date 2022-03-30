@@ -39,6 +39,7 @@
 #include <revokekeyjob.h>
 
 #include <QProcess>
+#include <QRegularExpression>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -194,6 +195,66 @@ private Q_SLOTS:
         verifyReason(key, RevocationReason::Superseded,
                      {"This key has been superseded by key",
                       "0000 1111 2222 3333 4444 5555 6666 7777 8888 9999."});
+    }
+
+    void testErrorHandling_nullKey()
+    {
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, "Error: Key is null key");
+            const auto result = job->exec(Key{});
+            QVERIFY(result.code() == GPG_ERR_INV_ARG);
+        }
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, "Error: Key is null key");
+            const auto result = job->start(Key{});
+            QVERIFY(result.code() == GPG_ERR_INV_ARG);
+        }
+    }
+
+    void testErrorHandling_invalidReason()
+    {
+        // Get the key that shall be revoked
+        auto key = getTestKey("revoke-me@example.net");
+        QVERIFY(!key.isNull());
+        QVERIFY(!key.isRevoked());
+
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression{"^Error: Invalid revocation reason"});
+            const auto result = job->exec(key, static_cast<RevocationReason>(-1));
+            QVERIFY(result.code() == GPG_ERR_INV_VALUE);
+        }
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, QRegularExpression{"^Error: Invalid revocation reason"});
+            const auto result = job->start(key, static_cast<RevocationReason>(4));
+            QVERIFY(result.code() == GPG_ERR_INV_VALUE);
+        }
+    }
+
+    void testErrorHandling_invalidDescription()
+    {
+        // Get the key that shall be revoked
+        auto key = getTestKey("revoke-me@example.net");
+        QVERIFY(!key.isNull());
+        QVERIFY(!key.isRevoked());
+
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, "Error: Revocation description contains empty lines or lines with endline characters");
+            const auto result = job->exec(key, RevocationReason::Unspecified,
+                                          {"line1", "", "line3"});
+            QVERIFY(result.code() == GPG_ERR_INV_VALUE);
+        }
+        {
+            auto job = std::unique_ptr<RevokeKeyJob>{openpgp()->revokeKeyJob()};
+            QTest::ignoreMessage(QtWarningMsg, "Error: Revocation description contains empty lines or lines with endline characters");
+            const auto result = job->start(key, RevocationReason::Unspecified,
+                                           {"line1\nline2"});
+            QVERIFY(result.code() == GPG_ERR_INV_VALUE);
+        }
     }
 
 private:

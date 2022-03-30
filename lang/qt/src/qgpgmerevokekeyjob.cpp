@@ -46,6 +46,8 @@
 
 #include <gpg-error.h>
 
+#include "qgpgme_debug.h"
+
 using namespace QGpgME;
 using namespace GpgME;
 
@@ -56,6 +58,29 @@ QGpgMERevokeKeyJob::QGpgMERevokeKeyJob(Context *context)
 }
 
 QGpgMERevokeKeyJob::~QGpgMERevokeKeyJob() = default;
+
+
+static Error check_arguments(const Key &key,
+                             RevocationReason reason,
+                             const std::vector<std::string> &description)
+{
+    if (key.isNull()) {
+        qWarning(QGPGME_LOG) << "Error: Key is null key";
+        return Error::fromCode(GPG_ERR_INV_ARG);
+    }
+    if (reason < RevocationReason::Unspecified || reason > RevocationReason::NoLongerUsed) {
+        qWarning(QGPGME_LOG) << "Error: Invalid revocation reason" << static_cast<int>(reason);
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+    if (std::any_of(std::begin(description), std::end(description),
+                    [](const std::string &line) {
+                        return line.empty() || line.find('\n') != std::string::npos;
+                    })) {
+        qWarning(QGPGME_LOG) << "Error: Revocation description contains empty lines or lines with endline characters";
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+    return {};
+}
 
 static QGpgMERevokeKeyJob::result_type revoke_key(Context *ctx, const Key &key,
                                                   RevocationReason reason,
@@ -80,17 +105,24 @@ Error QGpgMERevokeKeyJob::start(const GpgME::Key &key,
                                 GpgME::RevocationReason reason,
                                 const std::vector<std::string> &description)
 {
-    run(std::bind(&revoke_key, std::placeholders::_1, key, reason, description));
-    return {};
+    Error err = check_arguments(key, reason, description);
+    if (!err) {
+        run(std::bind(&revoke_key, std::placeholders::_1, key, reason, description));
+    }
+    return err;
 }
 
 Error QGpgMERevokeKeyJob::exec(const GpgME::Key &key,
                                GpgME::RevocationReason reason,
                                const std::vector<std::string> &description)
 {
-    const result_type r = revoke_key(context(), key, reason, description);
-    resultHook(r);
-    return std::get<0>(r);
+    Error err = check_arguments(key, reason, description);
+    if (!err) {
+        const result_type r = revoke_key(context(), key, reason, description);
+        resultHook(r);
+        err = std::get<0>(r);
+    }
+    return err;
 }
 
 #include "qgpgmerevokekeyjob.moc"
