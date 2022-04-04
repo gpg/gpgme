@@ -53,7 +53,7 @@ private:
     unsigned int nextState(unsigned int statusCode, const char *args, Error &err) const override;
 
 private:
-    class Private;
+    class GPGMEPP_NO_EXPORT Private;
     const std::unique_ptr<Private> d;
 };
 
