@@ -60,6 +60,9 @@ public:
 
     void setDebugChannel(std::FILE *file);
 
+protected:
+    Error parseStatusError(const char *args);
+
 private:
     class Private;
     Private *const d;
