@@ -177,6 +177,19 @@ static inline gpgme_sig_notation_flags_t  add_to_gpgme_sig_notation_flags_t(unsi
     return static_cast<gpgme_sig_notation_flags_t>(result);
 }
 
+static inline std::vector<std::string> split(const std::string &text, char delimiter)
+{
+    std::vector<std::string> result;
+    if (!text.empty()) {
+        std::istringstream stream{text};
+        std::string line;
+        while (std::getline(stream, line, delimiter)) {
+            result.push_back(line);
+        }
+    }
+    return result;
+}
+
 /**
  * Adapter for passing a vector of strings as NULL-terminated array of
  * const char* to the C-interface of gpgme.
