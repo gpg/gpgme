@@ -101,7 +101,7 @@ public:
                 std::fprintf(ei->debug, "EditInteractor: %u -> nextState( %s, %s ) -> %u\n",
                              oldState, status_to_string(status), args ? args : "<null>", ei->state);
             }
-            if (err) {
+            if (err || err.isCanceled()) {
                 ei->state = oldState;
                 goto error;
             }
@@ -154,7 +154,7 @@ public:
         }
 
     error:
-        if (err) {
+        if (err || err.isCanceled()) {
             ei->error = err;
             ei->state = EditInteractor::ErrorState;
         }
