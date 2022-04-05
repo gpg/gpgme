@@ -30,7 +30,11 @@
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #ifndef HAVE_W32_SYSTEM
+#include <unistd.h>
 #include <sys/wait.h>
 #endif
 
@@ -68,8 +72,28 @@ _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
 static void
 my_usleep (assuan_context_t ctx, unsigned int usec)
 {
-  /* FIXME: Add to ath.  */
-  __assuan_usleep (ctx, usec);
+  (void)ctx;
+
+  if (!usec)
+    return;
+
+#ifdef HAVE_W32_SYSTEM
+  Sleep (usec / 1000);
+#else
+# ifdef HAVE_NANOSLEEP
+  {
+    struct timespec req;
+    struct timespec rem;
+
+    req.tv_sec  = usec / 1000000;
+    req.tv_nsec = (usec % 1000000) * 1000;
+    while (nanosleep (&req, &rem) < 0 && errno == EINTR)
+      req = rem;
+  }
+# else
+  usleep (usec);
+# endif
+#endif
 }
 
 
@@ -312,8 +336,8 @@ static int
 my_socketpair (assuan_context_t ctx, int namespace, int style,
 	       int protocol, assuan_fd_t filedes[2])
 {
-#ifdef HAVE_W32_SYSTEM
   (void)ctx;
+#ifdef HAVE_W32_SYSTEM
   (void)namespace;
   (void)style;
   (void)protocol;
@@ -322,7 +346,7 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
   return -1;
 #else
   /* FIXME: Debug output missing.  */
-  return __assuan_socketpair (ctx, namespace, style, protocol, filedes);
+  return socketpair (namespace, style, protocol, filedes);
 #endif
 }
 

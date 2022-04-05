@@ -739,7 +739,7 @@ fi
 #
 
 # Check for getgid etc
-AC_CHECK_FUNCS(getgid getegid closefrom)
+AC_CHECK_FUNCS(getgid getegid closefrom nanosleep)
 
 
 # Replacement functions.
