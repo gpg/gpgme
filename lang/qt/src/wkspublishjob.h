@@ -52,11 +52,9 @@ namespace QGpgME {
  * The workflow is to call startCreate, check for errors and then
  * send the RFC822 mail returned in returnedData.
  *
- * When the response is received start a startRecieve with the
+ * When the response is received call startReceive with the
  * RFC822 mail received as parameter response. Check for errors
- * and then send again send the result from returnedData back to
- * the server.
- *
+ * and then send the result from returnedData back to the server.
  */
 class QGPGME_EXPORT WKSPublishJob: public Job
 {
@@ -65,7 +63,6 @@ protected:
     explicit WKSPublishJob(QObject *parent);
 public:
     ~WKSPublishJob();
-
 
     /** Start a check if WKS Publishing is supported. As this involves
      * an HTTP Query it might take a while. Returns GPG_ERR_NOT_SUPPORED
