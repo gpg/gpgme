@@ -27,10 +27,16 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifndef HAVE_W32_SYSTEM
+#include <sys/wait.h>
+#endif
+
 #include "assuan.h"
 
 #include "gpgme.h"
-#include "ath.h"
 #include "priv-io.h"
 #include "debug.h"
 
@@ -294,7 +300,7 @@ my_waitpid (assuan_context_t ctx, pid_t pid,
      NOWAIT in POSIX systems just means the caller already did the
      waitpid for this child.  */
   if (! nowait)
-    return _gpgme_ath_waitpid (pid, status, options);
+    return waitpid (pid, status, options);
 #endif
   return 0;
 }

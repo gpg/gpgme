@@ -54,11 +54,18 @@
 # include <dirent.h>
 #endif /*USE_LINUX_GETDENTS*/
 
+#ifdef HAVE_POLL_H
+# include <poll.h>
+#else
+# ifdef HAVE_SYS_SELECT_H
+#  include <sys/select.h>
+# endif
+#endif
+#include <sys/socket.h>
 
 #include "util.h"
 #include "priv-io.h"
 #include "sema.h"
-#include "ath.h"
 #include "debug.h"
 
 
@@ -178,7 +185,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
 
   do
     {
-      nread = _gpgme_ath_read (fd, buffer, count);
+      nread = read (fd, buffer, count);
     }
   while (nread == -1 && errno == EINTR);
 
@@ -197,7 +204,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 
   do
     {
-      nwritten = _gpgme_ath_write (fd, buffer, count);
+      nwritten = write (fd, buffer, count);
     }
   while (nwritten == -1 && errno == EINTR);
 
@@ -490,7 +497,7 @@ _gpgme_io_waitpid (int pid, int hang, int *r_status, int *r_signal)
   *r_status = 0;
   *r_signal = 0;
   do
-    ret = _gpgme_ath_waitpid (pid, &status, hang? 0 : WNOHANG);
+    ret = waitpid (pid, &status, hang? 0 : WNOHANG);
   while (ret == (pid_t)(-1) && errno == EINTR);
 
   if (ret == pid)
@@ -869,8 +876,7 @@ _gpgme_io_select_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 
   do
     {
-      count = _gpgme_ath_select (max_fd + 1, &readfds, &writefds, NULL,
-				 &timeout);
+      count = select (max_fd + 1, &readfds, &writefds, NULL, &timeout);
     }
   while (count < 0 && errno == EINTR);
   if (count < 0)
@@ -946,7 +952,7 @@ _gpgme_io_recvmsg (int fd, struct msghdr *msg, int flags)
 
   do
     {
-      nread = _gpgme_ath_recvmsg (fd, msg, flags);
+      nread = recvmsg (fd, msg, flags);
     }
   while (nread == -1 && errno == EINTR);
   saved_errno = errno;
@@ -996,7 +1002,7 @@ _gpgme_io_sendmsg (int fd, const struct msghdr *msg, int flags)
 
   do
     {
-      nwritten = _gpgme_ath_sendmsg (fd, msg, flags);
+      nwritten = sendmsg (fd, msg, flags);
     }
   while (nwritten == -1 && errno == EINTR);
   return TRACE_SYSRES (nwritten);
@@ -1041,7 +1047,7 @@ _gpgme_io_connect (int fd, struct sockaddr *addr, int addrlen)
 	      "fd=%d addr=%p addrlen=%i", fd, addr, addrlen);
 
   do
-    res = ath_connect (fd, addr, addrlen);
+    res = connect (fd, addr, addrlen);
   while (res == -1 && errno == EINTR);
 
   return TRACE_SYSRES (res);
