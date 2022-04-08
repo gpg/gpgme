@@ -601,10 +601,6 @@ does not match the target type you are building for a warning is
 printed and the string @code{libgcrypt} is appended to the variable
 @code{gpg_config_script_warn}.
 
-@code{AM_PATH_GPGME_PTH} checks for the version of @acronym{GPGME}
-that can be used with GNU Pth, and defines @code{GPGME_PTH_CFLAGS} and
-@code{GPGME_PTH_LIBS}.
-
 @code{AM_PATH_GPGME_PTHREAD} checks for the version of @acronym{GPGME}
 that can be used with the native pthread implementation, and defines
 @code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}. Since
