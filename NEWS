@@ -11,6 +11,7 @@ Noteworthy changes in version 1.17.2 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: RevocationReason                      NEW.
  cpp: GpgRevokeKeyEditInteractor            NEW.
+ cpp: Result::setError                      NEW.
  qt: RevokeKeyJob                           NEW.
  qt: Protocol::revokeKeyJob                 NEW.
 

@@ -50,6 +50,14 @@ public:
     {
         return mError;
     }
+    /**
+     * Replaces the error set during construction with \p error.
+     * Use with care, e.g. to set a more suitable error.
+     */
+    void setError(const Error &error)
+    {
+        mError = error;
+    }
 
 protected:
     Error mError;
