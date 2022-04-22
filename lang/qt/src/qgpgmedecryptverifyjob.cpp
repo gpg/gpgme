@@ -49,6 +49,7 @@
 #include "qgpgme_debug.h"
 
 #include <QBuffer>
+#include <QRegularExpression>
 
 #include <cassert>
 
@@ -63,12 +64,23 @@ QGpgMEDecryptVerifyJob::QGpgMEDecryptVerifyJob(Context *context)
 
 QGpgMEDecryptVerifyJob::~QGpgMEDecryptVerifyJob() {}
 
+static void patch_decryption_result(DecryptionResult &result, const QString &auditLog)
+{
+    if (result.error().code() == GPG_ERR_DECRYPT_FAILED) {
+        // check for wrong symmetric password
+        if (auditLog.contains(QLatin1String{"gpg: decryption of the symmetrically encrypted session key failed: Checksum error"})
+            || (auditLog.contains(QRegularExpression{QStringLiteral("gpg: encrypted with \\d+ passphrase")})
+                && auditLog.contains(QLatin1String{"gpg: decryption failed: Bad session key"}))) {
+            result.setError(Error::fromCode(GPG_ERR_BAD_PASSPHRASE));
+        }
+    }
+}
+
 static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread *thread,
                                                           const std::weak_ptr<QIODevice> &cipherText_,
                                                           const std::weak_ptr<QIODevice> &plainText_)
 {
-
-    qCDebug(QGPGME_LOG);
+    qCDebug(QGPGME_LOG) << __func__;
 
     const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
     const std::shared_ptr<QIODevice> plainText = plainText_.lock();
@@ -83,22 +95,23 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread 
         QGpgME::QByteArrayDataProvider out;
         Data outdata(&out);
 
-        const std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
+        std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        qCDebug(QGPGME_LOG) << "End no plainText. Error: " << ae;
+        qCDebug(QGPGME_LOG) << __func__ << "- End no plainText. Error:" << ae.asString();
+        patch_decryption_result(res.first, log);
         return std::make_tuple(res.first, res.second, out.data(), log, ae);
     } else {
         QGpgME::QIODeviceDataProvider out(plainText);
         Data outdata(&out);
 
-        const std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
+        std::pair<DecryptionResult, VerificationResult> res = ctx->decryptAndVerify(indata, outdata);
         Error ae;
         const QString log = _detail::audit_log_as_html(ctx, ae);
-        qCDebug(QGPGME_LOG) << "End plainText. Error: " << ae;
+        qCDebug(QGPGME_LOG) << __func__ << "- End plainText. Error:" << ae.asString();
+        patch_decryption_result(res.first, log);
         return std::make_tuple(res.first, res.second, QByteArray(), log, ae);
     }
-
 }
 
 static QGpgMEDecryptVerifyJob::result_type decrypt_verify_qba(Context *ctx, const QByteArray &cipherText)
