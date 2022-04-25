@@ -44,10 +44,12 @@ typedef struct
 
   int okay;
 
-  /* A flag telling that the a decryption failed and an optional error
-   * code to further specify the failure.  */
+  /* A flag telling that the a decryption failed and two optional error
+   * codes to further specify the failure for public key decryption and
+   * symmetric decryption.  */
   int failed;
   gpg_error_t pkdecrypt_failed;
+  gpg_error_t symdecrypt_failed;
 
   /* At least one secret key is not available.  gpg issues NO_SECKEY
    * status lines for each key the message has been encrypted to but
@@ -228,7 +230,22 @@ parse_status_error (char *args, op_data_t opd)
       opd->result.legacy_cipher_nomdc = 1;
       opd->not_integrity_protected = 1;
     }
+  else if (!strcmp (field[0], "symkey_decrypt.maybe_error"))
+    {
+      switch (gpg_err_code (err))
+        {
+        case GPG_ERR_BAD_PASSPHRASE:
+          /* A bad passphrase is severe enough that we return this
+           * error code.  */
+          opd->symdecrypt_failed = err;
+          break;
 
+        default:
+          /* For now all other error codes are ignored and the
+           * standard DECRYPT_FAILED is returned.  */
+          break;
+        }
+    }
   /* Record the first error code.  */
   if (err && !opd->first_status_error)
     opd->first_status_error = err;
@@ -376,6 +393,8 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
           /* This comes from a specialized ERROR status line.  */
           if (opd->pkdecrypt_failed)
             return opd->pkdecrypt_failed;
+          if (opd->symdecrypt_failed)
+            return opd->symdecrypt_failed;
 
           /* For an integrity failure return just DECRYPTION_FAILED;
            * the actual cause can be taken from an already set
