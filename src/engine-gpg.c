@@ -3105,8 +3105,11 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
                  code.  The problem is that we don't know the context
                  here and thus can't access the cached version number
                  for the engine info structure.  */
-              err = add_arg (gpg, "--locate-keys");
-              if ((mode & GPGME_KEYLIST_MODE_SIGS))
+              if ((mode & GPGME_KEYLIST_MODE_FORCE_EXTERN))
+                err = add_arg (gpg, "--locate-external-keys");
+              else
+                err = add_arg (gpg, "--locate-keys");
+              if (!err && (mode & GPGME_KEYLIST_MODE_SIGS))
                 err = add_arg (gpg, "--with-sig-check");
             }
           else

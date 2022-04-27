@@ -2471,6 +2471,11 @@ op_keylist (cjson_t request, cjson_t result)
   if (abool)
     mode |= GPGME_KEYLIST_MODE_LOCATE;
 
+  if ((err = get_boolean_flag (request, "force-extern", 0, &abool)))
+    goto leave;
+  if (abool)
+    mode |= GPGME_KEYLIST_MODE_FORCE_EXTERN;
+
   if (!mode)
     {
       /* default to local */

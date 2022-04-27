@@ -782,6 +782,10 @@ gpgme_set_keylist_mode (gpgme_ctx_t ctx, gpgme_keylist_mode_t mode)
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if ((mode & GPGME_KEYLIST_MODE_LOCATE_EXTERNAL) ==
+      (GPGME_KEYLIST_MODE_LOCAL|GPGME_KEYLIST_MODE_FORCE_EXTERN))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   ctx->keylist_mode = mode;
   return 0;
 }

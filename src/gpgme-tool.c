@@ -1459,6 +1459,8 @@ gt_get_keylist_mode (gpgme_tool_t gt)
     modes[idx++] = "ephemeral";
   if (mode & GPGME_KEYLIST_MODE_VALIDATE)
     modes[idx++] = "validate";
+  if (mode & GPGME_KEYLIST_MODE_FORCE_EXTERN)
+    modes[idx++] = "force_extern";
   modes[idx++] = NULL;
 
   gt_write_status (gt, STATUS_KEYLIST_MODE, modes[0], modes[1], modes[2],
@@ -2200,6 +2202,8 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 	mode |= GPGME_KEYLIST_MODE_EPHEMERAL;
       if (strstr (line, "validate"))
 	mode |= GPGME_KEYLIST_MODE_VALIDATE;
+      if (strstr (line, "force_extern"))
+	mode |= GPGME_KEYLIST_MODE_FORCE_EXTERN;
 
       return gt_set_keylist_mode (server->gt, mode);
     }

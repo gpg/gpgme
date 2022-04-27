@@ -1,19 +1,23 @@
 Noteworthy changes in version 1.17.2 (unreleased)
 -------------------------------------------------
 
- Release-info: https://dev.gnupg.org/Txxxx
+ * New keylist mode to force refresh via external methods.  [#5951]
 
- * cpp, qt: Do not export internal symbols anymore.  [T5906]
+ * cpp, qt: Do not export internal symbols anymore.  [#5906]
 
  * cpp, qt: Support revocation of own OpenPGP keys.  [#5904]
 
  * Interface changes relative to the 1.17.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_KEYLIST_MODE_FORCE_EXTERN            NEW.
+ GPGME_KEYLIST_MODE_LOCATE_EXTERNAL         NEW.
  cpp: RevocationReason                      NEW.
  cpp: GpgRevokeKeyEditInteractor            NEW.
  cpp: Result::setError                      NEW.
  qt: RevokeKeyJob                           NEW.
  qt: Protocol::revokeKeyJob                 NEW.
+
+ Release-info: https://dev.gnupg.org/Txxxx
 
 
 Noteworthy changes in version 1.17.1 (2022-03-06)

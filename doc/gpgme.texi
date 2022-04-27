@@ -2872,6 +2872,26 @@ validity information from an internal cache.  This might be an
 expensive operation and is in general not useful.  Currently only
 implemented for the S/MIME backend and ignored for other backends.
 
+@item GPGME_KEYLIST_MODE_FORCE_EXTERN
+@since{1.18.0}
+
+The @code{GPGME_KEYLIST_MODE_FORCE_EXTERN} symbol specifies that only
+external sources should be searched for keys in the keylisting
+operation.  If used in combination with @code{GPGME_KEYLIST_MODE_LOCATE},
+the keylisting results in a @code{--locate-external-keys} for
+@code{GPGME_PROTOCOL_OpenPGP}.  The combination with
+@code{GPGME_KEYLIST_MODE_LOCAL}, but without @code{GPGME_KEYLIST_MODE_EXTERN}
+is not allowed.  Currently only implemented for the OpenPGP backend and
+ignored for other backends.
+
+@item GPGME_KEYLIST_MODE_LOCATE_EXTERNAL
+@since{1.18.0}
+
+This is a shortcut for the combination of
+@code{GPGME_KEYLIST_MODE_LOCATE} and @code{GPGME_KEYLIST_MODE_FORCE_EXTERN},
+which results in a @code{--locate-external-keys} for
+@code{GPGME_PROTOCOL_OpenPGP}.
+
 @end table
 
 At least one of @code{GPGME_KEYLIST_MODE_LOCAL} and
