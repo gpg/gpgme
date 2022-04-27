@@ -1849,6 +1849,7 @@ std::ostream &operator<<(std::ostream &os, KeyListMode mode)
     CHECK(WithTofu);
     CHECK(WithKeygrip);
     CHECK(WithSecret);
+    CHECK(ForceExtern);
 #undef CHECK
     return os << ')';
 }

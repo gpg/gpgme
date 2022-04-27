@@ -61,6 +61,8 @@ show_usage (int ex)
          "  --ephemeral      use GPGME_KEYLIST_MODE_EPHEMERAL\n"
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
          "  --locate         use GPGME_KEYLIST_MODE_LOCATE\n"
+         "  --force-extern   use GPGME_KEYLIST_MODE_FORCE_EXTERN\n"
+         "  --locate-external use GPGME_KEYLIST_MODE_LOCATE_EXTERNAL\n"
          , stderr);
   exit (ex);
 }
@@ -117,6 +119,12 @@ main (int argc, char **argv)
         } else if (!strcmp (*argv, "--locate")) {
             argc--; argv++;
             mode |= KeyListMode::Locate;
+        } else if (!strcmp (*argv, "--force-extern")) {
+            argc--; argv++;
+            mode |= KeyListMode::ForceExtern;
+        } else if (!strcmp (*argv, "--locate-external")) {
+            argc--; argv++;
+            mode |= KeyListMode::LocateExternal;
         } else if (!strncmp (*argv, "--", 2)) {
             show_usage (1);
         }

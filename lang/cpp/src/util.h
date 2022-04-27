@@ -89,19 +89,15 @@ static inline gpgme_keylist_mode_t add_to_gpgme_keylist_mode_t(unsigned int oldm
     if (newmodes & GpgME::WithSecret) {
         oldmode |= GPGME_KEYLIST_MODE_WITH_SECRET;
     }
+    if (newmodes & GpgME::ForceExtern) {
+        oldmode |= GPGME_KEYLIST_MODE_FORCE_EXTERN;
+    }
 #ifndef NDEBUG
-    if (newmodes & ~(GpgME::Local |
-                     GpgME::Extern |
-                     GpgME::Signatures |
-                     GpgME::SignatureNotations |
-                     GpgME::Validate |
-                     GpgME::Ephemeral |
-                     GpgME::WithTofu |
-                     GpgME::WithKeygrip |
-                     GpgME::WithSecret)) {
+    if (newmodes & ~(GpgME::KeyListModeMask)) {
         //std::cerr << "GpgME::Context: keylist mode must be one of Local, "
         //"Extern, Signatures, SignatureNotations, Validate, Ephemeral, WithTofu, "
-        //"WithKeygrip, WithSecret, or a combination thereof!" << std::endl;
+        //"WithKeygrip, WithSecret, ForceExtern, or a combination thereof!"
+        //<< std::endl;
     }
 #endif
     return static_cast<gpgme_keylist_mode_t>(oldmode);
@@ -137,6 +133,9 @@ static inline unsigned int convert_from_gpgme_keylist_mode_t(unsigned int mode)
     if (mode & GPGME_KEYLIST_MODE_VALIDATE) {
         result |= GpgME::Validate;
     }
+    if (mode & GPGME_KEYLIST_MODE_FORCE_EXTERN) {
+        result |= GpgME::ForceExtern;
+    }
 #ifndef NDEBUG
     if (mode & ~(GPGME_KEYLIST_MODE_LOCAL |
                  GPGME_KEYLIST_MODE_EXTERN |
@@ -146,7 +145,8 @@ static inline unsigned int convert_from_gpgme_keylist_mode_t(unsigned int mode)
                  GPGME_KEYLIST_MODE_WITH_TOFU |
                  GPGME_KEYLIST_MODE_WITH_KEYGRIP |
                  GPGME_KEYLIST_MODE_EPHEMERAL |
-                 GPGME_KEYLIST_MODE_VALIDATE)) {
+                 GPGME_KEYLIST_MODE_VALIDATE |
+                 GPGME_KEYLIST_MODE_FORCE_EXTERN)) {
         //std::cerr << "GpgME: WARNING: gpgme_get_keylist_mode() returned an unknown flag!" << std::endl;
     }
 #endif // NDEBUG

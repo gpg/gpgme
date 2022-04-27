@@ -60,14 +60,18 @@ enum Engine { GpgEngine, GpgSMEngine, GpgConfEngine, UnknownEngine, AssuanEngine
 enum KeyListMode {
     Local = 0x1,
     Extern = 0x2,
-    Locate = 0x3,
+    Locate = Local|Extern,
     Signatures = 0x4,
     SignatureNotations = 0x8,
     Validate = 0x10,
     Ephemeral = 0x20,
     WithTofu = 0x40,
     WithKeygrip = 0x80,
-    WithSecret = 0x100
+    WithSecret = 0x100,
+    ForceExtern = 0x200,
+    LocateExternal = Locate|ForceExtern,
+
+    KeyListModeMask = 0x3ff
 };
 
 enum SignatureMode { NormalSignatureMode, Detached, Clearsigned };
