@@ -1,5 +1,5 @@
 /*
-    qgpgmerefreshkeysjob.h
+    qgpgmerefreshsmimekeysjob.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2004 Klarälvdalens Datakonsult AB
@@ -32,8 +32,8 @@
     your version.
 */
 
-#ifndef __QGPGME_QGPGMEREFRESHKEYSJOB_H__
-#define __QGPGME_QGPGMEREFRESHKEYSJOB_H__
+#ifndef __QGPGME_QGPGMEREFRESHSMIMEKEYSJOB_H__
+#define __QGPGME_QGPGMEREFRESHSMIMEKEYSJOB_H__
 
 #include "refreshkeysjob.h"
 #ifdef BUILDING_QGPGME
@@ -48,12 +48,12 @@
 namespace QGpgME
 {
 
-class QGpgMERefreshKeysJob : public RefreshKeysJob
+class QGpgMERefreshSMIMEKeysJob : public RefreshKeysJob
 {
     Q_OBJECT
 public:
-    QGpgMERefreshKeysJob();
-    ~QGpgMERefreshKeysJob();
+    QGpgMERefreshSMIMEKeysJob();
+    ~QGpgMERefreshSMIMEKeysJob();
 
     /* from RefreshKeysJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
@@ -77,4 +77,4 @@ private:
 
 }
 
-#endif // __QGPGME_QGPGMEREFRESHKEYSJOB_H__
+#endif // __QGPGME_QGPGMEREFRESHSMIMEKEYSJOB_H__

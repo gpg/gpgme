@@ -42,7 +42,7 @@
 #include "qgpgmelistallkeysjob.h"
 #include "qgpgmedecryptjob.h"
 #include "qgpgmedecryptverifyjob.h"
-#include "qgpgmerefreshkeysjob.h"
+#include "qgpgmerefreshsmimekeysjob.h"
 #include "qgpgmedeletejob.h"
 #include "qgpgmedownloadjob.h"
 #include "qgpgmesignencryptjob.h"
@@ -288,7 +288,7 @@ public:
         }
 
         // this operation is not supported by gpgme, so we have to call gpgsm ourselves:
-        return new QGpgME::QGpgMERefreshKeysJob();
+        return new QGpgME::QGpgMERefreshSMIMEKeysJob();
     }
 
     QGpgME::DownloadJob *downloadJob(bool armor) const Q_DECL_OVERRIDE

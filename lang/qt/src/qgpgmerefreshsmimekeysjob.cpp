@@ -1,5 +1,5 @@
 /*
-    qgpgmerefreshkeysjob.cpp
+    qgpgmerefreshsmimekeysjob.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2004 Klarävdalens Datakonsult AB
@@ -38,7 +38,7 @@
  #include "config.h"
 #endif
 
-#include "qgpgmerefreshkeysjob.h"
+#include "qgpgmerefreshsmimekeysjob.h"
 
 #include <QDebug>
 #include "qgpgme_debug.h"
@@ -52,7 +52,7 @@
 
 #include <assert.h>
 
-QGpgME::QGpgMERefreshKeysJob::QGpgMERefreshKeysJob()
+QGpgME::QGpgMERefreshSMIMEKeysJob::QGpgMERefreshSMIMEKeysJob()
     : RefreshKeysJob(nullptr),
       mProcess(nullptr),
       mError(0)
@@ -60,12 +60,12 @@ QGpgME::QGpgMERefreshKeysJob::QGpgMERefreshKeysJob()
 
 }
 
-QGpgME::QGpgMERefreshKeysJob::~QGpgMERefreshKeysJob()
+QGpgME::QGpgMERefreshSMIMEKeysJob::~QGpgMERefreshSMIMEKeysJob()
 {
 
 }
 
-GpgME::Error QGpgME::QGpgMERefreshKeysJob::start(const QStringList &patterns)
+GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::start(const QStringList &patterns)
 {
     assert(mPatternsToDo.empty());
 
@@ -83,7 +83,7 @@ GpgME::Error QGpgME::QGpgMERefreshKeysJob::start(const QStringList &patterns)
 #error MAX_CMD_LENGTH is too low
 #endif
 
-GpgME::Error QGpgME::QGpgMERefreshKeysJob::startAProcess()
+GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::startAProcess()
 {
     if (mPatternsToDo.empty()) {
         return GpgME::Error();
@@ -125,7 +125,7 @@ GpgME::Error QGpgME::QGpgMERefreshKeysJob::startAProcess()
     connect(mProcess, SIGNAL(readyReadStandardOutput()),
             SLOT(slotStdout()));
     connect(mProcess, &QProcess::readyReadStandardError,
-            this, &QGpgMERefreshKeysJob::slotStderr);
+            this, &QGpgMERefreshSMIMEKeysJob::slotStderr);
 
     mProcess->start();
     if (!mProcess->waitForStarted()) {
@@ -137,7 +137,7 @@ GpgME::Error QGpgME::QGpgMERefreshKeysJob::startAProcess()
     }
 }
 
-void QGpgME::QGpgMERefreshKeysJob::slotCancel()
+void QGpgME::QGpgMERefreshSMIMEKeysJob::slotCancel()
 {
     if (mProcess) {
         mProcess->kill();
@@ -146,7 +146,7 @@ void QGpgME::QGpgMERefreshKeysJob::slotCancel()
     mError = GpgME::Error::fromCode(GPG_ERR_CANCELED, GPG_ERR_SOURCE_GPGSM);
 }
 
-void QGpgME::QGpgMERefreshKeysJob::slotStatus(QProcess *proc, const QString &type, const QStringList &args)
+void QGpgME::QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, const QStringList &args)
 {
     if (proc != mProcess) {
         return;
@@ -204,12 +204,12 @@ void QGpgME::QGpgMERefreshKeysJob::slotStatus(QProcess *proc, const QString &typ
     }
 }
 
-void QGpgME::QGpgMERefreshKeysJob::slotStderr()
+void QGpgME::QGpgMERefreshSMIMEKeysJob::slotStderr()
 {
     // implement? or not?
 }
 
-void QGpgME::QGpgMERefreshKeysJob::slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus)
+void QGpgME::QGpgMERefreshSMIMEKeysJob::slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (!mError && !mPatternsToDo.empty()) {
         if (const GpgME::Error err = startAProcess()) {
@@ -227,4 +227,4 @@ void QGpgME::QGpgMERefreshKeysJob::slotProcessExited(int exitCode, QProcess::Exi
     Q_EMIT result(mError);
     deleteLater();
 }
-#include "qgpgmerefreshkeysjob.moc"
+#include "qgpgmerefreshsmimekeysjob.moc"
