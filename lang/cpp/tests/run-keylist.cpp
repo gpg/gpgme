@@ -141,6 +141,12 @@ main (int argc, char **argv)
         return -1;
     }
     ctx->setKeyListMode (mode);
+    if (ctx->keyListMode() != mode) {
+        // unfortunately, Context::setKeyListMode() does not return the error
+        // returned by gpgme
+        std::cerr << "Failed to set keylist mode. You may have used an invalid combination of options.\n";
+        return -1;
+    }
     Error err = ctx->startKeyListing (*argv, only_secret);
     if (err) {
         std::cout << "Error: " << err.asString() << "\n";
