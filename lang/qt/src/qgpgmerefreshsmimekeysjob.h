@@ -65,7 +65,6 @@ private Q_SLOTS:
     void slotCancel() Q_DECL_OVERRIDE;
 
     void slotStatus(QProcess *, const QString &, const QStringList &);
-    void slotStderr();
     void slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus);
 
 private:

@@ -152,10 +152,12 @@ GpgME::Error QGpgMERefreshSMIMEKeysJob::startAProcess()
 
     connect(mProcess, SIGNAL(finished(int,QProcess::ExitStatus)),
             SLOT(slotProcessExited(int,QProcess::ExitStatus)));
-    connect(mProcess, SIGNAL(readyReadStandardOutput()),
-            SLOT(slotStdout()));
-    connect(mProcess, &QProcess::readyReadStandardError,
-            this, &QGpgMERefreshSMIMEKeysJob::slotStderr);
+    connect(mProcess, &QProcess::readyReadStandardOutput, this, [this]() {
+        qCDebug(QGPGME_LOG) << "stdout:" << mProcess->readAllStandardOutput();
+    });
+    connect(mProcess, &QProcess::readyReadStandardError, this, [this]() {
+        qCDebug(QGPGME_LOG) << "stderr:" << mProcess->readAllStandardError();
+    });
 
     mProcess->start();
     if (!mProcess->waitForStarted()) {
@@ -232,11 +234,6 @@ void QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, 
         Q_EMIT progress(QString(), cur, total);
 
     }
-}
-
-void QGpgMERefreshSMIMEKeysJob::slotStderr()
-{
-    // implement? or not?
 }
 
 void QGpgMERefreshSMIMEKeysJob::slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus)
