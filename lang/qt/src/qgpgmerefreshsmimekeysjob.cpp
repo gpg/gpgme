@@ -52,7 +52,9 @@
 
 #include <assert.h>
 
-QGpgME::QGpgMERefreshSMIMEKeysJob::QGpgMERefreshSMIMEKeysJob()
+using namespace QGpgME;
+
+QGpgMERefreshSMIMEKeysJob::QGpgMERefreshSMIMEKeysJob()
     : RefreshKeysJob(nullptr),
       mProcess(nullptr),
       mError(0)
@@ -60,12 +62,12 @@ QGpgME::QGpgMERefreshSMIMEKeysJob::QGpgMERefreshSMIMEKeysJob()
 
 }
 
-QGpgME::QGpgMERefreshSMIMEKeysJob::~QGpgMERefreshSMIMEKeysJob()
+QGpgMERefreshSMIMEKeysJob::~QGpgMERefreshSMIMEKeysJob()
 {
 
 }
 
-GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::start(const QStringList &patterns)
+GpgME::Error QGpgMERefreshSMIMEKeysJob::start(const QStringList &patterns)
 {
     assert(mPatternsToDo.empty());
 
@@ -83,7 +85,7 @@ GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::start(const QStringList &pattern
 #error MAX_CMD_LENGTH is too low
 #endif
 
-GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::startAProcess()
+GpgME::Error QGpgMERefreshSMIMEKeysJob::startAProcess()
 {
     if (mPatternsToDo.empty()) {
         return GpgME::Error();
@@ -137,7 +139,7 @@ GpgME::Error QGpgME::QGpgMERefreshSMIMEKeysJob::startAProcess()
     }
 }
 
-void QGpgME::QGpgMERefreshSMIMEKeysJob::slotCancel()
+void QGpgMERefreshSMIMEKeysJob::slotCancel()
 {
     if (mProcess) {
         mProcess->kill();
@@ -146,7 +148,7 @@ void QGpgME::QGpgMERefreshSMIMEKeysJob::slotCancel()
     mError = GpgME::Error::fromCode(GPG_ERR_CANCELED, GPG_ERR_SOURCE_GPGSM);
 }
 
-void QGpgME::QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, const QStringList &args)
+void QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, const QStringList &args)
 {
     if (proc != mProcess) {
         return;
@@ -204,12 +206,12 @@ void QGpgME::QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString
     }
 }
 
-void QGpgME::QGpgMERefreshSMIMEKeysJob::slotStderr()
+void QGpgMERefreshSMIMEKeysJob::slotStderr()
 {
     // implement? or not?
 }
 
-void QGpgME::QGpgMERefreshSMIMEKeysJob::slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus)
+void QGpgMERefreshSMIMEKeysJob::slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (!mError && !mPatternsToDo.empty()) {
         if (const GpgME::Error err = startAProcess()) {
