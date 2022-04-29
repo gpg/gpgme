@@ -73,18 +73,19 @@ public:
     ~RefreshKeysJob();
 
     /**
-      Starts the keylist operation. \a pattern is a list of patterns
+      Starts the refresh operation. \a pattern is a list of patterns
       used to restrict the list of keys returned. Empty patterns are
       ignored. If \a pattern is empty or contains only empty strings,
-      all keys are returned (however, the backend is free to truncate
-      the result and should do so; when this happens, it will be
-      reported by the reult object).
+      all keys are refreshed.
 
-      If \a secretOnly is true, only keys for which the secret key is
-      also available are returned. Use this if you need to select a
-      key for signing.
+      Only implemented for S/MIME.
     */
     virtual GpgME::Error start(const QStringList &patterns) = 0;
+
+    /**
+      Starts a refresh of the \a keys.
+    */
+    virtual GpgME::Error start(const std::vector<GpgME::Key> &keys) = 0;
 
 Q_SIGNALS:
     void result(const GpgME::Error &error);

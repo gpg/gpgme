@@ -44,8 +44,11 @@
 #include "qgpgme_debug.h"
 
 #include "context.h"
+#include <key.h>
 
 #include <QByteArray>
+#include <QMetaObject>
+#include <QProcess>
 #include <QStringList>
 
 #include <gpg-error.h>
@@ -79,6 +82,31 @@ GpgME::Error QGpgMERefreshSMIMEKeysJob::start(const QStringList &patterns)
     // startAProcess() guard clause
 
     return startAProcess();
+}
+
+GpgME::Error QGpgMERefreshSMIMEKeysJob::start(const std::vector<GpgME::Key> &keys)
+{
+    if (keys.empty()) {
+        QMetaObject::invokeMethod(this, [this]() {
+            Q_EMIT slotProcessExited(0, QProcess::NormalExit);
+        }, Qt::QueuedConnection);
+        return {};
+    }
+
+    const bool gotWrongKeys = std::any_of(std::begin(keys), std::end(keys), [](const auto &k) {
+        return k.protocol() != GpgME::CMS;
+    });
+    if (gotWrongKeys) {
+        qCDebug(QGPGME_LOG) << "Error: At least one of the keys is not an S/MIME key";
+        return GpgME::Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    QStringList fprs;
+    fprs.reserve(keys.size());
+    std::transform(std::begin(keys), std::end(keys), std::back_inserter(fprs), [](const auto &k) {
+        return QString::fromLatin1(k.primaryFingerprint());
+    });
+    return start(fprs);
 }
 
 #if MAX_CMD_LENGTH < 65 + 128

@@ -58,6 +58,8 @@ public:
     /* from RefreshKeysJob */
     GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
 
+    GpgME::Error start(const std::vector<GpgME::Key> &keys) override;
+
 private Q_SLOTS:
     /* from Job */
     void slotCancel() Q_DECL_OVERRIDE;
