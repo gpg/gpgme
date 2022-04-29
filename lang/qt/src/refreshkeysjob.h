@@ -88,7 +88,7 @@ public:
     virtual GpgME::Error start(const std::vector<GpgME::Key> &keys) = 0;
 
 Q_SIGNALS:
-    void result(const GpgME::Error &error);
+    void result(const GpgME::Error &result, const QString &auditLogAsHtml = {}, const GpgME::Error &auditLogError = {});
 };
 
 }
