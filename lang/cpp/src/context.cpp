@@ -195,6 +195,19 @@ std::ostream &operator<<(std::ostream &os, const Error &err)
     return os << "GpgME::Error(" << err.encodedError() << " (" << err.asString() << "))";
 }
 
+Context::KeyListModeSaver::KeyListModeSaver(Context *ctx)
+    : mCtx{ctx}
+    , mKeyListMode{ctx ? ctx->keyListMode() : 0}
+{
+}
+
+Context::KeyListModeSaver::~KeyListModeSaver()
+{
+    if (mCtx) {
+        mCtx->setKeyListMode(mKeyListMode);
+    }
+}
+
 Context::Context(gpgme_ctx_t ctx) : d(new Private(ctx))
 {
 }

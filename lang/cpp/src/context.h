@@ -64,6 +64,17 @@ class GPGMEPP_EXPORT Context
 public:
     //using GpgME::Protocol;
 
+    /// RAII-style class for saving/restoring the key list mode.
+    class KeyListModeSaver
+    {
+    public:
+        explicit KeyListModeSaver(Context *ctx);
+        ~KeyListModeSaver();
+    private:
+        Context *mCtx;
+        unsigned int mKeyListMode;
+    };
+
     //
     // Creation and destruction:
     //
