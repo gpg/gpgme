@@ -41,11 +41,18 @@
 
 class QStringList;
 
+namespace GpgME
+{
+class Key;
+}
+
 static inline gpgme_error_t make_error(gpgme_err_code_t code)
 {
     return gpgme_err_make((gpgme_err_source_t)22, code);
 }
 
 std::vector<std::string> toStrings(const QStringList &l);
+
+QStringList toFingerprints(const std::vector<GpgME::Key> &keys);
 
 #endif // __QGPGME_UTIL_H__

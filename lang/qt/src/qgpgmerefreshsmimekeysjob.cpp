@@ -39,6 +39,7 @@
 #endif
 
 #include "qgpgmerefreshsmimekeysjob.h"
+#include "util.h"
 
 #include <QDebug>
 #include "qgpgme_debug.h"
@@ -101,12 +102,7 @@ GpgME::Error QGpgMERefreshSMIMEKeysJob::start(const std::vector<GpgME::Key> &key
         return GpgME::Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
-    QStringList fprs;
-    fprs.reserve(keys.size());
-    std::transform(std::begin(keys), std::end(keys), std::back_inserter(fprs), [](const auto &k) {
-        return QString::fromLatin1(k.primaryFingerprint());
-    });
-    return start(fprs);
+    return start(toFingerprints(keys));
 }
 
 #if MAX_CMD_LENGTH < 65 + 128

@@ -38,6 +38,10 @@
 #include "util.h"
 
 #include <QStringList>
+
+#include <key.h>
+
+#include <algorithm>
 #include <functional>
 
 std::vector<std::string> toStrings(const QStringList &l)
@@ -48,4 +52,14 @@ std::vector<std::string> toStrings(const QStringList &l)
                    std::back_inserter(v),
                    std::mem_fn(&QString::toStdString));
     return v;
+}
+
+QStringList toFingerprints(const std::vector<GpgME::Key> &keys)
+{
+    QStringList fprs;
+    fprs.reserve(keys.size());
+    std::transform(std::begin(keys), std::end(keys), std::back_inserter(fprs), [](const auto &k) {
+        return QString::fromLatin1(k.primaryFingerprint());
+    });
+    return fprs;
 }
