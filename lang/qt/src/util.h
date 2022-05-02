@@ -36,6 +36,7 @@
 
 #include <gpgme.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -54,5 +55,13 @@ static inline gpgme_error_t make_error(gpgme_err_code_t code)
 std::vector<std::string> toStrings(const QStringList &l);
 
 QStringList toFingerprints(const std::vector<GpgME::Key> &keys);
+
+template<class Result>
+std::string toLogString(const Result &result)
+{
+    std::stringstream stream;
+    stream << result;
+    return stream.str();
+}
 
 #endif // __QGPGME_UTIL_H__
