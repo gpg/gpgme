@@ -71,7 +71,7 @@ static bool subkeyIsOk(const Subkey s)
 static QGpgMEKeyForMailboxJob::result_type do_work(Context *ctx, const QString &mailbox, bool canEncrypt)
 {
     /* Do a Keylisting. */
-    ctx->setKeyListMode(GpgME::Extern | GpgME::Local | GpgME::Signatures | GpgME::Validate);
+    ctx->setKeyListMode(GpgME::Locate | GpgME::Signatures | GpgME::Validate);
     std::vector<Key> keys;
     QGpgMEKeyListJob *keylist = new QGpgMEKeyListJob(ctx);
 

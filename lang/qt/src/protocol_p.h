@@ -426,7 +426,7 @@ public:
         if (!context) {
             return nullptr;
         }
-        context->setKeyListMode(GpgME::Extern | GpgME::Local | GpgME::Signatures | GpgME::Validate);
+        context->setKeyListMode(GpgME::Locate | GpgME::Signatures | GpgME::Validate);
         return new QGpgME::QGpgMEKeyListJob(context);
     }
 
