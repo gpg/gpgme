@@ -35,6 +35,7 @@ qgpgme_sources = \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
     qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
     qgpgmereceivekeysjob.cpp \
+    qgpgmerefreshopenpgpkeysjob.cpp \
     qgpgmerefreshsmimekeysjob.cpp \
     qgpgmerevokekeyjob.cpp \
     qgpgmesignencryptjob.cpp \
@@ -161,6 +162,7 @@ private_qgpgme_headers = \
     qgpgmekeylistjob.h \
     qgpgmelistallkeysjob.h \
     qgpgmereceivekeysjob.h \
+    qgpgmerefreshopenpgpkeysjob.h \
     qgpgmerefreshsmimekeysjob.h \
     qgpgmerevokekeyjob.h \
     qgpgmesignencryptjob.h \
@@ -215,6 +217,7 @@ qgpgme_moc_sources = \
     qgpgmekeylistjob.moc \
     qgpgmelistallkeysjob.moc \
     qgpgmereceivekeysjob.moc \
+    qgpgmerefreshopenpgpkeysjob.moc \
     qgpgmerefreshsmimekeysjob.moc \
     qgpgmerevokekeyjob.moc \
     qgpgmesignencryptjob.moc \

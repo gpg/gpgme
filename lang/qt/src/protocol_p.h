@@ -42,6 +42,7 @@
 #include "qgpgmelistallkeysjob.h"
 #include "qgpgmedecryptjob.h"
 #include "qgpgmedecryptverifyjob.h"
+#include "qgpgmerefreshopenpgpkeysjob.h"
 #include "qgpgmerefreshsmimekeysjob.h"
 #include "qgpgmedeletejob.h"
 #include "qgpgmedownloadjob.h"
@@ -283,12 +284,15 @@ public:
 
     QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE
     {
-        if (mProtocol != GpgME::CMS) { // fixme: add support for gpg, too
-            return nullptr;
+        if (mProtocol == GpgME::CMS) {
+            return new QGpgME::QGpgMERefreshSMIMEKeysJob;
         }
 
-        // this operation is not supported by gpgme, so we have to call gpgsm ourselves:
-        return new QGpgME::QGpgMERefreshSMIMEKeysJob();
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMERefreshOpenPGPKeysJob{context};
     }
 
     QGpgME::DownloadJob *downloadJob(bool armor) const Q_DECL_OVERRIDE

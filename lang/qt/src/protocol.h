@@ -135,6 +135,14 @@ public:
     virtual DeleteJob            *deleteJob() const = 0;
     virtual SignEncryptJob       *signEncryptJob(bool armor = false, bool textMode = false) const = 0;
     virtual DecryptVerifyJob     *decryptVerifyJob(bool textmode = false) const = 0;
+
+    /**
+     * For S/MIME keys this job performs a full validation check of the keys
+     * with updated CRLs.
+     * For OpenPGP keys this job performs a refresh of keys via the external
+     * methods as defined by the \c auto-key-locate option and from the
+     * configured keyserver.
+     */
     virtual RefreshKeysJob       *refreshKeysJob() const = 0;
     virtual ChangeExpiryJob      *changeExpiryJob() const = 0;
     virtual SignKeyJob           *signKeyJob() const = 0;
