@@ -81,7 +81,7 @@ private Q_SLOTS:
         QVERIFY(!key.isNull());
 
         bool found = false;
-        for (const auto subkey: key.subkeys()) {
+        for (const auto &subkey: key.subkeys()) {
             if (!strcmp (subkey.fingerprint(), sig.fingerprint())) {
                 found = true;
             }
