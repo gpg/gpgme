@@ -61,7 +61,7 @@ namespace QGpgME
    RefreshKeysJob instance will have scheduled its own destruction
    with a call to QObject::deleteLater().
 
-   After result() is emitted, the KeyListJob will schedule it's own
+   After result() is emitted, the job will schedule it's own
    destruction by calling QObject::deleteLater().
 */
 class QGPGME_EXPORT RefreshKeysJob : public Job

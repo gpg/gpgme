@@ -64,7 +64,7 @@ namespace QGpgME
    CryptoBackend implementation, connect the nextKey(), progress()
    and result() signals to suitable slots and then start the key
    listing with a call to start(). This call might fail, in which
-   case the KeylistJob instance will have schedules it's own
+   case the KeylistJob instance will have scheduled it's own
    destruction with a call to QObject::deleteLater().
 
    During keylisting, you will receive new key objects through the

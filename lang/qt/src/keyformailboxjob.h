@@ -57,18 +57,14 @@ namespace QGpgME
 
    To use the keyformailboxjob, first obtain an instance from the
    CryptoBackend and either exec it or start and
-   conncet the result() signals to a suitable slot.
-   The job will be automatically deleted in which
-   case the KeylistJob instance will have schedules it's own
-   destruction with a call to QObject::deleteLater().
+   connect the result() signal to a suitable slot.
 
    The best key is defined as the key with a UID that has an
    E-Mail that matches the mailbox provided. If multiple
    keys are found the one with the highest validity is returned.
 
-   After result() is emitted, the
-   KeyListJob will schedule it's own destruction by calling
-   QObject::deleteLater().
+   After result() is emitted, the job will schedule it's own
+   destruction by calling QObject::deleteLater().
 */
 class QGPGME_EXPORT KeyForMailboxJob: public Job
 {
