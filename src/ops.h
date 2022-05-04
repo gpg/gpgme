@@ -192,4 +192,16 @@ gpgme_error_t _gpgme_parse_notation (gpgme_sig_notation_t *notationp,
 				     int type, int pkflags, int len,
 				     char *data);
 
+
+/* From import.c.  */
+
+/* Create an initial op data object for import.  Needs to be called
+   once before calling _gpgme_import_status_handler.  */
+gpgme_error_t _gpgme_op_import_init_result (gpgme_ctx_t ctx);
+
+/* Process a status line for import operations.  */
+gpgme_error_t _gpgme_import_status_handler (void *priv,
+                                            gpgme_status_code_t code,
+                                            char *args);
+
 #endif /* OPS_H */

@@ -266,8 +266,8 @@ parse_error (char *args, gpgme_import_status_t *import_status)
 }
 
 
-static gpgme_error_t
-import_status_handler (void *priv, gpgme_status_code_t code, char *args)
+gpgme_error_t
+_gpgme_import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   gpgme_error_t err;
@@ -311,28 +311,42 @@ import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 }
 
 
-static gpgme_error_t
-_gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
+gpgme_error_t
+_gpgme_op_import_init_result (gpgme_ctx_t ctx)
 {
   gpgme_error_t err;
   void *hook;
   op_data_t opd;
-
-  err = _gpgme_op_reset (ctx, synchronous);
-  if (err)
-    return err;
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;
   if (err)
     return err;
+
   opd->lastp = &opd->result.imports;
+  return 0;
+}
+
+
+static gpgme_error_t
+_gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
+{
+  gpgme_error_t err;
+
+  err = _gpgme_op_reset (ctx, synchronous);
+  if (err)
+    return err;
+
+  err = _gpgme_op_import_init_result (ctx);
+  if (err)
+    return err;
 
   if (!keydata)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_import_status_handler,
+                                    ctx);
 
   return _gpgme_engine_op_import (ctx->engine, keydata, NULL, NULL,
                                   ctx->import_filter, ctx->key_origin);
@@ -380,20 +394,15 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
                              gpgme_key_t *keys)
 {
   gpgme_error_t err;
-  void *hook;
-  op_data_t opd;
   int idx, firstidx, nkeys;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
-			       sizeof (*opd), release_op_data);
-  opd = hook;
+  err = _gpgme_op_import_init_result (ctx);
   if (err)
     return err;
-  opd->lastp = &opd->result.imports;
 
   if (!keys)
     return gpg_error (GPG_ERR_NO_DATA);
@@ -416,7 +425,8 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
   if (!nkeys)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_import_status_handler,
+                                    ctx);
 
   return _gpgme_engine_op_import (ctx->engine, NULL, keys, NULL,
                                   ctx->import_filter, ctx->key_origin);
@@ -496,24 +506,20 @@ static gpgme_error_t
 _gpgme_op_receive_keys_start (gpgme_ctx_t ctx, int synchronous, const char *keyids[])
 {
   gpgme_error_t err;
-  void *hook;
-  op_data_t opd;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
 
-  err = _gpgme_op_data_lookup (ctx, OPDATA_IMPORT, &hook,
-			       sizeof (*opd), release_op_data);
-  opd = hook;
+  err = _gpgme_op_import_init_result (ctx);
   if (err)
     return err;
-  opd->lastp = &opd->result.imports;
 
   if (!keyids || !*keyids)
     return gpg_error (GPG_ERR_NO_DATA);
 
-  _gpgme_engine_set_status_handler (ctx->engine, import_status_handler, ctx);
+  _gpgme_engine_set_status_handler (ctx->engine, _gpgme_import_status_handler,
+                                    ctx);
 
   return _gpgme_engine_op_import (ctx->engine, NULL, NULL, keyids,
                                   ctx->import_filter, ctx->key_origin);

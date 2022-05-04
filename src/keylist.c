@@ -146,6 +146,12 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
       err = 0;
       break;
 
+    case GPGME_STATUS_IMPORT_OK:
+    case GPGME_STATUS_IMPORT_PROBLEM:
+    case GPGME_STATUS_IMPORT_RES:
+      err = _gpgme_import_status_handler (priv, code, args);
+      break;
+
     default:
       break;
     }
@@ -1125,6 +1131,10 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   if (err)
     return TRACE_ERR (err);
 
+  err = _gpgme_op_import_init_result (ctx);
+  if (err)
+    return TRACE_ERR (err);
+
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
 
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
@@ -1166,6 +1176,10 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook,
 			       sizeof (*opd), release_op_data);
   opd = hook;
+  if (err)
+    return TRACE_ERR (err);
+
+  err = _gpgme_op_import_init_result (ctx);
   if (err)
     return TRACE_ERR (err);
 
