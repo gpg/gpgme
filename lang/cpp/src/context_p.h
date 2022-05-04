@@ -53,6 +53,7 @@ public:
 
         KeyGen    = 0x080,
         KeyList   = 0x100,
+        KeyListWithImport = KeyList | Import, // gpgme_keylist_result_t and gpgme_import_result_t
         TrustList = 0x200, // no gpgme_trustlist_result_t, but nevertheless...
 
         Edit      = 0x400, // no gpgme_edit_result_t, but nevertheless...

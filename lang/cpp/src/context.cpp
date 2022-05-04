@@ -535,19 +535,25 @@ const char *Context::getSender ()
 
 Error Context::startKeyListing(const char *pattern, bool secretOnly)
 {
-    d->lastop = Private::KeyList;
+    d->lastop = (((keyListMode() & GpgME::Locate) == GpgME::Locate)
+                 ? Private::KeyListWithImport
+                 : Private::KeyList);
     return Error(d->lasterr = gpgme_op_keylist_start(d->ctx, pattern, int(secretOnly)));
 }
 
 Error Context::startKeyListing(const char *patterns[], bool secretOnly)
 {
-    d->lastop = Private::KeyList;
+    d->lastop = (((keyListMode() & GpgME::Locate) == GpgME::Locate)
+                 ? Private::KeyListWithImport
+                 : Private::KeyList);
     return Error(d->lasterr = gpgme_op_keylist_ext_start(d->ctx, patterns, int(secretOnly), 0));
 }
 
 Key Context::nextKey(GpgME::Error &e)
 {
-    d->lastop = Private::KeyList;
+    d->lastop = (((keyListMode() & GpgME::Locate) == GpgME::Locate)
+                 ? Private::KeyListWithImport
+                 : Private::KeyList);
     gpgme_key_t key = nullptr;
     e = Error(d->lasterr = gpgme_op_keylist_next(d->ctx, &key));
     return Key(key, false);
