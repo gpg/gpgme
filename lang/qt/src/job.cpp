@@ -61,6 +61,7 @@
 #include "downloadjob.h"
 #include "deletejob.h"
 #include "refreshkeysjob.h"
+#include "refreshopenpgpkeysjob.h"
 #include "addexistingsubkeyjob.h"
 #include "adduseridjob.h"
 #include "specialjob.h"
@@ -157,6 +158,7 @@ make_job_subclass(AbstractImportJob)
 make_job_subclass_ext(ImportJob, AbstractImportJob)
 make_job_subclass_ext(ImportFromKeyserverJob, AbstractImportJob)
 make_job_subclass_ext(ReceiveKeysJob, AbstractImportJob)
+make_job_subclass_ext(RefreshOpenPGPKeysJob, AbstractImportJob)
 make_job_subclass(ExportJob)
 make_job_subclass(ChangeExpiryJob)
 make_job_subclass(ChangeOwnerTrustJob)
@@ -200,6 +202,7 @@ make_job_subclass(RevokeKeyJob)
 #include "downloadjob.moc"
 #include "deletejob.moc"
 #include "refreshkeysjob.moc"
+#include "refreshopenpgpkeysjob.moc"
 #include "addexistingsubkeyjob.moc"
 #include "adduseridjob.moc"
 #include "specialjob.moc"

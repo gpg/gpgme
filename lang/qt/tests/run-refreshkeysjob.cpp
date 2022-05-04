@@ -36,11 +36,13 @@
 
 #include <protocol.h>
 #include <refreshkeysjob.h>
+#include <refreshopenpgpkeysjob.h>
 
 #include <QCoreApplication>
 #include <QDebug>
 
 #include <context.h>
+#include <importresult.h>
 
 #include <iostream>
 
@@ -117,21 +119,36 @@ int main(int argc, char **argv)
     auto key = openPGPKey.key.isNull() ? smimeKey.key : openPGPKey.key;
     std::cout << "Refreshing " << displayName(key.protocol()) << " key " << key.userID(0).id() << std::endl;
 
-    auto jobFactory = key.protocol() == GpgME::OpenPGP ? QGpgME::openpgp() : QGpgME::smime();
-    auto job = jobFactory->refreshKeysJob();
-    if (!job) {
-        std::cerr << "Error: Could not create job to refresh " << displayName(key.protocol()) << " key" << std::endl;
-        return 1;
-    }
-    QObject::connect(job, &QGpgME::RefreshKeysJob::result, &app, [](const GpgME::Error &err, const QString &, const GpgME::Error &) {
-        std::cout << "Result: " << err.asString() << std::endl;
-        qApp->quit();
-    });
-
-    const auto err = job->start({key});
-    if (err) {
-        std::cerr << "Error: " << err.asString() << std::endl;
-        return 1;
+    if (key.protocol() == GpgME::OpenPGP) {
+        auto job = QGpgME::openpgp()->refreshOpenPGPKeysJob();
+        if (!job) {
+            std::cerr << "Error: Could not create job to refresh OpenPGP key" << std::endl;
+            return 1;
+        }
+        QObject::connect(job, &QGpgME::RefreshOpenPGPKeysJob::result, &app, [](const GpgME::ImportResult &result, const QString &, const GpgME::Error &) {
+            std::cout << "Result: " << result << std::endl;
+            qApp->quit();
+        });
+        const auto err = job->start({key});
+        if (err) {
+            std::cerr << "Error: " << err.asString() << std::endl;
+            return 1;
+        }
+    } else {
+        auto job = QGpgME::smime()->refreshKeysJob();
+        if (!job) {
+            std::cerr << "Error: Could not create job to refresh S/MIME key" << std::endl;
+            return 1;
+        }
+        QObject::connect(job, &QGpgME::RefreshKeysJob::result, &app, [](const GpgME::Error &err, const QString &, const GpgME::Error &) {
+            std::cout << "Result: " << err.asString() << std::endl;
+            qApp->quit();
+        });
+        const auto err = job->start({key});
+        if (err) {
+            std::cerr << "Error: " << err.asString() << std::endl;
+            return 1;
+        }
     }
 
     return app.exec();

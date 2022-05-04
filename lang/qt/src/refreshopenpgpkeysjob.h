@@ -1,5 +1,5 @@
 /*
-    qgpgmerefreshopenpgpkeysjob.h
+    refreshopenpgpkeysjob.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
     Copyright (c) 2022 g10 Code GmbH
@@ -31,40 +31,37 @@
     your version.
 */
 
-#ifndef __QGPGME_QGPGMEREFRESHOPENPGPKEYSJOB_H__
-#define __QGPGME_QGPGMEREFRESHOPENPGPKEYSJOB_H__
+#ifndef __KLEO_REFRESHOPENPGPKEYSJOB_H__
+#define __KLEO_REFRESHOPENPGPKEYSJOB_H__
 
-#include "refreshopenpgpkeysjob.h"
-#include "threadedjobmixin.h"
+#include "abstractimportjob.h"
+#include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-# include "importresult.h"
-#else
-# include <gpgme++/importresult.h>
-#endif
+#include <vector>
+
+namespace GpgME
+{
+class Error;
+class Key;
+}
 
 namespace QGpgME
 {
 
-class QGpgMERefreshOpenPGPKeysJob
-#ifdef Q_MOC_RUN
-    : public RefreshOpenPGPKeysJob
-#else
-    : public _detail::ThreadedJobMixin<RefreshOpenPGPKeysJob, std::tuple<GpgME::ImportResult, QString, GpgME::Error>>
-#endif
+class QGPGME_EXPORT RefreshOpenPGPKeysJob : public AbstractImportJob
 {
     Q_OBJECT
-#ifdef Q_MOC_RUN
-public Q_SLOTS:
-    void slotFinished();
-#endif
+protected:
+    explicit RefreshOpenPGPKeysJob(QObject *parent);
 public:
-    explicit QGpgMERefreshOpenPGPKeysJob(GpgME::Context *context);
-    ~QGpgMERefreshOpenPGPKeysJob() override;
+    ~RefreshOpenPGPKeysJob() override;
 
-    GpgME::Error start(const std::vector<GpgME::Key> &keys) override;
+    /**
+      Starts a refresh of the \a keys.
+    */
+    virtual GpgME::Error start(const std::vector<GpgME::Key> &keys) = 0;
 };
 
 }
 
-#endif // __QGPGME_QGPGMEREFRESHOPENPGPKEYSJOB_H__
+#endif // __KLEO_REFRESHOPENPGPKEYSJOB_H__

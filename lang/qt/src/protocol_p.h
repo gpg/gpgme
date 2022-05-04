@@ -284,8 +284,17 @@ public:
 
     QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE
     {
-        if (mProtocol == GpgME::CMS) {
-            return new QGpgME::QGpgMERefreshSMIMEKeysJob;
+        if (mProtocol != GpgME::CMS) {
+            return nullptr;
+        }
+
+        return new QGpgME::QGpgMERefreshSMIMEKeysJob;
+    }
+
+    QGpgME::RefreshOpenPGPKeysJob *refreshOpenPGPKeysJob() const Q_DECL_OVERRIDE
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
         }
 
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);

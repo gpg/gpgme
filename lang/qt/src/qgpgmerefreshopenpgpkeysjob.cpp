@@ -80,7 +80,7 @@ QGpgMERefreshOpenPGPKeysJob::QGpgMERefreshOpenPGPKeysJob(Context *context)
 
 QGpgMERefreshOpenPGPKeysJob::~QGpgMERefreshOpenPGPKeysJob() = default;
 
-static Error locate_external_keys(Context *ctx, const std::vector<Key> &keys)
+static ImportResult locate_external_keys(Context *ctx, const std::vector<Key> &keys)
 {
     Context::KeyListModeSaver saver{ctx};
     ctx->setKeyListMode(GpgME::LocateExternal);
@@ -88,13 +88,14 @@ static Error locate_external_keys(Context *ctx, const std::vector<Key> &keys)
     const auto emails = toEmailAddresses(keys);
     std::vector<Key> dummy;
     auto job = std::unique_ptr<KeyListJob>{new QGpgMEKeyListJob{ctx}};
-    const auto result = job->exec(emails, false, dummy);
+    (void) job->exec(emails, false, dummy);
+    const auto result = ctx->importResult();
     job.release();
 
-    return result.error();
+    return result;
 }
 
-static Error receive_keys(Context *ctx, const std::vector<Key> &keys)
+static ImportResult receive_keys(Context *ctx, const std::vector<Key> &keys)
 {
     const auto fprs = toFingerprints(keys);
 
@@ -102,25 +103,22 @@ static Error receive_keys(Context *ctx, const std::vector<Key> &keys)
     const auto result = job->exec(fprs);
     job.release();
 
-    return result.error();
+    return result;
 }
 
 static QGpgMERefreshOpenPGPKeysJob::result_type refresh_keys(Context *ctx, const std::vector<Key> &keys)
 {
-    Error err;
+    ImportResult result;
 
-    err = locate_external_keys(ctx, keys);
-    if (!err) {
-        err = receive_keys(ctx, keys);
+    result = locate_external_keys(ctx, keys);
+    if (!result.error()) {
+        const auto res2 = receive_keys(ctx, keys);
+        if (!res2.error()) {
+            result.mergeWith(res2);
+        }
     }
 
-    return std::make_tuple(err, /*err ? WKDLookupResult{pattern, err} : result,*/ QString{}, Error{});
-}
-
-GpgME::Error QGpgMERefreshOpenPGPKeysJob::start(const QStringList &patterns)
-{
-    Q_UNUSED(patterns);
-    return GpgME::Error::fromCode(GPG_ERR_NOT_IMPLEMENTED);
+    return std::make_tuple(result, QString{}, Error{});
 }
 
 GpgME::Error QGpgMERefreshOpenPGPKeysJob::start(const std::vector<GpgME::Key> &keys)
