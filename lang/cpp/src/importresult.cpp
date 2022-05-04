@@ -94,6 +94,131 @@ void GpgME::ImportResult::init(gpgme_ctx_t ctx)
 
 make_standard_stuff(ImportResult)
 
+void GpgME::ImportResult::mergeWith(const ImportResult &other)
+{
+    if (other.isNull()) {
+        return;
+    }
+    if (isNull()) {   // just assign
+        operator=(other);
+        return;
+    }
+
+    // Add the numbers of considered keys; the number will be corrected when
+    // merging the imports to account for duplicates
+    d->res.considered += other.d->res.considered;
+    // Add the numbers of keys without user ID; may count duplicates
+    d->res.no_user_id += other.d->res.no_user_id;
+    // Add the numbers of imported keys
+    d->res.imported += other.d->res.imported;
+    // Add the numbers of imported RSA keys
+    d->res.imported_rsa += other.d->res.imported_rsa;
+    // Add the numbers of unchanged keys; the number will be corrected when
+    // merging the imports to account for keys changed by this import
+    d->res.unchanged += other.d->res.unchanged;
+    // Add the numbers of new user IDs
+    d->res.new_user_ids += other.d->res.new_user_ids;
+    // Add the numbers of new subkeys
+    d->res.new_sub_keys += other.d->res.new_sub_keys;
+    // Add the numbers of new signatures
+    d->res.new_signatures += other.d->res.new_signatures;
+    // Add the numbers of new revocations
+    d->res.new_revocations += other.d->res.new_revocations;
+
+    // Add the numbers of considered secret keys; the number will be corrected when
+    // merging the imports to account for duplicates
+    d->res.secret_read += other.d->res.secret_read;
+    // Add the numbers of imported secret keys
+    d->res.secret_imported += other.d->res.secret_imported;
+    // Add the numbers of unchanged secret keys; the number will be corrected when
+    // merging the imports to account for keys changed by this import
+    d->res.secret_unchanged += other.d->res.secret_unchanged;
+
+    // Add the numbers of new keys that were skipped; may count duplicates
+    d->res.skipped_new_keys += other.d->res.skipped_new_keys;
+    // Add the numbers of keys that were not imported; may count duplicates
+    d->res.not_imported += other.d->res.not_imported;
+    // Add the numbers of v3 keys that were skipped; may count duplicates
+    d->res.skipped_v3_keys += other.d->res.skipped_v3_keys;
+
+    // Look at the list of keys for which an import was attempted during the
+    // other import to correct some of the consolidated numbers
+    for (auto it = std::begin(other.d->imports), end = std::end(other.d->imports); it != end; ++it) {
+        const char *fpr = (*it)->fpr;
+        if (!fpr || !*fpr) {
+            // we cannot derive any useful information about an import if the
+            // fingerprint is null or empty
+            continue;
+        }
+        // was this key also considered during the first import
+        const auto consideredInFirstImports =
+            std::any_of(std::begin(d->imports), std::end(d->imports), [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr);
+            });
+        // did we see this key already in the list of keys of the other import
+        const auto consideredInPreviousOtherImports =
+            std::any_of(std::begin(other.d->imports), it, [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr);
+            });
+        // was anything added to this key during the other import
+        const auto changedInOtherImports =
+            std::any_of(std::begin(other.d->imports), std::end(other.d->imports), [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr) && (i->status != 0);
+            });
+        if (consideredInFirstImports && !consideredInPreviousOtherImports) {
+            // key was also considered during first import, but not before in the list of other imports
+            d->res.considered -= 1;
+            if (!changedInOtherImports) {
+                // key was (most likely) counted as unchanged in the second import;
+                // this needs to be corrected (regardless of whether it was changed in the first import)
+                d->res.unchanged -= 1;
+            }
+        }
+
+        // now do the same for the secret key counts
+        const auto secretKeyConsideredInFirstImports =
+            std::any_of(std::begin(d->imports), std::end(d->imports), [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr) && (i->status & GPGME_IMPORT_SECRET);
+            });
+        const auto secretKeyConsideredInPreviousOtherImports =
+            std::any_of(std::begin(other.d->imports), it, [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr) && (i->status & GPGME_IMPORT_SECRET);
+            });
+        const auto secretKeyChangedInOtherImports =
+            std::any_of(std::begin(other.d->imports), std::end(other.d->imports), [fpr](const auto i) {
+                return i->fpr && !strcmp(i->fpr, fpr) && (i->status & GPGME_IMPORT_SECRET) && (i->status != GPGME_IMPORT_SECRET);
+            });
+        if (secretKeyConsideredInFirstImports && !secretKeyConsideredInPreviousOtherImports) {
+            // key was also considered during first import, but not before in the list of other imports
+            d->res.secret_read -= 1;
+            if (!secretKeyChangedInOtherImports) {
+                // key was (most likely) counted as unchanged in the second import;
+                // this needs to be corrected (regardless of whether it was changed in the first import)
+                d->res.secret_unchanged -= 1;
+            }
+        }
+    }
+
+    // Now append the list of keys for which an import was attempted during the
+    // other import
+    d->imports.reserve(d->imports.size() + other.d->imports.size());
+    std::transform(std::begin(other.d->imports), std::end(other.d->imports),
+                   std::back_inserter(d->imports),
+                   [](const auto import) {
+                       gpgme_import_status_t copy = new _gpgme_import_status{*import};
+                       if (import->fpr) {
+                           copy->fpr = strdup(import->fpr);
+                       }
+                       copy->next = nullptr; // should already be null, but better safe than sorry
+                       return copy;
+                   });
+
+    // Finally, merge the error if there was none yet
+    if (!bool(error())) {
+        Result::operator=(other);
+    }
+}
+
 int GpgME::ImportResult::numConsidered() const
 {
     return d ? d->res.considered : 0 ;

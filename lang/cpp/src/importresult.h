@@ -60,6 +60,16 @@ public:
         swap(this->d, other.d);
     }
 
+    /**
+     * Merges the result @p other into this result (and all of its copies).
+     *
+     * @note The merge algorithm assumes that @p other is the result of an
+     * import that was performed after the import of this result.
+     * @note Some numbers cannot be consolidated reliably, e.g. the number of
+     * keys without user ID.
+     */
+    void mergeWith(const ImportResult &other);
+
     bool isNull() const;
 
     int numConsidered() const;
