@@ -119,6 +119,9 @@ main (int argc, char **argv)
         } else if (!strcmp (*argv, "--locate")) {
             argc--; argv++;
             mode |= KeyListMode::Locate;
+        } else if (!strcmp (*argv, "--with-secret")) {
+            argc--; argv++;
+            mode |= KeyListMode::WithSecret;
         } else if (!strcmp (*argv, "--force-extern")) {
             argc--; argv++;
             mode |= KeyListMode::ForceExtern;
@@ -126,6 +129,7 @@ main (int argc, char **argv)
             argc--; argv++;
             mode |= KeyListMode::LocateExternal;
         } else if (!strncmp (*argv, "--", 2)) {
+            std::cerr << "Error: Unknown option: " << *argv << std::endl;
             show_usage (1);
         }
     }
