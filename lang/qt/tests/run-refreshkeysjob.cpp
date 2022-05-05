@@ -140,7 +140,7 @@ int main(int argc, char **argv)
             std::cerr << "Error: Could not create job to refresh S/MIME key" << std::endl;
             return 1;
         }
-        QObject::connect(job, &QGpgME::RefreshKeysJob::result, &app, [](const GpgME::Error &err, const QString &, const GpgME::Error &) {
+        QObject::connect(job, &QGpgME::RefreshKeysJob::result, &app, [](const GpgME::Error &err) {
             std::cout << "Result: " << err.asString() << std::endl;
             qApp->quit();
         });
