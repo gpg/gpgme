@@ -123,7 +123,7 @@ static QGpgMERefreshOpenPGPKeysJob::result_type refresh_keys(Context *ctx, const
 
 GpgME::Error QGpgMERefreshOpenPGPKeysJob::start(const std::vector<GpgME::Key> &keys)
 {
-    run(std::bind(&refresh_keys, std::placeholders::_1, keys));
+    run([keys](Context *ctx) { return refresh_keys(ctx, keys); });
     return Error{};
 }
 
