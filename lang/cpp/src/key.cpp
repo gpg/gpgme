@@ -1250,16 +1250,22 @@ std::ostream &operator<<(std::ostream &os, const Subkey &subkey)
     os << "GpgME::Subkey(";
     if (!subkey.isNull()) {
         os << "\n fingerprint:   " << protect(subkey.fingerprint())
+           << "\n keyGrip:       " << protect(subkey.keyGrip())
            << "\n creationTime:  " << subkey.creationTime()
            << "\n expirationTime:" << subkey.expirationTime()
            << "\n isRevoked:     " << subkey.isRevoked()
            << "\n isExpired:     " << subkey.isExpired()
-           << "\n isInvalid:     " << subkey.isRevoked()
-           << "\n isDisabled:    " << subkey.isInvalid()
+           << "\n isInvalid:     " << subkey.isInvalid()
+           << "\n isDisabled:    " << subkey.isDisabled()
            << "\n canSign:       " << subkey.canSign()
            << "\n canEncrypt:    " << subkey.canEncrypt()
            << "\n canCertify:    " << subkey.canCertify()
-           << "\n canAuth:       " << subkey.canAuthenticate();
+           << "\n canAuth:       " << subkey.canAuthenticate()
+           << "\n isSecret:      " << subkey.isSecret()
+           << "\n isQualified:   " << subkey.isQualified()
+           << "\n isDeVs:        " << subkey.isDeVs()
+           << "\n isCardKey:     " << subkey.isCardKey()
+           << "\n cardSerialNumber:" << protect(subkey.cardSerialNumber());
     }
     return os << ')';
 }
