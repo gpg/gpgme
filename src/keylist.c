@@ -423,6 +423,7 @@ parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
     {
       /* Fields starts with a hex digit; thus it is a serial number.  */
       key->secret = 1;
+      subkey->secret = 1;
       subkey->is_cardkey = 1;
       subkey->card_number = strdup (field);
       if (!subkey->card_number)
