@@ -21,7 +21,7 @@
 ## Process this file with automake to produce Makefile.in
 
 GNUPGHOME=$(abs_builddir)
-TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME)
+TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) TZ=UTC
 
 TESTS = t-version t-data t-engine-info
 
