@@ -1225,6 +1225,10 @@ gpgme_op_keylist_from_data_start (gpgme_ctx_t ctx, gpgme_data_t data,
   if (err)
     return TRACE_ERR (err);
 
+  err = _gpgme_op_import_init_result (ctx);
+  if (err)
+    return TRACE_ERR (err);
+
   _gpgme_engine_set_status_handler (ctx->engine, keylist_status_handler, ctx);
   err = _gpgme_engine_set_colon_line_handler (ctx->engine,
                                               keylist_colon_handler, ctx);
