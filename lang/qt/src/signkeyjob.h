@@ -149,7 +149,7 @@ public:
      * Sets the expiration date of the key signature to @a expiration. By default,
      * key signatures do not expire.
      *
-     * Note: Expiration dates after 2106-02-06 will be set to 2106-02-06.
+     * Note: Expiration dates after 2106-02-05 will be set to 2106-02-05.
      *
      * Not pure virtual for ABI compatibility.
      **/

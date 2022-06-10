@@ -127,11 +127,11 @@ static QGpgMESignKeyJob::result_type sign_key(Context *ctx, const Key &key, cons
 
     if (expirationDate.isValid()) {
         // on 2106-02-07, the Unix time will reach 0xFFFFFFFF; since gpg uses uint32 internally
-        // for the expiration date clip it at 2106-02-06
-        static const QDate maxAllowedDate{2106, 2, 6};
+        // for the expiration date clip it at 2106-02-05 to avoid problems with negative time zones
+        static const QDate maxAllowedDate{2106, 2, 5};
         const auto clippedExpirationDate = expirationDate <= maxAllowedDate ? expirationDate : maxAllowedDate;
         if (clippedExpirationDate != expirationDate) {
-            qCWarning(QGPGME_LOG) << "Expiration of certification has been changed to" << clippedExpirationDate;
+            qCDebug(QGPGME_LOG) << "Expiration of certification has been changed to" << clippedExpirationDate;
         }
         // use the "days from now" format to specify the expiration date of the certification;
         // this format is the most appropriate regardless of the local timezone

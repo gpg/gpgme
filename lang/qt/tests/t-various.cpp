@@ -328,8 +328,6 @@ private Q_SLOTS:
                     }
                 });
 
-        QTest::ignoreMessage(QtWarningMsg, "Expiration of certification has been changed to QDate(\"2106-02-06\")");
-
         job->start(target);
         QSignalSpy spy{this, &TestVarious::asyncDone};
         QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
@@ -339,7 +337,7 @@ private Q_SLOTS:
         const auto keySignature = target.userID(0).signature(target.userID(0).numSignatures() - 1);
         QVERIFY(!keySignature.neverExpires());
         const auto expirationDate = QDateTime::fromSecsSinceEpoch(uint_least32_t(keySignature.expirationTime())).date();
-        QCOMPARE(expirationDate, QDate(2106, 2, 6));  // expiration date is capped at 2106-02-06
+        QCOMPARE(expirationDate, QDate(2106, 2, 5));  // expiration date is capped at 2106-02-05
     }
 
     void testVersion()
