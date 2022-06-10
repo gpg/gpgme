@@ -337,7 +337,15 @@ private Q_SLOTS:
         const auto keySignature = target.userID(0).signature(target.userID(0).numSignatures() - 1);
         QVERIFY(!keySignature.neverExpires());
         const auto expirationDate = QDateTime::fromSecsSinceEpoch(uint_least32_t(keySignature.expirationTime())).date();
-        QCOMPARE(expirationDate, QDate(2106, 2, 5));  // expiration date is capped at 2106-02-05
+        // expiration date is capped at 2106-02-05; we also allow 2106-02-04 as expiration date because for locations that use DST
+        // the expiration date may be 2106-02-04-23:xx:xx (in local non-DST time) if the current time is 00:xx::xx (in local DST time)
+        const auto expectedExpirationRange = std::make_pair(QDate{2106, 2, 4}, QDate{2106, 2, 5});
+        QVERIFY2(expirationDate >= expectedExpirationRange.first,
+                 ("\n   Actual  : " + expirationDate.toString(Qt::ISODate).toLatin1() +
+                  "\n   Expected: " + expectedExpirationRange.first.toString(Qt::ISODate).toLatin1()).constData());
+        QVERIFY2(expirationDate <= expectedExpirationRange.second,
+                 ("\n   Actual  : " + expirationDate.toString(Qt::ISODate).toLatin1() +
+                  "\n   Expected: " + expectedExpirationRange.second.toString(Qt::ISODate).toLatin1()).constData());
     }
 
     void testVersion()
