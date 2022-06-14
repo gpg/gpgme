@@ -86,6 +86,7 @@ show_usage (int ex)
          "  --key NAME       use key NAME for signing\n"
          "  --sender MBOX    use MBOX as sender address\n"
          "  --include-key-block  use this option with gpg\n"
+         "  --clear          create a clear text signature\n"
          , stderr);
   exit (ex);
 }
@@ -170,6 +171,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--include-key-block"))
         {
           include_key_block = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--clear"))
+        {
+          sigmode = GPGME_SIG_MODE_CLEAR;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
