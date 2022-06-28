@@ -26,7 +26,11 @@ EXTRA_DIST = gpgme-config.in gpgme.m4 libgpgme.vers ChangeLog-2011 \
 	     gpgme.h.in versioninfo.rc.in gpgme.def \
 	     gpgme.pc.in gpgme-glib.pc.in
 
+if USE_GPGRT_CONFIG
+noinst_SCRIPTS = gpgme-config
+else
 bin_SCRIPTS = gpgme-config
+endif
 m4datadir = $(datadir)/aclocal
 m4data_DATA = gpgme.m4
 nodist_include_HEADERS = gpgme.h
