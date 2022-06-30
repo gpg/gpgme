@@ -93,7 +93,3 @@ unset(_IMPORT_CHECK_TARGETS)
 # Commands beyond this point should not need to know the version.
 set(CMAKE_IMPORT_FILE_VERSION)
 cmake_policy(POP)
-
-get_filename_component(QGpgme_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-# Pull in QGpgme for compatibility with KF5 variant.
-find_package(QGpgme CONFIG)
