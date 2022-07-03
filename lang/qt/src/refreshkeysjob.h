@@ -38,6 +38,8 @@
 #include "job.h"
 #include "qgpgme_export.h"
 
+#include <QtCore/QStringList>
+
 #include <vector>
 
 namespace GpgME
@@ -45,8 +47,6 @@ namespace GpgME
 class Error;
 class Key;
 }
-
-class QStringList;
 
 namespace QGpgME
 {

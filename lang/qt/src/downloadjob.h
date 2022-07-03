@@ -38,6 +38,7 @@
 #include "job.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QStringList>
 
 #include <memory>
 
@@ -46,7 +47,6 @@ namespace GpgME
 class Error;
 }
 
-class QStringList;
 class QIODevice;
 class QByteArray;
 

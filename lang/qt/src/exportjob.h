@@ -39,13 +39,12 @@
 #include "job.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QStringList>
 
 namespace GpgME
 {
 class Error;
 }
-
-class QStringList;
 
 namespace QGpgME
 {

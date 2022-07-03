@@ -44,6 +44,8 @@
 # include <gpgme++/key.h>
 #endif
 
+#include <QtCore/QStringList>
+
 #include <vector>
 
 namespace GpgME
@@ -51,8 +53,6 @@ namespace GpgME
 class Error;
 class KeyListResult;
 }
-
-class QStringList;
 
 namespace QGpgME
 {
