@@ -21,7 +21,7 @@
 lib_LTLIBRARIES = libqgpgme.la
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
              qgpgme_debug.h qgpgme_version.h.in \
-             QGpgmeConfig.cmake.in.in
+             QGpgmeConfig-w32.cmake.in.in
 
 qgpgme_sources = \
     dataprovider.cpp \
