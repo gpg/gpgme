@@ -44,7 +44,7 @@ qgpgme_sources = \
     qgpgmekeyformailboxjob.cpp qgpgme_debug.cpp \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
-    qgpgmegpgcardjob.cpp changeexpiryjob.cpp importjob.cpp \
+    qgpgmegpgcardjob.cpp changeexpiryjob.cpp encryptjob.cpp importjob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
     util.cpp
 
