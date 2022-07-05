@@ -5,6 +5,8 @@
     Copyright (c) 2004, 2007 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -46,7 +48,7 @@
 #include "exception.h"
 
 #include <QBuffer>
-
+#include <QFileInfo>
 
 #include <cassert>
 
@@ -69,7 +71,7 @@ void QGpgMESignEncryptJob::setOutputIsBase64Encoded(bool on)
 
 static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thread, const std::vector<Key> &signers,
                                                       const std::vector<Key> &recipients, const std::weak_ptr<QIODevice> &plainText_,
-                                                      const std::weak_ptr<QIODevice> &cipherText_, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded)
+                                                      const std::weak_ptr<QIODevice> &cipherText_, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded, const QString &fileName)
 {
     const std::shared_ptr<QIODevice> &plainText = plainText_.lock();
     const std::shared_ptr<QIODevice> &cipherText = cipherText_.lock();
@@ -78,7 +80,12 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
     const _detail::ToThreadMover ptMover(plainText, thread);
 
     QGpgME::QIODeviceDataProvider in(plainText);
-    const Data indata(&in);
+    Data indata(&in);
+
+    const auto pureFileName = QFileInfo{fileName}.fileName().toStdString();
+    if (!pureFileName.empty()) {
+        indata.setFileName(pureFileName.c_str());
+    }
 
     ctx->clearSigningKeys();
     Q_FOREACH (const Key &signer, signers)
@@ -116,26 +123,26 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
 }
 
 static QGpgMESignEncryptJob::result_type sign_encrypt_qba(Context *ctx, const std::vector<Key> &signers,
-                                                          const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded)
+                                                          const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded, const QString &fileName)
 {
     const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(plainText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return sign_encrypt(ctx, nullptr, signers, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded);
+    return sign_encrypt(ctx, nullptr, signers, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded, fileName);
 }
 
 Error QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
-    run(std::bind(&sign_encrypt_qba, std::placeholders::_1, signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, mOutputIsBase64Encoded));
+    run(std::bind(&sign_encrypt_qba, std::placeholders::_1, signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, mOutputIsBase64Encoded, fileName()));
     return Error();
 }
 
 void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients,
                                  const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, const Context::EncryptionFlags eflags)
 {
-    run(std::bind(&sign_encrypt, std::placeholders::_1, std::placeholders::_2, signers, recipients, std::placeholders::_3, std::placeholders::_4, eflags, mOutputIsBase64Encoded), plainText, cipherText);
+    run(std::bind(&sign_encrypt, std::placeholders::_1, std::placeholders::_2, signers, recipients, std::placeholders::_3, std::placeholders::_4, eflags, mOutputIsBase64Encoded, fileName()), plainText, cipherText);
 }
 
 void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
@@ -145,7 +152,7 @@ void QGpgMESignEncryptJob::start(const std::vector<Key> &signers, const std::vec
 
 std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, QByteArray &cipherText)
 {
-    const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, eflags, mOutputIsBase64Encoded);
+    const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, eflags, mOutputIsBase64Encoded, fileName());
     cipherText = std::get<2>(r);
     resultHook(r);
     return mResult;
