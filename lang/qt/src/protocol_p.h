@@ -42,7 +42,6 @@
 #include "qgpgmelistallkeysjob.h"
 #include "qgpgmedecryptjob.h"
 #include "qgpgmedecryptverifyjob.h"
-#include "qgpgmerefreshopenpgpkeysjob.h"
 #include "qgpgmerefreshsmimekeysjob.h"
 #include "qgpgmedeletejob.h"
 #include "qgpgmedownloadjob.h"
@@ -289,19 +288,6 @@ public:
         }
 
         return new QGpgME::QGpgMERefreshSMIMEKeysJob;
-    }
-
-    QGpgME::RefreshOpenPGPKeysJob *refreshOpenPGPKeysJob() const Q_DECL_OVERRIDE
-    {
-        if (mProtocol != GpgME::OpenPGP) {
-            return nullptr;
-        }
-
-        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
-        if (!context) {
-            return nullptr;
-        }
-        return new QGpgME::QGpgMERefreshOpenPGPKeysJob{context};
     }
 
     QGpgME::DownloadJob *downloadJob(bool armor) const Q_DECL_OVERRIDE

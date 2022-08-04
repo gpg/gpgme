@@ -59,7 +59,6 @@ class VerifyOpaqueJob;
 class SignEncryptJob;
 class DecryptVerifyJob;
 class RefreshKeysJob;
-class RefreshOpenPGPKeysJob;
 class ChangeExpiryJob;
 class ChangeOwnerTrustJob;
 class ChangePasswdJob;
@@ -140,7 +139,7 @@ public:
     /**
      * For S/MIME keys this job performs a full validation check of the keys
      * with updated CRLs.
-     * For OpenPGP keys, use refreshOpenPGPKeysJob.
+     * For OpenPGP keys, use receiveKeysJob.
      */
     virtual RefreshKeysJob       *refreshKeysJob() const = 0;
     virtual ChangeExpiryJob      *changeExpiryJob() const = 0;
@@ -183,13 +182,6 @@ public:
     virtual ReceiveKeysJob *receiveKeysJob() const = 0;
 
     virtual RevokeKeyJob *revokeKeyJob() const = 0;
-
-    /**
-     * This job performs a refresh of OpenPGP keys via the external methods
-     * as defined by the \c auto-key-locate option and via an import from the
-     * configured keyserver.
-     */
-    virtual RefreshOpenPGPKeysJob *refreshOpenPGPKeysJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

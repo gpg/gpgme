@@ -36,7 +36,7 @@
 
 #include <protocol.h>
 #include <refreshkeysjob.h>
-#include <refreshopenpgpkeysjob.h>
+#include <receivekeysjob.h>
 
 #include <QCoreApplication>
 #include <QDebug>
@@ -120,16 +120,16 @@ int main(int argc, char **argv)
     std::cout << "Refreshing " << displayName(key.protocol()) << " key " << key.userID(0).id() << std::endl;
 
     if (key.protocol() == GpgME::OpenPGP) {
-        auto job = QGpgME::openpgp()->refreshOpenPGPKeysJob();
+        auto job = QGpgME::openpgp()->receiveKeysJob();
         if (!job) {
             std::cerr << "Error: Could not create job to refresh OpenPGP key" << std::endl;
             return 1;
         }
-        QObject::connect(job, &QGpgME::RefreshOpenPGPKeysJob::result, &app, [](const GpgME::ImportResult &result, const QString &, const GpgME::Error &) {
+        QObject::connect(job, &QGpgME::ReceiveKeysJob::result, &app, [](const GpgME::ImportResult &result, const QString &, const GpgME::Error &) {
             std::cout << "Result: " << result << std::endl;
             qApp->quit();
         });
-        const auto err = job->start({key});
+        const auto err = job->start({QString::fromLatin1(key.primaryFingerprint())});
         if (err) {
             std::cerr << "Error: " << err.asString() << std::endl;
             return 1;

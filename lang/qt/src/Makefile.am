@@ -35,7 +35,6 @@ qgpgme_sources = \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
     qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
     qgpgmereceivekeysjob.cpp \
-    qgpgmerefreshopenpgpkeysjob.cpp \
     qgpgmerefreshsmimekeysjob.cpp \
     qgpgmerevokekeyjob.cpp \
     qgpgmesignencryptjob.cpp \
@@ -80,7 +79,6 @@ qgpgme_headers= \
     signencryptjob.h \
     verifyopaquejob.h \
     refreshkeysjob.h \
-    refreshopenpgpkeysjob.h \
     cryptoconfig.h \
     deletejob.h \
     importfromkeyserverjob.h \
@@ -126,7 +124,6 @@ camelcase_headers= \
     SignEncryptJob \
     VerifyOpaqueJob \
     RefreshKeysJob \
-    RefreshOpenPGPKeysJob \
     CryptoConfig \
     DeleteJob \
     ImportFromKeyserverJob \
@@ -165,7 +162,6 @@ private_qgpgme_headers = \
     qgpgmekeylistjob.h \
     qgpgmelistallkeysjob.h \
     qgpgmereceivekeysjob.h \
-    qgpgmerefreshopenpgpkeysjob.h \
     qgpgmerefreshsmimekeysjob.h \
     qgpgmerevokekeyjob.h \
     qgpgmesignencryptjob.h \
@@ -220,7 +216,6 @@ qgpgme_moc_sources = \
     qgpgmekeylistjob.moc \
     qgpgmelistallkeysjob.moc \
     qgpgmereceivekeysjob.moc \
-    qgpgmerefreshopenpgpkeysjob.moc \
     qgpgmerefreshsmimekeysjob.moc \
     qgpgmerevokekeyjob.moc \
     qgpgmesignencryptjob.moc \
@@ -234,7 +229,6 @@ qgpgme_moc_sources = \
     qgpgmetofupolicyjob.moc \
     receivekeysjob.moc \
     refreshkeysjob.moc \
-    refreshopenpgpkeysjob.moc \
     revokekeyjob.moc \
     signencryptjob.moc \
     signjob.moc \
