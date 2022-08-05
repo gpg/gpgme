@@ -332,8 +332,7 @@ class Context(GpgmeWrapper):
         finally:
             if passphrase is not None:
                 self.pinentry_mode = old_pinentry_mode
-                if old_passphrase_cb:
-                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+                gpgme.gpg_set_passphrase_cb(self, old_passphrase_cb)
 
         result = self.op_encrypt_result()
         assert not result.invalid_recipients
@@ -426,8 +425,7 @@ class Context(GpgmeWrapper):
         finally:
             if passphrase is not None:
                 self.pinentry_mode = old_pinentry_mode
-                if old_passphrase_cb:
-                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+                gpgme.gpg_set_passphrase_cb(self, old_passphrase_cb)
 
         result = self.op_decrypt_result()
 
@@ -851,8 +849,7 @@ class Context(GpgmeWrapper):
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
-                if old_passphrase_cb:
-                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+                gpgme.gpg_set_passphrase_cb(self, old_passphrase_cb)
 
         return self.op_genkey_result()
 
@@ -934,8 +931,7 @@ class Context(GpgmeWrapper):
         finally:
             if util.is_a_string(passphrase):
                 self.pinentry_mode = old_pinentry_mode
-                if old_passphrase_cb:
-                    self.set_passphrase_cb(*old_passphrase_cb[1:])
+                gpgme.gpg_set_passphrase_cb(self, old_passphrase_cb)
 
         return self.op_genkey_result()
 
