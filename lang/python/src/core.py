@@ -106,9 +106,13 @@ class GpgmeWrapper(object):
         set_func = getattr(gpgme, "{}set_{}".format(self._cprefix, key))
 
         def get(slf):
+            if not slf.wrapped:
+                return False
             return bool(get_func(slf.wrapped))
 
         def set_(slf, value):
+            if not slf.wrapped:
+                return
             set_func(slf.wrapped, bool(value))
 
         p = property(get, set_, doc="{} flag".format(key))
@@ -135,6 +139,8 @@ class GpgmeWrapper(object):
         if self._errorcheck(name):
 
             def _funcwrap(slf, *args):
+                if not slf.wrapped:
+                    return None
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     gpgme.gpg_raise_callback_exception(slf)
@@ -142,6 +148,8 @@ class GpgmeWrapper(object):
         else:
 
             def _funcwrap(slf, *args):
+                if not slf.wrapped:
+                    return None
                 result = func(slf.wrapped, *args)
                 if slf._callback_excinfo:
                     gpgme.gpg_raise_callback_exception(slf)
@@ -1098,6 +1106,8 @@ class Context(GpgmeWrapper):
     @property
     def signers(self):
         """Keys used for signing"""
+        if not self.wrapped:
+            return None
         return [self.signers_enum(i) for i in range(self.signers_count())]
 
     @signers.setter
@@ -1133,6 +1143,8 @@ class Context(GpgmeWrapper):
     @property
     def home_dir(self):
         """Engine's home directory"""
+        if not self.wrapped:
+            return None
         return self.engine_info.home_dir
 
     @home_dir.setter
