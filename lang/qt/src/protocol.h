@@ -72,6 +72,7 @@ class QuickJob;
 class GpgCardJob;
 class ReceiveKeysJob;
 class RevokeKeyJob;
+class SetPrimaryUserIDJob;
 
 /** The main entry point for QGpgME Comes in OpenPGP and SMIME(CMS) flavors.
  *
@@ -182,6 +183,12 @@ public:
     virtual ReceiveKeysJob *receiveKeysJob() const = 0;
 
     virtual RevokeKeyJob *revokeKeyJob() const = 0;
+
+    /**
+     * Returns a job for flagging a user ID as the primary user ID of an
+     * OpenPGP key.
+     */
+    virtual SetPrimaryUserIDJob *setPrimaryUserIDJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

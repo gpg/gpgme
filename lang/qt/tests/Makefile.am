@@ -30,7 +30,7 @@ the_tests = \
 	t-addexistingsubkey \
 	t-keylist t-keylocate t-ownertrust t-tofuinfo \
 	t-encrypt t-verify t-various t-config t-remarks t-trustsignatures \
-	t-changeexpiryjob t-wkdlookup t-import t-revokekey
+	t-changeexpiryjob t-wkdlookup t-import t-revokekey t-setprimaryuserid
 
 TESTS = initial.test $(the_tests) final.test
 
@@ -39,7 +39,8 @@ moc_files = \
 	t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
 	t-encrypt.moc t-support.hmoc t-wkspublish.moc t-verify.moc \
 	t-various.moc t-config.moc t-remarks.moc t-trustsignatures.moc \
-	t-changeexpiryjob.moc t-wkdlookup.moc t-import.moc t-revokekey.moc
+	t-changeexpiryjob.moc t-wkdlookup.moc t-import.moc t-revokekey.moc \
+	t-setprimaryuserid.moc
 
 AM_LDFLAGS = -no-install
 
@@ -71,6 +72,7 @@ t_changeexpiryjob_SOURCES = t-changeexpiryjob.cpp $(support_src)
 t_wkdlookup_SOURCES = t-wkdlookup.cpp $(support_src)
 t_import_SOURCES = t-import.cpp $(support_src)
 t_revokekey_SOURCES = t-revokekey.cpp $(support_src)
+t_setprimaryuserid_SOURCES = t-setprimaryuserid.cpp $(support_src)
 run_exportjob_SOURCES = run-exportjob.cpp
 run_importjob_SOURCES = run-importjob.cpp
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
@@ -86,6 +88,7 @@ noinst_PROGRAMS = \
 	t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
 	run-keyformailboxjob t-wkspublish t-verify t-various t-config t-remarks \
 	t-trustsignatures t-changeexpiryjob t-wkdlookup t-import t-revokekey \
+	t-setprimaryuserid \
 	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \

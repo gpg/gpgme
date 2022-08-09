@@ -7,7 +7,7 @@ Noteworthy changes in version 1.17.2 (unreleased)
 
  * cpp, qt: Support revocation of own OpenPGP keys.  [#5904]
 
- * cpp: Support setting the primary user ID.  [#5938]
+ * cpp, qt: Support setting the primary user ID.  [#5938]
 
  * Interface changes relative to the 1.17.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,6 +23,8 @@ Noteworthy changes in version 1.17.2 (unreleased)
  cpp: Context::startSetPrimaryUid           NEW.
  qt: RevokeKeyJob                           NEW.
  qt: Protocol::revokeKeyJob                 NEW.
+ qt: SetPrimaryUserIDJob                    NEW.
+ qt: Protocol::setPrimaryUserIDJob          NEW.
 
  Release-info: https://dev.gnupg.org/Txxxx
 

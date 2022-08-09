@@ -66,6 +66,7 @@
 #include "qgpgmequickjob.h"
 #include "qgpgmereceivekeysjob.h"
 #include "qgpgmerevokekeyjob.h"
+#include "qgpgmesetprimaryuseridjob.h"
 
 namespace
 {
@@ -492,6 +493,18 @@ public:
             return nullptr;
         }
         return new QGpgME::QGpgMERevokeKeyJob(context);
+    }
+
+    QGpgME::SetPrimaryUserIDJob *setPrimaryUserIDJob() const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
+        if (!context) {
+            return nullptr;
+        }
+        return new QGpgME::QGpgMESetPrimaryUserIDJob{context};
     }
 };
 
