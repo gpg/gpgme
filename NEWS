@@ -7,6 +7,8 @@ Noteworthy changes in version 1.17.2 (unreleased)
 
  * cpp, qt: Support revocation of own OpenPGP keys.  [#5904]
 
+ * cpp: Support setting the primary user ID.  [#5938]
+
  * Interface changes relative to the 1.17.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_KEYLIST_MODE_FORCE_EXTERN            NEW.
@@ -17,6 +19,8 @@ Noteworthy changes in version 1.17.2 (unreleased)
  cpp: KeyListMode::ForceExtern              NEW.
  cpp: KeyListMode::LocateExternal           NEW.
  cpp: KeyListMode::KeyListModeMask          NEW.
+ cpp: Context::setPrimaryUid                NEW.
+ cpp: Context::startSetPrimaryUid           NEW.
  qt: RevokeKeyJob                           NEW.
  qt: Protocol::revokeKeyJob                 NEW.
 

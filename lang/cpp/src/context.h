@@ -295,6 +295,9 @@ public:
     Error revUid(const Key &key, const char *userid);
     Error startRevUid(const Key &key, const char *userid);
 
+    Error setPrimaryUid(const Key &key, const char *userid);
+    Error startSetPrimaryUid(const Key &key, const char *userid);
+
     Error createSubkey(const Key &key, const char *algo,
                        unsigned long reserved = 0,
                        unsigned long expires = 0,

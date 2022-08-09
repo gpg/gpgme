@@ -1641,6 +1641,16 @@ Error Context::startRevUid(const Key &k, const char *userid)
                  k.impl(), userid, 0));
 }
 
+Error Context::setPrimaryUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_set_uid_flag(d->ctx, k.impl(), userid, "primary", nullptr));
+}
+
+Error Context::startSetPrimaryUid(const Key &k, const char *userid)
+{
+    return Error(d->lasterr = gpgme_op_set_uid_flag_start(d->ctx, k.impl(), userid, "primary", nullptr));
+}
+
 Error Context::createSubkey(const Key &k, const char *algo,
                             unsigned long reserved,
                             unsigned long expires,
