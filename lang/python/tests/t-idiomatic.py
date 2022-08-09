@@ -35,6 +35,9 @@ with gpg.Context() as c, gpg.Data() as d:
     d.write(b"Halloechen")
     leak_c = c
     leak_d = d
+
+leak_c.__del__()
+leak_d.__del__()
 assert leak_c.wrapped is None
 assert leak_d.wrapped is None
 

@@ -1190,7 +1190,7 @@ class Context(GpgmeWrapper):
         return self
 
     def __exit__(self, type, value, tb):
-        self.__del__()
+        return False
 
     def op_keylist_all(self, *args, **kwargs):
         self.op_keylist_start(*args, **kwargs)
@@ -1528,7 +1528,7 @@ class Data(GpgmeWrapper):
         return self
 
     def __exit__(self, type, value, tb):
-        self.__del__()
+        return False
 
     def _free_datacbs(self):
         self._data_cbs = None
