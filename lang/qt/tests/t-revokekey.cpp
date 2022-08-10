@@ -38,6 +38,7 @@
 #include <protocol.h>
 #include <revokekeyjob.h>
 
+#include <QDebug>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSignalSpy>
