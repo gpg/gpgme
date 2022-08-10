@@ -1,18 +1,23 @@
-Noteworthy changes in version 1.17.2 (unreleased)
+Noteworthy changes in version 1.18.0 (2022-08-10)
 -------------------------------------------------
 
- * New keylist mode to force refresh via external methods.  [#5951]
+ * New keylist mode to force refresh via external methods.  [T5951]
 
- * The keylist operations now create an import result to report the result of
-   the locate keylist modes.  [#5951]
+ * The keylist operations now create an import result to report the
+   result of the locate keylist modes.  [T5951]
 
- * cpp, qt: Do not export internal symbols anymore.  [#5906]
+ * core: Return BAD_PASSPHRASE error code on symmetric decryption
+   failure.  [T5939]
 
- * cpp, qt: Support revocation of own OpenPGP keys.  [#5904]
+ * cpp, qt: Do not export internal symbols anymore.  [T5906]
 
- * qt: The file name of (signed and) encrypted data can now be set.  [#6056]
+ * cpp, qt: Support revocation of own OpenPGP keys.  [T5904]
 
- * cpp, qt: Support setting the primary user ID.  [#5938]
+ * qt: The file name of (signed and) encrypted data can now be set.  [T6056]
+
+ * cpp, qt: Support setting the primary user ID.  [T5938]
+
+ * python: Fix segv(NULL) when inspecting contect after exeception.  [T6060]
 
  * Interface changes relative to the 1.17.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -37,7 +42,9 @@ Noteworthy changes in version 1.17.2 (unreleased)
  qt: SetPrimaryUserIDJob                    NEW.
  qt: Protocol::setPrimaryUserIDJob          NEW.
 
- Release-info: https://dev.gnupg.org/Txxxx
+ [c=C38/A27/R0 cpp=C21/A15/R0 qt=C16/A1/R0]
+
+ Release-info: https://dev.gnupg.org/T6128
 
 
 Noteworthy changes in version 1.17.1 (2022-03-06)
