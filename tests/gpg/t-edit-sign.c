@@ -99,10 +99,8 @@ interact_fnc (void *opaque, const char *status, const char *args, int fd)
     }
 
   if (result)
-    {
-      gpgme_io_writen (fd, result, strlen (result));
-      gpgme_io_writen (fd, "\n", 1);
-    }
+    gpgme_io_writen (fd, result, strlen (result));
+  gpgme_io_writen (fd, "\n", 1);
   return 0;
 }
 
