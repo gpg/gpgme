@@ -3,9 +3,14 @@ Noteworthy changes in version 1.17.2 (unreleased)
 
  * New keylist mode to force refresh via external methods.  [#5951]
 
+ * The keylist operations now create an import result to report the result of
+   the locate keylist modes.  [#5951]
+
  * cpp, qt: Do not export internal symbols anymore.  [#5906]
 
  * cpp, qt: Support revocation of own OpenPGP keys.  [#5904]
+
+ * qt: The file name of (signed and) encrypted data can now be set.  [#6056]
 
  * cpp, qt: Support setting the primary user ID.  [#5938]
 
@@ -19,10 +24,16 @@ Noteworthy changes in version 1.17.2 (unreleased)
  cpp: KeyListMode::ForceExtern              NEW.
  cpp: KeyListMode::LocateExternal           NEW.
  cpp: KeyListMode::KeyListModeMask          NEW.
+ cpp: ImportResult::mergeWith               NEW.
+ cpp: KeyListModeSaver                      NEW.
  cpp: Context::setPrimaryUid                NEW.
  cpp: Context::startSetPrimaryUid           NEW.
  qt: RevokeKeyJob                           NEW.
  qt: Protocol::revokeKeyJob                 NEW.
+ qt: EncryptJob::setFileName                NEW.
+ qt: EncryptJob::fileName                   NEW.
+ qt: SignEncryptJob::setFileName            NEW.
+ qt: SignEncryptJob::fileName               NEW.
  qt: SetPrimaryUserIDJob                    NEW.
  qt: Protocol::setPrimaryUserIDJob          NEW.
 
