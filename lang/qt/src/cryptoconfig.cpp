@@ -56,10 +56,11 @@ QVariant CryptoConfigEntry::defaultValue() const
 QGpgME::CryptoConfigEntry *CryptoConfig::entry(const QString &componentName, const QString &entryName) const
 {
     const CryptoConfigComponent *comp = component(componentName);
-    const QStringList groupNames = comp->groupList();
+    const QStringList groupNames = comp ? comp->groupList() : QStringList();
     for (const auto &groupName : groupNames) {
-        const CryptoConfigGroup *group = comp ? comp->group(groupName) : nullptr;
-        if (CryptoConfigEntry *entry = group->entry(entryName)) {
+        const CryptoConfigGroup *group = comp->group(groupName);
+        CryptoConfigEntry *entry = group ? group->entry(entryName) : nullptr;
+        if (entry) {
             return entry;
         }
     }
