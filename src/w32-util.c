@@ -645,7 +645,7 @@ _gpgme_get_gpgconf_path (void)
       gpgconf = find_program_at_standard_place ("GNU\\GnuPG\\gpgconf.exe");
     }
 
-  /* 5. Try to find gpgconf.exe relative to us.  */
+  /* 5. Try to find gpgconf.exe relative to us as Gpg4win installs it.  */
   if (!gpgconf && inst_dir)
     {
       char *dir = _gpgme_strconcat (inst_dir, "\\..\\..\\GnuPG\\bin", NULL);
@@ -653,7 +653,15 @@ _gpgme_get_gpgconf_path (void)
       free (dir);
     }
 
-  /* 5. Print a debug message if not found.  */
+  /* 6. Try to find gpgconf.exe relative to us as GnuPG VSD installs it. */
+  if (!gpgconf && inst_dir)
+    {
+      char *dir = _gpgme_strconcat (inst_dir, "\\..\\GnuPG\\bin", NULL);
+      gpgconf = find_program_in_dir (dir, name);
+      free (dir);
+    }
+
+  /* Print a debug message if not found.  */
   if (!gpgconf)
     _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
                   "_gpgme_get_gpgconf_path: '%s' not found",name);
