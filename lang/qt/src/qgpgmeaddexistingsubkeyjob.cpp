@@ -64,7 +64,8 @@ static QGpgMEAddExistingSubkeyJob::result_type add_subkey(Context *ctx, const Ke
     std::unique_ptr<GpgAddExistingSubkeyEditInteractor> interactor{new GpgAddExistingSubkeyEditInteractor{subkey.keyGrip()}};
 
     if (!subkey.neverExpires()) {
-        const auto expiry = QDateTime::fromSecsSinceEpoch(subkey.expirationTime(), Qt::UTC).toString(u"yyyyMMdd'T'hhmmss").toStdString();
+        const auto expiry = QDateTime::fromSecsSinceEpoch(uint_least32_t(subkey.expirationTime()),
+                                                          Qt::UTC).toString(u"yyyyMMdd'T'hhmmss").toStdString();
         interactor->setExpiry(expiry);
     }
 
