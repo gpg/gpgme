@@ -168,7 +168,7 @@ private Q_SLOTS:
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         QVERIFY(spy.wait(QSIGNALSPY_TIMEOUT));
 
-        QVERIFY(result.code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.code(), static_cast<int>(GPG_ERR_NO_ERROR));
         key.update();
         QCOMPARE(key.numSubkeys(), 3u);
     }
@@ -190,7 +190,7 @@ private Q_SLOTS:
 
         const auto result = job->exec(key, sourceSubkey);
 
-        QVERIFY(result.code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.code(), static_cast<int>(GPG_ERR_NO_ERROR));
         key.update();
         QCOMPARE(key.numSubkeys(), 3u);
         QCOMPARE(key.subkey(2).expirationTime(), 0);
@@ -213,7 +213,7 @@ private Q_SLOTS:
 
         const auto result = job->exec(key, sourceSubkey);
 
-        QVERIFY(result.code() == GPG_ERR_NO_ERROR);
+        QCOMPARE(result.code(), static_cast<int>(GPG_ERR_NO_ERROR));
         key.update();
         QCOMPARE(key.numSubkeys(), 3u);
 
