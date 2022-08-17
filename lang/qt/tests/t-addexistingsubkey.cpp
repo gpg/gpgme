@@ -222,9 +222,9 @@ private Q_SLOTS:
         // several times
         const auto allowedDeltaTSeconds = 1;
         const auto expectedExpirationRange = std::make_pair(
-            sourceSubkey.expirationTime() - allowedDeltaTSeconds,
-            sourceSubkey.expirationTime() + allowedDeltaTSeconds);
-        const auto actualExpiration = key.subkey(2).expirationTime();
+            uint_least32_t(sourceSubkey.expirationTime()) - allowedDeltaTSeconds,
+            uint_least32_t(sourceSubkey.expirationTime()) + allowedDeltaTSeconds);
+        const auto actualExpiration = uint_least32_t(key.subkey(2).expirationTime());
         QVERIFY2(actualExpiration >= expectedExpirationRange.first,
                  ("actual: " + std::to_string(actualExpiration) +
                   "; expected: " + std::to_string(expectedExpirationRange.first)).c_str());
