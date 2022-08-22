@@ -94,7 +94,7 @@ GpgME::Error QGpgMERefreshSMIMEKeysJob::start(const std::vector<GpgME::Key> &key
         return {};
     }
 
-    const bool gotWrongKeys = std::any_of(std::begin(keys), std::end(keys), [](const auto &k) {
+    const bool gotWrongKeys = std::any_of(std::begin(keys), std::end(keys), [](const GpgME::Key &k) {
         return k.protocol() != GpgME::CMS;
     });
     if (gotWrongKeys) {

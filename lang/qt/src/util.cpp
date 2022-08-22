@@ -56,7 +56,7 @@ QStringList toFingerprints(const std::vector<GpgME::Key> &keys)
 {
     QStringList fprs;
     fprs.reserve(keys.size());
-    std::transform(std::begin(keys), std::end(keys), std::back_inserter(fprs), [](const auto &k) {
+    std::transform(std::begin(keys), std::end(keys), std::back_inserter(fprs), [](const GpgME::Key &k) {
         return QString::fromLatin1(k.primaryFingerprint());
     });
     return fprs;

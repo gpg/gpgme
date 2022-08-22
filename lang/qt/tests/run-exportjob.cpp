@@ -57,7 +57,7 @@ static void showUsageAndExitWithCode(int exitCode)
     exit(exitCode);
 }
 
-static auto createExportJob(unsigned int mode)
+static QGpgME::ExportJob *createExportJob(unsigned int mode)
 {
     if (mode & Context::ExportSecretSubkey) {
         return QGpgME::openpgp()->secretSubkeyExportJob(/*armor=*/true);
