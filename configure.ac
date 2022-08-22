@@ -850,11 +850,45 @@ AH_BOTTOM([
 ])
 
 
-# Substitution used for gpgme-config
+# Substitution used for gpgme-config and gpgme.pc
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
 GPGME_CONFIG_HOST="$host"
 GPGME_CONFIG_AVAIL_LANG="$enabled_languages"
+
+case "$includedir" in
+  /usr/include|/include) ;;
+  '${prefix}/include')
+    if test "$prefix" != / -a "$prefix" != /usr; then
+      if test -z "$GPGME_CONFIG_CFLAGS"; then
+        GPGME_CONFIG_CFLAGS="-I\${includedir}"
+      else
+        GPGME_CONFIG_CFLAGS="-I\${includedir} $GPGME_CONFIG_CFLAGS"
+      fi
+    fi
+    ;;
+  *)
+    if test -z "$GPGME_CONFIG_CFLAGS"; then
+      GPGME_CONFIG_CFLAGS="-I\${includedir}"
+    else
+      GPGME_CONFIG_CFLAGS="-I\${includedir} $GPGME_CONFIG_CFLAGS"
+    fi
+    ;;
+esac
+case "$libdir" in
+  /usr/lib|/usr/lib64|/lib|/lib64) ;;
+  '${exec_prefix}/lib'|'${exec_prefix}/lib64')
+    if test "$exec_prefix" = "NONE"; then
+      if test "$prefix" != / -a "$prefix" != /usr; then
+        GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
+      fi
+    elif test "$exec_prefix" != / -a "$exec_prefix" != /usr; then
+      GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
+    fi
+    ;;
+  *) GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS" ;;
+esac
+
 AC_SUBST(GPGME_CONFIG_API_VERSION)
 AC_SUBST(GPGME_CONFIG_LIBS)
 AC_SUBST(GPGME_CONFIG_CFLAGS)
