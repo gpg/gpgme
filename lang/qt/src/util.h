@@ -34,13 +34,13 @@
 #ifndef __QGPGME_UTIL_H__
 #define __QGPGME_UTIL_H__
 
+#include <QStringList>
+
 #include <gpgme.h>
 
 #include <sstream>
 #include <string>
 #include <vector>
-
-class QStringList;
 
 namespace GpgME
 {

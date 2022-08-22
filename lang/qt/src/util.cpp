@@ -37,8 +37,6 @@
 
 #include "util.h"
 
-#include <QStringList>
-
 #include <key.h>
 
 #include <algorithm>
