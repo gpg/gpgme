@@ -129,7 +129,7 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
 
   gpg_err_set_errno (0);
   nr = strtol (args, &tail, 0);
-  if (errno || args == tail || *tail != ' ')
+  if (errno || args == tail)
     {
       /* The crypto backend does not behave.  */
       free (import);
@@ -173,12 +173,17 @@ parse_import (char *args, gpgme_import_status_t *import_status, int problem)
   if (tail)
     *tail = '\0';
 
-  import->fpr = strdup (args);
-  if (!import->fpr)
+  if (*args)
     {
-      free (import);
-      return gpg_error_from_syserror ();
+      import->fpr = strdup (args);
+      if (!import->fpr)
+        {
+          free (import);
+          return gpg_error_from_syserror ();
+        }
     }
+  else
+    import->fpr = NULL;
 
   *import_status = import;
   return 0;
