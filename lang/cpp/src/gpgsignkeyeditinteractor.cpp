@@ -170,6 +170,7 @@ enum SignKeyState {
     CONFIRM2,
     DUPE_OK,
     DUPE_OK2,
+    REJECT_SIGN_EXPIRED,
     QUIT,
     SAVE,
     ERROR = EditInteractor::ErrorState
@@ -193,6 +194,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
 #define addEntry( s1, status, str, s2 ) tab[std::make_tuple( s1, status, str)] = s2
     addEntry(START, GET_LINE, "keyedit.prompt", COMMAND);
     addEntry(COMMAND, GET_BOOL, "keyedit.sign_all.okay", UIDS_ANSWER_SIGN_ALL);
+    addEntry(COMMAND, GET_BOOL, "sign_uid.expired_okay", REJECT_SIGN_EXPIRED);
     addEntry(COMMAND, GET_BOOL, "sign_uid.okay", CONFIRM);
     addEntry(COMMAND, GET_BOOL, "sign_uid.local_promote_okay", CONFIRM2);
     addEntry(COMMAND, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
@@ -228,6 +230,7 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(DUPE_OK, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK2);
     addEntry(DUPE_OK2, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", QUIT);
+    addEntry(REJECT_SIGN_EXPIRED, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(ERROR, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(QUIT, GET_BOOL, "keyedit.save.okay", SAVE);
 #undef addEntry
@@ -263,6 +266,9 @@ const char *GpgSignKeyEditInteractor::action(Error &err) const
     case CONFIRM2:
     case CONFIRM:
         return answer(true);
+    case REJECT_SIGN_EXPIRED:
+        err = Error::fromCode(GPG_ERR_KEY_EXPIRED);
+        return answer(false);
     case QUIT:
         return "quit";
     case SAVE:
