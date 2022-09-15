@@ -30,9 +30,6 @@ import subprocess
 import sys
 
 # Out-of-tree build of the gpg bindings.
-gpg_error_config = ['gpg-error-config']
-gpgme_config_flags = ['--thread=pthread']
-gpgme_config = ['gpgme-config'] + gpgme_config_flags
 gpgme_h = ''
 include_dirs = [os.getcwd()]
 library_dirs = []
@@ -44,8 +41,6 @@ top_builddir = os.environ.get('top_builddir')
 if top_builddir:
     # In-tree build.
     in_tree = True
-    gpgme_config = [os.path.join(top_builddir, 'src/gpgme-config')
-                    ] + gpgme_config_flags
     gpgme_h = os.path.join(top_builddir, 'src/gpgme.h')
     library_dirs = [os.path.join(top_builddir,
                                  'src/.libs')]  # XXX uses libtool internals
@@ -60,20 +55,8 @@ if hasattr(subprocess, 'DEVNULL'):
 else:
     devnull = open(os.devnull, 'w')
 
-try:
-    subprocess.check_call(gpgme_config + ['--version'], stdout=devnull)
-except:
-    sys.exit('Could not find gpgme-config.  ' +
-             'Please install the libgpgme development package.')
 
-
-def getconfig(what, config=gpgme_config):
-    confdata = subprocess.Popen(
-        config + ['--%s' % what], stdout=subprocess.PIPE).communicate()[0]
-    return [x for x in confdata.decode('utf-8').split() if x != '']
-
-
-version = version_raw = getconfig('version')[0]
+version = version_raw = "@VERSION@"
 if '-' in version:
     version = version.split('-')[0]
 major, minor, patch = map(int, version.split('.'))
@@ -82,17 +65,17 @@ if not (major > 1 or (major == 1 and minor >= 7)):
     sys.exit('Need at least GPGME version 1.7, found {}.'.format(version_raw))
 
 if not gpgme_h:
-    gpgme_h = os.path.join(getconfig('prefix')[0], 'include', 'gpgme.h')
+    gpgme_h = os.path.join('@prefix@', 'include', 'gpgme.h')
 
 define_macros = []
-libs = getconfig('libs')
+libs = '@GPGME_CONFIG_LIBS@'.split(' ')
 
 # Define extra_macros for both the SWIG and C code
 for k, v in extra_macros.items():
     extra_swig_opts.append('-D{0}={1}'.format(k, v))
     define_macros.append((k, str(v)))
 
-for item in getconfig('cflags'):
+for item in '@GPGME_CONFIG_CFLAGS@'.split(' '):
     if item.startswith('-I'):
         include_dirs.append(item[2:])
     elif item.startswith('-D'):
@@ -182,15 +165,8 @@ class BuildExtFirstHack(build):
 
     def _generate_errors_i(self):
 
-        try:
-            subprocess.check_call(
-                gpg_error_config + ['--version'], stdout=devnull)
-        except:
-            sys.exit('Could not find gpg-error-config.  ' +
-                     'Please install the libgpg-error development package.')
-
         gpg_error_content = self._read_header(
-            'gpg-error.h', getconfig('cflags', config=gpg_error_config))
+            'gpg-error.h', '@GPG_ERROR_CFLAGS@'.split(' '))
 
         filter_re = re.compile(r'GPG_ERR_[^ ]* =')
         rewrite_re = re.compile(r' *(.*) = .*')
