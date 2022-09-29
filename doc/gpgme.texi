@@ -6265,7 +6265,8 @@ The public key algorithm used to create this signature.
 The hash algorithm used to create this signature.
 
 @item unsigned int sig_class
-The signature class of this signature.
+The signature class of this signature.  Note that only the values 0,
+1, and 2 are well-defined.
 
 @item long int timestamp
 The creation timestamp of this signature.

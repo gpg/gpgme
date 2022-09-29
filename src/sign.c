@@ -251,7 +251,16 @@ parse_sig_created (char *args, gpgme_new_signature_t *sigp,
     }
   args = tail;
 
+  /* strtol has been used wrongly here.  We can't change this anymore
+   * but we now take care of the 0x1f class which would otherwise let
+   * us run into an error.  */
   sig->sig_class = strtol (args, &tail, 0);
+  if (!errno && args != tail && sig->sig_class == 1
+      && (*tail == 'F' || *tail == 'f'))
+    {
+      tail++;
+      sig->sig_class = 131; /* Arbitrary unused value in rfc4880. */
+    }
   sig->class = sig->sig_class;
   sig->_obsolete_class = sig->sig_class;
   if (errno || args == tail || *tail != ' ')
