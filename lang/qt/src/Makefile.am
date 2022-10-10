@@ -261,12 +261,12 @@ nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
 AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
-              @GPGME_QT_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+              @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
-                       @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT_LIBS@
+                       @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
 libqgpgme_la_LDFLAGS = -no-undefined -version-info \
     @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 

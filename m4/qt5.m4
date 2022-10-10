@@ -1,31 +1,31 @@
-dnl qt.m4
+dnl qt5.m4
 dnl Copyright (C) 2016 Intevation GmbH
 dnl
 dnl This file is part of gpgme and is provided under the same license as gpgme
 
-dnl Autoconf macro to find either Qt4 or Qt5
+dnl Autoconf macro to find Qt5
 dnl
-dnl sets GPGME_QT_LIBS and GPGME_QT_CFLAGS
+dnl sets GPGME_QT5_LIBS and GPGME_QT5_CFLAGS
 dnl
 dnl if QT5 was found have_qt5_libs is set to yes
 
-AC_DEFUN([FIND_QT],
+AC_DEFUN([FIND_QT5],
 [
   have_qt5_libs="no";
 
-  PKG_CHECK_MODULES(GPGME_QT,
+  PKG_CHECK_MODULES(GPGME_QT5,
                     Qt5Core >= 5.0.0,
                     [have_qt5_libs="yes"],
                     [have_qt5_libs="no"])
 
-  PKG_CHECK_MODULES(GPGME_QTTEST,
+  PKG_CHECK_MODULES(GPGME_QT5TEST,
                     Qt5Test >= 5.0.0,
                     [have_qt5test_libs="yes"],
                     [have_qt5test_libs="no"])
 
   if ! test "$have_w32_system" = yes; then
     if "$PKG_CONFIG" --variable qt_config Qt5Core | grep -q "reduce_relocations"; then
-      GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fpic"
+      GPGME_QT5_CFLAGS="$GPGME_QT5_CFLAGS -fpic"
     fi
   fi
   if test "$have_qt5_libs" = "yes"; then
@@ -61,9 +61,9 @@ AC_DEFUN([FIND_QT],
     dnl we check here that we can actually compile / link a qt application
     dnl for host.
     OLDCPPFLAGS=$CPPFLAGS
-    CPPFLAGS=$GPGME_QT_CFLAGS
+    CPPFLAGS=$GPGME_QT5_CFLAGS
     OLDLIBS=$LIBS
-    LIBS=$GPGME_QT_LIBS
+    LIBS=$GPGME_QT5_LIBS
     AC_LANG_PUSH(C++)
     AC_MSG_CHECKING([whether a simple qt program can be built])
     AC_LINK_IFELSE([AC_LANG_SOURCE([

@@ -375,7 +375,7 @@ if test "$found" = "1"; then
 *** Qt language binding depends on cpp binding.
 ***]])
     fi
-    FIND_QT
+    FIND_QT5
     if test "$have_qt5_libs" != "yes"; then
         if test "$explicit_languages" = "1"; then
         AC_MSG_ERROR([[
@@ -408,7 +408,7 @@ LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
     AX_GCC_FUNC_ATTRIBUTE(visibility)
     if test "$ax_cv_have_func_attribute_visibility" = "yes"; then
-        GPGME_QT_CFLAGS="$GPGME_QT_CFLAGS -fvisibility=hidden"
+        GPGME_QT5_CFLAGS="$GPGME_QT5_CFLAGS -fvisibility=hidden"
     fi
 fi
 
