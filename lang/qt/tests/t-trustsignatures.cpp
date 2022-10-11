@@ -41,6 +41,7 @@
 #include "protocol.h"
 #include "signkeyjob.h"
 
+#include <QRegularExpression>
 #include <QSignalSpy>
 #include <QTemporaryDir>
 #include <QTest>
@@ -113,9 +114,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.org>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.org>")).hasMatch());
         }
 
         // Create second trust signature
@@ -158,9 +159,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.net>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.net>")).hasMatch());
         }
     }
 
@@ -224,9 +225,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.org>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.org>")).hasMatch());
         }
 
         // Create second trust signature
@@ -269,9 +270,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.net>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.net>")).hasMatch());
         }
     }
 
@@ -336,9 +337,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.org>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.org>")).hasMatch());
         }
 
         // Create second trust signature
@@ -381,9 +382,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.net>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.net>")).hasMatch());
         }
     }
 
@@ -447,9 +448,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.org>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.org>")).hasMatch());
         }
 
         // Create second trust signature
@@ -493,9 +494,9 @@ private Q_SLOTS:
             QVERIFY(trustSignature.trustScope());
             const auto trustScope = QString::fromUtf8(trustSignature.trustScope());
             QVERIFY(!trustScope.isEmpty());
-            const QRegExp regex{trustScope};
+            const QRegularExpression regex{trustScope};
             QVERIFY(regex.isValid());
-            QVERIFY(regex.indexIn(QStringLiteral("Foo <foo@example.net>")) != -1);
+            QVERIFY(regex.match(QStringLiteral("Foo <foo@example.net>")).hasMatch());
         }
     }
 
