@@ -59,22 +59,6 @@ using namespace QGpgME;
 using namespace GpgME;
 using namespace GpgME::Configuration;
 
-namespace
-{
-struct Select1St {
-    template <typename U, typename V>
-    const U &operator()(const std::pair<U, V> &p) const
-    {
-        return p.first;
-    }
-    template <typename U, typename V>
-    const U &operator()(const QPair<U, V> &p) const
-    {
-        return p.first;
-    }
-};
-}
-
 // Just for the Q_ASSERT in the dtor. Not thread-safe, but who would
 // have 2 threads talking to gpgconf anyway? :)
 static bool s_duringClear = false;
