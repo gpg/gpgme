@@ -366,7 +366,8 @@ BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
 CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake \
              qgpgme_version.h QGpgmeConfig.cmake.in \
-             QGpgmeConfigVersion.cmake QGpgmeQt6Config.cmake.in \
+             QGpgmeConfig-w32.cmake.in QGpgmeConfigVersion.cmake \
+             QGpgmeQt6Config.cmake.in QGpgmeQt6Config-w32.cmake.in \
              QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
 
 if WANT_QT5
