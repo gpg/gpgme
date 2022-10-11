@@ -18,10 +18,18 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
+
+if WANT_QT5
 lib_LTLIBRARIES = libqgpgme.la
+endif
+if WANT_QT6
+lib_LTLIBRARIES = libqgpgmeqt6.la
+endif
+
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
              qgpgme_debug.h qgpgme_version.h.in \
-             QGpgmeConfig-w32.cmake.in.in
+             QGpgmeConfig-w32.cmake.in.in QGpgmeQt6Config.cmake.in.in \
+             QGpgmeQt6Config-w32.cmake.in.in QGpgmeQt6ConfigVersion.cmake.in
 
 qgpgme_sources = \
     dataprovider.cpp \
@@ -258,17 +266,32 @@ camelcaseincludedir = $(includedir)/QGpgME
 camelcaseinclude_HEADERS = $(camelcase_headers)
 nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 
-libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
-
+if WANT_QT5
 AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
+libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
+
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
-                       @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
+                      @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
 libqgpgme_la_LDFLAGS = -no-undefined -version-info \
-    @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
+                       @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
+endif
+if WANT_QT6
+AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
+              @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+              -DBUILDING_QGPGME -Wsuggest-override \
+              -Wzero-as-null-pointer-constant
+
+libqgpgmeqt6_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
+
+libqgpgmeqt6_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
+                         @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT6_LIBS@
+libqgpgmeqt6_la_LDFLAGS = -no-undefined -version-info \
+                          @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
+endif
 
 if HAVE_MACOS_SYSTEM
 libsuffix=.dylib
@@ -276,6 +299,7 @@ else
 libsuffix=.so
 endif
 
+if WANT_QT5
 if HAVE_W32_SYSTEM
 QGpgmeConfig.cmake: QGpgmeConfig-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
@@ -287,23 +311,52 @@ QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
 	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
 	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
 endif
+endif
+if WANT_QT6
+if HAVE_W32_SYSTEM
+QGpgmeQt6Config.cmake: QGpgmeQt6Config-w32.cmake.in
+	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' | \
+	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
+else
+QGpgmeQt6Config.cmake: QGpgmeQt6Config.cmake.in
+	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
+	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
+	sed -e 's|[@]resolved_includedir@|$(includedir)|g' > $@
+endif
+endif
 
 $(camelcase_headers): Makefile.am
 	echo -n "#include \"qgpgme/" > "$@"
 	echo -n "$@" | tr '[:upper:]' '[:lower:]' >> "$@"
 	echo ".h\"" >> "$@"
 
+if WANT_QT5
 install-cmake-files: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/QGpgme
 	$(INSTALL) -m 644 QGpgmeConfig.cmake \
-        $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
+	$(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	$(INSTALL) -m 644 QGpgmeConfigVersion.cmake \
-        $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
+	$(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
 
 uninstall-cmake-files:
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgme/
+endif
+if WANT_QT6
+install-cmake-files: QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
+	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/QGpgmeQt6
+	$(INSTALL) -m 644 QGpgmeQt6Config.cmake \
+	$(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6Config.cmake
+	$(INSTALL) -m 644 QGpgmeQt6ConfigVersion.cmake \
+	$(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6ConfigVersion.cmake
+
+uninstall-cmake-files:
+	-rm $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6ConfigVersion.cmake
+	-rm $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6Config.cmake
+	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/
+endif
 
 install-data-local: install-cmake-files
 
@@ -313,9 +366,15 @@ BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
 CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake \
              qgpgme_version.h QGpgmeConfig.cmake.in \
-             QGpgmeConfigVersion.cmake
+             QGpgmeConfigVersion.cmake QGpgmeQt6Config.cmake.in \
+             QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
 
+if WANT_QT5
 nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
+endif
+if WANT_QT6
+nodist_libqgpgmeqt6_la_SOURCES = $(qgpgme_moc_sources)
+endif
 
 .h.moc:
 	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@

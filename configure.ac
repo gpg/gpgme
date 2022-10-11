@@ -218,7 +218,7 @@ have_w64_system=no
 have_macos_system=no
 build_w32_glib=no
 build_w32_qt=no
-available_languages="cl cpp python qt"
+available_languages="cl cpp python qt qt5 qt6"
 default_languages="cl cpp python qt"
 case "${host}" in
     x86_64-*mingw32*)
@@ -305,7 +305,9 @@ fi
 #       lang/Makefile.am's DIST_SUBDIRS.
 AC_ARG_ENABLE([languages],
               AS_HELP_STRING([--enable-languages=languages],
-                             [enable only specific language bindings]),
+                             [enable only specific language bindings:
+                              cl cpp python qt qt5 qt6 (qt selects qt5 or qt6,
+                              and qt5 and qt6 exclude each other)]),
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
                              sed 's/c++/cpp/'`],
@@ -331,25 +333,129 @@ for language in $enabled_languages; do
     fi
 done
 
-# Enable C++ 11 if cpp language is requested
-LIST_MEMBER("cpp", $enabled_languages)
+# Check whether Qt5 and/or Qt6 are enabled explicitly
+want_qt5="no";
+LIST_MEMBER("qt5", $enabled_languages)
 if test "$found" = "1"; then
+    want_qt5="yes";
+    # Remove qt5; further down qt will be added
+    enabled_languages=$(echo $enabled_languages | sed 's/qt5//')
+fi
+want_qt6="no";
+LIST_MEMBER("qt6", $enabled_languages)
+if test "$found" = "1"; then
+    want_qt6="yes";
+    # Remove qt6; further down qt will be added
+    enabled_languages=$(echo $enabled_languages | sed 's/qt6//')
+fi
+if test "$want_qt5" = "yes" -a "$want_qt6" = "yes"; then
+    AC_MSG_ERROR([[
+***
+*** The bindings for Qt5 and Qt6 cannot be built simultaneously.
+***]])
+fi
+
+# Ensure that pkg-config is available for all calls of FIND_QT5/FIND_QT6
+PKG_PROG_PKG_CONFIG
+
+# If the generic qt is enabled, then check for Qt5 or Qt6 (in this order)
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+    # Remove the generic qt (qt5 and qt6 have already been removed)
+    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+    FIND_QT5
+    if test "$have_qt5_libs" = "yes"; then
+        want_qt5="yes";
+    else
+        FIND_QT6
+        if test "$have_qt6_libs" = "yes"; then
+            want_qt6="yes";
+        else
+            if test "$explicit_languages" = "1"; then
+                AC_MSG_ERROR([[
+***
+*** Qt5 (Qt5Core) or Qt6 (Qt6Core) is required for the Qt binding.
+***]])
+            else
+                AC_MSG_WARN([[
+***
+*** Qt5 (Qt5Core) and Qt6 (Qt6Core) not found. Qt Binding will be disabled.
+***]])
+            fi
+        fi
+    fi
+elif test "$want_qt5" = "yes"; then
+    FIND_QT5
+    if test "$have_qt5_libs" != "yes"; then
+        AC_MSG_ERROR([[
+***
+*** Qt5 (Qt5Core) is required for the Qt 5 binding.
+***]])
+    fi
+elif test "$want_qt6" = "yes"; then
+    FIND_QT6
+    if test "$have_qt6_libs" != "yes"; then
+        AC_MSG_ERROR([[
+***
+*** Qt6 (Qt6Core) is required for the Qt 6 binding.
+***]])
+    fi
+fi
+
+# Check that cpp is enabled if qt5 or qt6 is enabled
+if test "$want_qt5" = "yes" -o "$want_qt6" = "yes"; then
+    LIST_MEMBER("cpp", $enabled_languages)
+    if test "$found" = "0"; then
+        AC_MSG_ERROR([[
+***
+*** The Qt bindings depend on the C++ binding.
+***]])
+    fi
+fi
+
+# Enable C++ 17 if qt6 is requested
+if test "$want_qt6" = "yes"; then
+    AX_CXX_COMPILE_STDCXX(17, noext, optional)
+    if test "$HAVE_CXX17" != "1"; then
+        if test "$explicit_languages" = "1"; then
+            AC_MSG_ERROR([[
+***
+*** A compiler with c++17 support is required for the Qt 6 binding.
+***]])
+        else
+            want_qt6="no"
+            AC_MSG_WARN([[
+***
+*** No c++17 support detected. Qt 6 binding will be disabled.
+***]])
+        fi
+    fi
+fi
+
+# Enable C++ 11 if cpp is requested (unless C++ 17 was already enabled)
+LIST_MEMBER("cpp", $enabled_languages)
+if test "$found" = "1" -a "$HAVE_CXX17" != "1"; then
     AX_CXX_COMPILE_STDCXX(11, noext, optional)
     if test "$HAVE_CXX11" != "1"; then
         if test "$explicit_languages" = "1"; then
             AC_MSG_ERROR([[
 ***
-*** A compiler with c++11 support is required for the c++ binding.
+*** A compiler with c++11 support is required for the C++ binding.
 ***]])
         else
             enabled_languages=$(echo $enabled_languages | sed 's/cpp//')
-            enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+            want_qt5="no"
             AC_MSG_WARN([[
 ***
-*** No c++11 support detected. C++ and Qt bindings will be disabled.
+*** No c++11 support detected. C++ and Qt 5 bindings will be disabled.
 ***]])
         fi
     fi
+fi
+
+# Now append qt to the list of language bindings
+if test "$want_qt5" = "yes" -o "$want_qt6" = "yes"; then
+    enabled_languages=$(echo $enabled_languages qt)
 fi
 
 # Check whether compiler supports visibility attribute (if cpp language is enabled)
@@ -358,57 +464,29 @@ if test "$found" = "1"; then
     AX_GCC_FUNC_ATTRIBUTE(visibility)
     if test "$ax_cv_have_func_attribute_visibility" = "yes"; then
         GPGME_CPP_CFLAGS="$GPGME_CPP_CFLAGS -fvisibility=hidden"
+        if test "$want_qt5" = "yes"; then
+            GPGME_QT5_CFLAGS="$GPGME_QT5_CFLAGS -fvisibility=hidden"
+        fi
+        if test "$want_qt6" = "yes"; then
+            GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -fvisibility=hidden"
+        fi
     fi
 fi
 AC_SUBST(GPGME_CPP_CFLAGS)
 
-# Check that if qt is enabled cpp also is enabled
-LIST_MEMBER("qt", $enabled_languages)
-if test "$found" = "1"; then
-    # We need to ensure that in the language order qt comes after cpp
-    # so we remove qt first and explicitly add it as last list member.
-    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
-    LIST_MEMBER("cpp", $enabled_languages)
-    if test "$found" = "0"; then
-        AC_MSG_ERROR([[
-***
-*** Qt language binding depends on cpp binding.
-***]])
-    fi
-    FIND_QT5
-    if test "$have_qt5_libs" != "yes"; then
-        if test "$explicit_languages" = "1"; then
-        AC_MSG_ERROR([[
-***
-*** Qt5 (Qt5Core) is required for Qt binding.
-***]])
-        else
-           AC_MSG_WARN([[
-***
-*** Qt5 (Qt5Core) not found Qt Binding will be disabled.
-***]])
-        fi
-    else
-        enabled_languages=`echo $enabled_languages qt`
+AM_CONDITIONAL(WANT_QT5, test "$want_qt5" = yes)
+AM_CONDITIONAL(WANT_QT6, test "$want_qt6" = yes)
 
-        AC_CHECK_PROGS([DOXYGEN], [doxygen])
-        if test -z "$DOXYGEN";
-            # This is not highlighted because it's not really important.
-            then AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
-        fi
-        AC_CHECK_PROGS([GRAPHVIZ], [dot])
-        if test -z "$GRAPHVIZ";
-            then AC_MSG_WARN([Graphviz not found - Qt binding doc will not have diagrams.])
-        fi
+# Check for tools for building the Qt binding docs
+if test "$want_qt5" = "yes" -o "$want_qt6" = "yes"; then
+    AC_CHECK_PROGS([DOXYGEN], [doxygen])
+    if test -z "$DOXYGEN"; then
+        # This is not highlighted because it's not really important.
+        AC_MSG_WARN([Doxygen not found - Qt binding doc will not be built.])
     fi
-fi
-
-# Check if compiler supports visibility attribute (if qt is enabled)
-LIST_MEMBER("qt", $enabled_languages)
-if test "$found" = "1"; then
-    AX_GCC_FUNC_ATTRIBUTE(visibility)
-    if test "$ax_cv_have_func_attribute_visibility" = "yes"; then
-        GPGME_QT5_CFLAGS="$GPGME_QT5_CFLAGS -fvisibility=hidden"
+    AC_CHECK_PROGS([GRAPHVIZ], [dot])
+    if test -z "$GRAPHVIZ"; then
+        AC_MSG_WARN([Graphviz not found - Qt binding doc will not have diagrams.])
     fi
 fi
 
@@ -967,9 +1045,16 @@ AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
 AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
 AC_CONFIG_FILES(lang/cpp/src/gpgmepp_version.h)
 AC_CONFIG_FILES(lang/qt/Makefile lang/qt/src/Makefile)
-AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig-w32.cmake.in)
-AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
-AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
+if test "$want_qt5" = "yes"; then
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig-w32.cmake.in)
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeConfig.cmake.in)
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeConfigVersion.cmake)
+fi
+if test "$want_qt6" = "yes"; then
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeQt6Config-w32.cmake.in)
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeQt6Config.cmake.in)
+    AC_CONFIG_FILES(lang/qt/src/QGpgmeQt6ConfigVersion.cmake)
+fi
 AC_CONFIG_FILES(lang/qt/tests/Makefile)
 AC_CONFIG_FILES(lang/qt/src/qgpgme_version.h)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
@@ -986,6 +1071,12 @@ AC_CONFIG_FILES([lang/python/Makefile
 		 lang/python/doc/Makefile])
 AC_CONFIG_FILES([lang/python/setup.py], [chmod a+x lang/python/setup.py])
 AC_OUTPUT
+
+if test "$want_qt5" = "yes"; then
+    enabled_languages_v=$(echo ${enabled_languages_v:-$enabled_languages} | sed "s/qt/qt (Qt 5)/")
+elif test "$want_qt6" = "yes"; then
+    enabled_languages_v=$(echo ${enabled_languages_v:-$enabled_languages} | sed "s/qt/qt (Qt 6)/")
+fi
 
 echo "
         GPGME v${VERSION} has been configured as follows:
