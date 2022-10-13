@@ -23,11 +23,6 @@ AC_DEFUN([FIND_QT6],
                     [have_qt6test_libs="yes"],
                     [have_qt6test_libs="no"])
 
-  if ! test "$have_w32_system" = yes; then
-    if "$PKG_CONFIG" --variable qt_config Qt6Core | grep -q "reduce_relocations"; then
-      GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -fpic"
-    fi
-  fi
   if test "$have_qt6_libs" = "yes"; then
     # Qt6 moved moc to libexec
     qt6libexecdir=$($PKG_CONFIG --variable=libexecdir 'Qt6Core >= 6.4.0')
@@ -64,6 +59,9 @@ AC_DEFUN([FIND_QT6],
     dnl for host.
     OLDCPPFLAGS=$CPPFLAGS
     CPPFLAGS=$GPGME_QT6_CFLAGS
+    if ! test "$have_w32_system" = yes; then
+      CPPFLAGS="$CPPFLAGS -fpic"
+    fi
     OLDLIBS=$LIBS
     LIBS=$GPGME_QT6_LIBS
     AC_LANG_PUSH(C++)
