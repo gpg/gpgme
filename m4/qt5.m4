@@ -55,6 +55,8 @@ AC_DEFUN([FIND_QT5],
       fi
     fi
     AC_MSG_RESULT([$mocversion])
+  fi
+  if test "$have_qt5_libs" = "yes"; then
     dnl Check that a binary can actually be build with this qt.
     dnl pkg-config may be set up in a way that it looks also for libraries
     dnl of the build system and not only for the host system. In that case
