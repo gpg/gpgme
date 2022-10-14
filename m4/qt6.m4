@@ -60,22 +60,41 @@ AC_DEFUN([FIND_QT6],
     dnl we check here that we can actually compile / link a qt application
     dnl for host.
     OLDCPPFLAGS=$CPPFLAGS
-    CPPFLAGS=$GPGME_QT6_CFLAGS
-    if ! test "$have_w32_system" = yes; then
-      CPPFLAGS="$CPPFLAGS -fpic"
-    fi
     OLDLIBS=$LIBS
+
+    # try building without -fPIC
+    CPPFLAGS=$GPGME_QT6_CFLAGS
     LIBS=$GPGME_QT6_LIBS
     AC_LANG_PUSH(C++)
-    AC_MSG_CHECKING([whether a simple qt program can be built])
+    AC_MSG_CHECKING([whether a simple qt program can be built without -fPIC])
     AC_LINK_IFELSE([AC_LANG_SOURCE([
-    #include <QCoreApplication>
-    int main (int argc, char **argv) {
-    QCoreApplication app(argc, argv);
-    app.exec();
+      #include <QCoreApplication>
+      int main (int argc, char **argv) {
+      QCoreApplication app(argc, argv);
+      app.exec();
     }])], [have_qt6_libs='yes'], [have_qt6_libs='no'])
     AC_MSG_RESULT([$have_qt6_libs])
     AC_LANG_POP()
+
+    if test "$have_qt6_libs" = "no" -a "$have_w32_system" != yes; then
+      # try building with -fPIC
+      CPPFLAGS="$GPGME_QT6_CFLAGS -fPIC"
+      LIBS=$GPGME_QT6_LIBS
+      AC_LANG_PUSH(C++)
+      AC_MSG_CHECKING([whether a simple qt program can be built with -fPIC])
+      AC_LINK_IFELSE([AC_LANG_SOURCE([
+        #include <QCoreApplication>
+        int main (int argc, char **argv) {
+        QCoreApplication app(argc, argv);
+        app.exec();
+      }])], [
+        have_qt6_libs='yes'
+        GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -fPIC"
+      ], [have_qt6_libs='no'])
+      AC_MSG_RESULT([$have_qt6_libs])
+      AC_LANG_POP()
+    fi
+
     CPPFLAGS=$OLDCPPFLAGS
     LIBS=$OLDLIBS
   fi
