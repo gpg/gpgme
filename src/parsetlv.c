@@ -98,6 +98,9 @@ _gpgme_parse_tlv (char const **buffer, size_t *size, tlvinfo_t *ti)
       ti->length = len;
     }
 
+  if (ti->length > ti->nhdr && (ti->nhdr + ti->length) < ti->length)
+    return -1;  /* Integer overflow.  */
+
   *buffer = (void*)buf;
   *size = length;
   return 0;
