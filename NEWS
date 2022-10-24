@@ -10,6 +10,15 @@ Noteworthy changes in version 1.18.1 (unreleased)
  * qt: Fix problem with expiration dates after 2038-01-19 on 32-bit systems
    when adding an existing subkey to another key.  [T6137]
 
+ * cpp: Allow setting the curve to use when generating ECC keys
+   for smart cards.  [T4429]
+
+ * Interface changes relative to the 1.18.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ cpp: GpgGenCardKeyInteractor::Curve        NEW.
+ cpp: GpgGenCardKeyInteractor::setCurve     NEW.
+
+
 Noteworthy changes in version 1.18.0 (2022-08-10)
 -------------------------------------------------
 

@@ -36,16 +36,17 @@ using namespace GpgME;
 class GpgGenCardKeyInteractor::Private
 {
 public:
-    Private() : keysize("2048"), backup(false), algo(RSA)
+    Private() : keysize("2048")
     {
-
     }
+
     std::string name, email, backupFileName, expiry, serial, keysize;
-    bool backup;
-    Algo algo;
+    bool backup = false;
+    Algo algo = RSA;
+    std::string curve;
 };
 
-GpgGenCardKeyInteractor::~GpgGenCardKeyInteractor() {}
+GpgGenCardKeyInteractor::~GpgGenCardKeyInteractor() = default;
 
 GpgGenCardKeyInteractor::GpgGenCardKeyInteractor(const std::string &serial):
     d(new Private)
@@ -86,6 +87,15 @@ std::string GpgGenCardKeyInteractor::backupFileName() const
 void GpgGenCardKeyInteractor::setAlgo(Algo algo)
 {
     d->algo = algo;
+}
+
+void GpgGenCardKeyInteractor::setCurve(Curve curve)
+{
+    if (curve == DefaultCurve) {
+        d->curve.clear();
+    } else if (curve >= 1 && curve <= LastCurve) {
+        d->curve = std::to_string(static_cast<int>(curve));
+    }
 }
 
 namespace GpgGenCardKeyInteractor_Private
@@ -141,7 +151,7 @@ const char *GpgGenCardKeyInteractor::action(Error &err) const
     case KEY_CURVE1:
     case KEY_CURVE2:
     case KEY_CURVE3:
-        return "1"; // Only cv25519 supported.
+        return d->curve.empty() ? "1" : d->curve.c_str(); // default is Curve25519
     case NAME:
         return d->name.c_str();
     case EMAIL:
