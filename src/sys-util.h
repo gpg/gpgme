@@ -24,6 +24,7 @@
 int _gpgme_set_default_gpg_name (const char *name);
 int _gpgme_set_default_gpgconf_name (const char *name);
 int _gpgme_set_override_inst_dir (const char *dir);
+int _gpgme_set_get_inst_type (const char *value);
 
 char *_gpgme_get_gpg_path (void);
 char *_gpgme_get_gpgconf_path (void);

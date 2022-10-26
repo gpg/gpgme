@@ -727,6 +727,13 @@ is not met, GPGME fails early instead of trying to use the existent
 version.  The given version must be a string with major, minor, and
 micro number.  Example: "2.1.0".
 
+@item inst-type
+The installation type is used to prefer a certain GnuPG installation.
+The value is interpreted as an integer: A value of 0 is ignored, a
+value of 1 indicates an installation scheme as used by Gpg4win, a
+value of 2 indicates an installation scheme as used by GnuPG Desktop
+on Windows.  All other values are reserved.
+
 @item w32-inst-dir
 On Windows GPGME needs to know its installation directory to find its
 spawn helper.  This is in general no problem because a DLL has this

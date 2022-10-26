@@ -79,6 +79,15 @@ _gpgme_set_override_inst_dir (const char *dir)
   return 0;
 }
 
+/* Dummy function - see w32-util.c for the actual code.  */
+int
+_gpgme_set_get_inst_type (const char *value)
+{
+  (void)value;
+  return 0; /* Posix installation type is fixed.  */
+}
+
+
 /* Find an executable program in the colon seperated paths. */
 static char *
 walk_path_str (const char *path_str, const char *pgm)

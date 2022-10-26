@@ -83,6 +83,11 @@
 # define GNUPG_REGKEY_3  "Software\\GnuPG"
 #endif
 
+/* Relative name parts for different installation types.  */
+#define INST_TYPE_GPG4WIN_DIR "\\..\\..\\GnuPG\\bin"
+#define INST_TYPE_GPGDESK_DIR "\\..\\GnuPG\\bin"
+
+
 DEFINE_STATIC_LOCK (get_path_lock);
 
 /* The module handle of this DLL.  If we are linked statically,
@@ -536,6 +541,27 @@ _gpgme_set_override_inst_dir (const char *dir)
 }
 
 
+/* Used by gpgme_set_global_flag to set the installation type.
+ * VALUE is a string interpreted as integer with this meaning:
+ *   0 = standard
+ *   1 = Gpg4win 4 style
+ *   2 = GnuPG (VS-)Desktop style
+ * If VALUE is NULL, nothing is changed.  The return value is the
+ * previous value.
+ */
+int
+_gpgme_set_get_inst_type (const char *value)
+{
+  static int inst_type;
+  int previous_type;
+
+  previous_type = inst_type;
+  if (value)
+    inst_type = atoi (value);
+  return previous_type;
+}
+
+
 /* Return the full file name of the GPG binary.  This function is used
    iff gpgconf was not found and thus it can be assumed that gpg2 is
    not installed.  This function is only called by get_gpgconf_item
@@ -593,12 +619,28 @@ _gpgme_get_gpgconf_path (void)
 {
   char *gpgconf = NULL;
   const char *inst_dir, *name;
+  int inst_type;
+  char *dir;
 
   name = default_gpgconf_name? get_basename(default_gpgconf_name):"gpgconf.exe";
 
-  /* 1. Try to find gpgconf.exe in the installation directory of gpgme.  */
+  /* 0. If an installation type is requested try to find gpgconf.exe
+   * depending on that installation type.  */
   inst_dir = _gpgme_get_inst_dir ();
-  if (inst_dir)
+  if (inst_dir
+      && (inst_type = _gpgme_set_get_inst_type (NULL))
+      && (inst_type == 1 || inst_type == 2))
+    {
+      dir = _gpgme_strconcat (inst_dir,
+                              inst_type == 1? INST_TYPE_GPG4WIN_DIR
+                              /*         */ : INST_TYPE_GPGDESK_DIR,
+                              NULL);
+      gpgconf = find_program_in_dir (dir, name);
+      free (dir);
+    }
+
+  /* 1. Try to find gpgconf.exe in the installation directory of gpgme.  */
+  if (!gpgconf && inst_dir)
     {
       gpgconf = find_program_in_dir (inst_dir, name);
     }
@@ -648,7 +690,7 @@ _gpgme_get_gpgconf_path (void)
   /* 5. Try to find gpgconf.exe relative to us as Gpg4win installs it.  */
   if (!gpgconf && inst_dir)
     {
-      char *dir = _gpgme_strconcat (inst_dir, "\\..\\..\\GnuPG\\bin", NULL);
+      dir = _gpgme_strconcat (inst_dir, INST_TYPE_GPG4WIN_DIR, NULL);
       gpgconf = find_program_in_dir (dir, name);
       free (dir);
     }
@@ -656,7 +698,7 @@ _gpgme_get_gpgconf_path (void)
   /* 6. Try to find gpgconf.exe relative to us as GnuPG VSD installs it. */
   if (!gpgconf && inst_dir)
     {
-      char *dir = _gpgme_strconcat (inst_dir, "\\..\\GnuPG\\bin", NULL);
+      dir = _gpgme_strconcat (inst_dir, INST_TYPE_GPGDESK_DIR, NULL);
       gpgconf = find_program_in_dir (dir, name);
       free (dir);
     }
