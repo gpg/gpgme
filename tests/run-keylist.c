@@ -58,6 +58,7 @@ show_usage (int ex)
          "  --validate       use GPGME_KEYLIST_MODE_VALIDATE\n"
          "  --import         import all keys\n"
          "  --offline        use offline mode\n"
+         "  --no-trust-check disable automatic trust database check\n"
          "  --from-file      list all keys in the given file\n"
          "  --from-wkd       list key from a web key directory\n"
          "  --require-gnupg  required at least the given GnuPG version\n"
@@ -103,6 +104,7 @@ main (int argc, char **argv)
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   int only_secret = 0;
   int offline = 0;
+  int no_trust_check = 0;
   int from_file = 0;
   int from_wkd = 0;
   gpgme_data_t data = NULL;
@@ -192,6 +194,11 @@ main (int argc, char **argv)
           offline = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--no-trust-check"))
+        {
+          no_trust_check = 1;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--from-file"))
         {
           from_file = 1;
@@ -237,6 +244,12 @@ main (int argc, char **argv)
   gpgme_set_keylist_mode (ctx, mode);
 
   gpgme_set_offline (ctx, offline);
+
+  if (no_trust_check)
+    {
+      err = gpgme_set_ctx_flag (ctx, "no-auto-check-trustdb", "1");
+      fail_if_err (err);
+    }
 
   if (trust_model)
     {

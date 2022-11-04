@@ -150,6 +150,7 @@ struct engine_gpg
     unsigned int ignore_mdc_error : 1;
     unsigned int include_key_block : 1;
     unsigned int auto_key_import : 1;
+    unsigned int no_auto_check_trustdb : 1;
   } flags;
 
   /* NULL or the data object fed to --override_session_key-fd.  */
@@ -695,6 +696,8 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
       if (ctx->include_key_block)
         gpg->flags.include_key_block = 1;
     }
+
+  gpg->flags.no_auto_check_trustdb = !!ctx->no_auto_check_trustdb;
 }
 
 
@@ -934,6 +937,8 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc++;
   if (gpg->flags.offline)
     argc++;
+  if (gpg->flags.no_auto_check_trustdb)
+    argc++;
   if (gpg->pinentry_mode)
     argc++;
   if (!gpg->cmd.used)
@@ -1060,6 +1065,19 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (gpg->flags.offline)
     {
       argv[argc] = strdup ("--disable-dirmngr");
+      if (!argv[argc])
+	{
+          int saved_err = gpg_error_from_syserror ();
+	  free (fd_data_map);
+	  free_argv (argv);
+	  return saved_err;
+        }
+      argc++;
+    }
+
+  if (gpg->flags.no_auto_check_trustdb)
+    {
+      argv[argc] = strdup ("--no-auto-check-trustdb");
       if (!argv[argc])
 	{
           int saved_err = gpg_error_from_syserror ();

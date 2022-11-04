@@ -3236,6 +3236,11 @@ The string given in @var{value} is passed to the GnuPG engine to use as
 filter when importing keys.  Valid values are documented in the GnuPG
 manual and the gpg man page under the option @option{--import-filter}.
 
+@item "no-auto-check-trustdb"
+@since{1.18.1}
+Setting the @var{value} to "1" forces the GPG backend to disable the
+automatic check of the trust database.
+
 @end table
 
 This function returns @code{0} on success.

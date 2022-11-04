@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.18.1 (unreleased)
 -------------------------------------------------
 
+ * New context flag "no-auto-check-trustdb".  [T6261]
+
  * Optionally, build QGpgME for Qt 6
 
  * cpp: Handle error when trying to sign expired keys.  [T6155]
@@ -15,6 +17,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
 
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
+ gpgme_set_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
 

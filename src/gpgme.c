@@ -607,6 +607,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->import_filter)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "no-auto-check-trustdb"))
+    {
+      ctx->no_auto_check_trustdb = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -687,6 +691,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "import-filter"))
     {
       return ctx->import_filter? ctx->import_filter : "";
+    }
+  else if (!strcmp (name, "no-auto-check-trustdb"))
+    {
+      return ctx->no_auto_check_trustdb? "1":"";
     }
   else
     return NULL;

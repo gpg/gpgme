@@ -134,6 +134,9 @@ struct gpgme_context
    * after the operation.  */
   unsigned int ignore_mdc_error : 1;
 
+  /* True if the option --no-auto-check-trustdb shall be passed to gpg.  */
+  unsigned int no_auto_check_trustdb : 1;
+
   /* Pass --expert to gpg edit key. */
   unsigned int extended_edit : 1;
 
