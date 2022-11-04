@@ -5,6 +5,8 @@
     Copyright (c) 2004,2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -38,11 +40,13 @@
 
 #include "qgpgmelistallkeysjob.h"
 
+#include "debug.h"
 #include "key.h"
 #include "context.h"
 #include "engineinfo.h"
 #include "global.h"
 #include "keylistresult.h"
+#include "qgpgme_debug.h"
 
 #include <gpg-error.h>
 
@@ -162,10 +166,18 @@ static KeyListResult do_list_keys(Context *ctx, std::vector<Key> &keys)
     return result;
 }
 
-static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
+static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys, ListAllKeysJob::Options options)
 {
     if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.1.0") {
         return list_keys_legacy(ctx, mergeKeys);
+    }
+
+    if (options & ListAllKeysJob::DisableAutomaticTrustDatabaseCheck) {
+        auto err = ctx->setFlag("no-auto-check-trustdb", "1");
+        if (err) {
+            // ignore error, but log a warning
+            qCWarning(QGPGME_LOG) << "Setting context flag no-auto-check-trustdb failed:" << err;
+        }
     }
 
     std::vector<Key> keys;
@@ -182,13 +194,13 @@ static QGpgMEListAllKeysJob::result_type list_keys(Context *ctx, bool mergeKeys)
 
 Error QGpgMEListAllKeysJob::start(bool mergeKeys)
 {
-    run(std::bind(&list_keys, std::placeholders::_1, mergeKeys));
+    run(std::bind(&list_keys, std::placeholders::_1, mergeKeys, options()));
     return Error();
 }
 
 KeyListResult QGpgMEListAllKeysJob::exec(std::vector<Key> &pub, std::vector<Key> &sec, bool mergeKeys)
 {
-    const result_type r = list_keys(context(), mergeKeys);
+    const result_type r = list_keys(context(), mergeKeys, options());
     resultHook(r);
     pub = std::get<1>(r);
     sec = std::get<2>(r);

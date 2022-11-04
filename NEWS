@@ -15,12 +15,19 @@ Noteworthy changes in version 1.18.1 (unreleased)
  * cpp: Allow setting the curve to use when generating ECC keys
    for smart cards.  [T4429]
 
+ * qt: Extend ListAllKeysJob to allow disabling the automatic trust database
+   check when listing all keys.  [T6261]
+
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  gpgme_set_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
+ qt: ListAllKeysJob::Option                 NEW.
+ qt: ListAllKeysJob::Options                NEW.
+ qt: ListAllKeysJob::setOptions             NEW.
+ qt: ListAllKeysJob::options                NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)

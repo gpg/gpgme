@@ -5,6 +5,8 @@
     Copyright (c) 2004 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2022 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -74,11 +76,21 @@ namespace QGpgME
 class QGPGME_EXPORT ListAllKeysJob : public Job
 {
     Q_OBJECT
+public:
+    enum Option {
+        Default = 0x00,
+        DisableAutomaticTrustDatabaseCheck = 0x01,
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+
 protected:
     explicit ListAllKeysJob(QObject *parent);
 
 public:
     ~ListAllKeysJob();
+
+    void setOptions(Options options);
+    Options options() const;
 
     /**
       Starts the listallkeys operation.  In general, all keys are
@@ -100,6 +112,8 @@ public:
 Q_SIGNALS:
     void result(const GpgME::KeyListResult &result, const std::vector<GpgME::Key> &pub = std::vector<GpgME::Key>(), const std::vector<GpgME::Key> &sec = std::vector<GpgME::Key>(), const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(ListAllKeysJob::Options)
 
 }
 

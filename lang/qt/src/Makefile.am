@@ -41,7 +41,7 @@ qgpgme_sources = \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
     qgpgmeencryptjob.cpp qgpgmeexportjob.cpp qgpgmeimportfromkeyserverjob.cpp \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
-    qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
+    listallkeysjob.cpp qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
     qgpgmereceivekeysjob.cpp \
     qgpgmerefreshsmimekeysjob.cpp \
     qgpgmerevokekeyjob.cpp \
