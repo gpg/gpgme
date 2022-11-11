@@ -127,7 +127,7 @@ interact_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   if (err)
     return err;
 
-  if (!fnc || !out)
+  if (!key || !fnc || !out)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
@@ -206,7 +206,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
   if (err)
     return err;
 
-  if (!fnc || !out)
+  if (!key || !fnc || !out)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
