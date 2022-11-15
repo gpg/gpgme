@@ -122,12 +122,13 @@ interact_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   gpgme_error_t err;
   void *hook;
   op_data_t opd;
+  int card_edit = (flags & GPGME_INTERACT_CARD)? 1: 0;
 
   err = _gpgme_op_reset (ctx, synchronous);
   if (err)
     return err;
 
-  if (!key || !fnc || !out)
+  if ((card_edit == 0 && !key) || !fnc || !out)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
@@ -146,7 +147,7 @@ interact_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t key,
   _gpgme_engine_set_status_handler (ctx->engine, edit_status_handler, ctx);
 
   return _gpgme_engine_op_edit (ctx->engine,
-                                (flags & GPGME_INTERACT_CARD)? 1: 0,
+                                card_edit,
                                 key, out, ctx);
 }
 
@@ -206,7 +207,7 @@ edit_start (gpgme_ctx_t ctx, int synchronous, int type, gpgme_key_t key,
   if (err)
     return err;
 
-  if (!key || !fnc || !out)
+  if ((type == 0 && !key) || !fnc || !out)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = _gpgme_op_data_lookup (ctx, OPDATA_EDIT, &hook, sizeof (*opd), NULL);
