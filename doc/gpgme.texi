@@ -622,11 +622,13 @@ the program to the @acronym{GPGME} library.
 @c (in different way), so it's not relevant now.
 @c
 
-@code{AM_PATH_GPGME_PTHREAD} checks for the version of @acronym{GPGME}
-that can be used with the native pthread implementation, and defines
-@code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}. Since
-version 1.8.0 this is no longer required to GPGME_PTHREAD as
-@acronym{GPGME} itself is thread safe.
+
+@code{AM_PATH_GPGME_PTHREAD} was provided to check for the version of
+@acronym{GPGME} with the native pthread implementation, and it defined
+@code{GPGME_PTHREAD_CFLAGS} and @code{GPGME_PTHREAD_LIBS}.  Since
+version 1.8.0 this is no longer necessary, as @acronym{GPGME} itself
+is thread safe.  Please use plain @code{AM_PATH_GPGME} instead, with
+@code{GPGME_CFLAGS} and @code{GPGME_LDFLAGS}.
 
 @end defmac
 
