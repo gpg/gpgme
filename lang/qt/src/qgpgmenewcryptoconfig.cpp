@@ -644,7 +644,7 @@ void QGpgMENewCryptoConfigEntry::setURLValue(const QUrl &url)
     if (str.isEmpty() && !isOptional()) {
         m_option.resetToDefaultValue();
     } else if (type == FilenameType) {
-        m_option.setNewValue(m_option.createStringArgument(QDir::toNativeSeparators(url.toLocalFile()).toUtf8().constData()));
+        m_option.setNewValue(m_option.createStringArgument(url.toLocalFile().toUtf8().constData()));
     } else {
         m_option.setNewValue(m_option.createStringArgument(str.toUtf8().constData()));
     }
