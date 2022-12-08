@@ -99,6 +99,9 @@ public:
 
             if (ei->q->needsNoResponse(status)) {
                 // keep state
+            } else if (status == GPGME_STATUS_ERROR) {
+                err = ei->q->parseStatusError(args);
+                ei->state = EditInteractor::ErrorState;
             } else {
                 ei->state = ei->q->nextState(status, args, err);
             }
