@@ -105,10 +105,6 @@ unsigned int GpgAddExistingSubkeyEditInteractor::Private::nextState(unsigned int
     static const Error NO_KEY_ERROR = Error::fromCode(GPG_ERR_NO_KEY);
     static const Error INV_TIME_ERROR = Error::fromCode(GPG_ERR_INV_TIME);
 
-    if (q->needsNoResponse(status)) {
-        return q->state();
-    }
-
     switch (q->state()) {
     case START:
         if (status == GPGME_STATUS_GET_LINE &&

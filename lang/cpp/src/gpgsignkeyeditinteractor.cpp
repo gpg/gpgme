@@ -304,9 +304,6 @@ unsigned int GpgSignKeyEditInteractor::nextState(unsigned int status, const char
     static const Error GENERAL_ERROR = Error::fromCode(GPG_ERR_GENERAL);
     //static const Error INV_TIME_ERROR = Error::fromCode( GPG_ERR_INV_TIME );
     static const TransitionMap table(makeTable());
-    if (needsNoResponse(status)) {
-        return state();
-    }
 
     using namespace GpgSignKeyEditInteractor_Private;
 

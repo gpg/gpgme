@@ -192,10 +192,6 @@ unsigned int GpgGenCardKeyInteractor::nextState(unsigned int status, const char 
     static const Error INV_EMAIL_ERROR   = Error::fromCode(GPG_ERR_INV_USER_ID);
     static const Error INV_COMMENT_ERROR = Error::fromCode(GPG_ERR_INV_USER_ID);
 
-    if (needsNoResponse(status)) {
-        return state();
-    }
-
     using namespace GpgGenCardKeyInteractor_Private;
 
     switch (state()) {

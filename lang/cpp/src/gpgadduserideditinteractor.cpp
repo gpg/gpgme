@@ -120,10 +120,6 @@ unsigned int GpgAddUserIDEditInteractor::nextState(unsigned int status, const ch
     static const Error INV_EMAIL_ERROR   = Error::fromCode(GPG_ERR_INV_USER_ID);
     static const Error INV_COMMENT_ERROR = Error::fromCode(GPG_ERR_INV_USER_ID);
 
-    if (needsNoResponse(status)) {
-        return state();
-    }
-
     using namespace GpgAddUserIDEditInteractor_Private;
 
     switch (state()) {

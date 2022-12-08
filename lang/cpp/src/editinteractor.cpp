@@ -96,7 +96,13 @@ public:
 
             // advance to next state based on input:
             const unsigned int oldState = ei->state;
-            ei->state = ei->q->nextState(status, args, err);
+
+            if (ei->q->needsNoResponse(status)) {
+                // keep state
+            } else {
+                ei->state = ei->q->nextState(status, args, err);
+            }
+
             if (ei->debug) {
                 std::fprintf(ei->debug, "EditInteractor: %u -> nextState( %s, %s ) -> %u\n",
                              oldState, status_to_string(status), args ? args : "<null>", ei->state);

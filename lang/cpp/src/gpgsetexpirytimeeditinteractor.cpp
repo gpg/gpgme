@@ -94,10 +94,6 @@ unsigned int GpgSetExpiryTimeEditInteractor::nextState(unsigned int status, cons
     static const Error GENERAL_ERROR  = Error::fromCode(GPG_ERR_GENERAL);
     static const Error INV_TIME_ERROR = Error::fromCode(GPG_ERR_INV_TIME);
 
-    if (needsNoResponse(status)) {
-        return state();
-    }
-
     using namespace GpgSetExpiryTimeEditInteractor_Private;
 
     switch (state()) {

@@ -112,10 +112,6 @@ unsigned int GpgRevokeKeyEditInteractor::Private::nextState(unsigned int status,
 
     static const Error GENERAL_ERROR = Error::fromCode(GPG_ERR_GENERAL);
 
-    if (q->needsNoResponse(status)) {
-        return q->state();
-    }
-
     if (status == GPGME_STATUS_ERROR) {
         err = q->parseStatusError(args);
         return ERROR;
