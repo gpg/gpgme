@@ -3124,7 +3124,7 @@ minimum required version of GPGME is in use.
 
 For the most part the =gpg.version.versionstr= and
 =gpg.version.versionlist= methods have been quite sufficient.  The
-former returns the same string as =gpgme-config --version=, while the
+former returns the same string as =pkg-config gpgme --modversion=, while the
 latter returns the major, minor and patch values in a list.
 
 To check if the installed bindings have actually been built against
@@ -3135,7 +3135,7 @@ import gpg
 import subprocess
 import sys
 
-gpgme_version_call = subprocess.Popen(["gpgme-config", "--version"],
+gpgme_version_call = subprocess.Popen(["pkg-config", "gpgme", "--modversion"],
                                       stdout=subprocess.PIPE,
                                       stderr=subprocess.PIPE)
 gpgme_version_str = gpgme_version_call.communicate()
