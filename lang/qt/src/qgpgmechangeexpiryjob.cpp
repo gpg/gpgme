@@ -64,6 +64,12 @@ public:
     }
 
     ~QGpgMEChangeExpiryJobPrivate() override = default;
+
+private:
+    void start() override
+    {
+        q->run();
+    }
 };
 
 }

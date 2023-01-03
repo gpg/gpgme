@@ -65,6 +65,12 @@ public:
     }
 
     ~QGpgMEImportJobPrivate() override = default;
+
+private:
+    void start() override
+    {
+        q->run();
+    }
 };
 
 }

@@ -103,6 +103,12 @@ public:
         m_function = function;
     }
 
+    bool hasFunction()
+    {
+        const QMutexLocker locker(&m_mutex);
+        return static_cast<bool>(m_function);
+    }
+
     T_result result() const
     {
         const QMutexLocker locker(&m_mutex);
@@ -126,6 +132,12 @@ class ThreadedJobMixin : public T_base, public GpgME::ProgressProvider
 public:
     typedef ThreadedJobMixin<T_base, T_result> mixin_type;
     typedef T_result result_type;
+
+    void run()
+    {
+        Q_ASSERT(m_thread.hasFunction() && "Call setWorkerFunction() before run()");
+        m_thread.start();
+    }
 
 protected:
     static_assert(std::tuple_size<T_result>::value > 2,
@@ -164,6 +176,12 @@ protected:
     ~ThreadedJobMixin()
     {
         QGpgME::g_context_map.remove(this);
+    }
+
+    template <typename T_binder>
+    void setWorkerFunction(const T_binder &func)
+    {
+        m_thread.setFunction([this, func]() { return func(this->context()); });
     }
 
     template <typename T_binder>

@@ -28,6 +28,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  qt: ListAllKeysJob::Options                NEW.
  qt: ListAllKeysJob::setOptions             NEW.
  qt: ListAllKeysJob::options                NEW.
+ qt: Job::startNow                          NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)

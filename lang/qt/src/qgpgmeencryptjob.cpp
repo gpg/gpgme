@@ -70,6 +70,12 @@ public:
     }
 
     ~QGpgMEEncryptJobPrivate() override = default;
+
+private:
+    void start() override
+    {
+        q->run();
+    }
 };
 
 }

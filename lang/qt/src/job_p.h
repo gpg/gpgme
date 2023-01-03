@@ -46,6 +46,8 @@ class JobPrivate
 {
 public:
     virtual ~JobPrivate() {}
+
+    virtual void start() = 0;
 };
 
 // Setter and getters for the externally stored pimpl instances of jobs

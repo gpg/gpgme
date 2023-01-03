@@ -95,6 +95,13 @@ public:
      */
     static GpgME::Context *context(Job *job);
 
+    /** Starts a deferred job.
+     *
+     * The job needs to have been prepared for a deferred start by calling the
+     * startLater() function instead of the start() function of a leaf class.
+     */
+    void startNow();
+
 public Q_SLOTS:
     virtual void slotCancel() = 0;
 
