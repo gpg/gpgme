@@ -1,8 +1,8 @@
 /*
-    listallkeysjob.cpp
+    changeexpiryjob_p.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2022 g10 Code GmbH
+    Copyright (c) 2021,2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -31,23 +31,21 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
+#ifndef __QGPGME_CHANGEEXPIRYJOB_P_H__
+#define __QGPGME_CHANGEEXPIRYJOB_P_H__
 
-#include "listallkeysjob.h"
-#include "listallkeysjob_p.h"
+#include "job_p.h"
 
-using namespace QGpgME;
+#include "changeexpiryjob.h"
 
-void ListAllKeysJob::setOptions(ListAllKeysJob::Options options)
+namespace QGpgME
 {
-    auto d = jobPrivate<ListAllKeysJobPrivate>(this);
-    d->m_options = options;
+
+struct ChangeExpiryJobPrivate : public JobPrivate
+{
+    ChangeExpiryJob::Options m_options = ChangeExpiryJob::Default;
+};
+
 }
 
-ListAllKeysJob::Options ListAllKeysJob::options() const
-{
-    auto d = jobPrivate<ListAllKeysJobPrivate>(this);
-    return d->m_options;
-}
+#endif // __QGPGME_CHANGEEXPIRYJOB_P_H__

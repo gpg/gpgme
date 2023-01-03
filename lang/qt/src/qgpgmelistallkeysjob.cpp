@@ -5,7 +5,7 @@
     Copyright (c) 2004,2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
-    Copyright (c) 2022 g10 Code GmbH
+    Copyright (c) 2022,2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -40,6 +40,8 @@
 
 #include "qgpgmelistallkeysjob.h"
 
+#include "listallkeysjob_p.h"
+
 #include "debug.h"
 #include "key.h"
 #include "context.h"
@@ -59,10 +61,29 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+
+class QGpgMEListAllKeysJobPrivate : public ListAllKeysJobPrivate
+{
+    QGpgMEListAllKeysJob *q = nullptr;
+
+public:
+    QGpgMEListAllKeysJobPrivate(QGpgMEListAllKeysJob *qq)
+        : q{qq}
+    {
+    }
+
+    ~QGpgMEListAllKeysJobPrivate() override = default;
+};
+
+}
+
 QGpgMEListAllKeysJob::QGpgMEListAllKeysJob(Context *context)
     : mixin_type(context),
       mResult()
 {
+    setJobPrivate(this, std::unique_ptr<QGpgMEListAllKeysJobPrivate>{new QGpgMEListAllKeysJobPrivate{this}});
     lateInitialization();
 }
 

@@ -36,26 +36,12 @@
 #endif
 
 #include "changeexpiryjob.h"
-#include "job_p.h"
+#include "changeexpiryjob_p.h"
 
 #include <context.h>
 
 using namespace GpgME;
 using namespace QGpgME;
-
-namespace
-{
-struct ChangeExpiryJobPrivate : public JobPrivate
-{
-    ChangeExpiryJobPrivate()
-    {
-    }
-
-    ~ChangeExpiryJobPrivate() override = default;
-
-    ChangeExpiryJob::Options m_options = ChangeExpiryJob::Default;
-};
-}
 
 void ChangeExpiryJob::setOptions(ChangeExpiryJob::Options options)
 {

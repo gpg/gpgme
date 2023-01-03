@@ -36,28 +36,12 @@
 #endif
 
 #include "importjob.h"
-#include "job_p.h"
+#include "importjob_p.h"
 
 #include <context.h>
 
 using namespace GpgME;
 using namespace QGpgME;
-
-namespace
-{
-struct ImportJobPrivate : public JobPrivate
-{
-    ImportJobPrivate()
-    {
-    }
-
-    ~ImportJobPrivate() override = default;
-
-    QString m_importFilter;
-    Key::Origin m_keyOrigin = Key::OriginUnknown;
-    QString m_keyOriginUrl;
-};
-}
 
 void QGpgME::ImportJob::setImportFilter(const QString &filter)
 {

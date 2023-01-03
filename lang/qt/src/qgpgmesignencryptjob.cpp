@@ -5,7 +5,7 @@
     Copyright (c) 2004, 2007 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
-    Copyright (c) 2022 g10 Code GmbH
+    Copyright (c) 2022,2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -40,6 +40,8 @@
 
 #include "qgpgmesignencryptjob.h"
 
+#include "signencryptjob_p.h"
+
 #include "dataprovider.h"
 
 #include "context.h"
@@ -55,10 +57,29 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+
+class QGpgMESignEncryptJobPrivate : public SignEncryptJobPrivate
+{
+    QGpgMESignEncryptJob *q = nullptr;
+
+public:
+    QGpgMESignEncryptJobPrivate(QGpgMESignEncryptJob *qq)
+        : q{qq}
+    {
+    }
+
+    ~QGpgMESignEncryptJobPrivate() override = default;
+};
+
+}
+
 QGpgMESignEncryptJob::QGpgMESignEncryptJob(Context *context)
     : mixin_type(context),
       mOutputIsBase64Encoded(false)
 {
+    setJobPrivate(this, std::unique_ptr<QGpgMESignEncryptJobPrivate>{new QGpgMESignEncryptJobPrivate{this}});
     lateInitialization();
 }
 

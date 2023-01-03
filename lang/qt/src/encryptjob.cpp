@@ -36,17 +36,9 @@
 #endif
 
 #include "encryptjob.h"
-#include "job_p.h"
+#include "encryptjob_p.h"
 
 using namespace QGpgME;
-
-namespace
-{
-struct EncryptJobPrivate : public JobPrivate
-{
-    QString m_fileName;
-};
-}
 
 void EncryptJob::setFileName(const QString &fileName)
 {

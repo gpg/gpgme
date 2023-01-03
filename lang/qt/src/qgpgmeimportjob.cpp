@@ -5,6 +5,8 @@
     Copyright (c) 2004,2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2023 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -38,6 +40,8 @@
 
 #include "qgpgmeimportjob.h"
 
+#include "importjob_p.h"
+
 #include "dataprovider.h"
 
 #include <context.h>
@@ -47,9 +51,28 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+
+class QGpgMEImportJobPrivate : public ImportJobPrivate
+{
+    QGpgMEImportJob *q = nullptr;
+
+public:
+    QGpgMEImportJobPrivate(QGpgMEImportJob *qq)
+        : q{qq}
+    {
+    }
+
+    ~QGpgMEImportJobPrivate() override = default;
+};
+
+}
+
 QGpgMEImportJob::QGpgMEImportJob(Context *context)
     : mixin_type(context)
 {
+    setJobPrivate(this, std::unique_ptr<QGpgMEImportJobPrivate>{new QGpgMEImportJobPrivate{this}});
     lateInitialization();
 }
 

@@ -152,6 +152,10 @@ camelcase_headers= \
     GpgCardJob
 
 private_qgpgme_headers = \
+    changeexpiryjob_p.h \
+    encryptjob_p.h \
+    importjob_p.h \
+    listallkeysjob_p.h \
     qgpgme_export.h \
     protocol_p.h \
     job_p.h \
@@ -187,6 +191,7 @@ private_qgpgme_headers = \
     qgpgmetofupolicyjob.h \
     qgpgmegpgcardjob.h \
     qgpgmequickjob.h \
+    signencryptjob_p.h \
     threadedjobmixin.h \
     util.h
 

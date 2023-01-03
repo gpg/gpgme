@@ -36,17 +36,9 @@
 #endif
 
 #include "signencryptjob.h"
-#include "job_p.h"
+#include "signencryptjob_p.h"
 
 using namespace QGpgME;
-
-namespace
-{
-struct SignEncryptJobPrivate : public JobPrivate
-{
-    QString m_fileName;
-};
-}
 
 void SignEncryptJob::setFileName(const QString &fileName)
 {

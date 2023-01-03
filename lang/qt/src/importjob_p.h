@@ -1,8 +1,8 @@
 /*
-    listallkeysjob.cpp
+    importjob_p.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2022 g10 Code GmbH
+    Copyright (c) 2021,2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -31,23 +31,23 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
+#ifndef __QGPGME_IMPORTJOB_P_H__
+#define __QGPGME_IMPORTJOB_P_H__
 
-#include "listallkeysjob.h"
-#include "listallkeysjob_p.h"
+#include "job_p.h"
 
-using namespace QGpgME;
+#include <key.h>
 
-void ListAllKeysJob::setOptions(ListAllKeysJob::Options options)
+namespace QGpgME
 {
-    auto d = jobPrivate<ListAllKeysJobPrivate>(this);
-    d->m_options = options;
+
+struct ImportJobPrivate : public JobPrivate
+{
+    QString m_importFilter;
+    GpgME::Key::Origin m_keyOrigin = GpgME::Key::OriginUnknown;
+    QString m_keyOriginUrl;
+};
+
 }
 
-ListAllKeysJob::Options ListAllKeysJob::options() const
-{
-    auto d = jobPrivate<ListAllKeysJobPrivate>(this);
-    return d->m_options;
-}
+#endif // __QGPGME_IMPORTJOB_P_H__

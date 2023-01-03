@@ -57,11 +57,6 @@ JobPrivate *getJobPrivate(const Job *job);
 template <typename T>
 static T *jobPrivate(const Job *job) {
     auto d = getJobPrivate(job);
-    if (!d) {
-        std::unique_ptr<T> ref{new T};
-        d = ref.get();
-        setJobPrivate(job, std::move(ref));
-    }
     return dynamic_cast<T *>(d);
 }
 
