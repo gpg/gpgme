@@ -162,6 +162,43 @@ private Q_SLOTS:
         QVERIFY(key.origin() == Key::OriginWKD);
         // the origin URL is currently not available in GpgME
     }
+
+    void testDeferredStart()
+    {
+        // pub   ed25519 2023-01-05 [SC]
+        //       4D1367FE9AF6334D8A55BA635A817A94C7B37E5D
+        // uid                      importDeferred@example.net
+        static const char keyFpr[] = "4D1367FE9AF6334D8A55BA635A817A94C7B37E5D";
+        static const char keyData[] =
+            "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+            "\n"
+            "mDMEY7bNSxYJKwYBBAHaRw8BAQdAazIWyd/xEMeObDSUnh2+AXQuo0oM+TDBG49z\n"
+            "KHvTAYG0GmltcG9ydERlZmVycmVkQGV4YW1wbGUubmV0iJMEExYKADsWIQRNE2f+\n"
+            "mvYzTYpVumNagXqUx7N+XQUCY7bNSwIbAwULCQgHAgIiAgYVCgkICwIEFgIDAQIe\n"
+            "BwIXgAAKCRBagXqUx7N+XasrAP4qPzLzPd6tWDZvP29ZYPTSrjrTb0U5MOJeIPKX\n"
+            "73jZswEAwWRvgH+GmhTOigw0UVtinAFvUEFVyvcW/GR19mw5XA0=\n"
+            "=JnpA\n"
+            "-----END PGP PUBLIC KEY BLOCK-----\n";
+
+        auto *job = openpgp()->importJob();
+        job->startLater(QByteArray{keyData});
+        connect(job, &ImportJob::result, this,
+                [this](ImportResult result, QString, Error)
+        {
+            QVERIFY(!result.error());
+            QVERIFY(!result.imports().empty());
+            QVERIFY(result.numImported());
+            Q_EMIT asyncDone();
+        });
+        job->startNow();
+        QSignalSpy spy (this, SIGNAL(asyncDone()));
+        QVERIFY(spy.wait());
+
+        auto ctx = Context::createForProtocol(GpgME::OpenPGP);
+        GpgME::Error err;
+        const auto key = ctx->key(keyFpr, err, false);
+        QVERIFY(!key.isNull());
+    }
 };
 
 QTEST_MAIN(ImportTest)

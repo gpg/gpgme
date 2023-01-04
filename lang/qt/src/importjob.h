@@ -5,6 +5,8 @@
     Copyright (c) 2004 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2023 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -88,6 +90,8 @@ public:
     virtual GpgME::Error start(const QByteArray &keyData) = 0;
 
     virtual GpgME::ImportResult exec(const QByteArray &keyData) = 0;
+
+    virtual GpgME::Error startLater(const QByteArray &keyData) = 0;
 };
 
 }

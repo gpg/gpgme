@@ -154,6 +154,12 @@ GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
     return mResult;
 }
 
+Error QGpgMEImportJob::startLater(const QByteArray &certData)
+{
+    setWorkerFunction(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), keyOrigin(), keyOriginUrl()));
+    return {};
+}
+
 // PENDING(marc) implement showErrorDialog()
 
 void QGpgME::QGpgMEImportJob::resultHook(const result_type &tuple)

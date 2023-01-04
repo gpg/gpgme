@@ -18,6 +18,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
  * qt: Extend ListAllKeysJob to allow disabling the automatic trust database
    check when listing all keys.  [T6261]
 
+ * qt: Allow deferred start of import jobs.  [T6323]
+
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
@@ -29,6 +31,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  qt: ListAllKeysJob::setOptions             NEW.
  qt: ListAllKeysJob::options                NEW.
  qt: Job::startNow                          NEW.
+ qt: ImportJob::startLater                  NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)
