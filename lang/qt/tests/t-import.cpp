@@ -115,7 +115,7 @@ private Q_SLOTS:
         GpgME::Error err;
         const auto key = ctx->key(keyFpr, err, false);
         QVERIFY(!key.isNull());
-        QCOMPARE(key.numUserIDs(), 1);
+        QCOMPARE(key.numUserIDs(), 1u);
         QCOMPARE(key.userID(0).id(), "importWithImportFilter@example.net");
     }
 
