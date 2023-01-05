@@ -76,9 +76,9 @@ public:
       usage are returned. Use this if you need to select a
       key for signing.
     */
-    GpgME::Error start(const QString &mailbox, bool canEncrypt = true) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QString &mailbox, bool canEncrypt = true) override;
 
-    GpgME::KeyListResult exec(const QString &mailbox, bool canEncrypt, GpgME::Key &key, GpgME::UserID &uid) Q_DECL_OVERRIDE;
+    GpgME::KeyListResult exec(const QString &mailbox, bool canEncrypt, GpgME::Key &key, GpgME::UserID &uid) override;
 };
 
 }

@@ -94,16 +94,16 @@ public:
        The \a secretOnly parameter is ignored by
        HierarchicalKeyListJob and must be set to false.
     */
-    GpgME::Error start(const QStringList &patterns, bool secretOnly = false) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QStringList &patterns, bool secretOnly = false) override;
 
     GpgME::KeyListResult exec(const QStringList &patterns, bool secretOnly,
-                              std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
+                              std::vector<GpgME::Key> &keys) override;
 
 private Q_SLOTS:
     void slotResult(const GpgME::KeyListResult &);
     void slotNextKey(const GpgME::Key &key);
     /* from Job */
-    void slotCancel() Q_DECL_OVERRIDE;
+    void slotCancel() override;
 
 private:
     GpgME::Error startAJob();

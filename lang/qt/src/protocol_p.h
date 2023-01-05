@@ -77,7 +77,7 @@ class Protocol : public QGpgME::Protocol
 public:
     explicit Protocol(GpgME::Protocol proto) : mProtocol(proto) {}
 
-    QString name() const Q_DECL_OVERRIDE
+    QString name() const override
     {
         switch (mProtocol) {
         case GpgME::OpenPGP: return QStringLiteral("OpenPGP");
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    QString displayName() const Q_DECL_OVERRIDE
+    QString displayName() const override
     {
         // ah (2.4.16): Where is this used and isn't this inverted
         // with name
@@ -97,12 +97,12 @@ public:
         }
     }
 
-    QGpgME::SpecialJob *specialJob(const char *, const QMap<QString, QVariant> &) const Q_DECL_OVERRIDE
+    QGpgME::SpecialJob *specialJob(const char *, const QMap<QString, QVariant> &) const override
     {
         return nullptr;
     }
 
-    QGpgME::KeyListJob *keyListJob(bool remote, bool includeSigs, bool validate) const Q_DECL_OVERRIDE
+    QGpgME::KeyListJob *keyListJob(bool remote, bool includeSigs, bool validate) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -127,7 +127,7 @@ public:
         return new QGpgME::QGpgMEKeyListJob(context);
     }
 
-    QGpgME::ListAllKeysJob *listAllKeysJob(bool includeSigs, bool validate) const Q_DECL_OVERRIDE
+    QGpgME::ListAllKeysJob *listAllKeysJob(bool includeSigs, bool validate) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -154,7 +154,7 @@ public:
         return new QGpgME::QGpgMEListAllKeysJob(context);
     }
 
-    QGpgME::EncryptJob *encryptJob(bool armor, bool textmode) const Q_DECL_OVERRIDE
+    QGpgME::EncryptJob *encryptJob(bool armor, bool textmode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -166,7 +166,7 @@ public:
         return new QGpgME::QGpgMEEncryptJob(context);
     }
 
-    QGpgME::DecryptJob *decryptJob() const Q_DECL_OVERRIDE
+    QGpgME::DecryptJob *decryptJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -175,7 +175,7 @@ public:
         return new QGpgME::QGpgMEDecryptJob(context);
     }
 
-    QGpgME::SignJob *signJob(bool armor, bool textMode) const Q_DECL_OVERRIDE
+    QGpgME::SignJob *signJob(bool armor, bool textMode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -187,7 +187,7 @@ public:
         return new QGpgME::QGpgMESignJob(context);
     }
 
-    QGpgME::VerifyDetachedJob *verifyDetachedJob(bool textMode) const Q_DECL_OVERRIDE
+    QGpgME::VerifyDetachedJob *verifyDetachedJob(bool textMode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -198,7 +198,7 @@ public:
         return new QGpgME::QGpgMEVerifyDetachedJob(context);
     }
 
-    QGpgME::VerifyOpaqueJob *verifyOpaqueJob(bool textMode) const Q_DECL_OVERRIDE
+    QGpgME::VerifyOpaqueJob *verifyOpaqueJob(bool textMode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -209,7 +209,7 @@ public:
         return new QGpgME::QGpgMEVerifyOpaqueJob(context);
     }
 
-    QGpgME::KeyGenerationJob *keyGenerationJob() const Q_DECL_OVERRIDE
+    QGpgME::KeyGenerationJob *keyGenerationJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -218,7 +218,7 @@ public:
         return new QGpgME::QGpgMEKeyGenerationJob(context);
     }
 
-    QGpgME::ImportJob *importJob() const Q_DECL_OVERRIDE
+    QGpgME::ImportJob *importJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -227,7 +227,7 @@ public:
         return new QGpgME::QGpgMEImportJob(context);
     }
 
-    QGpgME::ImportFromKeyserverJob *importFromKeyserverJob() const Q_DECL_OVERRIDE
+    QGpgME::ImportFromKeyserverJob *importFromKeyserverJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -249,7 +249,7 @@ public:
         return new QGpgME::QGpgMEReceiveKeysJob{context};
     }
 
-    QGpgME::ExportJob *publicKeyExportJob(bool armor) const Q_DECL_OVERRIDE
+    QGpgME::ExportJob *publicKeyExportJob(bool armor) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -260,7 +260,7 @@ public:
         return new QGpgME::QGpgMEExportJob(context);
     }
 
-    QGpgME::ExportJob *secretKeyExportJob(bool armor, const QString &) const Q_DECL_OVERRIDE
+    QGpgME::ExportJob *secretKeyExportJob(bool armor, const QString &) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -271,7 +271,7 @@ public:
         return new QGpgME::QGpgMEExportJob(context, GpgME::Context::ExportSecret);
     }
 
-    QGpgME::ExportJob *secretSubkeyExportJob(bool armor) const Q_DECL_OVERRIDE
+    QGpgME::ExportJob *secretSubkeyExportJob(bool armor) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -282,7 +282,7 @@ public:
         return new QGpgME::QGpgMEExportJob(context, GpgME::Context::ExportSecretSubkey);
     }
 
-    QGpgME::RefreshKeysJob *refreshKeysJob() const Q_DECL_OVERRIDE
+    QGpgME::RefreshKeysJob *refreshKeysJob() const override
     {
         if (mProtocol != GpgME::CMS) {
             return nullptr;
@@ -291,7 +291,7 @@ public:
         return new QGpgME::QGpgMERefreshSMIMEKeysJob;
     }
 
-    QGpgME::DownloadJob *downloadJob(bool armor) const Q_DECL_OVERRIDE
+    QGpgME::DownloadJob *downloadJob(bool armor) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -304,7 +304,7 @@ public:
         return new QGpgME::QGpgMEDownloadJob(context);
     }
 
-    QGpgME::DeleteJob *deleteJob() const Q_DECL_OVERRIDE
+    QGpgME::DeleteJob *deleteJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -313,7 +313,7 @@ public:
         return new QGpgME::QGpgMEDeleteJob(context);
     }
 
-    QGpgME::SignEncryptJob *signEncryptJob(bool armor, bool textMode) const Q_DECL_OVERRIDE
+    QGpgME::SignEncryptJob *signEncryptJob(bool armor, bool textMode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -325,7 +325,7 @@ public:
         return new QGpgME::QGpgMESignEncryptJob(context);
     }
 
-    QGpgME::DecryptVerifyJob *decryptVerifyJob(bool textMode) const Q_DECL_OVERRIDE
+    QGpgME::DecryptVerifyJob *decryptVerifyJob(bool textMode) const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -336,7 +336,7 @@ public:
         return new QGpgME::QGpgMEDecryptVerifyJob(context);
     }
 
-    QGpgME::ChangeExpiryJob *changeExpiryJob() const Q_DECL_OVERRIDE
+    QGpgME::ChangeExpiryJob *changeExpiryJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;    // only supported by gpg
@@ -349,7 +349,7 @@ public:
         return new QGpgME::QGpgMEChangeExpiryJob(context);
     }
 
-    QGpgME::ChangePasswdJob *changePasswdJob() const Q_DECL_OVERRIDE
+    QGpgME::ChangePasswdJob *changePasswdJob() const override
     {
         if (!GpgME::hasFeature(GpgME::PasswdFeature, 0)) {
             return nullptr;
@@ -361,7 +361,7 @@ public:
         return new QGpgME::QGpgMEChangePasswdJob(context);
     }
 
-    QGpgME::SignKeyJob *signKeyJob() const Q_DECL_OVERRIDE
+    QGpgME::SignKeyJob *signKeyJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;    // only supported by gpg
@@ -374,7 +374,7 @@ public:
         return new QGpgME::QGpgMESignKeyJob(context);
     }
 
-    QGpgME::ChangeOwnerTrustJob *changeOwnerTrustJob() const Q_DECL_OVERRIDE
+    QGpgME::ChangeOwnerTrustJob *changeOwnerTrustJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;    // only supported by gpg
@@ -400,7 +400,7 @@ public:
         return new QGpgME::QGpgMEAddExistingSubkeyJob{context};
     }
 
-    QGpgME::AddUserIDJob *addUserIDJob() const Q_DECL_OVERRIDE
+    QGpgME::AddUserIDJob *addUserIDJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;    // only supported by gpg
@@ -413,7 +413,7 @@ public:
         return new QGpgME::QGpgMEAddUserIDJob(context);
     }
 
-    QGpgME::KeyListJob *locateKeysJob() const Q_DECL_OVERRIDE
+    QGpgME::KeyListJob *locateKeysJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;
@@ -426,7 +426,7 @@ public:
         return new QGpgME::QGpgMEKeyListJob(context);
     }
 
-    QGpgME::KeyForMailboxJob *keyForMailboxJob() const Q_DECL_OVERRIDE
+    QGpgME::KeyForMailboxJob *keyForMailboxJob() const override
     {
         GpgME::Context *context = GpgME::Context::createForProtocol(mProtocol);
         if (!context) {
@@ -435,7 +435,7 @@ public:
         return new QGpgME::QGpgMEKeyForMailboxJob(context);
     }
 
-    QGpgME::WKDLookupJob *wkdLookupJob() const Q_DECL_OVERRIDE
+    QGpgME::WKDLookupJob *wkdLookupJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;
@@ -447,7 +447,7 @@ public:
         return new QGpgME::QGpgMEWKDLookupJob(context.release());
     }
 
-    QGpgME::WKSPublishJob *wksPublishJob() const Q_DECL_OVERRIDE
+    QGpgME::WKSPublishJob *wksPublishJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;
@@ -459,7 +459,7 @@ public:
         return new QGpgME::QGpgMEWKSPublishJob(context.release());
     }
 
-    QGpgME::TofuPolicyJob *tofuPolicyJob() const Q_DECL_OVERRIDE
+    QGpgME::TofuPolicyJob *tofuPolicyJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;
@@ -471,7 +471,7 @@ public:
         return new QGpgME::QGpgMETofuPolicyJob(context);
     }
 
-    QGpgME::QuickJob *quickJob() const Q_DECL_OVERRIDE
+    QGpgME::QuickJob *quickJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;
@@ -483,7 +483,7 @@ public:
         return new QGpgME::QGpgMEQuickJob(context);
     }
 
-    QGpgME::RevokeKeyJob *revokeKeyJob() const Q_DECL_OVERRIDE
+    QGpgME::RevokeKeyJob *revokeKeyJob() const override
     {
         if (mProtocol != GpgME::OpenPGP) {
             return nullptr;

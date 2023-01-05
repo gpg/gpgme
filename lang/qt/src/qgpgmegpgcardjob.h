@@ -54,9 +54,9 @@ public:
     explicit QGpgMEGpgCardJob();
     ~QGpgMEGpgCardJob();
 
-    GpgME::Error start(const QStringList &cmds) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QStringList &cmds) override;
 
-    GpgME::Error exec(const QStringList &cmds, QString &std_out, QString &std_err, int &exitCode) Q_DECL_OVERRIDE;
+    GpgME::Error exec(const QStringList &cmds, QString &std_out, QString &std_err, int &exitCode) override;
 };
 
 }

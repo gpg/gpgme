@@ -65,13 +65,13 @@ public:
     ~QGpgMEImportFromKeyserverJob();
 
     /* from ImportFromKeyserverJob */
-    GpgME::Error start(const std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
+    GpgME::Error start(const std::vector<GpgME::Key> &keys) override;
 
     /* from ImportFromKeyserverJob */
-    GpgME::ImportResult exec(const std::vector<GpgME::Key> &keys) Q_DECL_OVERRIDE;
+    GpgME::ImportResult exec(const std::vector<GpgME::Key> &keys) override;
 
     /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) Q_DECL_OVERRIDE;
+    void resultHook(const result_type &r) override;
 
 private:
     GpgME::ImportResult mResult;

@@ -62,13 +62,13 @@ public:
     // export mode flags set with @p exportMode cannot be overridden with
     // setExportFlags.
     explicit QGpgMEExportJob(GpgME::Context *context, unsigned int exportMode);
-    ~QGpgMEExportJob() Q_DECL_OVERRIDE;
+    ~QGpgMEExportJob() override;
 
     /* from ExportJob */
-    void setExportFlags(unsigned int flags) Q_DECL_OVERRIDE;
+    void setExportFlags(unsigned int flags) override;
 
     /* from ExportJob */
-    GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QStringList &patterns) override;
 
 private:
     unsigned int m_exportMode;

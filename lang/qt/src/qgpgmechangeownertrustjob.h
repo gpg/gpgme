@@ -59,7 +59,7 @@ public:
     ~QGpgMEChangeOwnerTrustJob();
 
     /* from ChangeOwnerTrustJob */
-    GpgME::Error start(const GpgME::Key &key, GpgME::Key::OwnerTrust trust) Q_DECL_OVERRIDE;
+    GpgME::Error start(const GpgME::Key &key, GpgME::Key::OwnerTrust trust) override;
 };
 }
 

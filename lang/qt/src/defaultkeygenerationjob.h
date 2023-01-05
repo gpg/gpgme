@@ -54,19 +54,19 @@ public:
 
     GpgME::Error start(const QString &email, const QString &name);
 
-    QString auditLogAsHtml() const Q_DECL_OVERRIDE;
-    GpgME::Error auditLogError() const Q_DECL_OVERRIDE;
+    QString auditLogAsHtml() const override;
+    GpgME::Error auditLogError() const override;
 
 
 public Q_SLOTS:
-    void slotCancel() Q_DECL_OVERRIDE;
+    void slotCancel() override;
 
 Q_SIGNALS:
     void result(const GpgME::KeyGenerationResult &result, const QByteArray &pubkeyData,
                 const QString &auditLogAsHtml, const GpgME::Error &auditLogError);
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
     class Private;

@@ -71,34 +71,34 @@ public:
 
     /* from EncryptJob */
     GpgME::Error start(const std::vector<GpgME::Key> &recipients,
-                       const QByteArray &plainText, bool alwaysTrust) Q_DECL_OVERRIDE;
+                       const QByteArray &plainText, bool alwaysTrust) override;
 
     /* from EncryptJob */
     void start(const std::vector<GpgME::Key> &recipients,
                const std::shared_ptr<QIODevice> &plainText,
                const std::shared_ptr<QIODevice> &cipherText,
-               bool alwaysTrust) Q_DECL_OVERRIDE;
+               bool alwaysTrust) override;
 
     /* from EncryptJob */
     GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                  const QByteArray &plainText, bool alwaysTrust,
-                                 QByteArray &cipherText) Q_DECL_OVERRIDE;
+                                 QByteArray &cipherText) override;
     /* from EncryptJob */
     void start(const std::vector<GpgME::Key> &recipients,
                const std::shared_ptr<QIODevice> &plainText,
                const std::shared_ptr<QIODevice> &cipherText,
-               const GpgME::Context::EncryptionFlags flags) Q_DECL_OVERRIDE;
+               const GpgME::Context::EncryptionFlags flags) override;
 
     /* from EncryptJob */
     GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
                                  const QByteArray &plainText, const GpgME::Context::EncryptionFlags flags,
-                                 QByteArray &cipherText) Q_DECL_OVERRIDE;
+                                 QByteArray &cipherText) override;
 
     /* from EncryptJob */
-    void setOutputIsBase64Encoded(bool on) Q_DECL_OVERRIDE;
+    void setOutputIsBase64Encoded(bool on) override;
 
     /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) Q_DECL_OVERRIDE;
+    void resultHook(const result_type &r) override;
 
 private:
     bool mOutputIsBase64Encoded;

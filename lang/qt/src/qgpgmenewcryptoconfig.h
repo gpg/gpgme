@@ -63,36 +63,36 @@ public:
     QGpgMENewCryptoConfigEntry(const std::shared_ptr<QGpgMENewCryptoConfigGroup> &group, const GpgME::Configuration::Option &option);
     ~QGpgMENewCryptoConfigEntry();
 
-    QString name() const Q_DECL_OVERRIDE;
-    QString description() const Q_DECL_OVERRIDE;
-    QString path() const Q_DECL_OVERRIDE;
-    bool isOptional() const Q_DECL_OVERRIDE;
-    bool isReadOnly() const Q_DECL_OVERRIDE;
-    bool isList() const Q_DECL_OVERRIDE;
-    bool isRuntime() const Q_DECL_OVERRIDE;
-    Level level() const Q_DECL_OVERRIDE;
-    ArgType argType() const Q_DECL_OVERRIDE;
-    bool isSet() const Q_DECL_OVERRIDE;
-    bool boolValue() const Q_DECL_OVERRIDE;
-    QString stringValue() const Q_DECL_OVERRIDE;
-    int intValue() const Q_DECL_OVERRIDE;
-    unsigned int uintValue() const Q_DECL_OVERRIDE;
-    QUrl urlValue() const Q_DECL_OVERRIDE;
-    unsigned int numberOfTimesSet() const Q_DECL_OVERRIDE;
-    std::vector<int> intValueList() const Q_DECL_OVERRIDE;
-    std::vector<unsigned int> uintValueList() const Q_DECL_OVERRIDE;
-    QList<QUrl> urlValueList() const Q_DECL_OVERRIDE;
-    void resetToDefault() Q_DECL_OVERRIDE;
-    void setBoolValue(bool) Q_DECL_OVERRIDE;
-    void setStringValue(const QString &) Q_DECL_OVERRIDE;
-    void setIntValue(int) Q_DECL_OVERRIDE;
-    void setUIntValue(unsigned int) Q_DECL_OVERRIDE;
-    void setURLValue(const QUrl &) Q_DECL_OVERRIDE;
-    void setNumberOfTimesSet(unsigned int) Q_DECL_OVERRIDE;
-    void setIntValueList(const std::vector<int> &) Q_DECL_OVERRIDE;
-    void setUIntValueList(const std::vector<unsigned int> &) Q_DECL_OVERRIDE;
-    void setURLValueList(const QList<QUrl> &) Q_DECL_OVERRIDE;
-    bool isDirty() const Q_DECL_OVERRIDE;
+    QString name() const override;
+    QString description() const override;
+    QString path() const override;
+    bool isOptional() const override;
+    bool isReadOnly() const override;
+    bool isList() const override;
+    bool isRuntime() const override;
+    Level level() const override;
+    ArgType argType() const override;
+    bool isSet() const override;
+    bool boolValue() const override;
+    QString stringValue() const override;
+    int intValue() const override;
+    unsigned int uintValue() const override;
+    QUrl urlValue() const override;
+    unsigned int numberOfTimesSet() const override;
+    std::vector<int> intValueList() const override;
+    std::vector<unsigned int> uintValueList() const override;
+    QList<QUrl> urlValueList() const override;
+    void resetToDefault() override;
+    void setBoolValue(bool) override;
+    void setStringValue(const QString &) override;
+    void setIntValue(int) override;
+    void setUIntValue(unsigned int) override;
+    void setURLValue(const QUrl &) override;
+    void setNumberOfTimesSet(unsigned int) override;
+    void setIntValueList(const std::vector<int> &) override;
+    void setUIntValueList(const std::vector<unsigned int> &) override;
+    void setURLValueList(const QList<QUrl> &) override;
+    bool isDirty() const override;
 
     QStringList stringValueList() const;
     QVariant defaultValue() const;
@@ -117,16 +117,16 @@ public:
     QGpgMENewCryptoConfigGroup(const std::shared_ptr<QGpgMENewCryptoConfigComponent> &parent, const GpgME::Configuration::Option &option);
     ~QGpgMENewCryptoConfigGroup();
 
-    QString name() const Q_DECL_OVERRIDE;
-    QString iconName() const Q_DECL_OVERRIDE
+    QString name() const override;
+    QString iconName() const override
     {
         return QString();
     }
-    QString description() const Q_DECL_OVERRIDE;
-    QString path() const Q_DECL_OVERRIDE;
-    QGpgME::CryptoConfigEntry::Level level() const Q_DECL_OVERRIDE;
-    QStringList entryList() const Q_DECL_OVERRIDE;
-    QGpgMENewCryptoConfigEntry *entry(const QString &name) const Q_DECL_OVERRIDE;
+    QString description() const override;
+    QString path() const override;
+    QGpgME::CryptoConfigEntry::Level level() const override;
+    QStringList entryList() const override;
+    QGpgMENewCryptoConfigEntry *entry(const QString &name) const override;
 
 private:
     friend class QGpgMENewCryptoConfigComponent; // it adds the entries
@@ -145,14 +145,14 @@ public:
 
     void setComponent(const GpgME::Configuration::Component &component);
 
-    QString name() const Q_DECL_OVERRIDE;
-    QString iconName() const Q_DECL_OVERRIDE
+    QString name() const override;
+    QString iconName() const override
     {
         return name();
     }
-    QString description() const Q_DECL_OVERRIDE;
-    QStringList groupList() const Q_DECL_OVERRIDE;
-    QGpgMENewCryptoConfigGroup *group(const QString &name) const Q_DECL_OVERRIDE;
+    QString description() const override;
+    QStringList groupList() const override;
+    QGpgMENewCryptoConfigGroup *group(const QString &name) const override;
 
     void sync(bool runtime);
 
@@ -174,12 +174,12 @@ public:
     QGpgMENewCryptoConfig();
     ~QGpgMENewCryptoConfig();
 
-    QStringList componentList() const Q_DECL_OVERRIDE;
+    QStringList componentList() const override;
 
-    QGpgMENewCryptoConfigComponent *component(const QString &name) const Q_DECL_OVERRIDE;
+    QGpgMENewCryptoConfigComponent *component(const QString &name) const override;
 
-    void clear() Q_DECL_OVERRIDE;
-    void sync(bool runtime) Q_DECL_OVERRIDE;
+    void clear() override;
+    void sync(bool runtime) override;
 
 private:
     /// @param showErrors if true, a messagebox will be shown if e.g. gpgconf wasn't found

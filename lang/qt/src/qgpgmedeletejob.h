@@ -64,7 +64,7 @@ public:
     ~QGpgMEDeleteJob();
 
     /* from DeleteJob */
-    GpgME::Error start(const GpgME::Key &key, bool allowSecretKeyDeletion) Q_DECL_OVERRIDE;
+    GpgME::Error start(const GpgME::Key &key, bool allowSecretKeyDeletion) override;
 };
 
 }

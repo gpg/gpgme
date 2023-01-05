@@ -61,9 +61,9 @@ public:
     explicit QGpgMEWKSPublishJob(GpgME::Context *context);
     ~QGpgMEWKSPublishJob();
 
-    void startCheck(const QString &mailbox) Q_DECL_OVERRIDE;
-    void startCreate(const char *fpr, const QString &mailbox) Q_DECL_OVERRIDE;
-    void startReceive(const QByteArray &response) Q_DECL_OVERRIDE;
+    void startCheck(const QString &mailbox) override;
+    void startCreate(const char *fpr, const QString &mailbox) override;
+    void startReceive(const QByteArray &response) override;
 };
 
 }

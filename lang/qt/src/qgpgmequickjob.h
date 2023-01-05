@@ -63,14 +63,14 @@ public:
                      const char *algo,
                      const QDateTime &expires = QDateTime(),
                      const GpgME::Key &key = GpgME::Key(),
-                     unsigned int flags = 0) Q_DECL_OVERRIDE;
-    void startAddUid(const GpgME::Key &key, const QString &uid) Q_DECL_OVERRIDE;
-    void startRevUid(const GpgME::Key &key, const QString &uid) Q_DECL_OVERRIDE;
+                     unsigned int flags = 0) override;
+    void startAddUid(const GpgME::Key &key, const QString &uid) override;
+    void startRevUid(const GpgME::Key &key, const QString &uid) override;
     void startAddSubkey(const GpgME::Key &key, const char *algo,
                         const QDateTime &expires = QDateTime(),
-                        unsigned int flags = 0) Q_DECL_OVERRIDE;
+                        unsigned int flags = 0) override;
     void startRevokeSignature(const GpgME::Key &key, const GpgME::Key &signingKey,
-                              const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) Q_DECL_OVERRIDE;
+                              const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) override;
 };
 
 }

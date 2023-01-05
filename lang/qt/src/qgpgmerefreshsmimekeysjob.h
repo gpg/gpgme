@@ -56,13 +56,13 @@ public:
     ~QGpgMERefreshSMIMEKeysJob();
 
     /* from RefreshKeysJob */
-    GpgME::Error start(const QStringList &patterns) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QStringList &patterns) override;
 
     GpgME::Error start(const std::vector<GpgME::Key> &keys) override;
 
 private Q_SLOTS:
     /* from Job */
-    void slotCancel() Q_DECL_OVERRIDE;
+    void slotCancel() override;
 
     void slotStatus(QProcess *, const QString &, const QStringList &);
     void slotProcessExited(int exitCode, QProcess::ExitStatus exitStatus);

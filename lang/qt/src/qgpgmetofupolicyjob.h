@@ -57,8 +57,8 @@ public:
     explicit QGpgMETofuPolicyJob(GpgME::Context *context);
     ~QGpgMETofuPolicyJob();
 
-    void start(const GpgME::Key &key, GpgME::TofuInfo::Policy policy) Q_DECL_OVERRIDE;
-    GpgME::Error exec(const GpgME::Key &key, GpgME::TofuInfo::Policy policy) Q_DECL_OVERRIDE;
+    void start(const GpgME::Key &key, GpgME::TofuInfo::Policy policy) override;
+    GpgME::Error exec(const GpgME::Key &key, GpgME::TofuInfo::Policy policy) override;
 };
 
 }

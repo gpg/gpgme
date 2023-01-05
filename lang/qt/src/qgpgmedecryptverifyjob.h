@@ -70,17 +70,17 @@ public:
     ~QGpgMEDecryptVerifyJob();
 
     /* from DecryptVerifyJob */
-    GpgME::Error start(const QByteArray &cipherText) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QByteArray &cipherText) override;
 
     /* from DecryptVerifyJob */
-    void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText) Q_DECL_OVERRIDE;
+    void start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText) override;
 
     /* from DecryptVerifyJob */
     std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>
-    exec(const QByteArray &cipherText, QByteArray &plainText) Q_DECL_OVERRIDE;
+    exec(const QByteArray &cipherText, QByteArray &plainText) override;
 
     /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) Q_DECL_OVERRIDE;
+    void resultHook(const result_type &r) override;
 
 private:
     std::pair<GpgME::DecryptionResult, GpgME::VerificationResult> mResult;

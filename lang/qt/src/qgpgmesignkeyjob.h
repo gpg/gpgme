@@ -61,31 +61,31 @@ public:
     ~QGpgMESignKeyJob();
 
     /* from SignKeyJob */
-    GpgME::Error start(const GpgME::Key &key) Q_DECL_OVERRIDE;
+    GpgME::Error start(const GpgME::Key &key) override;
 
     /* from SignKeyJob */
-    void setUserIDsToSign(const std::vector<unsigned int> &idsToSign) Q_DECL_OVERRIDE;
+    void setUserIDsToSign(const std::vector<unsigned int> &idsToSign) override;
 
     /* from SignKeyJob */
-    void setCheckLevel(unsigned int checkLevel) Q_DECL_OVERRIDE;
+    void setCheckLevel(unsigned int checkLevel) override;
 
     /* from SignKeyJob */
-    void setExportable(bool exportable) Q_DECL_OVERRIDE;
+    void setExportable(bool exportable) override;
 
     /* from SignKeyJob */
-    void setSigningKey(const GpgME::Key &key) Q_DECL_OVERRIDE;
+    void setSigningKey(const GpgME::Key &key) override;
 
     /* from SignKeyJob */
-    void setNonRevocable(bool nonRevocable) Q_DECL_OVERRIDE;
+    void setNonRevocable(bool nonRevocable) override;
 
     /* from SignKeyJob */
-    void setRemark(const QString &remark) Q_DECL_OVERRIDE;
+    void setRemark(const QString &remark) override;
 
     /* from SignKeyJob */
-    void setDupeOk(bool value) Q_DECL_OVERRIDE;
+    void setDupeOk(bool value) override;
 
     /* from SignKeyJob */
-    void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) Q_DECL_OVERRIDE;
+    void setTrustSignature(GpgME::TrustSignatureTrust trust, unsigned short depth, const QString &scope) override;
 
     void setExpirationDate(const QDate &expiration) override;
 

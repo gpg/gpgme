@@ -59,10 +59,10 @@ public:
     ~QGpgMEWKDLookupJob();
 
     /* from WKDLookupJob */
-    GpgME::Error start(const QString &email) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QString &email) override;
 
     /* from WKDLookupJob */
-    WKDLookupResult exec(const QString &email) Q_DECL_OVERRIDE;
+    WKDLookupResult exec(const QString &email) override;
 };
 
 }

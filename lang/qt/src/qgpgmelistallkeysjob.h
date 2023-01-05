@@ -70,13 +70,13 @@ public:
     ~QGpgMEListAllKeysJob();
 
     /* from ListAllKeysJob */
-    GpgME::Error start(bool mergeKeys) Q_DECL_OVERRIDE;
+    GpgME::Error start(bool mergeKeys) override;
 
     /* from ListAllKeysJob */
-    GpgME::KeyListResult exec(std::vector<GpgME::Key> &pub, std::vector<GpgME::Key> &sec, bool mergeKeys) Q_DECL_OVERRIDE;
+    GpgME::KeyListResult exec(std::vector<GpgME::Key> &pub, std::vector<GpgME::Key> &sec, bool mergeKeys) override;
 
     /* from ThreadedJobMixin */
-    void resultHook(const result_type &result) Q_DECL_OVERRIDE;
+    void resultHook(const result_type &result) override;
 
 private:
     GpgME::KeyListResult mResult;

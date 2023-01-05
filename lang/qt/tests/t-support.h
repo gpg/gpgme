@@ -89,7 +89,7 @@ class TestPassphraseProvider : public PassphraseProvider
 {
 public:
     char *getPassphrase(const char * /*useridHint*/, const char * /*description*/,
-                        bool /*previousWasBad*/, bool &/*canceled*/) Q_DECL_OVERRIDE
+                        bool /*previousWasBad*/, bool &/*canceled*/) override
     {
         char *ret;
         gpgrt_asprintf(&ret, "abc");

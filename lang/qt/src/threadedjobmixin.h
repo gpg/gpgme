@@ -116,7 +116,7 @@ public:
     }
 
 private:
-    void run() Q_DECL_OVERRIDE {
+    void run() override {
         const QMutexLocker locker(&m_mutex);
         m_result = m_function();
     }
@@ -236,22 +236,22 @@ protected:
         doEmitResult(r);
         this->deleteLater();
     }
-    void slotCancel() Q_DECL_OVERRIDE {
+    void slotCancel() override {
         if (m_ctx)
         {
             m_ctx->cancelPendingOperation();
         }
     }
-    QString auditLogAsHtml() const Q_DECL_OVERRIDE
+    QString auditLogAsHtml() const override
     {
         return m_auditLog;
     }
-    GpgME::Error auditLogError() const Q_DECL_OVERRIDE
+    GpgME::Error auditLogError() const override
     {
         return m_auditLogError;
     }
     void showProgress(const char * /*what*/,
-                      int /*type*/, int current, int total) Q_DECL_OVERRIDE {
+                      int /*type*/, int current, int total) override {
         // will be called from the thread exec'ing the operation, so
         // just bounce everything to the owning thread:
         // ### hope this is thread-safe (meta obj is const, and

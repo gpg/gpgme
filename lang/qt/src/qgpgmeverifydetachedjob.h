@@ -65,17 +65,17 @@ public:
     ~QGpgMEVerifyDetachedJob();
 
     /* from VerifyDetachedJob */
-    GpgME::Error start(const QByteArray &signature, const QByteArray &signedData) Q_DECL_OVERRIDE;
+    GpgME::Error start(const QByteArray &signature, const QByteArray &signedData) override;
 
     /* from VerifyDetachedJob */
-    void start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData) Q_DECL_OVERRIDE;
+    void start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData) override;
 
     /* from VerifyDetachedJob */
     GpgME::VerificationResult exec(const QByteArray &signature,
-                                   const QByteArray &signedData) Q_DECL_OVERRIDE;
+                                   const QByteArray &signedData) override;
 
     /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) Q_DECL_OVERRIDE;
+    void resultHook(const result_type &r) override;
 
 private:
     GpgME::VerificationResult mResult;
