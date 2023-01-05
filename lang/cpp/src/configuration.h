@@ -98,8 +98,7 @@ public:
     explicit Component(const shared_gpgme_conf_comp_t &gpgme_comp)
         : comp(gpgme_comp) {}
 
-    // copy ctor is ok
-
+    Component(const Component &other) = default;
     const Component &operator=(const Component &other)
     {
         if (this != &other) {
@@ -149,6 +148,7 @@ public:
     Option(const shared_gpgme_conf_comp_t &gpgme_comp, gpgme_conf_opt_t gpgme_opt)
         : comp(gpgme_comp), opt(gpgme_opt) {}
 
+    Option(const Option &other) = default;
     const Option &operator=(const Option &other)
     {
         if (this != &other) {

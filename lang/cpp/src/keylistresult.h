@@ -45,6 +45,7 @@ public:
     explicit KeyListResult(const Error &err);
     KeyListResult(const Error &err, const _gpgme_op_keylist_result &res);
 
+    KeyListResult(const KeyListResult &other) = default;
     const KeyListResult &operator=(KeyListResult other)
     {
         swap(other);

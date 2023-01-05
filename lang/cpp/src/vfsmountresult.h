@@ -45,6 +45,7 @@ public:
     VfsMountResult(gpgme_ctx_t ctx, const Error &error, const Error &opError);
     explicit VfsMountResult(const Error &err);
 
+    VfsMountResult(const VfsMountResult &other) = default;
     const VfsMountResult &operator=(VfsMountResult other)
     {
         swap(other);

@@ -44,6 +44,7 @@ public:
     Notation();
     explicit Notation(gpgme_sig_notation_t nota);
 
+    Notation(const Notation &other) = default;
     const Notation &operator=(Notation other)
     {
         swap(other);

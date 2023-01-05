@@ -48,6 +48,7 @@ public:
     EncryptionResult(gpgme_ctx_t ctx, const Error &error);
     EncryptionResult(const Error &err);
 
+    EncryptionResult(const EncryptionResult &other) = default;
     const EncryptionResult &operator=(EncryptionResult other)
     {
         swap(other);
@@ -83,6 +84,7 @@ class GPGMEPP_EXPORT InvalidRecipient
 public:
     InvalidRecipient();
 
+    InvalidRecipient(const InvalidRecipient &other) = default;
     const InvalidRecipient &operator=(InvalidRecipient other)
     {
         swap(other);

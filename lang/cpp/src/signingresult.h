@@ -50,6 +50,7 @@ public:
     SigningResult(gpgme_ctx_t ctx, const Error &error);
     explicit SigningResult(const Error &err);
 
+    SigningResult(const SigningResult &other) = default;
     const SigningResult &operator=(SigningResult other)
     {
         swap(other);
@@ -86,6 +87,7 @@ class GPGMEPP_EXPORT InvalidSigningKey
 public:
     InvalidSigningKey();
 
+    InvalidSigningKey(const InvalidSigningKey &other) = default;
     const InvalidSigningKey &operator=(InvalidSigningKey other)
     {
         swap(other);
@@ -119,6 +121,7 @@ public:
 
     CreatedSignature();
 
+    CreatedSignature(const CreatedSignature &other) = default;
     const CreatedSignature &operator=(CreatedSignature other)
     {
         swap(other);

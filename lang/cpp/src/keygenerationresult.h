@@ -44,6 +44,7 @@ public:
     KeyGenerationResult(gpgme_ctx_t ctx, const Error &error);
     explicit KeyGenerationResult(const Error &err);
 
+    KeyGenerationResult(const KeyGenerationResult &other) = default;
     const KeyGenerationResult &operator=(KeyGenerationResult other)
     {
         swap(other);

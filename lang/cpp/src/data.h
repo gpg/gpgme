@@ -60,6 +60,7 @@ public:
 
     static const Null null;
 
+    Data(const Data &other) = default;
     const Data &operator=(Data other)
     {
         swap(other);

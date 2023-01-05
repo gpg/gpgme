@@ -47,6 +47,7 @@ public:
     ImportResult(gpgme_ctx_t ctx, const Error &error);
     explicit ImportResult(const Error &error);
 
+    ImportResult(const ImportResult &other) = default;
     const ImportResult &operator=(ImportResult other)
     {
         swap(other);
@@ -106,6 +107,7 @@ class GPGMEPP_EXPORT Import
 public:
     Import();
 
+    Import(const Import &other) = default;
     const Import &operator=(Import other)
     {
         swap(other);

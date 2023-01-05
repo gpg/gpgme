@@ -71,6 +71,7 @@ public:
 
     static const Null null;
 
+    Key(const Key &other) = default;
     const Key &operator=(Key other)
     {
         swap(other);
@@ -228,6 +229,7 @@ public:
     Subkey(const shared_gpgme_key_t &key, gpgme_sub_key_t subkey);
     Subkey(const shared_gpgme_key_t &key, unsigned int idx);
 
+    Subkey(const Subkey &other) = default;
     const Subkey &operator=(Subkey other)
     {
         swap(other);
@@ -341,6 +343,7 @@ public:
     UserID(const shared_gpgme_key_t &key, gpgme_user_id_t uid);
     UserID(const shared_gpgme_key_t &key, unsigned int idx);
 
+    UserID(const UserID &other) = default;
     const UserID &operator=(UserID other)
     {
         swap(other);
@@ -459,6 +462,7 @@ public:
     Signature(const shared_gpgme_key_t &key, gpgme_user_id_t uid, gpgme_key_sig_t sig);
     Signature(const shared_gpgme_key_t &key, gpgme_user_id_t uid, unsigned int idx);
 
+    Signature(const Signature &other) = default;
     const Signature &operator=(Signature other)
     {
         swap(other);

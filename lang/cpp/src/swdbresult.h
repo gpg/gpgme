@@ -62,6 +62,7 @@ public:
                                          const char *iversion = NULL,
                                          Error *err = NULL);
 
+    SwdbResult(const SwdbResult &other) = default;
     const SwdbResult &operator=(SwdbResult other)
     {
         swap(other);

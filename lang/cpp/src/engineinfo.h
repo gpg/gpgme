@@ -151,6 +151,7 @@ public:
     EngineInfo();
     explicit EngineInfo(gpgme_engine_info_t engine);
 
+    EngineInfo(const EngineInfo &other) = default;
     const EngineInfo &operator=(EngineInfo other)
     {
         swap(other);

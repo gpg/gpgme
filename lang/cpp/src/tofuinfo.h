@@ -39,6 +39,7 @@ public:
     TofuInfo();
     explicit TofuInfo(gpgme_tofu_info_t info);
 
+    TofuInfo(const TofuInfo &other) = default;
     const TofuInfo &operator=(TofuInfo other)
     {
         swap(other);

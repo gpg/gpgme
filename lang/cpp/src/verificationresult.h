@@ -52,6 +52,7 @@ public:
     VerificationResult(gpgme_ctx_t ctx, const Error &error);
     explicit VerificationResult(const Error &err);
 
+    VerificationResult(const VerificationResult &other) = default;
     const VerificationResult &operator=(VerificationResult other)
     {
         swap(other);
@@ -90,6 +91,7 @@ public:
 
     Signature();
 
+    Signature(const Signature &other) = default;
     const Signature &operator=(Signature other)
     {
         swap(other);
