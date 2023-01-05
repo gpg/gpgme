@@ -138,7 +138,7 @@ unsigned int GpgRevokeKeyEditInteractor::Private::nextState(unsigned int status,
         if (status == GPGME_STATUS_GET_LINE &&
                 strcmp(args, "ask_revocation_reason.text") == 0) {
             nextLine++;
-            return nextLine < reasonLines.size() ? REASON_TEXT : REASON_TEXT_DONE;
+            return static_cast<std::size_t>(nextLine) < reasonLines.size() ? REASON_TEXT : REASON_TEXT_DONE;
         }
         err = GENERAL_ERROR;
         return ERROR;
@@ -147,7 +147,7 @@ unsigned int GpgRevokeKeyEditInteractor::Private::nextState(unsigned int status,
             if (status == GPGME_STATUS_GET_LINE &&
                     strcmp(args, "ask_revocation_reason.text") == 0) {
                 nextLine++;
-                return nextLine < reasonLines.size() ? state + 1 : REASON_TEXT_DONE;
+                return static_cast<std::size_t>(nextLine) < reasonLines.size() ? state + 1 : REASON_TEXT_DONE;
             }
         }
         err = GENERAL_ERROR;
