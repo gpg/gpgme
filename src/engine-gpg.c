@@ -944,8 +944,6 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (!gpg->cmd.used)
     argc++; /* --batch */
 
-  argc++;   /* --no-sk-comments */
-
   argv = calloc (argc + 1, sizeof *argv);
   allocated_argc = argc;
 
@@ -1125,15 +1123,6 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
         }
       argc++;
     }
-  argv[argc] = strdup ("--no-sk-comments");
-  if (!argv[argc])
-    {
-      int saved_err = gpg_error_from_syserror ();
-      free (fd_data_map);
-      free_argv (argv);
-      return saved_err;
-    }
-  argc++;
   for (a = gpg->arglist; a; a = a->next)
     {
       if (a->arg_locp)
