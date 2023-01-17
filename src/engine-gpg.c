@@ -871,9 +871,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 {
   gpgme_error_t err;
   struct arg_and_data_s *a;
-  struct fd_data_map_s *fd_data_map;
+  struct fd_data_map_s *fd_data_map = NULL;
   size_t datac=0, argc=0, allocated_argc=0;
-  char **argv;
+  char **argv = NULL;
   int need_special = 0;
   int use_agent = 0;
   char *p;
@@ -952,19 +952,18 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   fd_data_map = calloc (datac + 1, sizeof *fd_data_map);
   if (!fd_data_map)
     {
-      int saved_err = gpg_error_from_syserror ();
-      free_argv (argv);
-      return saved_err;
+      err = gpg_error_from_syserror ();
+      if (err)
+        goto leave;
     }
 
   argc = datac = 0;
   argv[argc] = strdup (_gpgme_get_basename (pgmname)); /* argv[0] */
   if (!argv[argc])
     {
-      int saved_err = gpg_error_from_syserror ();
-      free (fd_data_map);
-      free_argv (argv);
-      return saved_err;
+      err = gpg_error_from_syserror ();
+      if (err)
+        goto leave;
     }
   argc++;
   if (need_special)
@@ -972,10 +971,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--enable-special-filenames");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -984,10 +982,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--use-agent");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1000,10 +997,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
                                      gpg->request_origin, NULL);
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1013,10 +1009,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup (gpg->auto_key_locate);
       if (!argv[argc])
         {
-          int saved_err = gpg_error_from_syserror ();
-          free (fd_data_map);
-          free_argv (argv);
-          return saved_err;
+          err = gpg_error_from_syserror ();
+          if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1026,10 +1021,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup (gpg->trust_model);
       if (!argv[argc])
         {
-          int saved_err = gpg_error_from_syserror ();
-          free (fd_data_map);
-          free_argv (argv);
-          return saved_err;
+          err = gpg_error_from_syserror ();
+          if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1039,10 +1033,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--no-symkey-cache");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1052,10 +1045,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--ignore-mdc-error");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1065,10 +1057,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--disable-dirmngr");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1078,10 +1069,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--no-auto-check-trustdb");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1102,10 +1092,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           argv[argc] = strdup (s);
           if (!argv[argc])
             {
-              int saved_err = gpg_error_from_syserror ();
-              free (fd_data_map);
-              free_argv (argv);
-              return saved_err;
+              err = gpg_error_from_syserror ();
+              if (err)
+                goto leave;
             }
           argc++;
         }
@@ -1116,10 +1105,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argv[argc] = strdup ("--batch");
       if (!argv[argc])
 	{
-          int saved_err = gpg_error_from_syserror ();
-	  free (fd_data_map);
-	  free_argv (argv);
-	  return saved_err;
+          err = gpg_error_from_syserror ();
+	  if (err)
+            goto leave;
         }
       argc++;
     }
@@ -1140,10 +1128,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	    if (_gpgme_io_pipe (fds, fd_data_map[datac].inbound ? 1 : 0)
 		== -1)
 	      {
-		int saved_err = gpg_error_from_syserror ();
-		free (fd_data_map);
-		free_argv (argv);
-		return saved_err;
+		err = gpg_error_from_syserror ();
+		if (err)
+                  goto leave;
 	      }
 	    if (_gpgme_io_set_close_notify (fds[0],
 					    close_notify_handler, gpg)
@@ -1191,10 +1178,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	      argv[argc] = malloc (buflen);
 	      if (!argv[argc])
 		{
-                  int saved_err = gpg_error_from_syserror ();
-		  free (fd_data_map);
-		  free_argv (argv);
-		  return saved_err;
+                  err = gpg_error_from_syserror ();
+		  if (err)
+                    goto leave;
                 }
 
 	      ptr = argv[argc];
@@ -1216,10 +1202,9 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	  argv[argc] = strdup (a->arg);
 	  if (!argv[argc])
 	    {
-              int saved_err = gpg_error_from_syserror ();
-	      free (fd_data_map);
-	      free_argv (argv);
-	      return saved_err;
+              err = gpg_error_from_syserror ();
+	      if (err)
+                goto leave;
             }
             argc++;
         }
@@ -1230,9 +1215,18 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
      allocated array like ccparray in gnupg. */
   assert (argc <= allocated_argc);
 
-  gpg->argv = argv;
-  gpg->fd_data_map = fd_data_map;
-  return 0;
+leave:
+  if (err)
+    {
+      free (fd_data_map);
+      free_argv (argv);
+    }
+  else
+    {
+      gpg->argv = argv;
+      gpg->fd_data_map = fd_data_map;
+    }
+  return err;
 }
 
 
