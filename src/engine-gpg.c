@@ -222,6 +222,27 @@ close_notify_handler (int fd, void *opaque)
     }
 }
 
+static void
+_append_to_arglist (engine_gpg_t gpg, struct arg_and_data_s *a)
+{
+  a->next = NULL;
+  *gpg->argtail = a;
+  gpg->argtail = &a->next;
+}
+
+static void
+_prepend_to_arglist (engine_gpg_t gpg, struct arg_and_data_s *a)
+{
+  a->next = gpg->arglist;
+  if (!gpg->arglist)
+    {
+      /* If this is the first argument, we need to update the tail
+          pointer.  */
+      gpg->argtail = &a->next;
+    }
+  gpg->arglist = a;
+}
+
 /* If FRONT is true, push at the front of the list.  Use this for
    options added late in the process.  */
 static gpgme_error_t
@@ -247,22 +268,9 @@ _add_arg (engine_gpg_t gpg, const char *prefix, const char *arg, size_t arglen,
   memcpy (a->arg + prefixlen, arg, arglen);
   a->arg[prefixlen + arglen] = 0;
   if (front)
-    {
-      a->next = gpg->arglist;
-      if (!gpg->arglist)
-	{
-	  /* If this is the first argument, we need to update the tail
-	     pointer.  */
-	  gpg->argtail = &a->next;
-	}
-      gpg->arglist = a;
-    }
+    _prepend_to_arglist (gpg, a);
   else
-    {
-      a->next = NULL;
-      *gpg->argtail = a;
-      gpg->argtail = &a->next;
-    }
+    _append_to_arglist (gpg, a);
 
   return 0;
 }
@@ -301,7 +309,7 @@ add_arg_len (engine_gpg_t gpg, const char *prefix,
 
 
 static gpgme_error_t
-add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
+add_data_ext (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound, int front)
 {
   struct arg_and_data_s *a;
 
@@ -311,7 +319,6 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   a = malloc (offsetof (struct arg_and_data_s, arg));
   if (!a)
     return gpg_error_from_syserror ();
-  a->next = NULL;
   a->data = data;
   a->inbound = inbound;
   a->arg_locp = NULL;
@@ -326,11 +333,21 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
       a->print_fd = 0;
       a->dup_to = dup_to;
     }
-  *gpg->argtail = a;
-  gpg->argtail = &a->next;
+
+  if (front)
+    _prepend_to_arglist (gpg, a);
+  else
+    _append_to_arglist (gpg, a);
+
   return 0;
 }
 
+
+static gpgme_error_t
+add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
+{
+  return add_data_ext (gpg, data, dup_to, inbound, 0);
+}
 
 /* Return true if the engine's version is at least VERSION.  */
 static int
@@ -547,18 +564,6 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 	goto leave;
     }
 
-  rc = add_arg (gpg, "--status-fd");
-  if (rc)
-    goto leave;
-
-  {
-    char buf[25];
-    _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
-    rc = add_arg_with_locp (gpg, buf, &gpg->status.arg_loc);
-    if (rc)
-      goto leave;
-  }
-
   rc = add_arg (gpg, "--no-tty");
   if (!rc)
     rc = add_arg (gpg, "--charset");
@@ -631,16 +636,6 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
 	    goto leave;
 	}
     }
-
-  rc = gpgme_data_new (&gpg->diagnostics);
-  if (rc)
-    goto leave;
-
-  rc = add_arg (gpg, "--logger-fd");
-  if (rc)
-    goto leave;
-
-  rc = add_data (gpg, gpg->diagnostics, -2, 1);
 
  leave:
   if (rc)
@@ -1546,6 +1541,30 @@ start (engine_gpg_t gpg)
 
   if (!gpg->file_name && !_gpgme_get_default_gpg_name ())
     return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  rc = gpgme_data_new (&gpg->diagnostics);
+  if (rc)
+    return rc;
+
+  rc = add_data_ext (gpg, gpg->diagnostics, -2, 1, 1);
+  if (rc)
+    return rc;
+
+  rc = add_arg_ext (gpg, "--logger-fd", 1);
+  if (rc)
+    return rc;
+
+  {
+    char buf[25];
+    _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
+    rc = add_arg_with_locp (gpg, buf, &gpg->status.arg_loc, 1);
+    if (rc)
+      return rc;
+  }
+
+  rc = add_arg_ext (gpg, "--status-fd", 1);
+  if (rc)
+    return rc;
 
   if (gpg->lc_ctype)
     {
