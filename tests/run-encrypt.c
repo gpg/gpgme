@@ -107,6 +107,8 @@ show_usage (int ex)
          "  --no-symkey-cache  disable the use of that cache\n"
          "  --wrap             assume input is valid OpenPGP message\n"
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
+         "  --archive          encrypt given file or directory into an archive\n"
+         "  --diagnostics      print diagnostics\n"
          , stderr);
   exit (ex);
 }
@@ -132,6 +134,7 @@ main (int argc, char **argv)
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
   int no_symkey_cache = 0;
+  int diagnostics = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -225,6 +228,16 @@ main (int argc, char **argv)
           no_symkey_cache = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--archive"))
+        {
+          flags |= GPGME_ENCRYPT_ARCHIVE;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--diagnostics"))
+        {
+          diagnostics = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -269,48 +282,56 @@ main (int argc, char **argv)
     }
   keys[i] = NULL;
 
-  err = gpgme_data_new_from_file (&in, *argv, 1);
-  if (err)
+  if (flags & GPGME_ENCRYPT_ARCHIVE)
     {
-      fprintf (stderr, PGM ": error reading `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
+      const char *path = *argv;
+      err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);
     }
-  offset = gpgme_data_seek (in, 0, SEEK_END);
-  if (offset == (gpgme_off_t)(-1))
+  else
     {
-      err = gpg_error_from_syserror ();
-      fprintf (stderr, PGM ": error seeking `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
-    }
-  if (gpgme_data_seek (in, 0, SEEK_SET) == (gpgme_off_t)(-1))
-    {
-      err = gpg_error_from_syserror ();
-      fprintf (stderr, PGM ": error seeking `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
-    }
-  {
-    char numbuf[50];
-    char *p;
+      err = gpgme_data_new_from_file (&in, *argv, 1);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error reading `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      offset = gpgme_data_seek (in, 0, SEEK_END);
+      if (offset == (gpgme_off_t)(-1))
+        {
+          err = gpg_error_from_syserror ();
+          fprintf (stderr, PGM ": error seeking `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      if (gpgme_data_seek (in, 0, SEEK_SET) == (gpgme_off_t)(-1))
+        {
+          err = gpg_error_from_syserror ();
+          fprintf (stderr, PGM ": error seeking `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      {
+        char numbuf[50];
+        char *p;
 
-    p = numbuf + sizeof numbuf;
-    *--p = 0;
-    do
-      {
-        *--p = '0' + (offset % 10);
-        offset /= 10;
+        p = numbuf + sizeof numbuf;
+        *--p = 0;
+        do
+          {
+            *--p = '0' + (offset % 10);
+            offset /= 10;
+          }
+        while (offset);
+        err = gpgme_data_set_flag (in, "size-hint", p);
+        if (err)
+          {
+            fprintf (stderr, PGM ": error setting size-hint for `%s': %s\n",
+                    *argv, gpg_strerror (err));
+            exit (1);
+          }
       }
-    while (offset);
-    err = gpgme_data_set_flag (in, "size-hint", p);
-    if (err)
-      {
-        fprintf (stderr, PGM ": error setting size-hint for `%s': %s\n",
-                 *argv, gpg_strerror (err));
-        exit (1);
-      }
-  }
+    }
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
@@ -318,6 +339,28 @@ main (int argc, char **argv)
   err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
                               flags, in, out);
   result = gpgme_op_encrypt_result (ctx);
+
+  if (diagnostics)
+    {
+      gpgme_data_t diag;
+      gpgme_error_t diag_err;
+
+      gpgme_data_new (&diag);
+      diag_err = gpgme_op_getauditlog (ctx, diag, GPGME_AUDITLOG_DIAG);
+      if (diag_err)
+        {
+          fprintf (stderr, PGM ": getting diagnostics failed: %s\n",
+                   gpgme_strerror (diag_err));
+        }
+      else
+        {
+          fputs ("Begin Diagnostics:\n", stdout);
+          print_data (diag);
+          fputs ("End Diagnostics.\n", stdout);
+        }
+      gpgme_data_release (diag);
+    }
+
   if (result)
     print_result (result);
   if (err)
