@@ -981,6 +981,9 @@ Return the name of the directory with GnuPG shared data.
 @item localedir
 Return the name of the directory with GnuPG locale data.
 
+@item socketdir
+Return the name of the directory with the following sockets.
+
 @item agent-socket
 Return the name of the socket to connect to the gpg-agent.
 
