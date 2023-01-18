@@ -56,6 +56,7 @@ const char *_gpgme_get_default_gpg_name (void);
 const char *_gpgme_get_default_gpgsm_name (void);
 const char *_gpgme_get_default_g13_name (void);
 const char *_gpgme_get_default_gpgconf_name (void);
+const char *_gpgme_get_default_gpgtar_name (void);
 const char *_gpgme_get_default_uisrv_socket (void);
 int _gpgme_in_gpg_one_mode (void);
 

@@ -1024,6 +1024,9 @@ Return the name of the pinentry program.
 @item gpg-wks-client-name
 Return the name of the Web Key Service tool.
 
+@item gpgtar-name
+Return the name of the gpgtar program.
+
 @end table
 
 @end deftypefun

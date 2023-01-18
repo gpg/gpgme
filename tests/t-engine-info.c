@@ -133,6 +133,7 @@ main (int argc, char **argv )
                           "dirmngr-name",
                           "pinentry-name",
                           "gpg-wks-client-name",
+                          "gpgtar-name",
                           NULL };
     const char *s;
     int i;
