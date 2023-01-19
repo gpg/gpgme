@@ -2381,7 +2381,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   if (gpgme_data_get_file_name (plain))
     {
       if (!err)
-	err = add_gpg_arg_with_value (gpg, "--set-filename", gpgme_data_get_file_name (plain), 0);
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (plain), 0);
     }
   if (gpg->flags.use_gpgtar)
     {
