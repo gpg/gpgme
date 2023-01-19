@@ -447,7 +447,7 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
     return err;
 
   if (mode != GPGME_SIG_MODE_NORMAL && mode != GPGME_SIG_MODE_DETACH
-      && mode != GPGME_SIG_MODE_CLEAR)
+      && mode != GPGME_SIG_MODE_CLEAR && mode != GPGME_SIG_MODE_ARCHIVE)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!plain)

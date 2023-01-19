@@ -1982,16 +1982,11 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
 static gpgme_error_t
 append_args_from_sender (engine_gpg_t gpg, gpgme_ctx_t ctx)
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
 
   if (ctx->sender && have_gpg_version (gpg, "2.1.15"))
-    {
-      err = add_arg (gpg, "--sender");
-      if (!err)
-        err = add_arg (gpg, ctx->sender);
-    }
-  else
-    err = 0;
+    err = add_gpg_arg_with_value (gpg, "--sender=", ctx->sender, 0);
+
   return err;
 }
 
@@ -2045,14 +2040,12 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */,
 	  if (!err)
             {
               if ((flags & NOTATION_FLAG_SET))
-                err = add_arg (gpg, "--set-notation");
+                err = add_gpg_arg_with_value (gpg, "--set-notation=", arg, 0);
               else if ((flags & NOTATION_FLAG_CERT))
-                err = add_arg (gpg, "--cert-notation");
+                err = add_gpg_arg_with_value (gpg, "--cert-notation=", arg, 0);
               else
-                err = add_arg (gpg, "--sig-notation");
+                err = add_gpg_arg_with_value (gpg, "--sig-notation=", arg, 0);
             }
-	  if (!err)
-	    err = add_arg (gpg, arg);
 
 	  if (arg)
 	    free (arg);
@@ -2079,9 +2072,7 @@ append_args_from_sig_notations (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */,
 	    value = notation->value;
 
 	  if (!err)
-	    err = add_arg (gpg, "--sig-policy-url");
-	  if (!err)
-	    err = add_arg (gpg, value);
+	    err = add_gpg_arg_with_value (gpg, "--sig-policy-url=", value, 0);
 
 	  if (value != notation->value)
 	    free (value);
@@ -3540,6 +3531,11 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   (void)include_certs;
 
+  gpg->flags.use_gpgtar = mode == GPGME_SIG_MODE_ARCHIVE;
+
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (mode == GPGME_SIG_MODE_CLEAR)
     err = add_arg (gpg, "--clearsign");
   else
@@ -3548,19 +3544,19 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (!err && mode == GPGME_SIG_MODE_DETACH)
 	err = add_arg (gpg, "--detach");
       if (!err && use_armor)
-	err = add_arg (gpg, "--armor");
+	err = add_gpg_arg (gpg, "--armor");
       if (!err)
         {
           if (gpgme_data_get_encoding (in) == GPGME_DATA_ENCODING_MIME
               && have_gpg_version (gpg, "2.1.14"))
-            err = add_arg (gpg, "--mimemode");
+            err = add_gpg_arg (gpg, "--mimemode");
           else if (use_textmode)
-            err = add_arg (gpg, "--textmode");
+            err = add_gpg_arg (gpg, "--textmode");
         }
     }
 
   if (!err && gpg->flags.include_key_block)
-    err = add_arg (gpg, "--include-key-block");
+    err = add_gpg_arg (gpg, "--include-key-block");
   if (!err)
     err = append_args_from_signers (gpg, ctx);
   if (!err)
@@ -3571,18 +3567,34 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (gpgme_data_get_file_name (in))
     {
       if (!err)
-	err = add_arg (gpg, "--set-filename");
-      if (!err)
-	err = add_arg (gpg, gpgme_data_get_file_name (in));
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (in), 0);
     }
 
   /* Tell the gpg object about the data.  */
-  if (!err)
-    err = add_input_size_hint (gpg, in);
-  if (!err)
-    err = add_arg (gpg, "--");
-  if (!err)
-    err = add_data (gpg, in, -1, 0);
+  if (gpg->flags.use_gpgtar)
+    {
+      if (!err)
+	err = add_arg (gpg, "--files-from");
+      if (!err)
+	err = add_arg (gpg, "-");
+      if (!err)
+	err = add_arg (gpg, "--null");
+      if (!err)
+	err = add_arg (gpg, "--utf8-strings");
+      /* Pass the filenames to gpgtar's stdin. */
+      if (!err)
+        err = add_data (gpg, in, 0, 0);
+    }
+  else
+    {
+      if (!err)
+        err = add_input_size_hint (gpg, in);
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, in, -1, 0);
+    }
+
   if (!err)
     err = add_data (gpg, out, 1, 1);
 
