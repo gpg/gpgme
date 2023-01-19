@@ -6238,6 +6238,13 @@ A detached signature is made.
 @item GPGME_SIG_MODE_CLEAR
 A clear text signature is made.  The @acronym{ASCII} armor and text
 mode settings of the context are ignored.
+
+@item GPGME_SIG_MODE_ARCHIVE
+@since{1.19.0}
+
+A signed archive is created from the given files and directories.  This
+feature is currently only supported for the OpenPGP crypto engine.
+
 @end table
 @end deftp
 
@@ -6248,6 +6255,12 @@ the data object @var{plain} and returns it in the data object
 @acronym{ASCII} armor (or, if that is not set, by the encoding
 specified for @var{sig}), the text mode attributes set for the context
 @var{ctx} and the requested signature mode @var{mode}.
+
+If signature mode @code(GPGME_SIG_MODE_ARCHIVE) is requested, then a
+signed archive is created from the files and directories given as
+NUL-separated list in the data object @var{plain} and returned in the
+data object @var{sig}.  The paths of the files and directories have to
+be given as paths relative to the current working directory.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_sign_result}.
@@ -6420,6 +6433,12 @@ ciphertext created is determined by the @acronym{ASCII} armor (or, if
 that is not set, by the encoding specified for @var{cipher}) and the
 text mode attributes set for the context @var{ctx}.
 
+If the flag @code(GPGME_ENCRYPT_ARCHIVE) is set, then an encrypted
+archive is created from the files and directories given as NUL-separated
+list in the data object @var{plain} and returned in the data object
+@var{cipher}.  The paths of the files and directories have to
+be given as paths relative to the current working directory.
+
 @var{recp} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
 call (but see @code{gpgme_op_encrypt_start} for the requirements with
@@ -6494,6 +6513,14 @@ address part of the key specification is conveyed to the backend.  As
 of now the key must be specified using the @var{recpstring} argument
 of the extended encrypt functions.  This feature is currently only
 supported for the OpenPGP crypto engine.
+
+@item GPGME_ENCRYPT_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_ENCRYPT_ARCHIVE} symbol specifies that the input is a
+NUL-separated list of file paths and directory paths that shall be
+encrypted into an archive.  This feature is currently only supported
+for the OpenPGP crypto engine.
 
 @end table
 
