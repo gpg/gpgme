@@ -2415,6 +2415,11 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
 
+  gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
+
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (recp || recpstring)
     err = add_arg (gpg, "--encrypt");
 
@@ -2424,30 +2429,30 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   if (!err)
     err = add_arg (gpg, "--sign");
   if (!err && use_armor)
-    err = add_arg (gpg, "--armor");
+    err = add_gpg_arg (gpg, "--armor");
 
   if (!err && (flags & GPGME_ENCRYPT_NO_COMPRESS))
-    err = add_arg (gpg, "--compress-algo=none");
+    err = add_gpg_arg (gpg, "--compress-algo=none");
 
   if (!err && (flags & GPGME_ENCRYPT_THROW_KEYIDS))
-    err = add_arg (gpg, "--throw-keyids");
+    err = add_gpg_arg (gpg, "--throw-keyids");
 
   if (gpgme_data_get_encoding (plain) == GPGME_DATA_ENCODING_MIME
       && have_gpg_version (gpg, "2.1.14"))
-    err = add_arg (gpg, "--mimemode");
+    err = add_gpg_arg (gpg, "--mimemode");
 
   if (!err && gpg->flags.include_key_block)
-    err = add_arg (gpg, "--include-key-block");
+    err = add_gpg_arg (gpg, "--include-key-block");
 
   if (recp || recpstring)
     {
       /* If we know that all recipients are valid (full or ultimate trust)
 	 we can suppress further checks.  */
       if (!err && (flags & GPGME_ENCRYPT_ALWAYS_TRUST))
-	err = add_arg (gpg, "--always-trust");
+	err = add_gpg_arg (gpg, "--always-trust");
 
       if (!err && (flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
-	err = add_arg (gpg, "--no-encrypt-to");
+	err = add_gpg_arg (gpg, "--no-encrypt-to");
 
       if (!err && !recp && recpstring)
 	err = append_args_from_recipients_string (gpg, flags, recpstring);
@@ -2474,16 +2479,31 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   if (gpgme_data_get_file_name (plain))
     {
       if (!err)
-	err = add_arg (gpg, "--set-filename");
-      if (!err)
-	err = add_arg (gpg, gpgme_data_get_file_name (plain));
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (plain), 0);
     }
-  if (!err)
-    err = add_input_size_hint (gpg, plain);
-  if (!err)
-    err = add_arg (gpg, "--");
-  if (!err)
-    err = add_data (gpg, plain, -1, 0);
+  if (gpg->flags.use_gpgtar)
+    {
+      if (!err)
+	err = add_arg (gpg, "--files-from");
+      if (!err)
+	err = add_arg (gpg, "-");
+      if (!err)
+	err = add_arg (gpg, "--null");
+      if (!err)
+	err = add_arg (gpg, "--utf8-strings");
+      /* Pass the filenames to gpgtar's stdin. */
+      if (!err)
+        err = add_data (gpg, plain, 0, 0);
+    }
+  else
+    {
+      if (!err)
+        err = add_input_size_hint (gpg, plain);
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, plain, -1, 0);
+    }
 
   if (!err)
     err = start (gpg);

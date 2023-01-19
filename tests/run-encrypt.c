@@ -77,14 +77,39 @@ progress_cb (void *opaque, const char *what, int type, int current, int total)
 
 
 static void
-print_result (gpgme_encrypt_result_t result)
+print_encrypt_result (gpgme_encrypt_result_t result)
 {
   gpgme_invalid_key_t invkey;
 
+  printf ("\nEncryption results\n");
   for (invkey = result->invalid_recipients; invkey; invkey = invkey->next)
     printf ("Encryption key `%s' not used: %s <%s>\n",
             nonnull (invkey->fpr),
             gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
+}
+
+
+static void
+print_sign_result (gpgme_sign_result_t result)
+{
+  gpgme_invalid_key_t invkey;
+  gpgme_new_signature_t sig;
+
+  printf ("\nSigning results\n");
+  for (invkey = result->invalid_signers; invkey; invkey = invkey->next)
+    printf ("Signing key `%s' not used: %s <%s>\n",
+            nonnull (invkey->fpr),
+            gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
+
+  for (sig = result->signatures; sig; sig = sig->next)
+    {
+      printf ("Key fingerprint: %s\n", nonnull (sig->fpr));
+      printf ("Signature type : %d\n", sig->type);
+      printf ("Public key algo: %d\n", sig->pubkey_algo);
+      printf ("Hash algo .....: %d\n", sig->hash_algo);
+      printf ("Creation time .: %ld\n", sig->timestamp);
+      printf ("Sig class .....: 0x%u\n", sig->sig_class);
+    }
 }
 
 
@@ -95,6 +120,7 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] FILE\n\n"
          "Options:\n"
          "  --verbose          run in verbose mode\n"
+         "  --sign             sign data before encryption\n"
          "  --status           print status lines from the backend\n"
          "  --progress         print progress info\n"
          "  --openpgp          use the OpenPGP protocol (default)\n"
@@ -122,7 +148,8 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_data_t in, out;
-  gpgme_encrypt_result_t result;
+  gpgme_encrypt_result_t encrypt_result;
+  gpgme_sign_result_t sign_result;
   int print_status = 0;
   int print_progress = 0;
   int use_loopback = 0;
@@ -135,6 +162,7 @@ main (int argc, char **argv)
   gpgme_off_t offset;
   int no_symkey_cache = 0;
   int diagnostics = 0;
+  int sign = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -155,6 +183,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--sign"))
+        {
+          sign = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--status"))
@@ -336,9 +369,12 @@ main (int argc, char **argv)
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
-                              flags, in, out);
-  result = gpgme_op_encrypt_result (ctx);
+  if (sign)
+    err = gpgme_op_encrypt_sign_ext (ctx, keycount ? keys : NULL, keystring,
+                                     flags, in, out);
+  else
+    err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
+                                flags, in, out);
 
   if (diagnostics)
     {
@@ -361,8 +397,12 @@ main (int argc, char **argv)
       gpgme_data_release (diag);
     }
 
-  if (result)
-    print_result (result);
+  sign_result = gpgme_op_sign_result (ctx);
+  if (sign_result)
+    print_sign_result (sign_result);
+  encrypt_result = gpgme_op_encrypt_result (ctx);
+  if (encrypt_result)
+    print_encrypt_result (encrypt_result);
   if (err)
     {
       fprintf (stderr, PGM ": encrypting failed: %s\n", gpg_strerror (err));
