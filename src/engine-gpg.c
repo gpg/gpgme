@@ -2369,13 +2369,15 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
     err = add_arg (gpg, "-");
   if (!err)
     err = add_data (gpg, ciph, 1, 1);
-  if (gpgme_data_get_file_name (plain))
-    {
-      if (!err)
-	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (plain), 0);
-    }
   if (gpg->flags.use_gpgtar)
     {
+      const char *file_name = gpgme_data_get_file_name (plain);
+      if (!err && file_name)
+        {
+          err = add_arg (gpg, "--directory");
+          if (!err)
+            err = add_arg (gpg, file_name);
+        }
       if (!err)
 	err = add_arg (gpg, "--files-from");
       if (!err)
@@ -2390,6 +2392,9 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
     }
   else
     {
+      const char *file_name = gpgme_data_get_file_name (plain);
+      if (!err && file_name)
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)
         err = add_input_size_hint (gpg, plain);
       if (!err)
@@ -2476,13 +2481,15 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
     err = add_arg (gpg, "-");
   if (!err)
     err = add_data (gpg, ciph, 1, 1);
-  if (gpgme_data_get_file_name (plain))
-    {
-      if (!err)
-	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (plain), 0);
-    }
   if (gpg->flags.use_gpgtar)
     {
+      const char *file_name = gpgme_data_get_file_name (plain);
+      if (!err && file_name)
+        {
+          err = add_arg (gpg, "--directory");
+          if (!err)
+            err = add_arg (gpg, file_name);
+        }
       if (!err)
 	err = add_arg (gpg, "--files-from");
       if (!err)
@@ -2497,6 +2504,9 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
     }
   else
     {
+      const char *file_name = gpgme_data_get_file_name (plain);
+      if (!err && file_name)
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)
         err = add_input_size_hint (gpg, plain);
       if (!err)
@@ -3584,15 +3594,16 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!err)
     err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_SIG);
 
-  if (gpgme_data_get_file_name (in))
-    {
-      if (!err)
-	err = add_gpg_arg_with_value (gpg, "--set-filename=", gpgme_data_get_file_name (in), 0);
-    }
-
   /* Tell the gpg object about the data.  */
   if (gpg->flags.use_gpgtar)
     {
+      const char *file_name = gpgme_data_get_file_name (in);
+      if (!err && file_name)
+        {
+          err = add_arg (gpg, "--directory");
+          if (!err)
+            err = add_arg (gpg, file_name);
+        }
       if (!err)
 	err = add_arg (gpg, "--files-from");
       if (!err)
@@ -3607,6 +3618,9 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     }
   else
     {
+      const char *file_name = gpgme_data_get_file_name (in);
+      if (!err && file_name)
+	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)
         err = add_input_size_hint (gpg, in);
       if (!err)

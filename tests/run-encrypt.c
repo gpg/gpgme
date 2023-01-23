@@ -134,6 +134,7 @@ show_usage (int ex)
          "  --wrap             assume input is valid OpenPGP message\n"
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
          "  --archive          encrypt given file or directory into an archive\n"
+         "  --directory DIR    switch to directory DIR before encrypting into an archive\n"
          "  --diagnostics      print diagnostics\n"
          , stderr);
   exit (ex);
@@ -157,6 +158,7 @@ main (int argc, char **argv)
   gpgme_key_t keys[10+1];
   int keycount = 0;
   char *keystring = NULL;
+  const char *directory = NULL;
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
@@ -266,6 +268,14 @@ main (int argc, char **argv)
           flags |= GPGME_ENCRYPT_ARCHIVE;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--directory"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          directory = *argv;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--diagnostics"))
         {
           diagnostics = 1;
@@ -319,6 +329,12 @@ main (int argc, char **argv)
     {
       const char *path = *argv;
       err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);
+      fail_if_err (err);
+      if (directory)
+        {
+          err = gpgme_data_set_file_name (in, directory);
+          fail_if_err (err);
+        }
     }
   else
     {

@@ -88,6 +88,7 @@ show_usage (int ex)
          "  --include-key-block  use this option with gpg\n"
          "  --clear          create a clear text signature\n"
          "  --archive        create a signed archive with the given file or directory\n"
+         "  --directory DIR  switch to directory DIR before creating the archive\n"
          "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
@@ -101,6 +102,7 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_ctx_t ctx;
   const char *key_string = NULL;
+  const char *directory = NULL;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_sig_mode_t sigmode = GPGME_SIG_MODE_NORMAL;
   gpgme_data_t in, out;
@@ -186,6 +188,14 @@ main (int argc, char **argv)
           sigmode = GPGME_SIG_MODE_ARCHIVE;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--directory"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          directory = *argv;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--diagnostics"))
         {
           diagnostics = 1;
@@ -253,6 +263,12 @@ main (int argc, char **argv)
     {
       const char *path = *argv;
       err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);
+      fail_if_err (err);
+      if (directory)
+        {
+          err = gpgme_data_set_file_name (in, directory);
+          fail_if_err (err);
+        }
     }
   else
     {

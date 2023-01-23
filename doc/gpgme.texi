@@ -2199,6 +2199,11 @@ associated with the data object.  The file name will be stored in the
 output when encrypting or signing the data and will be returned to the
 user when decrypting or verifying the output data.
 
+If a signed or encrypted archive is created, then the file name will be
+interpreted as the base directory for the relative paths of the files and
+directories to put into the archive.  This corresponds to the --directory
+option of gpgtar.
+
 The function returns the error code @code{GPG_ERR_INV_VALUE} if
 @var{dh} is not a valid pointer and @code{GPG_ERR_ENOMEM} if not
 enough memory is available.
@@ -6260,7 +6265,8 @@ If signature mode @code(GPGME_SIG_MODE_ARCHIVE) is requested, then a
 signed archive is created from the files and directories given as
 NUL-separated list in the data object @var{plain} and returned in the
 data object @var{sig}.  The paths of the files and directories have to
-be given as paths relative to the current working directory.
+be given as paths relative to the current working directory or relative
+to the base directory set with @code{gpgme_data_set_file_name}.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_sign_result}.
@@ -6437,7 +6443,8 @@ If the flag @code(GPGME_ENCRYPT_ARCHIVE) is set, then an encrypted
 archive is created from the files and directories given as NUL-separated
 list in the data object @var{plain} and returned in the data object
 @var{cipher}.  The paths of the files and directories have to
-be given as paths relative to the current working directory.
+be given as paths relative to the current working directory or relative
+to the base directory set with @code{gpgme_data_set_file_name}.
 
 @var{recp} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
