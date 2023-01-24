@@ -310,7 +310,8 @@ add_gpg_arg (engine_gpg_t gpg, const char *arg)
 }
 
 static gpgme_error_t
-add_gpg_arg_with_value (engine_gpg_t gpg, const char *arg, const char *value, int front)
+add_gpg_arg_with_value (engine_gpg_t gpg, const char *arg, const char *value,
+                        int front)
 {
   return _add_arg (gpg, arg, value, strlen (value), front, NULL, 1);
 }
@@ -1829,6 +1830,14 @@ gpg_decrypt (void *engine,
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
+  gpg->flags.use_gpgtar = !!(flags & GPGME_DECRYPT_ARCHIVE);
+
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (gpg->flags.use_gpgtar && (flags & GPGME_DECRYPT_UNWRAP))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   err = add_arg (gpg, "--decrypt");
 
   if (!err && (flags & GPGME_DECRYPT_UNWRAP))
@@ -1840,17 +1849,17 @@ gpg_decrypt (void *engine,
     }
 
   if (!err && export_session_key)
-    err = add_arg (gpg, "--show-session-key");
+    err = add_gpg_arg (gpg, "--show-session-key");
 
   if (!err && auto_key_retrieve)
-    err = add_arg (gpg, "--auto-key-retrieve");
+    err = add_gpg_arg (gpg, "--auto-key-retrieve");
 
   if (!err && gpg->flags.auto_key_import)
-    err = add_arg (gpg, "--auto-key-import");
+    err = add_gpg_arg (gpg, "--auto-key-import");
 
   if (!err && override_session_key && *override_session_key)
     {
-      if (have_gpg_version (gpg, "2.1.16"))
+      if (have_gpg_version (gpg, "2.1.16") && !gpg->flags.use_gpgtar)
         {
           gpgme_data_release (gpg->override_session_key);
           TRACE (DEBUG_ENGINE, "override", gpg, "seskey='%s' len=%zu\n",
@@ -1880,25 +1889,43 @@ gpg_decrypt (void *engine,
       else
         {
           /* Using that option may leak the session key via ps(1).  */
-          err = add_arg (gpg, "--override-session-key");
-          if (!err)
-            err = add_arg (gpg, override_session_key);
+          err = add_gpg_arg_with_value (gpg, "--override-session-key=",
+                                        override_session_key, 0);
         }
     }
 
   /* Tell the gpg object about the data.  */
-  if (!err)
-    err = add_arg (gpg, "--output");
-  if (!err)
-    err = add_arg (gpg, "-");
-  if (!err)
-    err = add_data (gpg, plain, 1, 1);
-  if (!err)
-    err = add_input_size_hint (gpg, ciph);
-  if (!err)
-    err = add_arg (gpg, "--");
-  if (!err)
-    err = add_data (gpg, ciph, -1, 0);
+  if (gpg->flags.use_gpgtar)
+    {
+      const char *file_name = gpgme_data_get_file_name (plain);
+      if (!err && file_name)
+        {
+          err = add_arg (gpg, "--directory");
+          if (!err)
+            err = add_arg (gpg, file_name);
+        }
+      if (!err)
+        err = add_input_size_hint (gpg, ciph);
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, ciph, 0, 0);
+    }
+  else
+    {
+      if (!err)
+        err = add_arg (gpg, "--output");
+      if (!err)
+        err = add_arg (gpg, "-");
+      if (!err)
+        err = add_data (gpg, plain, 1, 1);
+      if (!err)
+        err = add_input_size_hint (gpg, ciph);
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, ciph, -1, 0);
+    }
 
   if (!err)
     err = start (gpg);

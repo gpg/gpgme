@@ -1426,6 +1426,7 @@ gpgme_decrypt_result_t gpgme_op_decrypt_result (gpgme_ctx_t ctx);
 typedef enum
   {
     GPGME_DECRYPT_VERIFY = 1,
+    GPGME_DECRYPT_ARCHIVE = 2,
     GPGME_DECRYPT_UNWRAP = 128
   }
 gpgme_decrypt_flags_t;

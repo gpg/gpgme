@@ -11,6 +11,9 @@ Noteworthy changes in version 1.18.1 (unreleased)
    gpgme_op_sign* to allow creating an encrypted and/or signed
    archive.  [T6342]
 
+ * Extended gpgme_op_decrypt* and gpgme_op_decrypt_verify* to allow
+   extracting an encrypted and/or signed archive.  [T6342]
+
  * cpp: Handle error when trying to sign expired keys.  [T6155]
 
  * cpp, qt: Fix building with C++11.  [T6141]
@@ -30,6 +33,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  gpgme_set_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
+ GPGME_DECRYPT_ARCHIVE                      NEW.
  GPGME_ENCRYPT_ARCHIVE                      NEW.
  GPGME_SIG_MODE_ARCHIVE                     NEW.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.

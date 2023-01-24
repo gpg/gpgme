@@ -3172,8 +3172,8 @@ The string given in @var{value} is passed to the GnuPG engine to override
 the session key for decryption.  The format of that session key is
 specific to GnuPG and can be retrieved during a decrypt operation when
 the context flag "export-session-key" is enabled.  Please be aware that
-using this feature with GnuPG < 2.1.16 will leak the session key on
-many platforms via ps(1).
+using this feature with GnuPG < 2.1.16 or when decrypting an archive
+will leak the session key on many platforms via ps(1).
 
 @item "auto-key-retrieve"
 Setting the @var{value} to "1" asks the backend to automatically
@@ -5589,6 +5589,12 @@ The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
 data object @var{cipher} and stores it into the data object
 @var{plain}.
 
+If the flag @code(GPGME_DECRYPT_ARCHIVE) is set, then an encrypted
+archive in the data object @var{cipher} is decrypted and extracted.
+The content of the archive is extracted into a directory named
+@code{GPGARCH_n_} (where @code{n} is a number) or into the directory
+set with @code{gpgme_data_set_file_name} for the data object @var{plain}.
+
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
 if @var{ctx}, @var{cipher} or @var{plain} is not a valid pointer,
@@ -5631,6 +5637,13 @@ multiple of the following bit values:
 
 The @code{GPGME_DECRYPT_VERIFY} symbol specifies that this function
 shall exactly act as @code{gpgme_op_decrypt_verify}.
+
+@item GPGME_DECRYPT_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_DECRYPT_ARCHIVE} symbol specifies that the input is an
+encrypted archive that shall be decrypted and extracted.  This feature
+is currently only supported for the OpenPGP crypto engine.
 
 @item GPGME_DECRYPT_UNWRAP
 @since{1.8.0}
