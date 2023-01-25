@@ -3666,20 +3666,43 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 }
 
 static gpgme_error_t
-gpg_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-	    gpgme_data_t plaintext, gpgme_ctx_t ctx)
+gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
+            gpgme_data_t signed_text, gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
 
+  gpg->flags.use_gpgtar = !!(flags & GPGME_VERIFY_ARCHIVE);
+
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   err = append_args_from_sender (gpg, ctx);
   if (!err && gpg->flags.auto_key_import)
-    err = add_arg (gpg, "--auto-key-import");
+    err = add_gpg_arg (gpg, "--auto-key-import");
   if (!err && ctx->auto_key_retrieve)
-    err = add_arg (gpg, "--auto-key-retrieve");
+    err = add_gpg_arg (gpg, "--auto-key-retrieve");
 
   if (err)
     ;
+  else if (gpg->flags.use_gpgtar)
+    {
+      const char *file_name = gpgme_data_get_file_name (plaintext);
+      if (!err && file_name)
+        {
+          err = add_arg (gpg, "--directory");
+          if (!err)
+            err = add_arg (gpg, file_name);
+        }
+      /* gpgtar uses --decrypt also for signed-only archives */
+      err = add_arg (gpg, "--decrypt");
+      if (!err)
+        err = add_input_size_hint (gpg, sig);
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err)
+        err = add_data (gpg, sig, 0, 0);
+    }
   else if (plaintext)
     {
       /* Normal or cleartext signature.  */

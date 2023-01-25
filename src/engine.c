@@ -940,9 +940,9 @@ _gpgme_engine_op_trustlist (engine_t engine, const char *pattern)
 
 
 gpgme_error_t
-_gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
-			 gpgme_data_t signed_text, gpgme_data_t plaintext,
-                         gpgme_ctx_t ctx)
+_gpgme_engine_op_verify (engine_t engine, gpgme_verify_flags_t flags,
+                         gpgme_data_t sig, gpgme_data_t signed_text,
+                         gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -950,8 +950,8 @@ _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
   if (!engine->ops->verify)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->verify) (engine->engine, sig, signed_text, plaintext,
-                                 ctx);
+  return (*engine->ops->verify) (engine->engine, flags, sig, signed_text,
+                                 plaintext, ctx);
 }
 
 

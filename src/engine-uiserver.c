@@ -1294,8 +1294,9 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
 /* FIXME: Missing a way to specify --silent.  */
 static gpgme_error_t
-uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-                 gpgme_data_t plaintext, gpgme_ctx_t ctx)
+uiserver_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
+                 gpgme_data_t signed_text, gpgme_data_t plaintext,
+                 gpgme_ctx_t ctx)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
@@ -1315,6 +1316,9 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
     protocol = " --protocol=CMS";
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  if (flags & GPGME_VERIFY_ARCHIVE)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if (gpgrt_asprintf (&cmd, "VERIFY%s", protocol) < 0)
     return gpg_error_from_syserror ();

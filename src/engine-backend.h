@@ -122,9 +122,9 @@ struct engine_ops
 			 gpgme_sig_mode_t mode, int use_armor,
 			 int use_textmode, int include_certs,
 			 gpgme_ctx_t ctx /* FIXME */);
-  gpgme_error_t (*verify) (void *engine, gpgme_data_t sig,
-			   gpgme_data_t signed_text, gpgme_data_t plaintext,
-                           gpgme_ctx_t ctx);
+  gpgme_error_t (*verify) (void *engine, gpgme_verify_flags_t flags,
+                           gpgme_data_t sig, gpgme_data_t signed_text,
+                           gpgme_data_t plaintext, gpgme_ctx_t ctx);
   gpgme_error_t  (*getauditlog) (void *engine, gpgme_data_t output,
                                  unsigned int flags);
   gpgme_error_t (*setexpire) (void *engine, gpgme_key_t key,

@@ -282,6 +282,9 @@ GPGME_1.0 {
     gpgme_op_receive_keys;
     gpgme_op_receive_keys_start;
 
+    gpgme_op_verify_ext;
+    gpgme_op_verify_ext_start;
+
   local:
     *;
 

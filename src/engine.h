@@ -166,7 +166,9 @@ gpgme_error_t _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in,
 				     gpgme_ctx_t ctx /* FIXME */);
 gpgme_error_t _gpgme_engine_op_trustlist (engine_t engine,
 					  const char *pattern);
-gpgme_error_t _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
+gpgme_error_t _gpgme_engine_op_verify (engine_t engine,
+                                       gpgme_verify_flags_t flags,
+                                       gpgme_data_t sig,
 				       gpgme_data_t signed_text,
 				       gpgme_data_t plaintext,
                                        gpgme_ctx_t ctx);
