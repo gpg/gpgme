@@ -5589,12 +5589,6 @@ The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
 data object @var{cipher} and stores it into the data object
 @var{plain}.
 
-If the flag @code(GPGME_DECRYPT_ARCHIVE) is set, then an encrypted
-archive in the data object @var{cipher} is decrypted and extracted.
-The content of the archive is extracted into a directory named
-@code{GPGARCH_n_} (where @code{n} is a number) or into the directory
-set with @code{gpgme_data_set_file_name} for the data object @var{plain}.
-
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
 if @var{ctx}, @var{cipher} or @var{plain} is not a valid pointer,
@@ -5627,6 +5621,12 @@ if @var{cipher} or @var{plain} is not a valid pointer.
 The function @code{gpgme_op_decrypt_ext} is the same as
 @code{gpgme_op_decrypt} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
+
+If the flag @code(GPGME_DECRYPT_ARCHIVE) is set, then an encrypted
+archive in the data object @var{cipher} is decrypted and extracted.
+The content of the archive is extracted into a directory named
+@code{GPGARCH_n_} (where @code{n} is a number) or into the directory
+set with @code{gpgme_data_set_file_name} for the data object @var{plain}.
 
 The value in @var{flags} is a bitwise-or combination of one or
 multiple of the following bit values:
@@ -5823,6 +5823,60 @@ operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does not contain
 any data to verify.
 @end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_verify_ext ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_verify_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{sig}}, @
+            @w{gpgme_data_t @var{signed_text}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_verify_ext} is the same as
+@code{gpgme_op_verify} but has an additional argument
+@var{flags}.  If @var{flags} is 0 both function behave identically.
+
+If the flag @code(GPGME_VERIFY_ARCHIVE) is set, then a signed archive
+in the data object @var{sig} is verified and extracted. The content of
+the archive is extracted into a directory named @code{GPGARCH_n_}
+(where @code{n} is a number) or into the directory set with
+@code{gpgme_data_set_file_name} for the data object @var{plain}.
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_VERIFY_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_VERIFY_ARCHIVE} symbol specifies that the input is a
+signed archive that shall be verified and extracted.  This feature
+is currently only supported for the OpenPGP crypto engine.
+
+@end table
+
+The function returns the error codes as descriped for
+@code{gpgme_op_decrypt} respective @code{gpgme_op_encrypt}.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_verify_ext_start ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_verify_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{sig}}, @
+            @w{gpgme_data_t @var{signed_text}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_verify_ext_start} initiates a
+@code{gpgme_op_verify_ext} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{sig} or @var{plain} is not a valid pointer, and
+@code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does not contain
+any data to verify.
+@end deftypefun
+
 
 @deftp {Data type} {gpgme_sig_notation_t}
 This is a pointer to a structure used to store a part of the result of

@@ -11,8 +11,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
    gpgme_op_sign* to allow creating an encrypted and/or signed
    archive.  [T6342]
 
- * Extended gpgme_op_decrypt* and gpgme_op_decrypt_verify* to allow
-   extracting an encrypted and/or signed archive.  [T6342]
+ * Extended gpgme_op_decrypt*, gpgme_op_decrypt_verify*, and gpgme_op_verify*
+   to allow extracting an encrypted and/or signed archive.  [T6342]
 
  * cpp: Handle error when trying to sign expired keys.  [T6155]
 
@@ -36,6 +36,10 @@ Noteworthy changes in version 1.18.1 (unreleased)
  GPGME_DECRYPT_ARCHIVE                      NEW.
  GPGME_ENCRYPT_ARCHIVE                      NEW.
  GPGME_SIG_MODE_ARCHIVE                     NEW.
+ GPGME_VERIFY_ARCHIVE                       NEW.
+ gpgme_verify_flags_t                       NEW.
+ gpgme_op_verify_ext_start                  NEW.
+ gpgme_op_verify_ext                        NEW.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
  qt: ListAllKeysJob::Option                 NEW.
