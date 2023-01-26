@@ -1341,6 +1341,9 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     if (flags & Context::EncryptWrap) {
         result |= GPGME_ENCRYPT_WRAP;
     }
+    if (flags & Context::WantAddress) {
+        result |= GPGME_ENCRYPT_WANT_ADDRESS;
+    }
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
@@ -1917,6 +1920,7 @@ std::ostream &operator<<(std::ostream &os, Context::EncryptionFlags flags)
     CHECK(Symmetric);
     CHECK(ThrowKeyIds);
     CHECK(EncryptWrap);
+    CHECK(WantAddress);
 #undef CHECK
     return os << ')';
 }

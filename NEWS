@@ -7,6 +7,9 @@ Noteworthy changes in version 1.18.1 (unreleased)
 
  * cpp: Handle error when trying to sign expired keys.  [T6155]
 
+ * cpp: Support encryption flags ThrowKeyIds, EncryptWrap, and WantAddress.
+   [T6359]
+
  * cpp, qt: Fix building with C++11.  [T6141]
 
  * qt: Fix problem with expiration dates after 2038-01-19 on 32-bit systems
@@ -26,6 +29,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  gpgme_set_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
+ cpp: Context::WantAddress                  NEW.
  qt: ListAllKeysJob::Option                 NEW.
  qt: ListAllKeysJob::Options                NEW.
  qt: ListAllKeysJob::setOptions             NEW.
