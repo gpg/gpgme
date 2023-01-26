@@ -5643,7 +5643,8 @@ shall exactly act as @code{gpgme_op_decrypt_verify}.
 
 The @code{GPGME_DECRYPT_ARCHIVE} symbol specifies that the input is an
 encrypted archive that shall be decrypted and extracted.  This feature
-is currently only supported for the OpenPGP crypto engine.
+is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
 
 @item GPGME_DECRYPT_UNWRAP
 @since{1.8.0}
@@ -5851,7 +5852,8 @@ multiple of the following bit values:
 
 The @code{GPGME_VERIFY_ARCHIVE} symbol specifies that the input is a
 signed archive that shall be verified and extracted.  This feature
-is currently only supported for the OpenPGP crypto engine.
+is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
 
 @end table
 
@@ -6315,7 +6317,8 @@ mode settings of the context are ignored.
 @since{1.19.0}
 
 A signed archive is created from the given files and directories.  This
-feature is currently only supported for the OpenPGP crypto engine.
+feature is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
 
 @end table
 @end deftp
@@ -6594,7 +6597,7 @@ supported for the OpenPGP crypto engine.
 The @code{GPGME_ENCRYPT_ARCHIVE} symbol specifies that the input is a
 NUL-separated list of file paths and directory paths that shall be
 encrypted into an archive.  This feature is currently only supported
-for the OpenPGP crypto engine.
+for the OpenPGP crypto engine and requires GnuPG 2.4.1.
 
 @end table
 

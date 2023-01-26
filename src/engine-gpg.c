@@ -1832,7 +1832,7 @@ gpg_decrypt (void *engine,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_DECRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (gpg->flags.use_gpgtar && (flags & GPGME_DECRYPT_UNWRAP))
@@ -2334,7 +2334,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_WRAP))
@@ -2449,7 +2449,7 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (recp || recpstring)
@@ -3590,7 +3590,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   gpg->flags.use_gpgtar = mode == GPGME_SIG_MODE_ARCHIVE;
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (mode == GPGME_SIG_MODE_CLEAR)
@@ -3674,7 +3674,7 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_VERIFY_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.3.5"))
+  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   err = append_args_from_sender (gpg, ctx);
