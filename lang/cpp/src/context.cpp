@@ -1335,6 +1335,12 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     if (flags & Context::Symmetric) {
         result |= GPGME_ENCRYPT_SYMMETRIC;
     }
+    if (flags & Context::ThrowKeyIds) {
+        result |= GPGME_ENCRYPT_THROW_KEYIDS;
+    }
+    if (flags & Context::EncryptWrap) {
+        result |= GPGME_ENCRYPT_WRAP;
+    }
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
@@ -1909,6 +1915,8 @@ std::ostream &operator<<(std::ostream &os, Context::EncryptionFlags flags)
     CHECK(ExpectSign);
     CHECK(NoCompress);
     CHECK(Symmetric);
+    CHECK(ThrowKeyIds);
+    CHECK(EncryptWrap);
 #undef CHECK
     return os << ')';
 }
