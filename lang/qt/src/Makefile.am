@@ -34,6 +34,7 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
 qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
+    filelistdataprovider.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
     qgpgmeaddexistingsubkeyjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
@@ -72,6 +73,7 @@ qgpgme_headers= \
     downloadjob.h \
     encryptjob.h \
     exportjob.h \
+    filelistdataprovider.h \
     hierarchicalkeylistjob.h \
     job.h \
     keyformailboxjob.h \
@@ -120,6 +122,7 @@ camelcase_headers= \
     DownloadJob \
     EncryptJob \
     ExportJob \
+    FileListDataProvider \
     HierarchicalKeyKistJob \
     Job \
     MultiDeleteJob \

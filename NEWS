@@ -49,6 +49,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  qt: ListAllKeysJob::options                NEW.
  qt: Job::startNow                          NEW.
  qt: ImportJob::startLater                  NEW.
+ qt: FileListDataProvider                   NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)
