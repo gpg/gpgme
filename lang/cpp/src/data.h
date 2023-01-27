@@ -106,6 +106,7 @@ public:
 
     char *fileName() const;
     Error setFileName(const char *name);
+    Error setFileName(const std::string &name);
 
     ssize_t read(void *buffer, size_t length);
     ssize_t write(const void *buffer, size_t length);

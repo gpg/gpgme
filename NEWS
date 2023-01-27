@@ -42,6 +42,7 @@ Noteworthy changes in version 1.18.1 (unreleased)
  gpgme_op_verify_ext                        NEW.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
+ cpp: Data::setFileName            EXTENDED: New overload
  qt: ListAllKeysJob::Option                 NEW.
  qt: ListAllKeysJob::Options                NEW.
  qt: ListAllKeysJob::setOptions             NEW.
