@@ -1335,6 +1335,9 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     if (flags & Context::Symmetric) {
         result |= GPGME_ENCRYPT_SYMMETRIC;
     }
+    if (flags & Context::EncryptArchive) {
+        result |= GPGME_ENCRYPT_ARCHIVE;
+    }
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
 
@@ -1909,6 +1912,7 @@ std::ostream &operator<<(std::ostream &os, Context::EncryptionFlags flags)
     CHECK(ExpectSign);
     CHECK(NoCompress);
     CHECK(Symmetric);
+    CHECK(EncryptArchive);
 #undef CHECK
     return os << ')';
 }
