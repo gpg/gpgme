@@ -29,6 +29,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
 
  * qt: Allow deferred start of import jobs.  [T6323]
 
+ * qt: Support creating encrypted archives.  [T6342]
+
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
@@ -50,6 +52,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
  qt: Job::startNow                          NEW.
  qt: ImportJob::startLater                  NEW.
  qt: FileListDataProvider                   NEW.
+ qt: EncryptArchiveJob                      NEW.
+ qt: Protocol::encryptArchiveJob            NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)

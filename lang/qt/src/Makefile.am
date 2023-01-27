@@ -34,12 +34,14 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
 qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
+    encryptarchivejob.cpp \
     filelistdataprovider.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
     qgpgmeaddexistingsubkeyjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
     qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
+    qgpgmeencryptarchivejob.cpp \
     qgpgmeencryptjob.cpp qgpgmeexportjob.cpp qgpgmeimportfromkeyserverjob.cpp \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
     listallkeysjob.cpp qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
@@ -71,6 +73,7 @@ qgpgme_headers= \
     decryptjob.h \
     decryptverifyjob.h \
     downloadjob.h \
+    encryptarchivejob.h \
     encryptjob.h \
     exportjob.h \
     filelistdataprovider.h \
@@ -120,6 +123,7 @@ camelcase_headers= \
     DecryptVerifyJob \
     DN \
     DownloadJob \
+    EncryptArchiveJob \
     EncryptJob \
     ExportJob \
     FileListDataProvider \
@@ -156,6 +160,7 @@ camelcase_headers= \
 
 private_qgpgme_headers = \
     changeexpiryjob_p.h \
+    encryptarchivejob_p.h \
     encryptjob_p.h \
     importjob_p.h \
     listallkeysjob_p.h \
@@ -172,6 +177,7 @@ private_qgpgme_headers = \
     qgpgmedecryptverifyjob.h \
     qgpgmedeletejob.h \
     qgpgmedownloadjob.h \
+    qgpgmeencryptarchivejob.h \
     qgpgmeencryptjob.h \
     qgpgmeexportjob.h \
     qgpgmeimportfromkeyserverjob.h \
@@ -209,6 +215,7 @@ qgpgme_moc_sources = \
     decryptverifyjob.moc \
     deletejob.moc \
     downloadjob.moc \
+    encryptarchivejob.moc \
     encryptjob.moc \
     exportjob.moc \
     hierarchicalkeylistjob.moc \
@@ -228,6 +235,7 @@ qgpgme_moc_sources = \
     qgpgmedecryptverifyjob.moc \
     qgpgmedeletejob.moc \
     qgpgmedownloadjob.moc \
+    qgpgmeencryptarchivejob.moc \
     qgpgmeencryptjob.moc \
     qgpgmeexportjob.moc \
     qgpgmeimportfromkeyserverjob.moc \

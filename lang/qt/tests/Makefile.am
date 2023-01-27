@@ -86,6 +86,7 @@ t_wkdlookup_SOURCES = t-wkdlookup.cpp $(support_src)
 t_import_SOURCES = t-import.cpp $(support_src)
 t_revokekey_SOURCES = t-revokekey.cpp $(support_src)
 t_setprimaryuserid_SOURCES = t-setprimaryuserid.cpp $(support_src)
+run_encryptarchivejob_SOURCES = run-encryptarchivejob.cpp
 run_exportjob_SOURCES = run-exportjob.cpp
 run_importjob_SOURCES = run-importjob.cpp
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
@@ -102,6 +103,7 @@ noinst_PROGRAMS = \
 	run-keyformailboxjob t-wkspublish t-verify t-various t-config t-remarks \
 	t-trustsignatures t-changeexpiryjob t-wkdlookup t-import t-revokekey \
 	t-setprimaryuserid \
+	run-encryptarchivejob \
 	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \

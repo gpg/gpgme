@@ -50,6 +50,7 @@ class ImportFromKeyserverJob;
 class ExportJob;
 class DownloadJob;
 class DeleteJob;
+class EncryptArchiveJob;
 class EncryptJob;
 class DecryptJob;
 class SignJob;
@@ -189,6 +190,8 @@ public:
      * OpenPGP key.
      */
     virtual SetPrimaryUserIDJob *setPrimaryUserIDJob() const = 0;
+
+    virtual EncryptArchiveJob *encryptArchiveJob(bool armor = false) const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.
