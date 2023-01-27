@@ -5622,7 +5622,7 @@ The function @code{gpgme_op_decrypt_ext} is the same as
 @code{gpgme_op_decrypt} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
 
-If the flag @code(GPGME_DECRYPT_ARCHIVE) is set, then an encrypted
+If the flag @code{GPGME_DECRYPT_ARCHIVE} is set, then an encrypted
 archive in the data object @var{cipher} is decrypted and extracted.
 The content of the archive is extracted into a directory named
 @code{GPGARCH_n_} (where @code{n} is a number) or into the directory
@@ -5837,7 +5837,7 @@ The function @code{gpgme_op_verify_ext} is the same as
 @code{gpgme_op_verify} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
 
-If the flag @code(GPGME_VERIFY_ARCHIVE) is set, then a signed archive
+If the flag @code{GPGME_VERIFY_ARCHIVE} is set, then a signed archive
 in the data object @var{sig} is verified and extracted. The content of
 the archive is extracted into a directory named @code{GPGARCH_n_}
 (where @code{n} is a number) or into the directory set with
@@ -6331,7 +6331,7 @@ the data object @var{plain} and returns it in the data object
 specified for @var{sig}), the text mode attributes set for the context
 @var{ctx} and the requested signature mode @var{mode}.
 
-If signature mode @code(GPGME_SIG_MODE_ARCHIVE) is requested, then a
+If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested, then a
 signed archive is created from the files and directories given as
 NUL-separated list in the data object @var{plain} and returned in the
 data object @var{sig}.  The paths of the files and directories have to
@@ -6509,7 +6509,7 @@ ciphertext created is determined by the @acronym{ASCII} armor (or, if
 that is not set, by the encoding specified for @var{cipher}) and the
 text mode attributes set for the context @var{ctx}.
 
-If the flag @code(GPGME_ENCRYPT_ARCHIVE) is set, then an encrypted
+If the flag @code{GPGME_ENCRYPT_ARCHIVE} is set, then an encrypted
 archive is created from the files and directories given as NUL-separated
 list in the data object @var{plain} and returned in the data object
 @var{cipher}.  The paths of the files and directories have to
