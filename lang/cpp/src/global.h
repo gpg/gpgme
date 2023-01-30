@@ -74,7 +74,12 @@ enum KeyListMode {
     KeyListModeMask = 0x3ff
 };
 
-enum SignatureMode { NormalSignatureMode, Detached, Clearsigned };
+enum SignatureMode {
+    NormalSignatureMode = 0,
+    Detached = 1,
+    Clearsigned = 2,
+    SignArchive = 4,
+};
 
 enum class RevocationReason {
     Unspecified = 0,

@@ -1278,14 +1278,22 @@ std::vector<Notation> Context::signatureNotations() const
     return result;
 }
 
-static gpgme_sig_mode_t sigmode2sigmode(SignatureMode mode)
+static gpgme_sig_mode_t sigflags2sigflags(SignatureMode flags)
 {
-    switch (mode) {
-    default:
-    case NormalSignatureMode: return GPGME_SIG_MODE_NORMAL;
-    case Detached:            return GPGME_SIG_MODE_DETACH;
-    case Clearsigned:         return GPGME_SIG_MODE_CLEAR;
+    unsigned int result = 0;
+    if (flags & SignatureMode::NormalSignatureMode) {
+        result |= GPGME_SIG_MODE_NORMAL;
     }
+    if (flags & SignatureMode::Detached) {
+        result |= GPGME_SIG_MODE_DETACH;
+    }
+    if (flags & SignatureMode::Clearsigned) {
+        result |= GPGME_SIG_MODE_CLEAR;
+    }
+    if (flags & SignatureMode::SignArchive) {
+        result |= GPGME_SIG_MODE_ARCHIVE;
+    }
+    return static_cast<gpgme_sig_mode_t>(result);
 }
 
 SigningResult Context::sign(const Data &plainText, Data &signature, SignatureMode mode)
@@ -1293,7 +1301,7 @@ SigningResult Context::sign(const Data &plainText, Data &signature, SignatureMod
     d->lastop = Private::Sign;
     const Data::Private *const pdp = plainText.impl();
     Data::Private *const sdp = signature.impl();
-    d->lasterr = gpgme_op_sign(d->ctx, pdp ? pdp->data : nullptr, sdp ? sdp->data : nullptr, sigmode2sigmode(mode));
+    d->lasterr = gpgme_op_sign(d->ctx, pdp ? pdp->data : nullptr, sdp ? sdp->data : nullptr, sigflags2sigflags(mode));
     return SigningResult(d->ctx, Error(d->lasterr));
 }
 
@@ -1302,7 +1310,7 @@ Error Context::startSigning(const Data &plainText, Data &signature, SignatureMod
     d->lastop = Private::Sign;
     const Data::Private *const pdp = plainText.impl();
     Data::Private *const sdp = signature.impl();
-    return Error(d->lasterr = gpgme_op_sign_start(d->ctx, pdp ? pdp->data : nullptr, sdp ? sdp->data : nullptr, sigmode2sigmode(mode)));
+    return Error(d->lasterr = gpgme_op_sign_start(d->ctx, pdp ? pdp->data : nullptr, sdp ? sdp->data : nullptr, sigflags2sigflags(mode)));
 }
 
 SigningResult Context::signingResult() const
@@ -1889,16 +1897,12 @@ std::ostream &operator<<(std::ostream &os, KeyListMode mode)
 std::ostream &operator<<(std::ostream &os, SignatureMode mode)
 {
     os << "GpgME::SignatureMode(";
-    switch (mode) {
-#define CHECK( x ) case x: os << #x; break
+#define CHECK( x ) if ( !(mode & (x)) ) {} else do { os << #x " "; } while (0)
         CHECK(NormalSignatureMode);
         CHECK(Detached);
         CHECK(Clearsigned);
+        CHECK(SignArchive);
 #undef CHECK
-    default:
-        os << "???" "(" << static_cast<int>(mode) << ')';
-        break;
-    }
     return os << ')';
 }
 
