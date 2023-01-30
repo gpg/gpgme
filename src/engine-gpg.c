@@ -3580,7 +3580,7 @@ gpg_tofu_policy (void *engine, gpgme_key_t key, gpgme_tofu_policy_t policy)
 
 static gpgme_error_t
 gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
-	  gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	  gpgme_sig_mode_t flags, int use_armor, int use_textmode,
 	  int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   engine_gpg_t gpg = engine;
@@ -3588,17 +3588,21 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   (void)include_certs;
 
-  gpg->flags.use_gpgtar = mode == GPGME_SIG_MODE_ARCHIVE;
+  if ((flags != GPGME_SIG_MODE_NORMAL) && (flags != GPGME_SIG_MODE_DETACH)
+      && (flags != GPGME_SIG_MODE_CLEAR) && (flags != GPGME_SIG_MODE_ARCHIVE))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  gpg->flags.use_gpgtar = !!(flags & GPGME_SIG_MODE_ARCHIVE);
 
   if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  if (mode == GPGME_SIG_MODE_CLEAR)
+  if (flags & GPGME_SIG_MODE_CLEAR)
     err = add_arg (gpg, "--clearsign");
   else
     {
       err = add_arg (gpg, "--sign");
-      if (!err && mode == GPGME_SIG_MODE_DETACH)
+      if (!err && (flags & GPGME_SIG_MODE_DETACH))
 	err = add_arg (gpg, "--detach");
       if (!err && use_armor)
 	err = add_gpg_arg (gpg, "--armor");

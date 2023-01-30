@@ -431,7 +431,7 @@ _gpgme_op_sign_init_result (gpgme_ctx_t ctx)
 
 static gpgme_error_t
 sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
-	    gpgme_data_t sig, gpgme_sig_mode_t mode)
+	    gpgme_data_t sig, gpgme_sig_mode_t flags)
 {
   gpgme_error_t err;
 
@@ -446,8 +446,9 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
   if (err)
     return err;
 
-  if (mode != GPGME_SIG_MODE_NORMAL && mode != GPGME_SIG_MODE_DETACH
-      && mode != GPGME_SIG_MODE_CLEAR && mode != GPGME_SIG_MODE_ARCHIVE)
+  if (flags & ~(GPGME_SIG_MODE_DETACH
+                |GPGME_SIG_MODE_CLEAR
+                |GPGME_SIG_MODE_ARCHIVE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!plain)
@@ -466,7 +467,7 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
   _gpgme_engine_set_status_handler (ctx->engine, sign_status_handler,
 				    ctx);
 
-  return _gpgme_engine_op_sign (ctx->engine, plain, sig, mode, ctx->use_armor,
+  return _gpgme_engine_op_sign (ctx->engine, plain, sig, flags, ctx->use_armor,
 				ctx->use_textmode, ctx->include_certs,
 				ctx /* FIXME */);
 }
@@ -475,16 +476,16 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
 gpgme_error_t
 gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
-		     gpgme_sig_mode_t mode)
+		     gpgme_sig_mode_t flags)
 {
   gpg_error_t err;
   TRACE_BEG  (DEBUG_CTX, "gpgme_op_sign_start", ctx,
-	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+	      "plain=%p, sig=%p, flags=%i", plain, sig, flags);
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = sign_start (ctx, 0, plain, sig, mode);
+  err = sign_start (ctx, 0, plain, sig, flags);
   return TRACE_ERR (err);
 }
 
@@ -492,17 +493,17 @@ gpgme_op_sign_start (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
 gpgme_error_t
 gpgme_op_sign (gpgme_ctx_t ctx, gpgme_data_t plain, gpgme_data_t sig,
-	       gpgme_sig_mode_t mode)
+	       gpgme_sig_mode_t flags)
 {
   gpgme_error_t err;
 
   TRACE_BEG  (DEBUG_CTX, "gpgme_op_sign", ctx,
-	      "plain=%p, sig=%p, mode=%i", plain, sig, mode);
+	      "plain=%p, sig=%p, flags=%i", plain, sig, flags);
 
   if (!ctx)
     return TRACE_ERR (gpg_error (GPG_ERR_INV_VALUE));
 
-  err = sign_start (ctx, 1, plain, sig, mode);
+  err = sign_start (ctx, 1, plain, sig, flags);
   if (!err)
     err = _gpgme_wait_one (ctx);
   return TRACE_ERR (err);

@@ -2043,7 +2043,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 static gpgme_error_t
 gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
-	    gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	    gpgme_sig_mode_t flags, int use_armor, int use_textmode,
 	    int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   engine_gpgsm_t gpgsm = engine;
@@ -2055,6 +2055,9 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   (void)use_textmode;
 
   if (!gpgsm)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (flags & (GPGME_SIG_MODE_CLEAR | GPGME_SIG_MODE_ARCHIVE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: This does not work as RESET does not reset it so we can't
@@ -2105,7 +2108,7 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
   gpgsm->inline_data = NULL;
 
-  err = start (gpgsm, mode == GPGME_SIG_MODE_DETACH
+  err = start (gpgsm, (flags & GPGME_SIG_MODE_DETACH)
 	       ? "SIGN --detached" : "SIGN");
   return err;
 }

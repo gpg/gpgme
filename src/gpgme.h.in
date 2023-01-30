@@ -303,13 +303,13 @@ typedef enum
 gpgme_hash_algo_t;
 
 
-/* The available signature modes.  */
+/* The available signature mode flags.  */
 typedef enum
   {
     GPGME_SIG_MODE_NORMAL = 0,
     GPGME_SIG_MODE_DETACH = 1,
     GPGME_SIG_MODE_CLEAR  = 2,
-    GPGME_SIG_MODE_ARCHIVE = 3
+    GPGME_SIG_MODE_ARCHIVE = 4
   }
 gpgme_sig_mode_t;
 
@@ -1522,10 +1522,10 @@ gpgme_sign_result_t gpgme_op_sign_result (gpgme_ctx_t ctx);
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
 gpgme_error_t gpgme_op_sign_start (gpgme_ctx_t ctx,
 				   gpgme_data_t plain, gpgme_data_t sig,
-				   gpgme_sig_mode_t mode);
+				   gpgme_sig_mode_t flags);
 gpgme_error_t gpgme_op_sign (gpgme_ctx_t ctx,
 			     gpgme_data_t plain, gpgme_data_t sig,
-			     gpgme_sig_mode_t mode);
+			     gpgme_sig_mode_t flags);
 
 
 /*

@@ -1214,7 +1214,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 
 static gpgme_error_t
 uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
-	       gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	       gpgme_sig_mode_t flags, int use_armor, int use_textmode,
 	       int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   engine_uiserver_t uiserver = engine;
@@ -1237,8 +1237,11 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
+  if (flags & (GPGME_SIG_MODE_CLEAR | GPGME_SIG_MODE_ARCHIVE))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   if (gpgrt_asprintf (&cmd, "SIGN%s%s", protocol,
-		(mode == GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
+		(flags & GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
     return gpg_error_from_syserror ();
 
   key = gpgme_signers_enum (ctx, 0);
