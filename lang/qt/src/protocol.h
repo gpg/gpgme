@@ -53,6 +53,7 @@ class DeleteJob;
 class EncryptArchiveJob;
 class EncryptJob;
 class DecryptJob;
+class SignArchiveJob;
 class SignJob;
 class SignKeyJob;
 class VerifyDetachedJob;
@@ -192,6 +193,7 @@ public:
     virtual SetPrimaryUserIDJob *setPrimaryUserIDJob() const = 0;
 
     virtual EncryptArchiveJob *encryptArchiveJob(bool armor = false) const = 0;
+    virtual SignArchiveJob *signArchiveJob(bool armor = false) const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

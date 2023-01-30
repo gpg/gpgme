@@ -48,6 +48,7 @@
 #include "qgpgmesignencryptjob.h"
 #include "qgpgmeencryptarchivejob.h"
 #include "qgpgmeencryptjob.h"
+#include "qgpgmesignarchivejob.h"
 #include "qgpgmesignjob.h"
 #include "qgpgmesignkeyjob.h"
 #include "qgpgmeexportjob.h"
@@ -516,6 +517,18 @@ public:
         if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
             context->setArmor(armor);
             return new QGpgME::QGpgMEEncryptArchiveJob{context};
+        }
+        return nullptr;
+    }
+
+    QGpgME::SignArchiveJob *signArchiveJob(bool armor) const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
+            context->setArmor(armor);
+            return new QGpgME::QGpgMESignArchiveJob{context};
         }
         return nullptr;
     }

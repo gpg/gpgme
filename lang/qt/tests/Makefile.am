@@ -92,6 +92,7 @@ run_importjob_SOURCES = run-importjob.cpp
 run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 run_receivekeysjob_SOURCES = run-receivekeysjob.cpp
 run_refreshkeysjob_SOURCES = run-refreshkeysjob.cpp
+run_signarchivejob_SOURCES = run-signarchivejob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
@@ -104,7 +105,9 @@ noinst_PROGRAMS = \
 	t-trustsignatures t-changeexpiryjob t-wkdlookup t-import t-revokekey \
 	t-setprimaryuserid \
 	run-encryptarchivejob \
-	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob
+	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob \
+	run-signarchivejob
+
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	gpg-agent.conf pubring.kbx~ S.gpg-agent gpg.conf pubring.gpg~ \
