@@ -217,6 +217,11 @@ GpgME::Error GpgME::Data::setFileName(const char *name)
     return Error(gpgme_data_set_file_name(d->data, name));
 }
 
+GpgME::Error GpgME::Data::setFileName(const std::string &name)
+{
+    return Error(gpgme_data_set_file_name(d->data, name.c_str()));
+}
+
 ssize_t GpgME::Data::read(void *buffer, size_t length)
 {
     return gpgme_data_read(d->data, buffer, length);

@@ -199,6 +199,7 @@ GpgME::SignatureMode GpgME::CreatedSignature::mode() const
     case GPGME_SIG_MODE_NORMAL: return NormalSignatureMode;
     case GPGME_SIG_MODE_DETACH: return Detached;
     case GPGME_SIG_MODE_CLEAR:  return Clearsigned;
+    case GPGME_SIG_MODE_ARCHIVE: return SignArchive; // cannot happen
     }
 }
 

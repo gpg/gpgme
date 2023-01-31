@@ -449,6 +449,7 @@ public:
         ThrowKeyIds = 64,
         EncryptWrap = 128,
         WantAddress = 256,
+        EncryptArchive = 512
     };
     EncryptionResult encrypt(const std::vector<Key> &recipients, const Data &plainText, Data &cipherText, EncryptionFlags flags);
     GpgME::Error encryptSymmetrically(const Data &plainText, Data &cipherText);

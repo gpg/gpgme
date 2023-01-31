@@ -283,5 +283,7 @@ EXPORTS
     gpgme_op_receive_keys                 @209
     gpgme_op_receive_keys_start           @210
 
+    gpgme_op_verify_ext                   @211
+    gpgme_op_verify_ext_start             @212
 ; END
 

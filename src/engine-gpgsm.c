@@ -1469,6 +1469,9 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   if (!recp && !recpstring) /* Symmetric only */
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
+  if (flags & GPGME_ENCRYPT_ARCHIVE)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
   if ((flags & GPGME_ENCRYPT_NO_ENCRYPT_TO))
     {
       err = gpgsm_assuan_simple_command (gpgsm,
@@ -2040,7 +2043,7 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
 
 static gpgme_error_t
 gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
-	    gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	    gpgme_sig_mode_t flags, int use_armor, int use_textmode,
 	    int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   engine_gpgsm_t gpgsm = engine;
@@ -2052,6 +2055,9 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   (void)use_textmode;
 
   if (!gpgsm)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (flags & (GPGME_SIG_MODE_CLEAR | GPGME_SIG_MODE_ARCHIVE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: This does not work as RESET does not reset it so we can't
@@ -2102,15 +2108,16 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   gpgsm_clear_fd (gpgsm, MESSAGE_FD);
   gpgsm->inline_data = NULL;
 
-  err = start (gpgsm, mode == GPGME_SIG_MODE_DETACH
+  err = start (gpgsm, (flags & GPGME_SIG_MODE_DETACH)
 	       ? "SIGN --detached" : "SIGN");
   return err;
 }
 
 
 static gpgme_error_t
-gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-	      gpgme_data_t plaintext, gpgme_ctx_t ctx)
+gpgsm_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
+              gpgme_data_t signed_text, gpgme_data_t plaintext,
+              gpgme_ctx_t ctx)
 {
   engine_gpgsm_t gpgsm = engine;
   gpgme_error_t err;
@@ -2119,6 +2126,9 @@ gpgsm_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (flags & GPGME_VERIFY_ARCHIVE)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   gpgsm->input_cb.data = sig;
   err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));

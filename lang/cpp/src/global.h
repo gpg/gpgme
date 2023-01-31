@@ -74,7 +74,12 @@ enum KeyListMode {
     KeyListModeMask = 0x3ff
 };
 
-enum SignatureMode { NormalSignatureMode, Detached, Clearsigned };
+enum SignatureMode {
+    NormalSignatureMode = 0,
+    Detached = 1,
+    Clearsigned = 2,
+    SignArchive = 4,
+};
 
 enum class RevocationReason {
     Unspecified = 0,
@@ -103,7 +108,7 @@ homedir, sysconfdir, bindir, libexecdir, libdir,
 datadir, localedir, agent-socket, agent-ssh-socket,
 dirmngr-socket, uiserver-socket, gpgconf-name, gpg-name,
 gpgsm-name, g13-name, keyboxd-name, agent-name, scdaemon-name,
-dirmngr-name, pinentry-name, socketdir.
+dirmngr-name, pinentry-name, socketdir, gpg-wks-client-name, gpgtar-name.
 
 This may be extended in the future.
 */

@@ -303,12 +303,13 @@ typedef enum
 gpgme_hash_algo_t;
 
 
-/* The available signature modes.  */
+/* The available signature mode flags.  */
 typedef enum
   {
     GPGME_SIG_MODE_NORMAL = 0,
     GPGME_SIG_MODE_DETACH = 1,
-    GPGME_SIG_MODE_CLEAR  = 2
+    GPGME_SIG_MODE_CLEAR  = 2,
+    GPGME_SIG_MODE_ARCHIVE = 4
   }
 gpgme_sig_mode_t;
 
@@ -1299,7 +1300,8 @@ typedef enum
     GPGME_ENCRYPT_SYMMETRIC = 32,
     GPGME_ENCRYPT_THROW_KEYIDS = 64,
     GPGME_ENCRYPT_WRAP = 128,
-    GPGME_ENCRYPT_WANT_ADDRESS = 256
+    GPGME_ENCRYPT_WANT_ADDRESS = 256,
+    GPGME_ENCRYPT_ARCHIVE = 512
   }
 gpgme_encrypt_flags_t;
 
@@ -1424,6 +1426,7 @@ gpgme_decrypt_result_t gpgme_op_decrypt_result (gpgme_ctx_t ctx);
 typedef enum
   {
     GPGME_DECRYPT_VERIFY = 1,
+    GPGME_DECRYPT_ARCHIVE = 2,
     GPGME_DECRYPT_UNWRAP = 128
   }
 gpgme_decrypt_flags_t;
@@ -1519,10 +1522,10 @@ gpgme_sign_result_t gpgme_op_sign_result (gpgme_ctx_t ctx);
 /* Sign the plaintext PLAIN and store the signature in SIG.  */
 gpgme_error_t gpgme_op_sign_start (gpgme_ctx_t ctx,
 				   gpgme_data_t plain, gpgme_data_t sig,
-				   gpgme_sig_mode_t mode);
+				   gpgme_sig_mode_t flags);
 gpgme_error_t gpgme_op_sign (gpgme_ctx_t ctx,
 			     gpgme_data_t plain, gpgme_data_t sig,
-			     gpgme_sig_mode_t mode);
+			     gpgme_sig_mode_t flags);
 
 
 /*
@@ -1631,6 +1634,13 @@ typedef struct _gpgme_op_verify_result *gpgme_verify_result_t;
 /* Retrieve a pointer to the result of the verify operation.  */
 gpgme_verify_result_t gpgme_op_verify_result (gpgme_ctx_t ctx);
 
+/* The valid verify flags.  */
+typedef enum
+  {
+    GPGME_VERIFY_ARCHIVE = 1
+  }
+gpgme_verify_flags_t;
+
 /* Verify within CTX that SIG is a valid signature for TEXT.  */
 gpgme_error_t gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 				     gpgme_data_t signed_text,
@@ -1638,6 +1648,16 @@ gpgme_error_t gpgme_op_verify_start (gpgme_ctx_t ctx, gpgme_data_t sig,
 gpgme_error_t gpgme_op_verify (gpgme_ctx_t ctx, gpgme_data_t sig,
 			       gpgme_data_t signed_text,
 			       gpgme_data_t plaintext);
+gpgme_error_t gpgme_op_verify_ext_start (gpgme_ctx_t ctx,
+                                         gpgme_verify_flags_t flags,
+                                         gpgme_data_t sig,
+                                         gpgme_data_t signed_text,
+                                         gpgme_data_t plaintext);
+gpgme_error_t gpgme_op_verify_ext (gpgme_ctx_t ctx,
+                                   gpgme_verify_flags_t flags,
+                                   gpgme_data_t sig,
+                                   gpgme_data_t signed_text,
+                                   gpgme_data_t plaintext);
 
 
 /*

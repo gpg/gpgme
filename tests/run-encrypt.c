@@ -77,14 +77,39 @@ progress_cb (void *opaque, const char *what, int type, int current, int total)
 
 
 static void
-print_result (gpgme_encrypt_result_t result)
+print_encrypt_result (gpgme_encrypt_result_t result)
 {
   gpgme_invalid_key_t invkey;
 
+  printf ("\nEncryption results\n");
   for (invkey = result->invalid_recipients; invkey; invkey = invkey->next)
     printf ("Encryption key `%s' not used: %s <%s>\n",
             nonnull (invkey->fpr),
             gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
+}
+
+
+static void
+print_sign_result (gpgme_sign_result_t result)
+{
+  gpgme_invalid_key_t invkey;
+  gpgme_new_signature_t sig;
+
+  printf ("\nSigning results\n");
+  for (invkey = result->invalid_signers; invkey; invkey = invkey->next)
+    printf ("Signing key `%s' not used: %s <%s>\n",
+            nonnull (invkey->fpr),
+            gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
+
+  for (sig = result->signatures; sig; sig = sig->next)
+    {
+      printf ("Key fingerprint: %s\n", nonnull (sig->fpr));
+      printf ("Signature type : %d\n", sig->type);
+      printf ("Public key algo: %d\n", sig->pubkey_algo);
+      printf ("Hash algo .....: %d\n", sig->hash_algo);
+      printf ("Creation time .: %ld\n", sig->timestamp);
+      printf ("Sig class .....: 0x%u\n", sig->sig_class);
+    }
 }
 
 
@@ -95,6 +120,7 @@ show_usage (int ex)
   fputs ("usage: " PGM " [options] FILE\n\n"
          "Options:\n"
          "  --verbose          run in verbose mode\n"
+         "  --sign             sign data before encryption\n"
          "  --status           print status lines from the backend\n"
          "  --progress         print progress info\n"
          "  --openpgp          use the OpenPGP protocol (default)\n"
@@ -107,6 +133,9 @@ show_usage (int ex)
          "  --no-symkey-cache  disable the use of that cache\n"
          "  --wrap             assume input is valid OpenPGP message\n"
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
+         "  --archive          encrypt given file or directory into an archive\n"
+         "  --directory DIR    switch to directory DIR before encrypting into an archive\n"
+         "  --diagnostics      print diagnostics\n"
          , stderr);
   exit (ex);
 }
@@ -120,7 +149,8 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_data_t in, out;
-  gpgme_encrypt_result_t result;
+  gpgme_encrypt_result_t encrypt_result;
+  gpgme_sign_result_t sign_result;
   int print_status = 0;
   int print_progress = 0;
   int use_loopback = 0;
@@ -128,10 +158,13 @@ main (int argc, char **argv)
   gpgme_key_t keys[10+1];
   int keycount = 0;
   char *keystring = NULL;
+  const char *directory = NULL;
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
   int no_symkey_cache = 0;
+  int diagnostics = 0;
+  int sign = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -152,6 +185,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--verbose"))
         {
           verbose = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--sign"))
+        {
+          sign = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--status"))
@@ -225,6 +263,24 @@ main (int argc, char **argv)
           no_symkey_cache = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--archive"))
+        {
+          flags |= GPGME_ENCRYPT_ARCHIVE;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--directory"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          directory = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--diagnostics"))
+        {
+          diagnostics = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -269,57 +325,100 @@ main (int argc, char **argv)
     }
   keys[i] = NULL;
 
-  err = gpgme_data_new_from_file (&in, *argv, 1);
-  if (err)
+  if (flags & GPGME_ENCRYPT_ARCHIVE)
     {
-      fprintf (stderr, PGM ": error reading `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
+      const char *path = *argv;
+      err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);
+      fail_if_err (err);
+      if (directory)
+        {
+          err = gpgme_data_set_file_name (in, directory);
+          fail_if_err (err);
+        }
     }
-  offset = gpgme_data_seek (in, 0, SEEK_END);
-  if (offset == (gpgme_off_t)(-1))
+  else
     {
-      err = gpg_error_from_syserror ();
-      fprintf (stderr, PGM ": error seeking `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
-    }
-  if (gpgme_data_seek (in, 0, SEEK_SET) == (gpgme_off_t)(-1))
-    {
-      err = gpg_error_from_syserror ();
-      fprintf (stderr, PGM ": error seeking `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
-    }
-  {
-    char numbuf[50];
-    char *p;
+      err = gpgme_data_new_from_file (&in, *argv, 1);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error reading `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      offset = gpgme_data_seek (in, 0, SEEK_END);
+      if (offset == (gpgme_off_t)(-1))
+        {
+          err = gpg_error_from_syserror ();
+          fprintf (stderr, PGM ": error seeking `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      if (gpgme_data_seek (in, 0, SEEK_SET) == (gpgme_off_t)(-1))
+        {
+          err = gpg_error_from_syserror ();
+          fprintf (stderr, PGM ": error seeking `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
+      {
+        char numbuf[50];
+        char *p;
 
-    p = numbuf + sizeof numbuf;
-    *--p = 0;
-    do
-      {
-        *--p = '0' + (offset % 10);
-        offset /= 10;
+        p = numbuf + sizeof numbuf;
+        *--p = 0;
+        do
+          {
+            *--p = '0' + (offset % 10);
+            offset /= 10;
+          }
+        while (offset);
+        err = gpgme_data_set_flag (in, "size-hint", p);
+        if (err)
+          {
+            fprintf (stderr, PGM ": error setting size-hint for `%s': %s\n",
+                    *argv, gpg_strerror (err));
+            exit (1);
+          }
       }
-    while (offset);
-    err = gpgme_data_set_flag (in, "size-hint", p);
-    if (err)
-      {
-        fprintf (stderr, PGM ": error setting size-hint for `%s': %s\n",
-                 *argv, gpg_strerror (err));
-        exit (1);
-      }
-  }
+    }
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
-  err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
-                              flags, in, out);
-  result = gpgme_op_encrypt_result (ctx);
-  if (result)
-    print_result (result);
+  if (sign)
+    err = gpgme_op_encrypt_sign_ext (ctx, keycount ? keys : NULL, keystring,
+                                     flags, in, out);
+  else
+    err = gpgme_op_encrypt_ext (ctx, keycount ? keys : NULL, keystring,
+                                flags, in, out);
+
+  if (diagnostics)
+    {
+      gpgme_data_t diag;
+      gpgme_error_t diag_err;
+
+      gpgme_data_new (&diag);
+      diag_err = gpgme_op_getauditlog (ctx, diag, GPGME_AUDITLOG_DIAG);
+      if (diag_err)
+        {
+          fprintf (stderr, PGM ": getting diagnostics failed: %s\n",
+                   gpgme_strerror (diag_err));
+        }
+      else
+        {
+          fputs ("Begin Diagnostics:\n", stdout);
+          print_data (diag);
+          fputs ("End Diagnostics.\n", stdout);
+        }
+      gpgme_data_release (diag);
+    }
+
+  sign_result = gpgme_op_sign_result (ctx);
+  if (sign_result)
+    print_sign_result (sign_result);
+  encrypt_result = gpgme_op_encrypt_result (ctx);
+  if (encrypt_result)
+    print_encrypt_result (encrypt_result);
   if (err)
     {
       fprintf (stderr, PGM ": encrypting failed: %s\n", gpg_strerror (err));

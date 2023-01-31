@@ -87,6 +87,9 @@ show_usage (int ex)
          "  --sender MBOX    use MBOX as sender address\n"
          "  --include-key-block  use this option with gpg\n"
          "  --clear          create a clear text signature\n"
+         "  --archive        create a signed archive with the given file or directory\n"
+         "  --directory DIR  switch to directory DIR before creating the archive\n"
+         "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
 }
@@ -99,6 +102,7 @@ main (int argc, char **argv)
   gpgme_error_t err;
   gpgme_ctx_t ctx;
   const char *key_string = NULL;
+  const char *directory = NULL;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_sig_mode_t sigmode = GPGME_SIG_MODE_NORMAL;
   gpgme_data_t in, out;
@@ -106,6 +110,7 @@ main (int argc, char **argv)
   int print_status = 0;
   int use_loopback = 0;
   int include_key_block = 0;
+  int diagnostics = 0;
   const char *sender = NULL;
   const char *s;
 
@@ -178,6 +183,24 @@ main (int argc, char **argv)
           sigmode = GPGME_SIG_MODE_CLEAR;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--archive"))
+        {
+          sigmode = GPGME_SIG_MODE_ARCHIVE;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--directory"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          directory = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--diagnostics"))
+        {
+          diagnostics = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -236,12 +259,26 @@ main (int argc, char **argv)
         }
     }
 
-  err = gpgme_data_new_from_file (&in, *argv, 1);
-  if (err)
+  if (sigmode == GPGME_SIG_MODE_ARCHIVE)
     {
-      fprintf (stderr, PGM ": error reading `%s': %s\n",
-               *argv, gpg_strerror (err));
-      exit (1);
+      const char *path = *argv;
+      err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);
+      fail_if_err (err);
+      if (directory)
+        {
+          err = gpgme_data_set_file_name (in, directory);
+          fail_if_err (err);
+        }
+    }
+  else
+    {
+      err = gpgme_data_new_from_file (&in, *argv, 1);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error reading `%s': %s\n",
+                  *argv, gpg_strerror (err));
+          exit (1);
+        }
     }
 
   err = gpgme_data_new (&out);
@@ -249,6 +286,28 @@ main (int argc, char **argv)
 
   err = gpgme_op_sign (ctx, in, out, sigmode);
   result = gpgme_op_sign_result (ctx);
+
+  if (diagnostics)
+    {
+      gpgme_data_t diag;
+      gpgme_error_t diag_err;
+
+      gpgme_data_new (&diag);
+      diag_err = gpgme_op_getauditlog (ctx, diag, GPGME_AUDITLOG_DIAG);
+      if (diag_err)
+        {
+          fprintf (stderr, PGM ": getting diagnostics failed: %s\n",
+                   gpgme_strerror (diag_err));
+        }
+      else
+        {
+          fputs ("Begin Diagnostics:\n", stdout);
+          print_data (diag);
+          fputs ("End Diagnostics.\n", stdout);
+        }
+      gpgme_data_release (diag);
+    }
+
   if (result)
     print_result (result, sigmode);
   if (err)

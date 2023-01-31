@@ -5,6 +5,15 @@ Noteworthy changes in version 1.18.1 (unreleased)
 
  * Optionally, build QGpgME for Qt 6
 
+ * Support component "gpgtar-name" in gpgme_get_dirinfo.  [T6342]
+
+ * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and
+   gpgme_op_sign* to allow creating an encrypted and/or signed
+   archive.  [T6342]
+
+ * Extended gpgme_op_decrypt*, gpgme_op_decrypt_verify*, and gpgme_op_verify*
+   to allow extracting an encrypted and/or signed archive.  [T6342]
+
  * cpp: Handle error when trying to sign expired keys.  [T6155]
 
  * cpp: Support encryption flags ThrowKeyIds, EncryptWrap, and WantAddress.
@@ -23,19 +32,32 @@ Noteworthy changes in version 1.18.1 (unreleased)
 
  * qt: Allow deferred start of import jobs.  [T6323]
 
+ * qt: Support creating encrypted archives.  [T6342]
+
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_get_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
  gpgme_set_ctx_flag                EXTENDED: New flag 'no-auto-check-trustdb'.
+ GPGME_DECRYPT_ARCHIVE                      NEW.
+ GPGME_ENCRYPT_ARCHIVE                      NEW.
+ GPGME_SIG_MODE_ARCHIVE                     NEW.
+ GPGME_VERIFY_ARCHIVE                       NEW.
+ gpgme_verify_flags_t                       NEW.
+ gpgme_op_verify_ext_start                  NEW.
+ gpgme_op_verify_ext                        NEW.
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
  cpp: Context::WantAddress                  NEW.
+ cpp: Data::setFileName            EXTENDED: New overload
  qt: ListAllKeysJob::Option                 NEW.
  qt: ListAllKeysJob::Options                NEW.
  qt: ListAllKeysJob::setOptions             NEW.
  qt: ListAllKeysJob::options                NEW.
  qt: Job::startNow                          NEW.
  qt: ImportJob::startLater                  NEW.
+ qt: FileListDataProvider                   NEW.
+ qt: EncryptArchiveJob                      NEW.
+ qt: Protocol::encryptArchiveJob            NEW.
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)

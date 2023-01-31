@@ -912,7 +912,7 @@ _gpgme_engine_op_keylist_data (engine_t engine, gpgme_keylist_mode_t mode,
 
 gpgme_error_t
 _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in, gpgme_data_t out,
-		       gpgme_sig_mode_t mode, int use_armor,
+		       gpgme_sig_mode_t flags, int use_armor,
 		       int use_textmode, int include_certs,
 		       gpgme_ctx_t ctx /* FIXME */)
 {
@@ -922,7 +922,7 @@ _gpgme_engine_op_sign (engine_t engine, gpgme_data_t in, gpgme_data_t out,
   if (!engine->ops->sign)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->sign) (engine->engine, in, out, mode, use_armor,
+  return (*engine->ops->sign) (engine->engine, in, out, flags, use_armor,
 			       use_textmode, include_certs, ctx);
 }
 
@@ -940,9 +940,9 @@ _gpgme_engine_op_trustlist (engine_t engine, const char *pattern)
 
 
 gpgme_error_t
-_gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
-			 gpgme_data_t signed_text, gpgme_data_t plaintext,
-                         gpgme_ctx_t ctx)
+_gpgme_engine_op_verify (engine_t engine, gpgme_verify_flags_t flags,
+                         gpgme_data_t sig, gpgme_data_t signed_text,
+                         gpgme_data_t plaintext, gpgme_ctx_t ctx)
 {
   if (!engine)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -950,8 +950,8 @@ _gpgme_engine_op_verify (engine_t engine, gpgme_data_t sig,
   if (!engine->ops->verify)
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
-  return (*engine->ops->verify) (engine->engine, sig, signed_text, plaintext,
-                                 ctx);
+  return (*engine->ops->verify) (engine->engine, flags, sig, signed_text,
+                                 plaintext, ctx);
 }
 
 

@@ -1145,6 +1145,9 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
+  if (flags & GPGME_ENCRYPT_ARCHIVE)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
   if (flags & GPGME_ENCRYPT_PREPARE)
     {
       if (!recp || plain || ciph)
@@ -1211,7 +1214,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 
 static gpgme_error_t
 uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
-	       gpgme_sig_mode_t mode, int use_armor, int use_textmode,
+	       gpgme_sig_mode_t flags, int use_armor, int use_textmode,
 	       int include_certs, gpgme_ctx_t ctx /* FIXME */)
 {
   engine_uiserver_t uiserver = engine;
@@ -1234,8 +1237,11 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
+  if (flags & (GPGME_SIG_MODE_CLEAR | GPGME_SIG_MODE_ARCHIVE))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
   if (gpgrt_asprintf (&cmd, "SIGN%s%s", protocol,
-		(mode == GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
+		(flags & GPGME_SIG_MODE_DETACH) ? " --detached" : "") < 0)
     return gpg_error_from_syserror ();
 
   key = gpgme_signers_enum (ctx, 0);
@@ -1291,8 +1297,9 @@ uiserver_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
 /* FIXME: Missing a way to specify --silent.  */
 static gpgme_error_t
-uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
-                 gpgme_data_t plaintext, gpgme_ctx_t ctx)
+uiserver_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
+                 gpgme_data_t signed_text, gpgme_data_t plaintext,
+                 gpgme_ctx_t ctx)
 {
   engine_uiserver_t uiserver = engine;
   gpgme_error_t err;
@@ -1312,6 +1319,9 @@ uiserver_verify (void *engine, gpgme_data_t sig, gpgme_data_t signed_text,
     protocol = " --protocol=CMS";
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
+
+  if (flags & GPGME_VERIFY_ARCHIVE)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if (gpgrt_asprintf (&cmd, "VERIFY%s", protocol) < 0)
     return gpg_error_from_syserror ();

@@ -34,11 +34,14 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
 qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
+    encryptarchivejob.cpp \
+    filelistdataprovider.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
     qgpgmeaddexistingsubkeyjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
     qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
+    qgpgmeencryptarchivejob.cpp \
     qgpgmeencryptjob.cpp qgpgmeexportjob.cpp qgpgmeimportfromkeyserverjob.cpp \
     qgpgmeimportjob.cpp qgpgmekeygenerationjob.cpp qgpgmekeylistjob.cpp \
     listallkeysjob.cpp qgpgmelistallkeysjob.cpp qgpgmenewcryptoconfig.cpp \
@@ -46,6 +49,7 @@ qgpgme_sources = \
     qgpgmerefreshsmimekeysjob.cpp \
     qgpgmerevokekeyjob.cpp \
     qgpgmesetprimaryuseridjob.cpp \
+    qgpgmesignarchivejob.cpp \
     qgpgmesignencryptjob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp qgpgmewkdlookupjob.cpp threadedjobmixin.cpp \
@@ -53,6 +57,7 @@ qgpgme_sources = \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     qgpgmegpgcardjob.cpp changeexpiryjob.cpp encryptjob.cpp importjob.cpp \
+    signarchivejob.cpp \
     signencryptjob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
     util.cpp
@@ -70,8 +75,10 @@ qgpgme_headers= \
     decryptjob.h \
     decryptverifyjob.h \
     downloadjob.h \
+    encryptarchivejob.h \
     encryptjob.h \
     exportjob.h \
+    filelistdataprovider.h \
     hierarchicalkeylistjob.h \
     job.h \
     keyformailboxjob.h \
@@ -84,6 +91,7 @@ qgpgme_headers= \
     revokekeyjob.h \
     setprimaryuseridjob.h \
     specialjob.h \
+    signarchivejob.h \
     signjob.h \
     signkeyjob.h \
     signencryptjob.h \
@@ -118,8 +126,10 @@ camelcase_headers= \
     DecryptVerifyJob \
     DN \
     DownloadJob \
+    EncryptArchiveJob \
     EncryptJob \
     ExportJob \
+    FileListDataProvider \
     HierarchicalKeyKistJob \
     Job \
     MultiDeleteJob \
@@ -130,6 +140,7 @@ camelcase_headers= \
     RevokeKeyJob \
     SetPrimaryUserIDJob \
     SpecialJob \
+    SignArchiveJob \
     SignJob \
     SignKeyJob \
     SignEncryptJob \
@@ -153,6 +164,7 @@ camelcase_headers= \
 
 private_qgpgme_headers = \
     changeexpiryjob_p.h \
+    encryptarchivejob_p.h \
     encryptjob_p.h \
     importjob_p.h \
     listallkeysjob_p.h \
@@ -169,6 +181,7 @@ private_qgpgme_headers = \
     qgpgmedecryptverifyjob.h \
     qgpgmedeletejob.h \
     qgpgmedownloadjob.h \
+    qgpgmeencryptarchivejob.h \
     qgpgmeencryptjob.h \
     qgpgmeexportjob.h \
     qgpgmeimportfromkeyserverjob.h \
@@ -180,6 +193,7 @@ private_qgpgme_headers = \
     qgpgmerefreshsmimekeysjob.h \
     qgpgmerevokekeyjob.h \
     qgpgmesetprimaryuseridjob.h \
+    qgpgmesignarchivejob.h \
     qgpgmesignencryptjob.h \
     qgpgmesignjob.h \
     qgpgmesignkeyjob.h \
@@ -191,6 +205,7 @@ private_qgpgme_headers = \
     qgpgmetofupolicyjob.h \
     qgpgmegpgcardjob.h \
     qgpgmequickjob.h \
+    signarchivejob_p.h \
     signencryptjob_p.h \
     threadedjobmixin.h \
     util.h
@@ -206,6 +221,7 @@ qgpgme_moc_sources = \
     decryptverifyjob.moc \
     deletejob.moc \
     downloadjob.moc \
+    encryptarchivejob.moc \
     encryptjob.moc \
     exportjob.moc \
     hierarchicalkeylistjob.moc \
@@ -225,6 +241,7 @@ qgpgme_moc_sources = \
     qgpgmedecryptverifyjob.moc \
     qgpgmedeletejob.moc \
     qgpgmedownloadjob.moc \
+    qgpgmeencryptarchivejob.moc \
     qgpgmeencryptjob.moc \
     qgpgmeexportjob.moc \
     qgpgmeimportfromkeyserverjob.moc \
@@ -236,6 +253,7 @@ qgpgme_moc_sources = \
     qgpgmerefreshsmimekeysjob.moc \
     qgpgmerevokekeyjob.moc \
     qgpgmesetprimaryuseridjob.moc \
+    qgpgmesignarchivejob.moc \
     qgpgmesignencryptjob.moc \
     qgpgmesignjob.moc \
     qgpgmesignkeyjob.moc \
@@ -249,6 +267,7 @@ qgpgme_moc_sources = \
     refreshkeysjob.moc \
     revokekeyjob.moc \
     setprimaryuseridjob.moc \
+    signarchivejob.moc \
     signencryptjob.moc \
     signjob.moc \
     signkeyjob.moc \

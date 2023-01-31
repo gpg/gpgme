@@ -235,6 +235,9 @@ show_usage (int ex)
          "  --repeat N       repeat the operation N times\n"
          "  --auto-key-retrieve\n"
          "  --auto-key-import\n"
+         "  --archive        extract files from a signed archive FILE\n"
+         "  --directory DIR  extract the files into the directory DIR\n"
+         "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
 }
@@ -246,10 +249,13 @@ main (int argc, char **argv)
   int last_argc = -1;
   const char *s;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
+  gpgme_verify_flags_t flags = 0;
   int print_status = 0;
   const char *sender = NULL;
+  const char *directory = NULL;
   int auto_key_retrieve = 0;
   int auto_key_import = 0;
+  int diagnostics = 0;
   int repeats = 1;
   int i;
 
@@ -312,12 +318,30 @@ main (int argc, char **argv)
           auto_key_import = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--archive"))
+        {
+          flags |= GPGME_VERIFY_ARCHIVE;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--directory"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          directory = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--diagnostics"))
+        {
+          diagnostics = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
     }
 
-  if (argc < 1 || argc > 2)
+  if (argc < 1 || argc > 2 || (argc > 1 && (flags & GPGME_VERIFY_ARCHIVE)))
     show_usage (1);
 
   init_gpgme (protocol);
@@ -330,6 +354,7 @@ main (int argc, char **argv)
       gpgme_data_t sig = NULL;
       FILE *fp_msg = NULL;
       gpgme_data_t msg = NULL;
+      gpgme_data_t out = NULL;
       gpgme_verify_result_t result;
 
       if (repeats > 1)
@@ -415,8 +440,48 @@ main (int argc, char **argv)
             }
         }
 
-      err = gpgme_op_verify (ctx, sig, msg, NULL);
+      if (directory && (flags & GPGME_VERIFY_ARCHIVE))
+        {
+          err = gpgme_data_new (&out);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error allocating data object: %s\n",
+                      gpgme_strerror (err));
+              exit (1);
+            }
+          err = gpgme_data_set_file_name (out, directory);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error setting file name (out): %s\n",
+                      gpgme_strerror (err));
+              exit (1);
+            }
+        }
+
+      err = gpgme_op_verify_ext (ctx, flags, sig, msg, out);
       result = gpgme_op_verify_result (ctx);
+
+      if (diagnostics)
+        {
+          gpgme_data_t diag;
+          gpgme_error_t diag_err;
+
+          gpgme_data_new (&diag);
+          diag_err = gpgme_op_getauditlog (ctx, diag, GPGME_AUDITLOG_DIAG);
+          if (diag_err)
+            {
+              fprintf (stderr, PGM ": getting diagnostics failed: %s\n",
+                      gpgme_strerror (diag_err));
+            }
+          else
+            {
+              fputs ("Begin Diagnostics:\n", stdout);
+              print_data (diag);
+              fputs ("End Diagnostics.\n", stdout);
+            }
+          gpgme_data_release (diag);
+        }
+
       if (result)
         print_result (result);
       if (err)
@@ -425,6 +490,7 @@ main (int argc, char **argv)
           exit (1);
         }
 
+      gpgme_data_release (out);
       gpgme_data_release (msg);
       gpgme_data_release (sig);
 

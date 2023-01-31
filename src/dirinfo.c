@@ -59,6 +59,7 @@ enum
     WANT_DIRMNGR_NAME,
     WANT_PINENTRY_NAME,
     WANT_GPG_WKS_CLIENT_NAME,
+    WANT_GPGTAR_NAME,
     WANT_GPG_ONE_MODE
   };
 
@@ -88,6 +89,7 @@ static struct {
   char *dirmngr_name;
   char *pinentry_name;
   char *gpg_wks_client_name;
+  char *gpgtar_name;
   int  gpg_one_mode;  /* System is in gpg1 mode.  */
 } dirinfo;
 
@@ -407,6 +409,14 @@ get_gpgconf_item (int what)
                                                         NULL);
       result = dirinfo.gpg_wks_client_name;
       break;
+    case WANT_GPGTAR_NAME:
+      if (!dirinfo.gpgtar_name && dirinfo.bindir)
+        dirinfo.gpgtar_name = _gpgme_strconcat (dirinfo.bindir,
+                                                "/",
+                                                "gpgtar",
+                                                NULL);
+      result = dirinfo.gpgtar_name;
+      break;
     }
   UNLOCK (dirinfo_lock);
   return result;
@@ -453,6 +463,13 @@ const char *
 _gpgme_get_default_gpgconf_name (void)
 {
   return get_gpgconf_item (WANT_GPGCONF_NAME);
+}
+
+/* Return the default gpgtar file name.  Returns NULL if not known.  */
+const char *
+_gpgme_get_default_gpgtar_name (void)
+{
+  return get_gpgconf_item (WANT_GPGTAR_NAME);
 }
 
 /* Return the default UI-server socket name.  Returns NULL if not
@@ -524,6 +541,8 @@ gpgme_get_dirinfo (const char *what)
     return get_gpgconf_item (WANT_PINENTRY_NAME);
   else if (!strcmp (what, "gpg-wks-client-name"))
     return get_gpgconf_item (WANT_GPG_WKS_CLIENT_NAME);
+  else if (!strcmp (what, "gpgtar-name"))
+    return get_gpgconf_item (WANT_GPGTAR_NAME);
   else if (!strcmp (what, "agent-ssh-socket"))
     return get_gpgconf_item (WANT_AGENT_SSH_SOCKET);
   else if (!strcmp (what, "dirmngr-socket"))

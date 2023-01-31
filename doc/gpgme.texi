@@ -981,6 +981,9 @@ Return the name of the directory with GnuPG shared data.
 @item localedir
 Return the name of the directory with GnuPG locale data.
 
+@item socketdir
+Return the name of the directory with the following sockets.
+
 @item agent-socket
 Return the name of the socket to connect to the gpg-agent.
 
@@ -1023,6 +1026,9 @@ Return the name of the pinentry program.
 
 @item gpg-wks-client-name
 Return the name of the Web Key Service tool.
+
+@item gpgtar-name
+Return the name of the gpgtar program.
 
 @end table
 
@@ -2193,6 +2199,11 @@ associated with the data object.  The file name will be stored in the
 output when encrypting or signing the data and will be returned to the
 user when decrypting or verifying the output data.
 
+If a signed or encrypted archive is created, then the file name will be
+interpreted as the base directory for the relative paths of the files and
+directories to put into the archive.  This corresponds to the --directory
+option of gpgtar.
+
 The function returns the error code @code{GPG_ERR_INV_VALUE} if
 @var{dh} is not a valid pointer and @code{GPG_ERR_ENOMEM} if not
 enough memory is available.
@@ -3161,8 +3172,8 @@ The string given in @var{value} is passed to the GnuPG engine to override
 the session key for decryption.  The format of that session key is
 specific to GnuPG and can be retrieved during a decrypt operation when
 the context flag "export-session-key" is enabled.  Please be aware that
-using this feature with GnuPG < 2.1.16 will leak the session key on
-many platforms via ps(1).
+using this feature with GnuPG < 2.1.16 or when decrypting an archive
+will leak the session key on many platforms via ps(1).
 
 @item "auto-key-retrieve"
 Setting the @var{value} to "1" asks the backend to automatically
@@ -5611,6 +5622,12 @@ The function @code{gpgme_op_decrypt_ext} is the same as
 @code{gpgme_op_decrypt} but has an additional argument
 @var{flags}.  If @var{flags} is 0 both function behave identically.
 
+If the flag @code{GPGME_DECRYPT_ARCHIVE} is set, then an encrypted
+archive in the data object @var{cipher} is decrypted and extracted.
+The content of the archive is extracted into a directory named
+@code{GPGARCH_n_} (where @code{n} is a number) or into the directory
+set with @code{gpgme_data_set_file_name} for the data object @var{plain}.
+
 The value in @var{flags} is a bitwise-or combination of one or
 multiple of the following bit values:
 
@@ -5620,6 +5637,14 @@ multiple of the following bit values:
 
 The @code{GPGME_DECRYPT_VERIFY} symbol specifies that this function
 shall exactly act as @code{gpgme_op_decrypt_verify}.
+
+@item GPGME_DECRYPT_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_DECRYPT_ARCHIVE} symbol specifies that the input is an
+encrypted archive that shall be decrypted and extracted.  This feature
+is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
 
 @item GPGME_DECRYPT_UNWRAP
 @since{1.8.0}
@@ -5799,6 +5824,61 @@ operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
 @code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does not contain
 any data to verify.
 @end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_verify_ext ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_verify_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{sig}}, @
+            @w{gpgme_data_t @var{signed_text}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_verify_ext} is the same as
+@code{gpgme_op_verify} but has an additional argument
+@var{flags}.  If @var{flags} is 0 both function behave identically.
+
+If the flag @code{GPGME_VERIFY_ARCHIVE} is set, then a signed archive
+in the data object @var{sig} is verified and extracted. The content of
+the archive is extracted into a directory named @code{GPGARCH_n_}
+(where @code{n} is a number) or into the directory set with
+@code{gpgme_data_set_file_name} for the data object @var{plain}.
+
+The value in @var{flags} is a bitwise-or combination of one or
+multiple of the following bit values:
+
+@table @code
+@item GPGME_VERIFY_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_VERIFY_ARCHIVE} symbol specifies that the input is a
+signed archive that shall be verified and extracted.  This feature
+is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
+
+@end table
+
+The function returns the error codes as descriped for
+@code{gpgme_op_decrypt} respective @code{gpgme_op_encrypt}.
+@end deftypefun
+
+@deftypefun gpgme_error_t gpgme_op_verify_ext_start ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_verify_flags_t @var{flags}}, @
+            @w{gpgme_data_t @var{sig}}, @
+            @w{gpgme_data_t @var{signed_text}}, @
+            @w{gpgme_data_t @var{plain}})
+
+The function @code{gpgme_op_verify_ext_start} initiates a
+@code{gpgme_op_verify_ext} operation.  It can be completed by calling
+@code{gpgme_wait} on the context.  @xref{Waiting For Completion}.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
+@var{ctx}, @var{sig} or @var{plain} is not a valid pointer, and
+@code{GPG_ERR_NO_DATA} if @var{sig} or @var{plain} does not contain
+any data to verify.
+@end deftypefun
+
 
 @deftp {Data type} {gpgme_sig_notation_t}
 This is a pointer to a structure used to store a part of the result of
@@ -6232,6 +6312,14 @@ A detached signature is made.
 @item GPGME_SIG_MODE_CLEAR
 A clear text signature is made.  The @acronym{ASCII} armor and text
 mode settings of the context are ignored.
+
+@item GPGME_SIG_MODE_ARCHIVE
+@since{1.19.0}
+
+A signed archive is created from the given files and directories.  This
+feature is currently only supported for the OpenPGP crypto engine and requires
+GnuPG 2.4.1.
+
 @end table
 @end deftp
 
@@ -6242,6 +6330,13 @@ the data object @var{plain} and returns it in the data object
 @acronym{ASCII} armor (or, if that is not set, by the encoding
 specified for @var{sig}), the text mode attributes set for the context
 @var{ctx} and the requested signature mode @var{mode}.
+
+If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested, then a
+signed archive is created from the files and directories given as
+NUL-separated list in the data object @var{plain} and returned in the
+data object @var{sig}.  The paths of the files and directories have to
+be given as paths relative to the current working directory or relative
+to the base directory set with @code{gpgme_data_set_file_name}.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_sign_result}.
@@ -6414,6 +6509,13 @@ ciphertext created is determined by the @acronym{ASCII} armor (or, if
 that is not set, by the encoding specified for @var{cipher}) and the
 text mode attributes set for the context @var{ctx}.
 
+If the flag @code{GPGME_ENCRYPT_ARCHIVE} is set, then an encrypted
+archive is created from the files and directories given as NUL-separated
+list in the data object @var{plain} and returned in the data object
+@var{cipher}.  The paths of the files and directories have to
+be given as paths relative to the current working directory or relative
+to the base directory set with @code{gpgme_data_set_file_name}.
+
 @var{recp} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
 call (but see @code{gpgme_op_encrypt_start} for the requirements with
@@ -6488,6 +6590,14 @@ address part of the key specification is conveyed to the backend.  As
 of now the key must be specified using the @var{recpstring} argument
 of the extended encrypt functions.  This feature is currently only
 supported for the OpenPGP crypto engine.
+
+@item GPGME_ENCRYPT_ARCHIVE
+@since{1.19.0}
+
+The @code{GPGME_ENCRYPT_ARCHIVE} symbol specifies that the input is a
+NUL-separated list of file paths and directory paths that shall be
+encrypted into an archive.  This feature is currently only supported
+for the OpenPGP crypto engine and requires GnuPG 2.4.1.
 
 @end table
 
