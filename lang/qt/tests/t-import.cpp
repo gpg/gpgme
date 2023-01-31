@@ -48,6 +48,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <memory>
+
 using namespace QGpgME;
 using namespace GpgME;
 
@@ -111,7 +113,7 @@ private Q_SLOTS:
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         QVERIFY(spy.wait());
 
-        auto ctx = Context::createForProtocol(GpgME::OpenPGP);
+        auto ctx = std::unique_ptr<GpgME::Context>(Context::createForProtocol(GpgME::OpenPGP));
         GpgME::Error err;
         const auto key = ctx->key(keyFpr, err, false);
         QVERIFY(!key.isNull());
@@ -155,7 +157,7 @@ private Q_SLOTS:
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         QVERIFY(spy.wait());
 
-        auto ctx = Context::createForProtocol(GpgME::OpenPGP);
+        auto ctx = std::unique_ptr<GpgME::Context>(Context::createForProtocol(GpgME::OpenPGP));
         GpgME::Error err;
         const auto key = ctx->key(keyFpr, err, false);
         QVERIFY(!key.isNull());
@@ -194,7 +196,7 @@ private Q_SLOTS:
         QSignalSpy spy (this, SIGNAL(asyncDone()));
         QVERIFY(spy.wait());
 
-        auto ctx = Context::createForProtocol(GpgME::OpenPGP);
+        auto ctx = std::unique_ptr<GpgME::Context>(Context::createForProtocol(GpgME::OpenPGP));
         GpgME::Error err;
         const auto key = ctx->key(keyFpr, err, false);
         QVERIFY(!key.isNull());
