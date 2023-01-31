@@ -54,6 +54,7 @@ class EncryptArchiveJob;
 class EncryptJob;
 class DecryptJob;
 class SignArchiveJob;
+class SignEncryptArchiveJob;
 class SignJob;
 class SignKeyJob;
 class VerifyDetachedJob;
@@ -194,6 +195,7 @@ public:
 
     virtual EncryptArchiveJob *encryptArchiveJob(bool armor = false) const = 0;
     virtual SignArchiveJob *signArchiveJob(bool armor = false) const = 0;
+    virtual SignEncryptArchiveJob *signEncryptArchiveJob(bool armor = false) const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.

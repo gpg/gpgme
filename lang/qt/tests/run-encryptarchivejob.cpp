@@ -36,6 +36,7 @@
 
 #include <protocol.h>
 #include <encryptarchivejob.h>
+#include <signencryptarchivejob.h>
 
 #include <QCommandLineParser>
 #include <QCoreApplication>
@@ -44,8 +45,8 @@
 
 #include <context.h>
 #include <encryptionresult.h>
+#include <signingresult.h>
 
-#include <algorithm>
 #include <iostream>
 
 using namespace GpgME;
@@ -55,20 +56,9 @@ std::ostream &operator<<(std::ostream &os, const QString &s)
     return os << s.toLocal8Bit().constData();
 }
 
-const char *displayName(Protocol protocol)
-{
-    switch (protocol) {
-    case GpgME::OpenPGP:
-        return "OpenPGP";
-    case GpgME::CMS:
-        return "S/MIME";
-    default:
-        return "Unknown protocol";
-    }
-}
-
 struct CommandLineOptions {
-    bool armor;
+    bool armor = false;
+    bool sign = false;
     QString archiveName;
     QString baseDirectory;
     std::vector<QString> filesAndDirectories;
@@ -79,9 +69,10 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     CommandLineOptions options;
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("Test program for EncryptArchiveJob");
+    parser.setApplicationDescription("Test program for EncryptArchiveJob and SignEncryptArchiveJob");
     parser.addHelpOption();
     parser.addOptions({
+        {{"s", "sign"}, "Sign archive before encryption."},
         {{"o", "output"}, "Write output to FILE.", "FILE"},
         {{"a", "armor"}, "Create ASCII armored output."},
         {{"C", "directory"}, "Change to DIRECTORY before creating the archive.", "DIRECTORY"},
@@ -96,6 +87,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     }
 
     options.armor = parser.isSet("armor");
+    options.sign = parser.isSet("sign");
     options.archiveName = parser.value("output");
     options.baseDirectory = parser.value("directory");
     std::copy(args.begin(), args.end(), std::back_inserter(options.filesAndDirectories));
@@ -136,22 +128,43 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    auto job = QGpgME::openpgp()->encryptArchiveJob(options.armor);
-    if (!job) {
-        std::cerr << "Error: Could not create job" << std::endl;
-        return 1;
-    }
-    job->setBaseDirectory(options.baseDirectory);
-    QObject::connect(job, &QGpgME::EncryptArchiveJob::result, &app, [](const GpgME::EncryptionResult &result, const QString &auditLog, const GpgME::Error &) {
-        std::cerr << "Diagnostics: " << auditLog << std::endl;
-        std::cerr << "Result: " << result << std::endl;
-        qApp->quit();
-    });
+    if (options.sign) {
+        auto job = QGpgME::openpgp()->signEncryptArchiveJob(options.armor);
+        if (!job) {
+            std::cerr << "Error: Could not create job" << std::endl;
+            return 1;
+        }
+        job->setBaseDirectory(options.baseDirectory);
+        QObject::connect(job, &QGpgME::SignEncryptArchiveJob::result, &app, [](const GpgME::SigningResult &signingResult, const GpgME::EncryptionResult &encryptionResult, const QString &auditLog, const GpgME::Error &) {
+            std::cerr << "Diagnostics: " << auditLog << std::endl;
+            std::cerr << "Signing Result: " << signingResult << std::endl;
+            std::cerr << "Encryption Result: " << encryptionResult << std::endl;
+            qApp->quit();
+        });
 
-    const auto err = job->start({}, options.filesAndDirectories, output, GpgME::Context::None);
-    if (err) {
-        std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
-        return 1;
+        const auto err = job->start({}, {}, options.filesAndDirectories, output, GpgME::Context::None);
+        if (err) {
+            std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
+            return 1;
+        }
+    } else {
+        auto job = QGpgME::openpgp()->encryptArchiveJob(options.armor);
+        if (!job) {
+            std::cerr << "Error: Could not create job" << std::endl;
+            return 1;
+        }
+        job->setBaseDirectory(options.baseDirectory);
+        QObject::connect(job, &QGpgME::EncryptArchiveJob::result, &app, [](const GpgME::EncryptionResult &result, const QString &auditLog, const GpgME::Error &) {
+            std::cerr << "Diagnostics: " << auditLog << std::endl;
+            std::cerr << "Result: " << result << std::endl;
+            qApp->quit();
+        });
+
+        const auto err = job->start({}, options.filesAndDirectories, output, GpgME::Context::None);
+        if (err) {
+            std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
+            return 1;
+        }
     }
 
     return app.exec();
