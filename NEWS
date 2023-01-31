@@ -1,6 +1,8 @@
 Noteworthy changes in version 1.19.0 (unreleased)
 -------------------------------------------------
 
+ * New convenience option --identify for gpgme-json.
+
  * New context flag "no-auto-check-trustdb".  [T6261]
 
  * Optionally, build QGpgME for Qt 6
@@ -431,7 +433,7 @@ Noteworthy changes in version 1.13.0 (2019-03-26)
 
  * Several fixes to the Common Lisp bindings.
 
- * Fixed minor bugs in gpgme-json.  [#4331,#4341,#4342,#4343
+ * Fixed minor bugs in gpgme-json.  [#4331,#4341,#4342,#4343]
 
  * Require trace level 8 to dump all I/O data.
 

@@ -3064,6 +3064,59 @@ leave:
 
 
 
+static const char *
+data_type_to_string (gpgme_data_type_t dt)
+{
+  const char *s = "[?]";
+
+  switch (dt)
+    {
+    case GPGME_DATA_TYPE_INVALID      : s = "invalid"; break;
+    case GPGME_DATA_TYPE_UNKNOWN      : s = "unknown"; break;
+    case GPGME_DATA_TYPE_PGP_SIGNED   : s = "PGP-signed"; break;
+    case GPGME_DATA_TYPE_PGP_SIGNATURE: s = "PGP-signature"; break;
+    case GPGME_DATA_TYPE_PGP_ENCRYPTED: s = "PGP-encrypted"; break;
+    case GPGME_DATA_TYPE_PGP_OTHER    : s = "PGP"; break;
+    case GPGME_DATA_TYPE_PGP_KEY      : s = "PGP-key"; break;
+    case GPGME_DATA_TYPE_CMS_SIGNED   : s = "CMS-signed"; break;
+    case GPGME_DATA_TYPE_CMS_ENCRYPTED: s = "CMS-encrypted"; break;
+    case GPGME_DATA_TYPE_CMS_OTHER    : s = "CMS"; break;
+    case GPGME_DATA_TYPE_X509_CERT    : s = "X.509"; break;
+    case GPGME_DATA_TYPE_PKCS12       : s = "PKCS12"; break;
+    }
+  return s;
+}
+
+
+static const char hlp_identify[] =
+  "op:     \"identify\"\n"
+  "data:   The data to identify.\n"
+  "\n"
+  "Optional boolean flags (default is false):\n"
+  "base64: Input data is base64 encoded.\n"
+  "\n"
+  "Response:\n"
+  "result: A string describing the object.\n";
+static gpg_error_t
+op_identify (cjson_t request, cjson_t result)
+{
+  gpg_error_t err;
+  gpgme_data_t input = NULL;
+  gpgme_data_type_t dt;
+
+  if ((err = get_string_data (request, result, "data", &input)))
+    goto leave;
+
+  dt = gpgme_data_identify (input, 0);
+  xjson_AddStringToObject (result, "result", data_type_to_string (dt));
+
+ leave:
+  gpgme_data_release (input);
+  return err;
+}
+
+
+
 static const char hlp_getmore[] =
   "op:     \"getmore\"\n"
   "\n"
@@ -3163,6 +3216,7 @@ static const char hlp_help[] =
   "  keylist     List keys.\n"
   "  sign        Sign data.\n"
   "  verify      Verify data.\n"
+  "  identify    Identify the type of the data\n"
   "  version     Get engine information.\n"
   "  getmore     Retrieve remaining data if chunksize was used.\n"
   "  help        Help overview.\n"
@@ -3218,6 +3272,7 @@ process_request (const char *request)
     { "createkey",  op_createkey,  hlp_createkey },
     { "keylist",    op_keylist,    hlp_keylist },
     { "import",     op_import,     hlp_import },
+    { "identify",   op_identify,   hlp_identify },
     { "sign",       op_sign,       hlp_sign },
     { "verify",     op_verify,     hlp_verify },
     { "version",    op_version,    hlp_version },
@@ -3787,6 +3842,64 @@ native_messaging_repl (void)
 }
 
 
+/* Run the --identify command.   */
+static gpg_error_t
+cmd_identify (const char *fname)
+{
+  gpg_error_t err;
+  estream_t fp;
+  gpgme_data_t data;
+  gpgme_data_type_t dt;
+
+  if (fname)
+    {
+      fp = es_fopen (fname, "rb");
+      if (!fp)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
+          return err;
+        }
+      err = gpgme_data_new_from_estream (&data, fp);
+    }
+  else
+    {
+      char *buffer;
+      int n;
+
+      fp = NULL;
+      es_set_binary (es_stdin);
+
+      /* Urgs: gpgme_data_identify does a seek and that fails for stdin.  */
+      buffer = xmalloc (2048+1);
+      n = es_fread (buffer, 1, 2048, es_stdin);
+      if (n < 0 || es_ferror (es_stdin))
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error reading '%s': %s\n", "[stdin]", gpg_strerror (err));
+          xfree (buffer);
+          return err;
+        }
+      buffer[n] = 0;
+      err = gpgme_data_new_from_mem (&data, buffer, n, 1);
+      xfree (buffer);
+    }
+
+  if (err)
+    {
+      log_error ("error creating data object: %s\n", gpg_strerror (err));
+      return err;
+    }
+
+  dt = gpgme_data_identify (data, 0);
+  if (dt == GPGME_DATA_TYPE_INVALID)
+    log_error ("error identifying data\n");
+  printf ("%s\n", data_type_to_string (dt));
+  gpgme_data_release (data);
+  es_fclose (fp);
+  return 0;
+}
+
 
 static const char *
 my_strusage( int level )
@@ -3822,6 +3935,7 @@ main (int argc, char *argv[])
          CMD_INTERACTIVE = 'i',
          CMD_SINGLE      = 's',
          CMD_LIBVERSION  = 501,
+         CMD_IDENTIFY
   } cmd = CMD_DEFAULT;
   enum {
     OPT_DEBUG = 600
@@ -3830,13 +3944,13 @@ main (int argc, char *argv[])
   static gpgrt_opt_t opts[] = {
     ARGPARSE_c  (CMD_INTERACTIVE, "interactive", "Interactive REPL"),
     ARGPARSE_c  (CMD_SINGLE,      "single",      "Single request mode"),
+    ARGPARSE_c  (CMD_IDENTIFY,    "identify",    "Identify the input"),
     ARGPARSE_c  (CMD_LIBVERSION,  "lib-version", "Show library version"),
     ARGPARSE_s_n(OPT_DEBUG,       "debug",       "Flyswatter"),
 
     ARGPARSE_end()
   };
   gpgrt_argparse_t pargs = { &argc, &argv};
-
   int log_file_set = 0;
 
   gpgrt_set_strusage (my_strusage);
@@ -3860,6 +3974,7 @@ main (int argc, char *argv[])
           opt_interactive = 1;
           /*FALLTHROUGH*/
         case CMD_SINGLE:
+        case CMD_IDENTIFY:
         case CMD_LIBVERSION:
           cmd = pargs.r_opt;
           break;
@@ -3920,6 +4035,16 @@ main (int argc, char *argv[])
 
     case CMD_INTERACTIVE:
       interactive_repl ();
+      break;
+
+    case CMD_IDENTIFY:
+      if (argc > 1)
+        {
+          log_error ("usage: %s --identify [filename|-]\n",
+                     gpgrt_strusage (11));
+          exit (1);
+        }
+      cmd_identify (argc && strcmp (*argv, "-")? *argv : NULL);
       break;
 
     case CMD_LIBVERSION:
