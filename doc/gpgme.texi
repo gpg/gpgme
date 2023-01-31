@@ -2367,7 +2367,7 @@ The data is a PKCS#12 message.  This is commonly used to exchange
 private keys for X.509.
 @end table
 
-@deftypefun gpgme_data_type_t gpgme_data_identify (@w{gpgme_data_t @var{dh}})
+@deftypefun gpgme_data_type_t gpgme_data_identify (@w{gpgme_data_t @var{dh}, int @var{reserved}})
 @since{1.4.3}
 
 The function @code{gpgme_data_identify} returns the type of the data
@@ -2377,6 +2377,7 @@ identification, the function returns zero
 object has been created the identification may not be possible or the
 data object may change its internal state (file pointer moved).  For
 file or memory based data object, the state should not change.
+@var{reserved} should be zero.
 @end deftypefun
 
 
