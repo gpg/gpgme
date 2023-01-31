@@ -133,9 +133,4 @@ GpgME::Error QGpgMESignArchiveJob::start(const std::vector<GpgME::Key> &signers,
     return {};
 }
 
-void QGpgMESignArchiveJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
-}
-
 #include "qgpgmesignarchivejob.moc"

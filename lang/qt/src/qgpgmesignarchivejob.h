@@ -39,7 +39,6 @@
 #include "threadedjobmixin.h"
 
 #include <signingresult.h>
-#include <key.h>
 
 namespace QGpgME
 {
@@ -63,12 +62,6 @@ public:
     GpgME::Error start(const std::vector<GpgME::Key> &signers,
                        const std::vector<QString> &paths,
                        const std::shared_ptr<QIODevice> &output) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::SigningResult mResult;
 };
 
 }

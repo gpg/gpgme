@@ -39,7 +39,6 @@
 #include "threadedjobmixin.h"
 
 #include <encryptionresult.h>
-#include <key.h>
 
 namespace QGpgME
 {
@@ -64,17 +63,6 @@ public:
                        const std::vector<QString> &paths,
                        const std::shared_ptr<QIODevice> &cipherText,
                        const GpgME::Context::EncryptionFlags flags) override;
-
-    // GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
-    //                              const std::vector<QString> &paths,
-    //                              const std::shared_ptr<QIODevice> &cipherText,
-    //                              const GpgME::Context::EncryptionFlags flags) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::EncryptionResult mResult;
 };
 
 }

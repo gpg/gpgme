@@ -44,14 +44,7 @@
 #include "encryptarchivejob_p.h"
 #include "filelistdataprovider.h"
 
-// #include <context.h>
 #include <data.h>
-// #include <encryptionresult.h>
-//
-// #include <QBuffer>
-// #include <QFileInfo>
-//
-// #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -133,20 +126,6 @@ GpgME::Error QGpgMEEncryptArchiveJob::start(const std::vector<GpgME::Key> &recip
                   baseDirectory()),
         cipherText);
     return {};
-}
-
-// EncryptionResult QGpgMEEncryptArchiveJob::exec(const std::vector<Key> &recipients, const QByteArray &plainText,
-//                                         const Context::EncryptionFlags eflags, QByteArray &cipherText)
-// {
-//     const result_type r = encrypt_qba(context(), recipients, plainText, eflags, mOutputIsBase64Encoded, fileName());
-//     cipherText = std::get<1>(r);
-//     resultHook(r);
-//     return mResult;
-// }
-
-void QGpgMEEncryptArchiveJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
 }
 
 #include "qgpgmeencryptarchivejob.moc"
