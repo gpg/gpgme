@@ -1906,10 +1906,18 @@ std::ostream &operator<<(std::ostream &os, KeyListMode mode)
 std::ostream &operator<<(std::ostream &os, SignatureMode mode)
 {
     os << "GpgME::SignatureMode(";
-#define CHECK( x ) if ( !(mode & (x)) ) {} else do { os << #x " "; } while (0)
+#undef CHECK
+    switch (mode & (NormalSignatureMode|Detached|Clearsigned)) {
+#define CHECK( x ) case x: os << #x; break
         CHECK(NormalSignatureMode);
         CHECK(Detached);
         CHECK(Clearsigned);
+#undef CHECK
+    default:
+        os << "???" "(" << static_cast<int>(mode) << ')';
+        break;
+    }
+#define CHECK( x ) if ( !(mode & (x)) ) {} else do { os << #x " "; } while (0)
         CHECK(SignArchive);
 #undef CHECK
     return os << ')';
