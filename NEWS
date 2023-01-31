@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.18.1 (unreleased)
+Noteworthy changes in version 1.19.0 (unreleased)
 -------------------------------------------------
 
  * New context flag "no-auto-check-trustdb".  [T6261]
@@ -58,6 +58,8 @@ Noteworthy changes in version 1.18.1 (unreleased)
  qt: FileListDataProvider                   NEW.
  qt: EncryptArchiveJob                      NEW.
  qt: Protocol::encryptArchiveJob            NEW.
+
+ Release-info: https://dev.gnupg.org/T6341
 
 
 Noteworthy changes in version 1.18.0 (2022-08-10)
