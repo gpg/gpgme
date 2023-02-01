@@ -69,6 +69,76 @@ public:
             }
         }
 
+        bool operator < (const Version& other) const
+        {
+            if (major > other.major ||
+                (major == other.major && minor > other.minor) ||
+                (major == other.major && minor == other.minor && patch > other.patch) ||
+                (major >= other.major && minor >= other.minor && patch >= other.patch)) {
+                return false;
+            }
+            return true;
+        }
+
+        bool operator < (const char* other) const
+        {
+            return operator<(Version(other));
+        }
+
+        bool operator <= (const Version &other) const
+        {
+            return !operator>(other);
+        }
+
+        bool operator <= (const char *other) const
+        {
+            return operator<=(Version(other));
+        }
+
+        bool operator > (const char* other) const
+        {
+            return operator>(Version(other));
+        }
+
+        bool operator > (const Version & other) const
+        {
+            return !operator<(other) && !operator==(other);
+        }
+
+        bool operator >= (const Version &other) const
+        {
+            return !operator<(other);
+        }
+
+        bool operator >= (const char *other) const
+        {
+            return operator>=(Version(other));
+        }
+
+        bool operator == (const Version& other) const
+        {
+            return major == other.major
+                && minor == other.minor
+                && patch == other.patch;
+        }
+
+        bool operator == (const char* other) const
+        {
+            return operator==(Version(other));
+        }
+
+        bool operator != (const Version &other) const
+        {
+            return !operator==(other);
+        }
+
+        bool operator != (const char *other) const
+        {
+            return operator!=(Version(other));
+        }
+
+        // the non-const overloads of the comparison operators are kept for
+        // binary compatibility
         bool operator < (const Version& other)
         {
             if (major > other.major ||
