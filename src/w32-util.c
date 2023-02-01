@@ -83,9 +83,15 @@
 # define GNUPG_REGKEY_3  "Software\\GnuPG"
 #endif
 
+/* Installation type constants.  */
+#define INST_TYPE_GPG4WIN  1
+#define INST_TYPE_GPGDESK  2
+
 /* Relative name parts for different installation types.  */
 #define INST_TYPE_GPG4WIN_DIR "\\..\\..\\GnuPG\\bin"
 #define INST_TYPE_GPGDESK_DIR "\\..\\GnuPG\\bin"
+
+
 
 
 DEFINE_STATIC_LOCK (get_path_lock);
@@ -544,8 +550,8 @@ _gpgme_set_override_inst_dir (const char *dir)
 /* Used by gpgme_set_global_flag to set the installation type.
  * VALUE is a string interpreted as integer with this meaning:
  *   0 = standard
- *   1 = Gpg4win 4 style
- *   2 = GnuPG (VS-)Desktop style
+ *   1 = Gpg4win 4 style (INST_TYPE_GPG4WIN)
+ *   2 = GnuPG (VS-)Desktop style (INST_TYPE_GPGDESK)
  * If VALUE is NULL, nothing is changed.  The return value is the
  * previous value.
  */
@@ -612,6 +618,33 @@ _gpgme_get_gpg_path (void)
 }
 
 
+/* Helper for _gpgme_get_gpgconf_path.  */
+static char *
+find_version_file (const char *inst_dir)
+{
+  char *fname;
+
+  fname = _gpgme_strconcat (inst_dir, "\\..\\", "VERSION.sig", NULL);
+  if (fname && !_gpgme_access (fname, F_OK))
+    {
+      fname[strlen(fname)-4] = 0;
+      if (!_gpgme_access (fname, F_OK))
+        return fname;
+    }
+  free (fname);
+  /* Check the case that a binary in gnupg/bin uses libgpgme.  */
+  fname = _gpgme_strconcat (inst_dir, "\\..\\..\\", "VERSION.sig", NULL);
+  if (fname && !_gpgme_access (fname, F_OK))
+    {
+      fname[strlen(fname)-4] = 0;
+      if (!_gpgme_access (fname, F_OK))
+        return fname;
+    }
+  free (fname);
+  return NULL;
+}
+
+
 /* This function is only called by get_gpgconf_item and may not be
    called concurrently.  */
 char *
@@ -620,23 +653,48 @@ _gpgme_get_gpgconf_path (void)
   char *gpgconf = NULL;
   const char *inst_dir, *name;
   int inst_type;
-  char *dir;
+  char *dir = NULL;
 
   name = default_gpgconf_name? get_basename(default_gpgconf_name):"gpgconf.exe";
 
-  /* 0. If an installation type is requested try to find gpgconf.exe
-   * depending on that installation type.  */
   inst_dir = _gpgme_get_inst_dir ();
-  if (inst_dir
-      && (inst_type = _gpgme_set_get_inst_type (NULL))
-      && (inst_type == 1 || inst_type == 2))
+  inst_type = _gpgme_set_get_inst_type (NULL);
+
+  /* 0.0. If no installation type has been explicitly requested guess
+   * one by looking at files used by the installation type.  */
+  if (inst_dir && !inst_type)
     {
-      dir = _gpgme_strconcat (inst_dir,
-                              inst_type == 1? INST_TYPE_GPG4WIN_DIR
-                              /*         */ : INST_TYPE_GPGDESK_DIR,
-                              NULL);
-      gpgconf = find_program_in_dir (dir, name);
+      gpgrt_stream_t fp;
+      char buffer[128];
+      int n;
+
       free (dir);
+      dir = find_version_file (inst_dir);
+      if (dir && (fp = gpgrt_fopen (dir, "r")))
+        {
+          n = gpgrt_fread (buffer, 1, 128, fp);
+          if (n > 10)
+            {
+              buffer[n-1] = 0;
+              if (strstr (buffer, "GnuPG") && strstr (buffer, "Desktop"))
+                inst_type = INST_TYPE_GPGDESK;
+            }
+          gpgrt_fclose (fp);
+        }
+    }
+
+  /* 0.1. If an installation type was requested or guessed try to find
+   * gpgconf.exe depending on that installation type.  */
+  if (inst_dir
+      && (inst_type == INST_TYPE_GPG4WIN || inst_type == INST_TYPE_GPGDESK))
+    {
+      free (dir);
+      dir = _gpgme_strconcat
+        (inst_dir,
+         inst_type == INST_TYPE_GPG4WIN? INST_TYPE_GPG4WIN_DIR
+         /*                         */ : INST_TYPE_GPGDESK_DIR,
+         NULL);
+      gpgconf = find_program_in_dir (dir, name);
     }
 
   /* 1. Try to find gpgconf.exe in the installation directory of gpgme.  */
@@ -656,8 +714,7 @@ _gpgme_get_gpgconf_path (void)
   /* 3. Try to find gpgconf.exe using the Windows registry. */
   if (!gpgconf)
     {
-      char *dir;
-
+      free (dir);
       dir = read_w32_registry_string (NULL,
                                       GNUPG_REGKEY_2,
                                       "Install Directory");
@@ -675,10 +732,7 @@ _gpgme_get_gpgconf_path (void)
             }
         }
       if (dir)
-        {
-          gpgconf = find_program_in_dir (dir, name);
-          free (dir);
-        }
+        gpgconf = find_program_in_dir (dir, name);
     }
 
   /* 4. Try to find gpgconf.exe from Gpg4win below CSIDL_PROGRAM_FILES.  */
@@ -690,17 +744,17 @@ _gpgme_get_gpgconf_path (void)
   /* 5. Try to find gpgconf.exe relative to us as Gpg4win installs it.  */
   if (!gpgconf && inst_dir)
     {
+      free (dir);
       dir = _gpgme_strconcat (inst_dir, INST_TYPE_GPG4WIN_DIR, NULL);
       gpgconf = find_program_in_dir (dir, name);
-      free (dir);
     }
 
   /* 6. Try to find gpgconf.exe relative to us as GnuPG VSD installs it. */
   if (!gpgconf && inst_dir)
     {
+      free (dir);
       dir = _gpgme_strconcat (inst_dir, INST_TYPE_GPGDESK_DIR, NULL);
       gpgconf = find_program_in_dir (dir, name);
-      free (dir);
     }
 
   /* Print a debug message if not found.  */
@@ -708,6 +762,7 @@ _gpgme_get_gpgconf_path (void)
     _gpgme_debug (NULL, DEBUG_ENGINE, -1, NULL, NULL, NULL,
                   "_gpgme_get_gpgconf_path: '%s' not found",name);
 
+  free (dir);
   return gpgconf;
 }
 
