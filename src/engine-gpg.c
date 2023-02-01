@@ -389,6 +389,14 @@ gpg_get_req_version (void)
 }
 
 
+static int
+have_usable_gpgtar (engine_gpg_t gpg)
+{
+  return have_gpg_version (gpg, "2.4.1")
+         || (have_gpg_version (gpg, "2.2.42") && !have_gpg_version (gpg, "2.3.0"));
+}
+
+
 static void
 free_argv (char **argv)
 {
@@ -1669,21 +1677,17 @@ start (engine_gpg_t gpg)
         return rc;
     }
 
-  if (!gpg->flags.use_gpgtar || have_gpg_version (gpg, "2.4.1"))
-    {
-      /* Do not pass --status-fd to gpgtar for gpg < 2.4.1. */
-      {
-        char buf[25];
-        _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
-        rc = add_arg_with_locp (gpg, buf, &gpg->status.arg_loc, 1);
-        if (rc)
-          return rc;
-      }
+  {
+    char buf[25];
+    _gpgme_io_fd2str (buf, sizeof (buf), gpg->status.fd[1]);
+    rc = add_arg_with_locp (gpg, buf, &gpg->status.arg_loc, 1);
+    if (rc)
+      return rc;
+  }
 
-      rc = add_arg_ext (gpg, "--status-fd", 1);
-      if (rc)
-        return rc;
-    }
+  rc = add_arg_ext (gpg, "--status-fd", 1);
+  if (rc)
+    return rc;
 
   if (gpg->lc_ctype)
     {
@@ -1832,7 +1836,7 @@ gpg_decrypt (void *engine,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_DECRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
+  if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (gpg->flags.use_gpgtar && (flags & GPGME_DECRYPT_UNWRAP))
@@ -2334,7 +2338,7 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
+  if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_WRAP))
@@ -2449,7 +2453,7 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
+  if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (recp || recpstring)
@@ -3594,7 +3598,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_SIG_MODE_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
+  if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (flags & GPGME_SIG_MODE_CLEAR)
@@ -3678,7 +3682,7 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_VERIFY_ARCHIVE);
 
-  if (gpg->flags.use_gpgtar && !have_gpg_version (gpg, "2.4.1"))
+  if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   err = append_args_from_sender (gpg, ctx);
