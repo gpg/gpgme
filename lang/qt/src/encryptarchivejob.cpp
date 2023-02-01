@@ -38,6 +38,8 @@
 #include "encryptarchivejob.h"
 #include "encryptarchivejob_p.h"
 
+#include <engineinfo.h>
+
 using namespace QGpgME;
 
 EncryptArchiveJob::EncryptArchiveJob(QObject *parent)
@@ -46,6 +48,13 @@ EncryptArchiveJob::EncryptArchiveJob(QObject *parent)
 }
 
 EncryptArchiveJob::~EncryptArchiveJob() = default;
+
+// static
+bool EncryptArchiveJob::isSupported()
+{
+    static const auto gpgVersion = GpgME::engineInfo(GpgME::GpgEngine).engineVersion();
+    return (gpgVersion >= "2.4.1") || (gpgVersion >= "2.2.42" && gpgVersion < "2.3.0");
+}
 
 void EncryptArchiveJob::setBaseDirectory(const QString &baseDirectory)
 {

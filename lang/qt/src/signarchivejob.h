@@ -61,6 +61,8 @@ protected:
 public:
     ~SignArchiveJob() override;
 
+    static bool isSupported();
+
     void setBaseDirectory(const QString &baseDirectory);
     QString baseDirectory() const;
 

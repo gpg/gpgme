@@ -38,6 +38,8 @@
 #include "signencryptarchivejob.h"
 #include "signencryptarchivejob_p.h"
 
+#include <engineinfo.h>
+
 using namespace QGpgME;
 
 SignEncryptArchiveJob::SignEncryptArchiveJob(QObject *parent)
@@ -46,6 +48,13 @@ SignEncryptArchiveJob::SignEncryptArchiveJob(QObject *parent)
 }
 
 SignEncryptArchiveJob::~SignEncryptArchiveJob() = default;
+
+// static
+bool SignEncryptArchiveJob::isSupported()
+{
+    static const auto gpgVersion = GpgME::engineInfo(GpgME::GpgEngine).engineVersion();
+    return (gpgVersion >= "2.4.1") || (gpgVersion >= "2.2.42" && gpgVersion < "2.3.0");
+}
 
 void SignEncryptArchiveJob::setBaseDirectory(const QString &baseDirectory)
 {

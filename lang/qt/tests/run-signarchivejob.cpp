@@ -118,6 +118,11 @@ int main(int argc, char **argv)
 
     const auto options = parseCommandLine(app.arguments());
 
+    if (!QGpgME::SignArchiveJob::isSupported()) {
+        std::cerr << "Error: Signing archives is not supported by your version of gpg." << std::endl;
+        return 1;
+    }
+
     auto output = createOutput(options.archiveName);
     if (!output) {
         return 1;

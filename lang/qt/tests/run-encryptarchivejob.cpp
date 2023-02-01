@@ -123,6 +123,12 @@ int main(int argc, char **argv)
 
     const auto options = parseCommandLine(app.arguments());
 
+    if ((options.sign && !QGpgME::SignEncryptArchiveJob::isSupported())
+        || (!options.sign && !QGpgME::EncryptArchiveJob::isSupported())) {
+        std::cerr << "Error: Encrypting archives is not supported by your version of gpg." << std::endl;
+        return 1;
+    }
+
     auto output = createOutput(options.archiveName);
     if (!output) {
         return 1;
