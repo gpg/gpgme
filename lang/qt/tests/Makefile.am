@@ -28,6 +28,7 @@ EXTRA_DIST = initial.test final.test
 
 the_tests = \
 	t-addexistingsubkey \
+	t-decryptverify \
 	t-keylist t-keylocate t-ownertrust t-tofuinfo \
 	t-encrypt t-verify t-various t-config t-remarks t-trustsignatures \
 	t-changeexpiryjob t-wkdlookup t-import t-revokekey t-setprimaryuserid
@@ -36,6 +37,7 @@ TESTS = initial.test $(the_tests) final.test
 
 moc_files = \
 	t-addexistingsubkey.moc \
+	t-decryptverify.moc \
 	t-keylist.moc t-keylocate.moc t-ownertrust.moc t-tofuinfo.moc \
 	t-encrypt.moc t-support.hmoc t-wkspublish.moc t-verify.moc \
 	t-various.moc t-config.moc t-remarks.moc t-trustsignatures.moc \
@@ -70,6 +72,7 @@ endif
 support_src = t-support.h t-support.cpp
 
 t_addexistingsubkey_SOURCES = t-addexistingsubkey.cpp $(support_src)
+t_decryptverify_SOURCES = t-decryptverify.cpp $(support_src)
 t_keylist_SOURCES = t-keylist.cpp $(support_src)
 t_keylocate_SOURCES = t-keylocate.cpp $(support_src)
 t_ownertrust_SOURCES = t-ownertrust.cpp $(support_src)
@@ -101,6 +104,7 @@ BUILT_SOURCES = $(moc_files) pubring-stamp
 
 noinst_PROGRAMS = \
 	t-addexistingsubkey \
+	t-decryptverify \
 	t-keylist t-keylocate t-ownertrust t-tofuinfo t-encrypt \
 	run-keyformailboxjob t-wkspublish t-verify t-various t-config t-remarks \
 	t-trustsignatures t-changeexpiryjob t-wkdlookup t-import t-revokekey \
