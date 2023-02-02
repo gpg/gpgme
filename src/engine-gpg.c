@@ -1799,7 +1799,6 @@ start (engine_gpg_t gpg)
 static gpgme_error_t
 add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 {
-  gpgme_error_t err;
   gpgme_off_t value = _gpgme_data_get_size_hint (data);
   char numbuf[50];  /* Large enough for even 2^128 in base-10.  */
   char *p;
@@ -1807,20 +1806,16 @@ add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
   if (!value || !have_gpg_version (gpg, "2.1.15"))
     return 0;
 
-  err = add_arg (gpg, "--input-size-hint");
-  if (!err)
+  p = numbuf + sizeof numbuf;
+  *--p = 0;
+  do
     {
-      p = numbuf + sizeof numbuf;
-      *--p = 0;
-      do
-        {
-          *--p = '0' + (value % 10);
-          value /= 10;
-        }
-      while (value);
-      err = add_arg (gpg, p);
+      *--p = '0' + (value % 10);
+      value /= 10;
     }
-  return err;
+  while (value);
+
+  return add_gpg_arg_with_value (gpg, "--input-size-hint=", p, 0);
 }
 
 
