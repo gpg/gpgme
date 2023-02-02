@@ -1070,7 +1070,7 @@ DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText, const
     const Data::Private *const cdp = cipherText.impl();
     Data::Private *const pdp = plainText.impl();
     d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags), cdp ? cdp->data : nullptr, pdp ? pdp->data : nullptr);
-    return DecryptionResult(d->ctx, Error(d->lasterr));
+    return decryptionResult();
 }
 
 DecryptionResult Context::decrypt(const Data &cipherText, Data &plainText)
@@ -1107,7 +1107,7 @@ VerificationResult Context::verifyDetachedSignature(const Data &signature, const
     const Data::Private *const sdp = signature.impl();
     const Data::Private *const tdp = signedText.impl();
     d->lasterr = gpgme_op_verify(d->ctx, sdp ? sdp->data : nullptr, tdp ? tdp->data : nullptr, nullptr);
-    return VerificationResult(d->ctx, Error(d->lasterr));
+    return verificationResult();
 }
 
 VerificationResult Context::verifyOpaqueSignature(const Data &signedData, Data &plainText)
@@ -1116,7 +1116,7 @@ VerificationResult Context::verifyOpaqueSignature(const Data &signedData, Data &
     const Data::Private *const sdp = signedData.impl();
     Data::Private *const pdp = plainText.impl();
     d->lasterr = gpgme_op_verify(d->ctx, sdp ? sdp->data : nullptr, nullptr, pdp ? pdp->data : nullptr);
-    return VerificationResult(d->ctx, Error(d->lasterr));
+    return verificationResult();
 }
 
 Error Context::startDetachedSignatureVerification(const Data &signature, const Data &signedText)
@@ -1138,9 +1138,18 @@ Error Context::startOpaqueSignatureVerification(const Data &signedData, Data &pl
 VerificationResult Context::verificationResult() const
 {
     if (d->lastop & Private::Verify) {
-        return VerificationResult(d->ctx, Error(d->lasterr));
+        const auto res = VerificationResult{d->ctx, Error(d->lasterr)};
+        if ((d->lastop == Private::DecryptAndVerify)
+            && (res.error().code() == GPG_ERR_NO_DATA)
+            && (res.numSignatures() > 0)) {
+            // ignore "no data" error for verification if there are signatures and
+            // the operation was a combined (tentative) decryption and verification
+            // because then "no data" just indicates that there was nothing to decrypt
+            return VerificationResult{d->ctx, Error{}};
+        }
+        return res;
     } else {
-        return VerificationResult();
+        return {};
     }
 }
 
@@ -1151,8 +1160,7 @@ std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const 
     Data::Private *const pdp = plainText.impl();
     d->lasterr = gpgme_op_decrypt_ext(d->ctx, static_cast<gpgme_decrypt_flags_t> (d->decryptFlags | flags | DecryptVerify),
                                       cdp ? cdp->data : nullptr, pdp ? pdp->data : nullptr);
-    return std::make_pair(DecryptionResult(d->ctx, Error(d->lasterr)),
-                          VerificationResult(d->ctx, Error(d->lasterr)));
+    return std::make_pair(decryptionResult(), verificationResult());
 }
 
 std::pair<DecryptionResult, VerificationResult> Context::decryptAndVerify(const Data &cipherText, Data &plainText)
