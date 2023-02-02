@@ -34,12 +34,14 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
 qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
+    decryptverifyarchivejob.cpp \
     encryptarchivejob.cpp \
     filelistdataprovider.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
     qgpgmeaddexistingsubkeyjob.cpp \
     qgpgmebackend.cpp qgpgmechangeexpiryjob.cpp qgpgmechangeownertrustjob.cpp \
     qgpgmechangepasswdjob.cpp qgpgmedecryptjob.cpp \
+    qgpgmedecryptverifyarchivejob.cpp \
     qgpgmedecryptverifyjob.cpp qgpgmedeletejob.cpp qgpgmedownloadjob.cpp \
     qgpgmeencryptarchivejob.cpp \
     qgpgmeencryptjob.cpp qgpgmeexportjob.cpp qgpgmeimportfromkeyserverjob.cpp \
@@ -75,6 +77,7 @@ qgpgme_headers= \
     dataprovider.h \
     debug.h \
     decryptjob.h \
+    decryptverifyarchivejob.h \
     decryptverifyjob.h \
     downloadjob.h \
     encryptarchivejob.h \
@@ -126,6 +129,7 @@ camelcase_headers= \
     DataProvider \
     Debug \
     DecryptJob \
+    DecryptVerifyArchiveJob \
     DecryptVerifyJob \
     DN \
     DownloadJob \
@@ -168,6 +172,7 @@ camelcase_headers= \
 
 private_qgpgme_headers = \
     changeexpiryjob_p.h \
+    decryptverifyarchivejob_p.h \
     encryptarchivejob_p.h \
     encryptjob_p.h \
     importjob_p.h \
@@ -182,6 +187,7 @@ private_qgpgme_headers = \
     qgpgmechangeownertrustjob.h \
     qgpgmechangepasswdjob.h \
     qgpgmedecryptjob.h \
+    qgpgmedecryptverifyarchivejob.h \
     qgpgmedecryptverifyjob.h \
     qgpgmedeletejob.h \
     qgpgmedownloadjob.h \
@@ -224,6 +230,7 @@ qgpgme_moc_sources = \
     changeownertrustjob.moc \
     changepasswdjob.moc \
     decryptjob.moc \
+    decryptverifyarchivejob.moc \
     decryptverifyjob.moc \
     deletejob.moc \
     downloadjob.moc \
@@ -244,6 +251,7 @@ qgpgme_moc_sources = \
     qgpgmechangeownertrustjob.moc \
     qgpgmechangepasswdjob.moc \
     qgpgmedecryptjob.moc \
+    qgpgmedecryptverifyarchivejob.moc \
     qgpgmedecryptverifyjob.moc \
     qgpgmedeletejob.moc \
     qgpgmedownloadjob.moc \

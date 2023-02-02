@@ -41,6 +41,7 @@
 #include "qgpgmekeylistjob.h"
 #include "qgpgmelistallkeysjob.h"
 #include "qgpgmedecryptjob.h"
+#include "qgpgmedecryptverifyarchivejob.h"
 #include "qgpgmedecryptverifyjob.h"
 #include "qgpgmerefreshsmimekeysjob.h"
 #include "qgpgmedeletejob.h"
@@ -542,6 +543,17 @@ public:
         if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
             context->setArmor(armor);
             return new QGpgME::QGpgMESignEncryptArchiveJob{context};
+        }
+        return nullptr;
+    }
+
+    QGpgME::DecryptVerifyArchiveJob *decryptVerifyArchiveJob() const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
+            return new QGpgME::QGpgMEDecryptVerifyArchiveJob{context};
         }
         return nullptr;
     }

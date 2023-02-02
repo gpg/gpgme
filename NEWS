@@ -34,7 +34,7 @@ Noteworthy changes in version 1.19.0 (unreleased)
 
  * qt: Allow deferred start of import jobs.  [T6323]
 
- * qt: Support creating signed and encrypted archives.  [T6342]
+ * qt: Support creating and extracting signed and encrypted archives.  [T6342]
 
  * Interface changes relative to the 1.18.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,9 +59,11 @@ Noteworthy changes in version 1.19.0 (unreleased)
  qt: Job::startNow                          NEW.
  qt: ImportJob::startLater                  NEW.
  qt: FileListDataProvider                   NEW.
+ qt: DecryptVerifyArchiveJob                NEW.
  qt: EncryptArchiveJob                      NEW.
  qt: SignArchiveJob                         NEW.
  qt: SignEncryptArchiveJob                  NEW.
+ qt: Protocol::decryptVerifyArchiveJob      NEW.
  qt: Protocol::encryptArchiveJob            NEW.
  qt: Protocol::signArchiveJob               NEW.
  qt: Protocol::signEncryptArchiveJob        NEW.

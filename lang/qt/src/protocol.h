@@ -60,6 +60,7 @@ class SignKeyJob;
 class VerifyDetachedJob;
 class VerifyOpaqueJob;
 class SignEncryptJob;
+class DecryptVerifyArchiveJob;
 class DecryptVerifyJob;
 class RefreshKeysJob;
 class ChangeExpiryJob;
@@ -196,6 +197,7 @@ public:
     virtual EncryptArchiveJob *encryptArchiveJob(bool armor = false) const = 0;
     virtual SignArchiveJob *signArchiveJob(bool armor = false) const = 0;
     virtual SignEncryptArchiveJob *signEncryptArchiveJob(bool armor = false) const = 0;
+    virtual DecryptVerifyArchiveJob *decryptVerifyArchiveJob() const = 0;
 };
 
 /** Obtain a reference to the OpenPGP Protocol.
