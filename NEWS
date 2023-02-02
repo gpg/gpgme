@@ -50,6 +50,7 @@ Noteworthy changes in version 1.19.0 (unreleased)
  cpp: GpgGenCardKeyInteractor::Curve        NEW.
  cpp: GpgGenCardKeyInteractor::setCurve     NEW.
  cpp: Context::WantAddress                  NEW.
+ cpp: Context::DecryptArchive               NEW.
  cpp: Data::setFileName            EXTENDED: New overload
  qt: ListAllKeysJob::Option                 NEW.
  qt: ListAllKeysJob::Options                NEW.

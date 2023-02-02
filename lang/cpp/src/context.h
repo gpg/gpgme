@@ -370,6 +370,7 @@ public:
         // Keep in line with core's flags
         DecryptNone = 0,
         DecryptVerify = 1,
+        DecryptArchive = 2,
         DecryptUnwrap = 128,
         DecryptMaxValue = 0x80000000
     };
