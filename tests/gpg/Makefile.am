@@ -99,15 +99,17 @@ gpg-sample.stamp: $(srcdir)/$(private_keys)
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
-          cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
-        done
+	  cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
+	done
 	echo x > ./gpg-sample.stamp
 
 pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
-               --import $(srcdir)/pubdemo.asc
+		--import $(srcdir)/pubdemo.asc
 	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
 		--import $(srcdir)/secdemo.asc
+	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
+		--import-ownertrust $(srcdir)/ownertrust.txt
 	echo x > ./pubring-stamp
 
 gpg.conf: $(srcdir)/gpg.conf.in

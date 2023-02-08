@@ -94,7 +94,7 @@ static const char double_plaintext_sig[] =
 static void
 check_result (gpgme_verify_result_t result, int no_of_sigs, int skip_sigs,
               unsigned int summary, const char *fpr,
-	      gpgme_error_t status, int notation)
+	      gpgme_error_t status, int notation, int validity)
 {
   gpgme_signature_t sig;
   int n;
@@ -206,10 +206,11 @@ check_result (gpgme_verify_result_t result, int no_of_sigs, int skip_sigs,
 	       PGM, __LINE__, skip_sigs);
       exit (1);
     }
-  if (sig->validity != GPGME_VALIDITY_UNKNOWN)
+  if (sig->validity != validity)
     {
-      fprintf (stderr, "%s:%i:sig-%d: Unexpected validity: %i\n",
-	       PGM, __LINE__, skip_sigs, sig->validity);
+      fprintf (stderr, "%s:%i:sig-%d: Unexpected validity: "
+               "want=%i have=%i\n",
+	       PGM, __LINE__, skip_sigs, validity, sig->validity);
       exit (1);
     }
   if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
@@ -247,8 +248,9 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 1, 0, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		GPG_ERR_NO_ERROR, 1);
+  check_result (result, 1, 0, GPGME_SIGSUM_VALID|GPGME_SIGSUM_GREEN,
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		GPG_ERR_NO_ERROR, 1, GPGME_VALIDITY_FULL);
 
   /* Checking a manipulated message.  */
   gpgme_data_release (text);
@@ -259,9 +261,9 @@ main (int argc, char *argv[])
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
   check_result (result, 1, 0, GPGME_SIGSUM_RED, "2D727CC768697734",
-		GPG_ERR_BAD_SIGNATURE, 0);
+		GPG_ERR_BAD_SIGNATURE, 0, GPGME_VALIDITY_UNKNOWN);
 
-  /* Checking a valid message.  Bu that one has a second signature
+  /* Checking a valid message.  But that one has a second signature
    * made by an unknown key.  */
   gpgme_data_release (text);
   gpgme_data_release (sig);
@@ -273,12 +275,12 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, text, NULL);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 2, 0, 0,
+  check_result (result, 2, 0, GPGME_SIGSUM_VALID|GPGME_SIGSUM_GREEN,
                 "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		GPG_ERR_NO_ERROR, 1);
+		GPG_ERR_NO_ERROR, 1, GPGME_VALIDITY_FULL);
   check_result (result, 2, 1, GPGME_SIGSUM_KEY_MISSING,
                 "36EC2A70C6426EB0FCE5BB4DF91C98F049D4204C",
-		GPG_ERR_NO_PUBKEY, 0);
+		GPG_ERR_NO_PUBKEY, 0, GPGME_VALIDITY_UNKNOWN);
 
 
   /* Checking a normal signature.  */
@@ -291,8 +293,9 @@ main (int argc, char *argv[])
   err = gpgme_op_verify (ctx, sig, NULL, text);
   fail_if_err (err);
   result = gpgme_op_verify_result (ctx);
-  check_result (result, 1, 0, 0, "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		GPG_ERR_NO_ERROR, 0);
+  check_result (result, 1, 0, GPGME_SIGSUM_VALID|GPGME_SIGSUM_GREEN,
+                "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		GPG_ERR_NO_ERROR, 0, GPGME_VALIDITY_FULL);
 
 
   /* Checking an invalid message.  */

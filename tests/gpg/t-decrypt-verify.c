@@ -38,7 +38,7 @@
 
 static void
 check_verify_result (gpgme_verify_result_t result, unsigned int summary,
-		     const char *fpr, gpgme_error_t status)
+		     const char *fpr, gpgme_error_t status, int validity)
 {
   gpgme_signature_t sig;
 
@@ -79,10 +79,11 @@ check_verify_result (gpgme_verify_result_t result, unsigned int summary,
 	       __FILE__, __LINE__);
       exit (1);
     }
-  if (sig->validity != GPGME_VALIDITY_UNKNOWN)
+  if (sig->validity != validity)
     {
-      fprintf (stderr, "%s:%i: Unexpected validity: %i\n",
-	       __FILE__, __LINE__, sig->validity);
+      fprintf (stderr, "%s:%i: Unexpected validity: "
+               "want=%i have=%i\n",
+	       __FILE__, __LINE__, validity, sig->validity);
       exit (1);
     }
   if (gpgme_err_code (sig->validity_reason) != GPG_ERR_NO_ERROR)
@@ -134,9 +135,9 @@ main (int argc, char *argv[])
     }
   print_data (out);
   verify_result = gpgme_op_verify_result (ctx);
-  check_verify_result (verify_result, 0,
+  check_verify_result (verify_result, GPGME_SIGSUM_VALID|GPGME_SIGSUM_GREEN,
 		       "A0FF4590BB6122EDEF6E3C542D727CC768697734",
-		       GPG_ERR_NO_ERROR);
+		       GPG_ERR_NO_ERROR, GPGME_VALIDITY_FULL);
 
   gpgme_data_release (in);
   gpgme_data_release (out);

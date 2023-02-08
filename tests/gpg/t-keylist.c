@@ -43,8 +43,10 @@ struct key_info_s
     const char *name;
     const char *comment;
     const char *email;
+    gpgme_validity_t validity;
   } uid[3];
   int n_subkeys;
+  gpgme_validity_t owner_trust;
   void (*misc_check)(struct key_info_s *keyinfo, gpgme_key_t key);
 };
 
@@ -56,9 +58,12 @@ static void check_whisky (struct key_info_s *keyinfo, gpgme_key_t key);
 struct key_info_s keys[] =
   {
     { "A0FF4590BB6122EDEF6E3C542D727CC768697734", "6AE6D7EE46A871F8",
-      { { "Alfa Test", "demo key", "alfa@example.net" },
-        { "Alpha Test", "demo key", "alpha@example.net" },
-	{ "Alice", "demo key", NULL } }, 1 },
+      { { "Alfa Test", "demo key", "alfa@example.net",
+	  GPGME_VALIDITY_ULTIMATE },
+        { "Alpha Test", "demo key", "alpha@example.net",
+	    GPGME_VALIDITY_ULTIMATE },
+	{ "Alice", "demo key", NULL, GPGME_VALIDITY_ULTIMATE } }, 1,
+	GPGME_VALIDITY_ULTIMATE },
     { "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2", "5381EA4EE29BA37F",
       { { "Bob", "demo key", NULL },
 	{ "Bravo Test", "demo key", "bravo@example.net" } }, 1 },
@@ -107,7 +112,7 @@ struct key_info_s keys[] =
       { { "Victor Test", "demo key", "victor@example.org" } }, 1 },
     { "E8D6C90B683B0982BD557A99DEF0F7B8EC67DBDE", "D7FBB421FD6E27F6",
       { { "Whisky Test", "demo key", "whisky@example.net" } }, 3,
-          check_whisky },
+	GPGME_VALIDITY_UNKNOWN, check_whisky },
     { "04C1DF62EFA0EBB00519B06A8979A6C5567FB34A", "5CC6F87F41E408BE",
       { { "XRay Test", "demo key", "xray@example.net" } }, 1 },
     { "ED9B316F78644A58D042655A9EEF34CD4B11B25F", "5ADFD255F7B080AD",
@@ -219,10 +224,10 @@ main (int argc, char **argv)
 		   key->chain_id);
 	  exit (1);
 	}
-      if (key->owner_trust != GPGME_VALIDITY_UNKNOWN)
+      if (key->owner_trust != keys[i].owner_trust)
 	{
-	  fprintf (stderr, "Key has unexpected owner trust: %i\n",
-		   key->owner_trust);
+	  fprintf (stderr, "Key `%s' has unexpected owner trust: %i\n",
+		   keys[i].uid[0].name, key->owner_trust);
 	  exit (1);
 	}
 
@@ -426,10 +431,10 @@ main (int argc, char **argv)
 	  fprintf (stderr, "First user ID unexpectedly invalid\n");
 	  exit (1);
 	}
-      if (key->uids && key->uids->validity != GPGME_VALIDITY_UNKNOWN)
+      if (key->uids && key->uids->validity != keys[i].uid[0].validity)
 	{
-	  fprintf (stderr, "First user ID has unexpectedly validity: %i\n",
-		   key->uids->validity);
+	  fprintf (stderr, "First user ID `%s' has unexpectedly validity: %i\n",
+		   key->uids->name, key->uids->validity);
 	  exit (1);
 	}
       if (key->uids && key->uids->signatures)
@@ -469,7 +474,7 @@ main (int argc, char **argv)
 	  exit (1);
 	}
       if (key->uids && key->uids->next
-	  && key->uids->next->validity != GPGME_VALIDITY_UNKNOWN)
+	  && key->uids->next->validity != keys[i].uid[1].validity)
 	{
 	  fprintf (stderr, "Second user ID has unexpectedly validity: %i\n",
 		   key->uids->next->validity);
@@ -514,7 +519,7 @@ main (int argc, char **argv)
 	  exit (1);
 	}
       if (key->uids && key->uids->next && key->uids->next->next
-	  && key->uids->next->next->validity != GPGME_VALIDITY_UNKNOWN)
+	  && key->uids->next->next->validity != keys[i].uid[2].validity)
 	{
 	  fprintf (stderr, "Third user ID has unexpectedly validity: %i\n",
 		   key->uids->next->next->validity);

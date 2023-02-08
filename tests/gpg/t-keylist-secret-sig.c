@@ -167,7 +167,7 @@ main (void)
 		   key->chain_id);
 	  exit (1);
 	}
-      if (key->owner_trust != GPGME_VALIDITY_UNKNOWN)
+      if (key->owner_trust != GPGME_VALIDITY_ULTIMATE)
 	{
 	  fprintf (stderr, "Key has unexpected owner trust: %i\n",
 		   key->owner_trust);
@@ -349,7 +349,7 @@ main (void)
 	  fprintf (stderr, "First user ID unexpectedly invalid\n");
 	  exit (1);
 	}
-      if (key->uids && key->uids->validity != GPGME_VALIDITY_UNKNOWN)
+      if (key->uids && key->uids->validity != GPGME_VALIDITY_ULTIMATE)
 	{
 	  fprintf (stderr, "First user ID has unexpectedly validity: %i\n",
 		   key->uids->validity);
@@ -435,7 +435,7 @@ main (void)
 	  exit (1);
 	}
       if (key->uids && key->uids->next
-	  && key->uids->next->validity != GPGME_VALIDITY_UNKNOWN)
+	  && key->uids->next->validity != GPGME_VALIDITY_ULTIMATE)
 	{
 	  fprintf (stderr, "Second user ID has unexpectedly validity: %i\n",
 		   key->uids->next->validity);
@@ -526,7 +526,7 @@ main (void)
 	  exit (1);
 	}
       if (key->uids && key->uids->next && key->uids->next->next
-	  && key->uids->next->next->validity != GPGME_VALIDITY_UNKNOWN)
+	  && key->uids->next->next->validity != GPGME_VALIDITY_ULTIMATE)
 	{
 	  fprintf (stderr, "Third user ID has unexpectedly validity: %i\n",
 		   key->uids->next->next->validity);
