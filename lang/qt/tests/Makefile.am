@@ -136,6 +136,7 @@ pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	$(TESTS_ENVIRONMENT) $(GPG) --no-permission-warning \
 		   --passphrase "abc" \
            --import $(top_srcdir)/tests/gpg/secdemo.asc
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	touch pubring-stamp
 
 .cpp.moc:

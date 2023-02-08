@@ -110,6 +110,7 @@ pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 		--import $(srcdir)/secdemo.asc
 	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
 		--import-ownertrust $(srcdir)/ownertrust.txt
+	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	echo x > ./pubring-stamp
 
 gpg.conf: $(srcdir)/gpg.conf.in
