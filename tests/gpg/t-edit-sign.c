@@ -39,6 +39,58 @@
 #include "t-support.h"
 
 
+static const char *test_key = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+"\n"
+"mDMEY+NyJBYJKwYBBAHaRw8BAQdA4VfyC5sa6T3xVSus55LjyqQetFuE1shtu/71\n"
+"pHLxg8W0KFNpZ24gbWUgKGRlbW8ga2V5KSA8c2lnbi1tZUBleGFtcGxlLm5ldD6I\n"
+"kwQTFgoAOxYhBPPHuA+qbf/jPmLyYnJg+w/EtKy+BQJj43IkAhsDBQsJCAcCAiIC\n"
+"BhUKCQgLAgQWAgMBAh4HAheAAAoJEHJg+w/EtKy+26gBAMhaI/lYA9BK35525kQT\n"
+"OhvpQwgThJxQp8AOQk3UMgkGAP0ahV9lFXwv9ZnoeHEhjECsNpAFbj9fxBlzNmMZ\n"
+"Z92+AA==\n"
+"=Koy1\n"
+"-----END PGP PUBLIC KEY BLOCK-----\n";
+static const char *test_key_fpr = "F3C7B80FAA6DFFE33E62F2627260FB0FC4B4ACBE";
+
+static void
+import_key (const char *keydata)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_data_t in;
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  err = gpgme_data_new_from_mem (&in, keydata, strlen(keydata), 0);
+  fail_if_err (err);
+
+  err = gpgme_op_import (ctx, in);
+  fail_if_err (err);
+
+  gpgme_data_release (in);
+  gpgme_release (ctx);
+}
+
+static void
+delete_key (const char *fpr)
+{
+  gpgme_ctx_t ctx;
+  gpgme_error_t err;
+  gpgme_key_t key = NULL;
+
+  err = gpgme_new (&ctx);
+  fail_if_err (err);
+
+  err = gpgme_get_key (ctx, fpr, &key, 0);
+  fail_if_err (err);
+
+  err = gpgme_op_delete_ext (ctx, key, GPGME_DELETE_FORCE);
+  fail_if_err (err);
+
+  gpgme_key_unref (key);
+  gpgme_release (ctx);
+}
+
 static void
 flush_data (gpgme_data_t dh)
 {
@@ -205,15 +257,16 @@ main (int argc, char **argv)
 {
   const char *signer_fpr = "A0FF4590BB6122EDEF6E3C542D727CC768697734"; /* Alpha Test */
   const char *signer_keyid = signer_fpr + strlen(signer_fpr) - 16;
-  const char *key_fpr = "D695676BDCEDCC2CDD6152BCFE180B1DA9E3B0B2"; /* Bravo Test */
 
   (void)argc;
   (void)argv;
 
   init_gpgme (GPGME_PROTOCOL_OpenPGP);
 
-  sign_key (key_fpr, signer_fpr);
-  verify_key_signature (key_fpr, signer_keyid);
+  import_key (test_key);
+  sign_key (test_key_fpr, signer_fpr);
+  verify_key_signature (test_key_fpr, signer_keyid);
+  delete_key (test_key_fpr);
 
   return 0;
 }
