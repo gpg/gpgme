@@ -35,13 +35,17 @@ decrypt_verify_status_handler (void *priv, gpgme_status_code_t code,
 			       char *args)
 {
   gpgme_error_t err;
+  gpgme_error_t err2;
 
   err = _gpgme_progress_status_handler (priv, code, args);
   if (!err)
     err = _gpgme_decrypt_status_handler (priv, code, args);
-  if (!err)
-      err = _gpgme_verify_status_handler (priv, code, args);
-  return err;
+  /* Allow finalization of signature verification even if previous handler
+   * returned NO DATA error which just means that the data wasn't encrypted. */
+  if (!err
+      || (code == GPGME_STATUS_EOF && gpg_err_code (err) == GPG_ERR_NO_DATA))
+    err2 = _gpgme_verify_status_handler (priv, code, args);
+  return err ? err : err2;
 }
 
 

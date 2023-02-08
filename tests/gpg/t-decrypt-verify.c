@@ -36,6 +36,16 @@
 #include "t-support.h"
 
 
+static const char normal_signed_message[] =
+"-----BEGIN PGP MESSAGE-----\n"
+"\n"
+"owGbwMvMwCSoW1RzPCOz3IRxjXQSR0lqcYleSUWJTZOvjVdpcYmCu1+oQmaJIleH\n"
+"GwuDIBMDGysTSIqBi1MApi+nlGGuwDeHao53HBr+FoVGP3xX+kvuu9fCMJvl6IOf\n"
+"y1kvP4y+8D5a11ang0udywsA\n"
+"=Crq6\n"
+"-----END PGP MESSAGE-----\n";
+
+
 static void
 check_verify_result (gpgme_verify_result_t result, unsigned int summary,
 		     const char *fpr, gpgme_error_t status, int validity)
@@ -141,6 +151,27 @@ main (int argc, char *argv[])
 
   gpgme_data_release (in);
   gpgme_data_release (out);
+
+  /* Checking a signed, but not encrypted message.  */
+  err = gpgme_data_new_from_mem (&in, normal_signed_message, strlen (normal_signed_message), 0);
+  fail_if_err (err);
+  err = gpgme_data_new (&out);
+  fail_if_err (err);
+  err = gpgme_op_decrypt_verify (ctx, in, out);
+  /* should have returned "no data" because the message is not encrypted */
+  if (gpgme_err_code (err) != GPG_ERR_NO_DATA)
+    {
+      fprintf (stderr, "%s:%i: Unexpected result of gpgme_op_decrypt_verify: %s\n",
+	       __FILE__, __LINE__, gpgme_strerror (err));
+    }
+  verify_result = gpgme_op_verify_result (ctx);
+  check_verify_result (verify_result, GPGME_SIGSUM_VALID|GPGME_SIGSUM_GREEN,
+		       "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+		       GPG_ERR_NO_ERROR, GPGME_VALIDITY_FULL);
+
+  gpgme_data_release (in);
+  gpgme_data_release (out);
+
   gpgme_release (ctx);
   return 0;
 }
