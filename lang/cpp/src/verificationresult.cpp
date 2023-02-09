@@ -544,32 +544,41 @@ std::ostream &GpgME::operator<<(std::ostream &os, const VerificationResult &resu
 
 std::ostream &GpgME::operator<<(std::ostream &os, Signature::PKAStatus pkaStatus)
 {
-#define OUTPUT( x ) if ( !(pkaStatus & (GpgME::Signature:: x)) ) {} else do { os << #x " "; } while(0)
     os << "GpgME::Signature::PKAStatus(";
-    OUTPUT(UnknownPKAStatus);
-    OUTPUT(PKAVerificationFailed);
-    OUTPUT(PKAVerificationSucceeded);
+    switch (pkaStatus) {
+#define OUTPUT( x ) case GpgME::Signature:: x: os << #x; break
+        OUTPUT(UnknownPKAStatus);
+        OUTPUT(PKAVerificationFailed);
+        OUTPUT(PKAVerificationSucceeded);
 #undef OUTPUT
+    default:
+        os << "??? (" << static_cast<int>(pkaStatus) << ')';
+        break;
+    }
     return os << ')';
 }
 
 std::ostream &GpgME::operator<<(std::ostream &os, Signature::Summary summary)
 {
-#define OUTPUT( x ) if ( !(summary & (GpgME::Signature:: x)) ) {} else do { os << #x " "; } while(0)
     os << "GpgME::Signature::Summary(";
-    OUTPUT(Valid);
-    OUTPUT(Green);
-    OUTPUT(Red);
-    OUTPUT(KeyRevoked);
-    OUTPUT(KeyExpired);
-    OUTPUT(SigExpired);
-    OUTPUT(KeyMissing);
-    OUTPUT(CrlMissing);
-    OUTPUT(CrlTooOld);
-    OUTPUT(BadPolicy);
-    OUTPUT(SysError);
-    OUTPUT(TofuConflict);
+    if (summary == Signature::None) {
+        os << "None";
+    } else {
+#define OUTPUT( x ) if ( !(summary & (GpgME::Signature:: x)) ) {} else do { os << #x " "; } while(0)
+        OUTPUT(Valid);
+        OUTPUT(Green);
+        OUTPUT(Red);
+        OUTPUT(KeyRevoked);
+        OUTPUT(KeyExpired);
+        OUTPUT(SigExpired);
+        OUTPUT(KeyMissing);
+        OUTPUT(CrlMissing);
+        OUTPUT(CrlTooOld);
+        OUTPUT(BadPolicy);
+        OUTPUT(SysError);
+        OUTPUT(TofuConflict);
 #undef OUTPUT
+    }
     return os << ')';
 }
 
@@ -603,10 +612,14 @@ std::ostream &GpgME::operator<<(std::ostream &os, const Signature &sig)
 std::ostream &GpgME::operator<<(std::ostream &os, Notation::Flags flags)
 {
     os << "GpgME::Notation::Flags(";
+    if (flags == Notation::NoFlags) {
+        os << "NoFlags";
+    } else {
 #define OUTPUT( x ) if ( !(flags & (GpgME::Notation:: x)) ) {} else do { os << #x " "; } while(0)
-    OUTPUT(HumanReadable);
-    OUTPUT(Critical);
+        OUTPUT(HumanReadable);
+        OUTPUT(Critical);
 #undef OUTPUT
+    }
     return os << ')';
 }
 
