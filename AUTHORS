@@ -22,7 +22,7 @@ List of Copyright holders
 
   Copyright (C) 1991-2013 Free Software Foundation, Inc.
   Copyright (C) 2000-2001 Werner Koch
-  Copyright (C) 2001-2021 g10 Code GmbH
+  Copyright (C) 2001-2023 g10 Code GmbH
   Copyright (C) 2002 Klarälvdalens Datakonsult AB
   Copyright (C) 2004-2008 Igor Belyi
   Copyright (C) 2002 John Goerzen
@@ -43,7 +43,7 @@ FSF <gnu@gnu.org>
    src/stpcpy.c, src/w32-ce.c.
 
 g10 Code GmbH <code@g10code.com>
- - All stuff since mid march 2001.
+ - All stuff since mid March 2001.
 
 Werner Koch <wk@gnupg.org>
  - Design and most stuff.
