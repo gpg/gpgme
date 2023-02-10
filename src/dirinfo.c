@@ -289,13 +289,13 @@ get_gpgconf_item (int what)
       if (pgmname && _gpgme_access (pgmname, F_OK))
         {
           _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                        "gpgme-dinfo: gpgconf='%s' [not installed]\n", pgmname);
+                        "gpgme-dinfo: gpgconf='%s' [not installed]", pgmname);
           free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo: gpgconf='%s'\n",
+                      "gpgme-dinfo: gpgconf='%s'",
                       pgmname? pgmname : "[null]");
       if (!pgmname)
         {
@@ -322,59 +322,59 @@ get_gpgconf_item (int what)
       dirinfo.valid = 1;
       if (dirinfo.gpg_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     gpg='%s'\n",
+                      "gpgme-dinfo:       gpg='%s'",
                       dirinfo.gpg_name);
       if (dirinfo.g13_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     g13='%s'\n",
+                      "gpgme-dinfo:       g13='%s'",
                       dirinfo.g13_name);
       if (dirinfo.gpgsm_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:   gpgsm='%s'\n",
+                      "gpgme-dinfo:     gpgsm='%s'",
                       dirinfo.gpgsm_name);
       if (dirinfo.keyboxd_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     keyboxd='%s'\n",
+                      "gpgme-dinfo:   keyboxd='%s'",
                       dirinfo.keyboxd_name);
       if (dirinfo.agent_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     gpg-agent='%s'\n",
+                      "gpgme-dinfo: gpg-agent='%s'",
                       dirinfo.agent_name);
       if (dirinfo.scdaemon_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     scdaemon='%s'\n",
+                      "gpgme-dinfo:  scdaemon='%s'",
                       dirinfo.scdaemon_name);
       if (dirinfo.dirmngr_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     dirmngr='%s'\n",
+                      "gpgme-dinfo:   dirmngr='%s'",
                       dirinfo.dirmngr_name);
       if (dirinfo.pinentry_name)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     pinentry='%s'\n",
+                      "gpgme-dinfo:  pinentry='%s'",
                       dirinfo.pinentry_name);
       if (dirinfo.homedir)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo: homedir='%s'\n",
+                      "gpgme-dinfo:   homedir='%s'",
                       dirinfo.homedir);
       if (dirinfo.socketdir)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo: sockdir='%s'\n",
+                      "gpgme-dinfo:   sockdir='%s'",
                       dirinfo.socketdir);
       if (dirinfo.agent_socket)
-        _gpgme_debug (NULL,DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:   agent='%s'\n",
+        _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
+                      "gpgme-dinfo:     agent='%s'",
                       dirinfo.agent_socket);
       if (dirinfo.agent_ssh_socket)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:     ssh='%s'\n",
+                      "gpgme-dinfo:       ssh='%s'",
                       dirinfo.agent_ssh_socket);
       if (dirinfo.dirmngr_socket)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo: dirmngr='%s'\n",
+                      "gpgme-dinfo:   dirmngr='%s'",
                       dirinfo.dirmngr_socket);
       if (dirinfo.uisrv_socket)
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo:   uisrv='%s'\n",
+                      "gpgme-dinfo:     uisrv='%s'",
                       dirinfo.uisrv_socket);
     }
   switch (what)

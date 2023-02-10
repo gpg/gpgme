@@ -7935,6 +7935,15 @@ reveal sensitive details like passphrases or other data you use in
 your application.  If you are asked to send a log file, make sure that
 you run your tests only with play data.
 
+The trace function makes use of gpgrt's logging function and thus the
+special @file{socket://} and @file{tcp://} files may be used.  Because
+this conflicts with the use of colons to separate fields, the following
+hack is used: If the file name contains the string @code{^//} all
+carets are replaced by colons.  For example to log to TCP port 42042
+this can be used:
+@smallexample
+GPGME_DEBUG=5:tcp^//127.0.0.1^42042
+@end smallexample
 
 @node Deprecated Functions
 @appendix Deprecated Functions

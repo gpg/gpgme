@@ -1,6 +1,6 @@
 /* debug.c - helpful output in desperate situations
  * Copyright (C) 2000 Werner Koch (dd9jn)
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2019 g10 Code GmbH
+ * Copyright (C) 2001-2005, 2007, 2009, 2019-2023 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -53,9 +53,6 @@
 /* The amount of detail requested by the user, per environment
    variable GPGME_DEBUG.  */
 static int debug_level;
-
-/* The output stream for the debug messages.  */
-static FILE *errfp;
 
 /* If not NULL, this malloced string is used instead of the
    GPGME_DEBUG envvar.  It must have been set before the debug
@@ -126,6 +123,37 @@ _gpgme_debug_set_debug_envvar (const char *value)
 }
 
 
+static int
+safe_to_use_debug_file (void)
+{
+#ifdef HAVE_DOSISH_SYSTEM
+  return 1;
+#else /* Unix */
+  return (getuid () == geteuid ()
+#if defined(HAVE_GETGID) && defined(HAVE_GETEGID)
+          && getgid () == getegid ()
+#endif
+          );
+#endif /* Unix */
+}
+
+
+static int
+tid_log_callback (unsigned long *rvalue)
+{
+  int len = sizeof (*rvalue);
+  uintptr_t thread;
+
+  thread = ath_self ();
+  if (sizeof (thread) < len)
+    len = sizeof (thread);
+  memcpy (rvalue, &thread, len);
+
+  return 2; /* Use use hex representation.  */
+}
+
+
+
 static void
 debug_init (void)
 {
@@ -135,7 +163,7 @@ debug_init (void)
     {
       gpgme_error_t err;
       char *e;
-      const char *s1, *s2;;
+      const char *s1, *s2;
 
       if (envvar_override)
         {
@@ -151,58 +179,57 @@ debug_init (void)
         }
 
       initialized = 1;
-      errfp = stderr;
       if (e)
 	{
-	  debug_level = atoi (e);
-	  s1 = strchr (e, PATHSEP_C);
-	  if (s1)
-	    {
-#ifndef HAVE_DOSISH_SYSTEM
-	      if (getuid () == geteuid ()
-#if defined(HAVE_GETGID) && defined(HAVE_GETEGID)
-                  && getgid () == getegid ()
-#endif
-                  )
-		{
-#endif
-		  char *p;
-		  FILE *fp;
+          char *p, *r;
+          unsigned int flags;
 
-		  s1++;
-		  if (!(s2 = strchr (s1, PATHSEP_C)))
-		    s2 = s1 + strlen (s1);
-		  p = malloc (s2 - s1 + 1);
-		  if (p)
-		    {
-		      memcpy (p, s1, s2 - s1);
-		      p[s2-s1] = 0;
-		      trim_spaces (p);
-		      fp = fopen (p,"a");
-		      if (fp)
-			{
-			  setvbuf (fp, NULL, _IOLBF, 0);
-			  errfp = fp;
-			}
-		      free (p);
-		    }
-#ifndef HAVE_DOSISH_SYSTEM
-		}
-#endif
-	    }
+	  debug_level = atoi (e);
+          s1 = strchr (e, PATHSEP_C);
+          if (s1 && safe_to_use_debug_file ())
+            {
+              s1++;
+              if (!(s2 = strchr (s1, PATHSEP_C)))
+                s2 = s1 + strlen (s1);
+              p = malloc (s2 - s1 + 1);
+              if (p)
+                {
+                  memcpy (p, s1, s2 - s1);
+                  p[s2-s1] = 0;
+                  trim_spaces (p);
+                  if (strstr (p, "^//"))
+                    {
+                      /* map chars to allow socket: and tcp: */
+                      for (r=p; *r; r++)
+                        if (*r == '^')
+                          *r = ':';
+                    }
+                  if (*p)
+                    gpgrt_log_set_sink (p, NULL, -1);
+                  free (p);
+                }
+            }
 	  free (e);
+
+          gpgrt_log_get_prefix (&flags);
+          flags |= (GPGRT_LOG_WITH_PREFIX
+                    | GPGRT_LOG_WITH_TIME
+                    | GPGRT_LOG_WITH_PID);
+          gpgrt_log_set_prefix (*gpgrt_log_get_prefix (NULL)?NULL:"gpgme",
+                                flags);
+          gpgrt_log_set_pid_suffix_cb (tid_log_callback);
         }
     }
 
   if (debug_level > 0)
     {
       _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                    "gpgme_debug: level=%d\n", debug_level);
+                    "gpgme_debug: level=%d", debug_level);
 #ifdef HAVE_W32_SYSTEM
       {
         const char *name = _gpgme_get_inst_dir ();
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme_debug: gpgme='%s'\n", name? name: "?");
+                      "gpgme_debug: gpgme='%s'", name? name: "?");
       }
 #endif
     }
@@ -250,9 +277,8 @@ _gpgme_debug (void **line, int level, int mode,
 {
   va_list arg_ptr;
   int saved_errno;
-  int need_lf;
   int indent;
-  char *prefix, *stdinfo, *userinfo;
+  char *stdinfo, *userinfo;
   const char *modestr;
   int no_userinfo = 0;
 
@@ -267,17 +293,6 @@ _gpgme_debug (void **line, int level, int mode,
 
   saved_errno = errno;
   va_start (arg_ptr, format);
-  {
-    struct tm *tp;
-    time_t atime = time (NULL);
-
-    tp = localtime (&atime);
-    prefix = gpgrt_bsprintf ("GPGME %04d%02d%02dT%02d%02d%02d %04llX  %*s",
-                             1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                             tp->tm_hour, tp->tm_min, tp->tm_sec,
-                             (unsigned long long) ath_self (),
-                             indent < 40? indent : 40, "");
-  }
 
   switch (mode)
     {
@@ -305,33 +320,25 @@ _gpgme_debug (void **line, int level, int mode,
     }
   va_end (arg_ptr);
 
-  if (mode != -1 && (!format || !*format))
-    need_lf = 1;
-  else if (userinfo && *userinfo && userinfo[strlen (userinfo) - 1] != '\n')
-    need_lf = 1;
-  else
-    need_lf = 0;
-
   if (line)
-    *line = gpgrt_bsprintf ("%s%s%s",
-                            prefix? prefix : "GPGME out-of-core ",
-                            !modestr? "" : stdinfo? stdinfo :
-                            (!format || !*format)? "" :"out-of-core ",
+    *line = gpgrt_bsprintf ("%s%s",
+                            (!modestr ? "" :
+                             stdinfo  ? stdinfo :
+                             (!format || !*format)? "" :"out-of-core "),
                             userinfo? userinfo : "out-of-core");
   else
     {
-      fprintf (errfp, "%s%s%s%s",
-               prefix? prefix : "GPGME out-of-core ",
-               !modestr? "" : stdinfo? stdinfo :
-               (!format || !*format)? "" :"out-of-core ",
-               userinfo? userinfo : no_userinfo? "" : "out-of-core",
-               need_lf? "\n":"");
-      fflush (errfp);
+      gpgrt_log (GPGRT_LOGLVL_INFO, "%*s%s%s",
+                 indent < 40? indent : 40, "",
+                 (!modestr ? "" :
+                  stdinfo  ? stdinfo :
+                  (!format || !*format)? "" : "out-of-core "),
+                 (userinfo? userinfo :
+                  no_userinfo? "" : "out-of-core"));
     }
 
   gpgrt_free (userinfo);
   gpgrt_free (stdinfo);
-  gpgrt_free (prefix);
   gpg_err_set_errno (saved_errno);
   return 0;
 }
@@ -378,10 +385,7 @@ _gpgme_debug_end (void **line)
     return;
   string = *line;
 
-  fprintf (errfp, "%s%s",
-           string,
-           (*string && string[strlen (string)-1] != '\n')? "\n":"");
-  fflush (errfp);
+  gpgrt_log (GPGRT_LOGLVL_INFO, "%s", string);
   gpgrt_free (*line);
   *line = NULL;
 }
