@@ -269,6 +269,8 @@ main (int argc, char *argv[])
       exit (1);
     }
 
+  gpgme_key_unref (key);
+  gpgme_release (ctx);
 
   return 0;
 }
