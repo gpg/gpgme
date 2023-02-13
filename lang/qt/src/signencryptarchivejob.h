@@ -86,6 +86,23 @@ public:
                                const GpgME::Context::EncryptionFlags flags) = 0;
 
 Q_SIGNALS:
+    /**
+     * This signal is emitted whenever gpgtar sends a progress status update for
+     * the number of files. In the scanning phase (i.e. while gpgtar checks
+     * which files to put into the archive), \a current is the current number of
+     * files and \a total is 0. In the writing phase, \a current is the number
+     * of processed files and \a total is the total number of files.
+     */
+    void fileProgress(int current, int total);
+
+    /**
+     * This signal is emitted whenever gpgtar sends a progress status update for
+     * the amount of processed data. It is only emitted in the writing phase.
+     * \a current is the processed amount data and \a total is the total amount
+     * of data to process. Both values never exceed 2^20.
+     */
+    void dataProgress(int current, int total);
+
     void result(const GpgME::SigningResult &signingResult,
                 const GpgME::EncryptionResult &encryptionResult,
                 const QString &auditLogAsHtml = {},

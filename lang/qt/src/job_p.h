@@ -36,6 +36,8 @@
 
 #include "job.h"
 
+#include "qgpgme_debug.h"
+
 #include <memory>
 
 namespace QGpgME
@@ -60,6 +62,25 @@ template <typename T>
 static T *jobPrivate(const Job *job) {
     auto d = getJobPrivate(job);
     return dynamic_cast<T *>(d);
+}
+
+// Helper for the archive job classes
+template<class JobClass>
+void emitArchiveProgressSignals(JobClass *job, const QString &what, int type, int current, int total)
+{
+    if (what != QLatin1String{"gpgtar"}) {
+        return;
+    }
+    switch (type) {
+    case 'c':
+        Q_EMIT job->fileProgress(current, total);
+        break;
+    case 's':
+        Q_EMIT job->dataProgress(current, total);
+        break;
+    default:
+        qCDebug(QGPGME_LOG) << job << __func__ << "Received progress for gpgtar with unknown type" << char(type);
+    };
 }
 
 }

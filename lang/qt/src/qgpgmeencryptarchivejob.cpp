@@ -78,6 +78,9 @@ QGpgMEEncryptArchiveJob::QGpgMEEncryptArchiveJob(Context *context)
 {
     setJobPrivate(this, std::unique_ptr<QGpgMEEncryptArchiveJobPrivate>{new QGpgMEEncryptArchiveJobPrivate{this}});
     lateInitialization();
+    connect(this, &Job::rawProgress, this, [this](const QString &what, int type, int current, int total) {
+        emitArchiveProgressSignals(this, what, type, current, total);
+    });
 }
 
 static QGpgMEEncryptArchiveJob::result_type encrypt(Context *ctx,

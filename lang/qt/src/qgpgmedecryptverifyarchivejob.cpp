@@ -77,6 +77,9 @@ QGpgMEDecryptVerifyArchiveJob::QGpgMEDecryptVerifyArchiveJob(Context *context)
 {
     setJobPrivate(this, std::unique_ptr<QGpgMEDecryptVerifyArchiveJobPrivate>{new QGpgMEDecryptVerifyArchiveJobPrivate{this}});
     lateInitialization();
+    connect(this, &Job::rawProgress, this, [this](const QString &what, int type, int current, int total) {
+        emitArchiveProgressSignals(this, what, type, current, total);
+    });
 }
 
 static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify(Context *ctx,
