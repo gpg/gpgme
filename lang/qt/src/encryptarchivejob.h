@@ -80,18 +80,6 @@ public:
                                const std::shared_ptr<QIODevice> &cipherText,
                                const GpgME::Context::EncryptionFlags flags) = 0;
 
-    /**
-     * Creates an encrypted archive.
-     *
-     * Encrypts the files and directories in \a paths into an archive for the
-     * keys in \a recipients. If \a recipients is empty, then symmetric
-     * encryption is performed. The encrypted archive is written to \a cipherText.
-     */
-    // virtual GpgME::EncryptionResult exec(const std::vector<GpgME::Key> &recipients,
-    //                                      const std::vector<QString> &paths,
-    //                                      const std::shared_ptr<QIODevice> &cipherText,
-    //                                      const GpgME::Context::EncryptionFlags flags) = 0;
-
 Q_SIGNALS:
     void result(const GpgME::EncryptionResult &result,
                 const QString &auditLogAsHtml = {},
