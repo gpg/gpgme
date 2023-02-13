@@ -209,7 +209,7 @@ void QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, 
         }
         const QString what = *++it;
         ok = false;
-        (*++it).toInt(&ok);
+        const int type = (*++it).toInt(&ok);
         if (!ok) {
             qCDebug(QGPGME_LOG) << "expected number for \"type\", got something else";
             return;
@@ -226,9 +226,12 @@ void QGpgMERefreshSMIMEKeysJob::slotStatus(QProcess *proc, const QString &type, 
             qCDebug(QGPGME_LOG) << "expected number for \"total\", got something else";
             return;
         }
-        // TODO port
-        Q_EMIT progress(QString(), cur, total);
-
+        Q_EMIT jobProgress(cur, total);
+        Q_EMIT rawProgress(what, type, cur, total);
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
+        Q_EMIT progress(what, cur, total);
+        QT_WARNING_POP
     }
 }
 

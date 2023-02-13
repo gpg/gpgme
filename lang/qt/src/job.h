@@ -106,7 +106,38 @@ public Q_SLOTS:
     virtual void slotCancel() = 0;
 
 Q_SIGNALS:
-    void progress(const QString &what, int current, int total);
+    /**
+     * This signal is emitted whenever the backend sends a progress status
+     * message. For most jobs, \a current is the amount of processed data
+     * (or files) and \a total is the total amount of data (of files). If
+     * \a total is 0, then the total amount is unknown or not yet known.
+     * For GnuPG 2.1.13 and later, \a current and \a total do not exceed
+     * 2^20, i.e. for larger values they are scaled down and you should not
+     * assume that they represent absolute values.
+     *
+     * Check the documentation on progress in the GpgME manual for details.
+     *
+     * Note: Some jobs provide special progress signals, e.g. for file-count-
+     * or data-based progress.
+     */
+    void jobProgress(int current, int total);
+
+    /**
+     * This signal is emitted whenever the backend sends a progress status
+     * message. Compared to the jobProgress signal this signal also provides the
+     * what value and the type value reported by the backend. Usually, these
+     * values can safely be ignored, so that you are better off using the
+     * simpler jobProgress signal.
+     * Check the documentation on progress in the GpgME manual for details
+     * on what and type.
+     *
+     * Note: Some jobs provide special progress signals, so that you do not
+     * have to deal with what and type yourself.
+     */
+    void rawProgress(const QString &what, int type, int current, int total);
+
+    QGPGME_DEPRECATED void progress(const QString &what, int current, int total);
+
     void done();
 };
 

@@ -250,17 +250,21 @@ protected:
     {
         return m_auditLogError;
     }
-    void showProgress(const char * /*what*/,
-                      int /*type*/, int current, int total) override {
-        // will be called from the thread exec'ing the operation, so
-        // just bounce everything to the owning thread:
-        // ### hope this is thread-safe (meta obj is const, and
-        // ### portEvent is thread-safe, so should be ok)
-        QMetaObject::invokeMethod(this, "progress", Qt::QueuedConnection,
-        // TODO port
-        Q_ARG(QString, QString()),
-        Q_ARG(int, current),
-        Q_ARG(int, total));
+    void showProgress(const char *what,
+                      int type, int current, int total) override {
+        QMetaObject::invokeMethod(this, [this, current, total]() {
+            Q_EMIT this->jobProgress(current, total);
+        }, Qt::QueuedConnection);
+        const QString what_ = QString::fromUtf8(what);
+        QMetaObject::invokeMethod(this, [this, what_, type, current, total]() {
+            Q_EMIT this->rawProgress(what_, type, current, total);
+        }, Qt::QueuedConnection);
+        QMetaObject::invokeMethod(this, [this, what_, current, total]() {
+            QT_WARNING_PUSH
+            QT_WARNING_DISABLE_DEPRECATED
+            Q_EMIT this->progress(what_, current, total);
+            QT_WARNING_POP
+        }, Qt::QueuedConnection);
     }
 private:
     template <typename T1, typename T2>

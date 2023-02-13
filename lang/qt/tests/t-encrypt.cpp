@@ -120,7 +120,22 @@ private Q_SLOTS:
 
         bool initSeen = false;
         bool finishSeen = false;
-        connect(job, &Job::progress, this, [this, &initSeen, &finishSeen] (const QString&, int current, int total) {
+        connect(job, &Job::jobProgress, this, [&initSeen, &finishSeen] (int current, int total) {
+                // We only check for progress 0 and max progress as the other progress
+                // lines depend on the system speed and are as such unreliable to test.
+                QVERIFY(total == PROGRESS_TEST_SIZE);
+                if (current == 0) {
+                    initSeen = true;
+                }
+                if (current == total) {
+                    finishSeen = true;
+                }
+                QVERIFY(current >= 0 && current <= total);
+            });
+        connect(job, &Job::rawProgress, this, [&initSeen, &finishSeen] (const QString &what, int type, int current, int total) {
+                // `what` is something like "-&12", i.e. a special fd passed to gpg; we only check that it's not empty
+                QVERIFY(!what.isEmpty());
+                QCOMPARE(type, '?');
                 // We only check for progress 0 and max progress as the other progress
                 // lines depend on the system speed and are as such unreliable to test.
                 QVERIFY(total == PROGRESS_TEST_SIZE);
