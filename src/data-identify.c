@@ -336,8 +336,10 @@ basic_detection (char *data, size_t datalen)
   SEQUENCE    SEQUENCE    [0]   INTEGER  INTEGER                    SEQU
               (tbs)            (version) (s/n)                      (Algo)
 
-    Thus we need to read at least 22 bytes, we add 2 bytes to cope with
-    length headers stored with 4 bytes.
+    Thus we need to read at least 22 bytes, we add 2 bytes to cope
+    with length headers stored with 4 bytes.  For a v0 certificate the
+    tag and the bersion are missin (they are implicit) - detect this
+    too as a cert becuase some root CA use this.
   */
 
 
@@ -357,24 +359,34 @@ basic_detection (char *data, size_t datalen)
     {
       if (parse_tlv (&s, &n, &ti))
         goto try_pgp;
-      if (!(ti.cls == ASN1_CLASS_CONTEXT && ti.tag == 0
-            && ti.is_cons && ti.length == 3 && n >= ti.length))
-        goto try_pgp;
+      if (ti.cls == ASN1_CLASS_CONTEXT && ti.tag == 0
+          && ti.is_cons && ti.length == 3 && n >= ti.length)
+        {
+          if (parse_tlv (&s, &n, &ti))
+            goto try_pgp;
+          if (!(ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
+                && !ti.is_cons && ti.length == 1 && n && (*s == 1 || *s == 2)))
+            goto try_pgp;
+          s++;
+          n--;
+          if (!(ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
+                && !ti.is_cons))
+            goto try_pgp;
+          /* Because the now following S/N may be larger than the sample
+             data we have, we stop parsing here and don't check for the
+             algorithm ID.  */
+          return GPGME_DATA_TYPE_X509_CERT;  /* regular cert.  */
+        }
+      if (ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
+          && !ti.is_cons)
+        {
+          /* Because this S/N may be larger than the sample data we
+             have, we can't check that a SEQUENCE follows.  */
+          return GPGME_DATA_TYPE_X509_CERT;  /* v0 cert with implict tag.  */
+        }
 
-      if (parse_tlv (&s, &n, &ti))
-        goto try_pgp;
-      if (!(ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
-            && !ti.is_cons && ti.length == 1 && n && (*s == 1 || *s == 2)))
-        goto try_pgp;
-      s++;
-      n--;
-      if (!(ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
-            && !ti.is_cons))
-        goto try_pgp;
-      /* Because the now following S/N may be larger than the sample
-         data we have, we stop parsing here and don't check for the
-         algorithm ID.  */
-      return GPGME_DATA_TYPE_X509_CERT;
+      goto try_pgp;
+
     }
   if (ti.cls == ASN1_CLASS_UNIVERSAL && ti.tag == ASN1_TAG_INTEGER
       && !ti.is_cons && ti.length == 1 && n && *s == 3)
