@@ -231,6 +231,7 @@ show_usage (int ex)
          "  --status         print status lines from the backend\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --binary         assume binary signature\n"
          "  --sender MBOX    use MBOX as sender address\n"
          "  --repeat N       repeat the operation N times\n"
          "  --auto-key-retrieve\n"
@@ -255,6 +256,7 @@ main (int argc, char **argv)
   const char *directory = NULL;
   int auto_key_retrieve = 0;
   int auto_key_import = 0;
+  gpgme_data_encoding_t encoding = GPGME_DATA_ENCODING_NONE;
   int diagnostics = 0;
   int repeats = 1;
   int i;
@@ -290,6 +292,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--cms"))
         {
           protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--binary"))
+        {
+          encoding = GPGME_DATA_ENCODING_BINARY;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--sender"))
@@ -429,6 +436,7 @@ main (int argc, char **argv)
                    gpgme_strerror (err));
           exit (1);
         }
+      gpgme_data_set_encoding (sig, encoding);
       if (fp_msg)
         {
           err = gpgme_data_new_from_stream (&msg, fp_msg);
