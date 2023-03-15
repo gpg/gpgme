@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017, 2018 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018, 2022 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2018-07-10
+# Version: 2023-03-15
 
 configure_ac="configure.ac"
 
@@ -137,8 +137,6 @@ extraoptions=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
-w32ce_toolprefixes=
-w32ce_extraoptions=
 w64_toolprefixes=
 w64_extraoptions=
 amd64_toolprefixes=
@@ -146,7 +144,6 @@ amd64_toolprefixes=
 # What follows are variables which are sourced but default to
 # environment variables or lacking them hardcoded values.
 #w32root=
-#w32ce_root=
 #w64root=
 #amd64root=
 
@@ -165,11 +162,6 @@ case "$1" in
         ;;
     --build-w32)
         myhost="w32"
-        shift
-        ;;
-    --build-w32ce)
-        myhost="w32"
-        myhostsub="ce"
         shift
         ;;
     --build-w64)
@@ -203,7 +195,7 @@ if [ "$myhost" = "git-build" ]; then
     die_p
     make || fatal "error running make"
     die_p
-    make check || fatal "error running male check"
+    make check || fatal "error running make check"
     die_p
     exit 0
 fi
@@ -241,10 +233,12 @@ if [ "$myhost" = "find-version" ]; then
     if [ -z "$micro" ]; then
       matchstr1="$package-$major.[0-9]*"
       matchstr2="$package-$major-base"
+      matchstr3=""
       vers="$major.$minor"
     else
       matchstr1="$package-$major.$minor.[0-9]*"
-      matchstr2="$package-$major.$minor-base"
+      matchstr2="$package-$major.[0-9]*-base"
+      matchstr3="$package-$major-base"
       vers="$major.$minor.$micro"
     fi
 
@@ -252,13 +246,22 @@ if [ "$myhost" = "find-version" ]; then
     if [ -e .git ]; then
       ingit=yes
       tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
-      tmp=$(echo "$tmp" | sed s/^"$package"//)
       if [ -n "$tmp" ]; then
-          tmp=$(echo "$tmp" | sed s/^"$package"//  \
-                | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
+          tmp=$(echo "$tmp" | sed s/^"$package"// \
+                    | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
       else
-          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null \
-                | awk -F- '$4!=0{print"-beta"$4}')
+          # (due tof "-base" in the tag we need to take the 4th field)
+          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null)
+          if [ -n "$tmp" ]; then
+              tmp=$(echo "$tmp" | sed s/^"$package"// \
+                        | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
+          elif [ -n "${matchstr3}" ]; then
+              tmp=$(git describe --match "${matchstr3}" --long 2>/dev/null)
+              if [ -n "$tmp" ]; then
+                  tmp=$(echo "$tmp" | sed s/^"$package"// \
+                          | awk -F- '$4!=0 && $4 !~ /^beta/ {print"-beta"$4}')
+              fi
+          fi
       fi
       [ -n "$tmp" ] && beta=yes
       rev=$(git rev-parse --short HEAD | tr -d '\n\r')
@@ -294,12 +297,6 @@ fi
 # ******************
 if [ "$myhost" = "w32" ]; then
     case $myhostsub in
-        ce)
-          w32root="$w32ce_root"
-          [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
-          toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="$extraoptions $w32ce_extraoptions"
-          ;;
         64)
           w32root="$w64root"
           [ -z "$w32root" ] && w32root="$HOME/w64root"
