@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.19.0 (unreleased)
+Noteworthy changes in version 1.19.0 (2023-03-17)
 -------------------------------------------------
 
  * New convenience option --identify for gpgme-json.
@@ -72,6 +72,8 @@ Noteworthy changes in version 1.19.0 (unreleased)
  qt: Job::jobProgress                       NEW.
  qt: Job::rawProgress                       NEW.
  qt: Job::progress                          DEPRECATED.
+
+ [c=C39/A28/R0 cpp=C22/A16/R0 qt=C17/A2/R0]
 
  Release-info: https://dev.gnupg.org/T6341
 
