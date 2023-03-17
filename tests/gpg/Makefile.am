@@ -61,7 +61,7 @@ EXTRA_DIST = initial.test final.test \
         pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	cipher-3.asc cipher-no-sig.asc \
 	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys) \
-	gpg.conf.in
+	gpg.conf.in ownertrust.txt
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
