@@ -515,6 +515,21 @@ bool Subkey::canAuthenticate() const
     return subkey && subkey->can_authenticate;
 }
 
+bool Subkey::canRenc() const
+{
+    return subkey && subkey->can_renc;
+}
+
+bool Subkey::canTimestamp() const
+{
+    return subkey && subkey->can_timestamp;
+}
+
+bool Subkey::isGroupOwned() const
+{
+    return subkey && subkey->is_group_owned;
+}
+
 bool Subkey::isQualified() const
 {
     return subkey && subkey->is_qualified;
@@ -1261,7 +1276,10 @@ std::ostream &operator<<(std::ostream &os, const Subkey &subkey)
            << "\n canEncrypt:    " << subkey.canEncrypt()
            << "\n canCertify:    " << subkey.canCertify()
            << "\n canAuth:       " << subkey.canAuthenticate()
+           << "\n canRenc:       " << subkey.canRenc()
+           << "\n canTimestanp:  " << subkey.canTimestamp()
            << "\n isSecret:      " << subkey.isSecret()
+           << "\n isGroupOwned:  " << subkey.isGroupOwned()
            << "\n isQualified:   " << subkey.isQualified()
            << "\n isDeVs:        " << subkey.isDeVs()
            << "\n isCardKey:     " << subkey.isCardKey()

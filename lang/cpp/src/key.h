@@ -270,6 +270,9 @@ public:
     bool canSign() const;
     bool canCertify() const;
     bool canAuthenticate() const;
+    bool canRenc() const;
+    bool canTimestamp() const;
+    bool isGroupOwned() const;
     bool isQualified() const;
     bool isDeVs() const;
     bool isCardKey() const;

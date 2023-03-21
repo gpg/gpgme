@@ -309,19 +309,22 @@ main (int argc, char **argv)
             printf ("grip  %2d: %s\n", nsub, subkey->keygrip);
           if (subkey->curve)
             printf ("curve %2d: %s\n", nsub, subkey->curve);
-          printf ("caps  %2d: %s%s%s%s\n",
+          printf ("caps  %2d: %s%s%s%s%s%s\n",
                   nsub,
                   subkey->can_encrypt? "e":"",
                   subkey->can_sign? "s":"",
                   subkey->can_certify? "c":"",
-                  subkey->can_authenticate? "a":"");
-          printf ("flags %2d:%s%s%s%s%s%s%s%s\n",
+                  subkey->can_authenticate? "a":"",
+                  subkey->can_renc? "r":"",
+                  subkey->can_timestamp? "t":"");
+          printf ("flags %2d:%s%s%s%s%s%s%s%s%s\n",
                   nsub,
                   subkey->secret? " secret":"",
                   subkey->revoked? " revoked":"",
                   subkey->expired? " expired":"",
                   subkey->disabled? " disabled":"",
                   subkey->invalid? " invalid":"",
+                  subkey->is_group_owned? " group":"",
                   subkey->is_qualified? " qualified":"",
                   subkey->is_de_vs? " de-vs":"",
                   subkey->is_cardkey? " cardkey":"");

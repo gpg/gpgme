@@ -287,6 +287,18 @@ set_subkey_capability (gpgme_subkey_t subkey, const char *src)
 	  subkey->can_authenticate = 1;
 	  break;
 
+        case 'r':
+          subkey->can_renc = 1;
+          break;
+
+        case 't':
+          subkey->can_timestamp = 1;
+          break;
+
+        case 'g':
+          subkey->is_group_owned = 1;
+          break;
+
 	case 'q':
 	  subkey->is_qualified = 1;
 	  break;

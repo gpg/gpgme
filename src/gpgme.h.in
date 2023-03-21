@@ -575,8 +575,17 @@ struct _gpgme_subkey
   /* True if the key is compliant to the de-vs mode.  */
   unsigned int is_de_vs : 1;
 
+  /* True if the key can be used for restricted encryption (ADSK).  */
+  unsigned int can_renc : 1;
+
+  /* True if the key can be used for timestamping.  */
+  unsigned int can_timestamp : 1;
+
+  /* True if the private key is possessed by more than one person.  */
+  unsigned int is_group_owned : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 20;
+  unsigned int _unused : 17;
 
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;
