@@ -874,7 +874,7 @@ gpg_set_command_handler (void *engine, engine_command_handler_t fnc,
 static gpgme_error_t
 build_argv (engine_gpg_t gpg, const char *pgmname)
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
   struct arg_and_data_s *a;
   struct fd_data_map_s *fd_data_map = NULL;
   size_t datac=0, argc=0, allocated_argc=0;
