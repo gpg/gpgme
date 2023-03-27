@@ -958,8 +958,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (!fd_data_map)
     {
       err = gpg_error_from_syserror ();
-      if (err)
-        goto leave;
+      goto leave;
     }
 
   argc = datac = 0;
@@ -967,8 +966,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (!argv[argc])
     {
       err = gpg_error_from_syserror ();
-      if (err)
-        goto leave;
+      goto leave;
     }
   argc++;
   if (need_special)
@@ -977,8 +975,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -988,8 +985,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1004,8 +1000,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1014,8 +1009,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1028,8 +1022,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1037,8 +1030,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
         {
           err = gpg_error_from_syserror ();
-          if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1051,8 +1043,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1060,8 +1051,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
         {
           err = gpg_error_from_syserror ();
-          if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1074,8 +1064,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1083,8 +1072,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1097,8 +1085,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1106,8 +1093,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1120,8 +1106,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1129,8 +1114,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1143,8 +1127,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1152,8 +1135,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1177,8 +1159,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
               if (!argv[argc])
                 {
                   err = gpg_error_from_syserror ();
-                  if (err)
-                    goto leave;
+                  goto leave;
                 }
               argc++;
             }
@@ -1186,8 +1167,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           if (!argv[argc])
             {
               err = gpg_error_from_syserror ();
-              if (err)
-                goto leave;
+              goto leave;
             }
           argc++;
         }
@@ -1199,8 +1179,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       if (!argv[argc])
 	{
           err = gpg_error_from_syserror ();
-	  if (err)
-            goto leave;
+          goto leave;
         }
       argc++;
     }
@@ -1222,8 +1201,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 		== -1)
 	      {
 		err = gpg_error_from_syserror ();
-		if (err)
-                  goto leave;
+                goto leave;
 	      }
 	    if (_gpgme_io_set_close_notify (fds[0],
 					    close_notify_handler, gpg)
@@ -1272,8 +1250,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	      if (!argv[argc])
 		{
                   err = gpg_error_from_syserror ();
-		  if (err)
-                    goto leave;
+                  goto leave;
                 }
 
 	      ptr = argv[argc];
@@ -1298,8 +1275,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
               if (!argv[argc])
                 {
                   err = gpg_error_from_syserror ();
-                  if (err)
-                    goto leave;
+                  goto leave;
                 }
               argc++;
             }
@@ -1307,8 +1283,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
 	  if (!argv[argc])
 	    {
               err = gpg_error_from_syserror ();
-	      if (err)
-                goto leave;
+              goto leave;
             }
             argc++;
         }
