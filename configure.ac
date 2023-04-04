@@ -922,6 +922,9 @@ AH_BOTTOM([
 # define GPGME_GCC_A_PURE
 #endif
 
+/* Under Windows we use the gettext code from gpgrt.  */
+#define GPG_ERR_ENABLE_GETTEXT_MACROS
+
 /* Under WindowsCE we need gpg-error's strerror macro.  */
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
 

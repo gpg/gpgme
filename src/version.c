@@ -72,6 +72,9 @@ do_subsystem_inits (void)
 
     WSAStartup (0x202, &wsadat);
   }
+
+  /* We want gpgrt's gettext to always output UTF-8. */
+  gettext_use_utf8 (1);
 #endif
 
   _gpgme_debug_subsystem_init ();
