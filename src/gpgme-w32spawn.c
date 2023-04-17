@@ -40,9 +40,17 @@
 
 #include "priv-io.h"
 
+/* #define DEBUG_TO_FILE 1 */
+
 
 /* Name of this program.  */
 #define PGM "gpgme-w32spawn"
+
+#ifdef DEBUG_TO_FILE
+static FILE *mystderr;
+#else
+#define mystderr stderr
+#endif
 
 
 
@@ -126,7 +134,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   i = 0;
   while (argv[i])
     {
-      fprintf (stderr, PGM": argv[%2i] = %s\n", i, argv[i]);
+      fprintf (mystderr, PGM": argv[%2i] = %s\n", i, argv[i]);
       i++;
     }
 
@@ -146,8 +154,6 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   si.hStdOutput = GetStdHandle (STD_OUTPUT_HANDLE);
   si.hStdError = GetStdHandle (STD_ERROR_HANDLE);
 
-  fprintf (stderr, PGM": spawning: %s\n", arg_string);
-
   for (i = 0; fd_list[i].fd != -1; i++)
     {
       /* The handle already is inheritable.  */
@@ -155,19 +161,19 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 	{
 	  si.hStdInput = (HANDLE) fd_list[i].peer_name;
 	  duped_stdin = 1;
-	  fprintf (stderr, PGM": dup 0x%x to stdin\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM": dup 0x%x to stdin\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 1)
 	{
 	  si.hStdOutput = (HANDLE) fd_list[i].peer_name;
 	  duped_stdout = 1;
-	  fprintf (stderr, PGM": dup 0x%x to stdout\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM": dup 0x%x to stdout\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 2)
 	{
 	  si.hStdError = (HANDLE) fd_list[i].peer_name;
 	  duped_stderr = 1;
-	  fprintf (stderr, PGM":dup 0x%x to stderr\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM":dup 0x%x to stderr\n", fd_list[i].peer_name);
         }
     }
 
@@ -216,6 +222,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 		       &pi))          /* returns process information */
     {
       free (arg_string);
+      fprintf (mystderr, PGM": spawn error: %d\n", (int)GetLastError ());
       /* FIXME: Should translate the error code.  */
       errno = EIO;
       return -1;
@@ -252,7 +259,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       if (func)
         {
           int rc = func (pi.dwProcessId);
-          fprintf (stderr, PGM": AllowSetForegroundWindow(%d): rc=%d\n",
+          fprintf (mystderr, PGM": AllowSetForegroundWindow(%d): rc=%d\n",
                    (int)pi.dwProcessId, rc);
         }
     }
@@ -418,7 +425,7 @@ translate_handles (const char *trans_file, const char * const *argv,
 
       if (aidx >= n_args)
         {
-	  fprintf (stderr, PGM": translation file does not match args\n");
+	  fprintf (mystderr, PGM": translation file does not match args\n");
           return NULL;
         }
 
@@ -455,6 +462,10 @@ main (int argc, const char * const *argv)
       goto leave;
     }
 
+#ifdef DEBUG_TO_FILE
+  mystderr = fopen ("h:/gpgme-w32spawn.log", "w");
+#endif
+
   argv_spawn = translate_handles (argv[1], &argv[2], fd_list, &flags);
   if (!argv_spawn)
     {
@@ -468,7 +479,7 @@ main (int argc, const char * const *argv)
   rc = my_spawn (argv_spawn, fd_list, flags);
   if (rc < 0)
     {
-      fprintf (stderr, PGM": executing `%s' failed: %s\n",
+      fprintf (mystderr, PGM": executing `%s' failed: %s\n",
 	       argv[0], strerror (errno));
       rc = 2;
       goto leave;
@@ -476,12 +487,12 @@ main (int argc, const char * const *argv)
 
  leave:
   if (rc)
-    fprintf (stderr, PGM": internal error\n");
+    fprintf (mystderr, PGM": internal error\n");
   /* Always try to delete the temporary file.  */
   if (argc >= 2)
     {
       if (DeleteFile (argv[1]) == 0)
-	fprintf (stderr, PGM": failed to delete %s: ec=%ld\n",
+	fprintf (mystderr, PGM": failed to delete %s: ec=%ld\n",
 		 argv[1], GetLastError ());
     }
   return rc;

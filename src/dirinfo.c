@@ -32,6 +32,12 @@
 #include "sema.h"
 #include "sys-util.h"
 
+#ifdef HAVE_DOSISH_SYSTEM
+# define EXEEXT_S ".exe"
+#else
+# define EXEEXT_S ""
+#endif
+
 DEFINE_STATIC_LOCK (dirinfo_lock);
 
 /* Constants used internally to select the data.  */
@@ -404,16 +410,18 @@ get_gpgconf_item (int what)
     case WANT_GPG_WKS_CLIENT_NAME:
       if (!dirinfo.gpg_wks_client_name && dirinfo.libexecdir)
         dirinfo.gpg_wks_client_name = _gpgme_strconcat (dirinfo.libexecdir,
-                                                        "/",
+                                                        DIRSEP_S,
                                                         "gpg-wks-client",
+                                                        EXEEXT_S,
                                                         NULL);
       result = dirinfo.gpg_wks_client_name;
       break;
     case WANT_GPGTAR_NAME:
       if (!dirinfo.gpgtar_name && dirinfo.bindir)
         dirinfo.gpgtar_name = _gpgme_strconcat (dirinfo.bindir,
-                                                "/",
+                                                DIRSEP_S,
                                                 "gpgtar",
+                                                EXEEXT_S,
                                                 NULL);
       result = dirinfo.gpgtar_name;
       break;
