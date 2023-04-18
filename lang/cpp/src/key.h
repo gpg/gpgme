@@ -110,16 +110,8 @@ public:
     bool isBad() const;
 
     bool canEncrypt() const;
-    /*!
-      This function contains a workaround for old gpgme's: all secret
-      OpenPGP keys canSign() == true, which canReallySign() doesn't
-      have. I don't have time to find what breaks when I remove this
-      workaround, but since Kleopatra merges secret into public keys,
-      the workaround is not necessary there (and actively harms), I've
-      added a new function instead.
-     */
     bool canSign() const;
-    bool canReallySign() const;
+    GPGMEPP_DEPRECATED bool canReallySign() const;
     bool canCertify() const;
     bool canAuthenticate() const;
     bool isQualified() const;

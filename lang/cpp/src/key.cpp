@@ -208,17 +208,12 @@ bool Key::canEncrypt() const
 
 bool Key::canSign() const
 {
-#ifndef GPGME_CAN_SIGN_ON_SECRET_OPENPGP_KEYLISTING_NOT_BROKEN
-    if (key && key->protocol == GPGME_PROTOCOL_OpenPGP) {
-        return true;
-    }
-#endif
-    return canReallySign();
+    return key && key->can_sign;
 }
 
 bool Key::canReallySign() const
 {
-    return key && key->can_sign;
+    return canSign();
 }
 
 bool Key::canCertify() const
@@ -1297,7 +1292,7 @@ std::ostream &operator<<(std::ostream &os, const Key &key)
            << "\n issuer:     " << protect(key.issuerName())
            << "\n fingerprint:" << protect(key.primaryFingerprint())
            << "\n listmode:   " << key.keyListMode()
-           << "\n canSign:    " << key.canReallySign()
+           << "\n canSign:    " << key.canSign()
            << "\n canEncrypt: " << key.canEncrypt()
            << "\n canCertify: " << key.canCertify()
            << "\n canAuth:    " << key.canAuthenticate()
