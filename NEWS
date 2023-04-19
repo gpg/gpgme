@@ -3,7 +3,10 @@ Noteworthy changes in version 1.20.0 (unreleased)
 
  * On Windows, the gettext functions provided by gpgrt are switched into utf8
    mode, so that all localized texts returned by GpgME or gpgrt, e.g. the
-   texts for error codes are now UTF-8 encoded.
+   texts for error codes are now UTF-8 encoded.  [T5960]
+
+ * Key::canSign now returns false for OpenPGP keys without signing (sub)key.
+   [T6456]
 
  * Interface changes relative to the 1.19.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -13,6 +16,7 @@ Noteworthy changes in version 1.20.0 (unreleased)
  cpp: Subkey::canRenc                       NEW.
  cpp: Subkey::canTimestamp                  NEW.
  cpp: Subkey::isGroupOwned                  NEW.
+ cpp: Key::canReallySign                    DEPRECATED.
 
  Release-info: https://dev.gnupg.org/Tnnnn
 
