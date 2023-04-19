@@ -27,31 +27,10 @@ AC_DEFUN([FIND_QT6],
     # Qt6 moved moc to libexec
     qt6libexecdir=$($PKG_CONFIG --variable=libexecdir 'Qt6Core >= 6.4.0')
     AC_PATH_TOOL(MOC, moc, [], [$qt6libexecdir])
-    AC_MSG_CHECKING([moc version])
-    mocversion=`$MOC -v 2>&1`
-    mocversiongrep=`echo $mocversion | grep -E "Qt 6|moc 6"`
-    if test x"$mocversiongrep" != x"$mocversion"; then
-      AC_MSG_RESULT([no])
-      # moc was not the qt6 one, try with moc-qt6
-      AC_CHECK_TOOL(MOC2, moc-qt6)
-      mocversion=`$MOC2 -v 2>&1`
-      mocversiongrep=`echo $mocversion | grep -E "Qt 6|moc-qt6 6|moc 6"`
-      if test x"$mocversiongrep" != x"$mocversion"; then
-        AC_CHECK_TOOL(QTCHOOSER, qtchooser)
-        qt6tooldir=`QT_SELECT=qt6 qtchooser -print-env | grep QTTOOLDIR | cut -d '=' -f 2 | cut -d \" -f 2`
-        mocversion=`$qt6tooldir/moc -v 2>&1`
-        mocversiongrep=`echo $mocversion | grep -E "Qt 6|moc 6"`
-        if test x"$mocversiongrep" != x"$mocversion"; then
-          # no valid moc found
-          have_qt6_libs="no";
-        else
-          MOC=$qt6tooldir/moc
-        fi
-      else
-        MOC=$MOC2
-      fi
+    if test -z "$MOC"; then
+      AC_MSG_WARN([moc not found - Qt 6 binding will not be built.])
+      have_qt6_libs="no";
     fi
-    AC_MSG_RESULT([$mocversion])
   fi
   if test "$have_qt6_libs" = "yes"; then
     dnl Check that a binary can actually be build with this qt.
