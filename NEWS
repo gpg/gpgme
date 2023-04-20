@@ -1,12 +1,20 @@
-Noteworthy changes in version 1.20.0 (unreleased)
+Noteworthy changes in version 1.20.0 (2023-04-20)
 -------------------------------------------------
 
- * On Windows, the gettext functions provided by gpgrt are switched into utf8
-   mode, so that all localized texts returned by GpgME or gpgrt, e.g. the
-   texts for error codes are now UTF-8 encoded.  [T5960]
+ * On Windows, the gettext functions provided by gpgrt are switched
+   into utf8 mode, so that all localized texts returned by GpgME or
+   gpgrt, e.g. the texts for error codes are now UTF-8 encoded.
+   [T5960]
 
- * Key::canSign now returns false for OpenPGP keys without signing (sub)key.
-   [T6456]
+ * Key::canSign now returns false for OpenPGP keys without signing
+   (sub)key.  [T6456]
+
+ * The new macOS Homebrew location is now by default supported.
+   [T6440]
+
+ * Fix regression in 1.19.0.  [rMb608c084b9]
+
+ * Fix invocation of gpgtar on Windows.  [rM0c29119e06]
 
  * Interface changes relative to the 1.19.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -18,7 +26,9 @@ Noteworthy changes in version 1.20.0 (unreleased)
  cpp: Subkey::isGroupOwned                  NEW.
  cpp: Key::canReallySign                    DEPRECATED.
 
- Release-info: https://dev.gnupg.org/Tnnnn
+ [c=C40/A29/R0 cpp=C23/A17/R0 qt=C17/A2/R1]
+
+ Release-info: https://dev.gnupg.org/T6463
 
 
 Noteworthy changes in version 1.19.0 (2023-03-17)
