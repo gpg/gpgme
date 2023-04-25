@@ -112,18 +112,18 @@ else:
 
 nh = "{0}/.{1}".format(userdir, new_homedir)
 
+def open_0o600(path, flags):
+    return os.open(path, flags, mode=0o600)
+
 if os.path.exists(nh) is True:
     print("The {0} directory already exists.".format(nh))
 else:
     print("Creating the {0} directory.".format(nh))
-    os.mkdir(nh)
-    os.chmod(nh, 0o700)
-    with open("{0}/{1}".format(nh, "gpg.conf"), "w") as f1:
+    os.mkdir(nh, 0o700)
+    with open("{0}/{1}".format(nh, "gpg.conf"), "w", opener=open_0o600) as f1:
         f1.write(gpgconf)
-    os.chmod("{0}/{1}".format(nh, "gpg.conf"), 0o600)
-    with open("{0}/{1}".format(nh, "gpg-agent.conf"), "w") as f2:
+    with open("{0}/{1}".format(nh, "gpg-agent.conf"), "w", opener=open_0o600) as f2:
         f2.write(gpgconf)
-    os.chmod("{0}/{1}".format(nh, "gpg-agent.conf"), 0o600)
     print("""You may now use the {0} directory as an alternative GPG homedir:
 
 gpg --homedir {0}

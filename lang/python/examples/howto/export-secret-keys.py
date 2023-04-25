@@ -37,6 +37,9 @@ file formats, saved in files within the user's GPG home directory.
 The gpg-agent and pinentry are invoked to authorise the export.
 """)
 
+def open_0o600(path, flags):
+    return os.open(path, flags, mode=0o600)
+
 if sys.platform == "win32":
     gpgconfcmd = "gpgconf.exe --list-dirs homedir"
 else:
@@ -119,15 +122,13 @@ except:
     b_result = b.key_export_secret(pattern=None)
 
 if a_result is not None:
-    with open(ascfile, "wb") as f:
+    with open(ascfile, "wb", opener=open_0o600) as f:
         f.write(a_result)
-    os.chmod(ascfile, 0o600)
 else:
     pass
 
 if b_result is not None:
-    with open(gpgfile, "wb") as f:
+    with open(gpgfile, "wb", opener=open_0o600) as f:
         f.write(b_result)
-    os.chmod(gpgfile, 0o600)
 else:
     pass
