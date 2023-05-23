@@ -404,7 +404,7 @@ static gpgme_error_t pyPassphraseCb(void *hook,
     err_status = _gpg_exception2code();
   } else {
     if (!retval) {
-      if (write(fd, "\n", 1) < 0) {
+      if (gpgme_io_writen (fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
         _gpg_raise_exception (err_status);
       }
@@ -439,11 +439,11 @@ static gpgme_error_t pyPassphraseCb(void *hook,
           goto leave;
         }
 
-      if (write(fd, buf, len) < 0) {
+      if (gpgme_io_writen (fd, buf, len) < 0) {
         err_status = gpgme_error_from_syserror ();
         _gpg_raise_exception (err_status);
       }
-      if (! err_status && write(fd, "\n", 1) < 0) {
+      if (! err_status && gpgme_io_writen (fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
         _gpg_raise_exception (err_status);
       }
@@ -761,11 +761,11 @@ _gpg_interact_cb(void *opaque, const char *keyword,
           goto leave;
         }
 
-      if (write(fd, buffer, size) < 0) {
+      if (gpgme_io_writen (fd, buffer, size) < 0) {
         err_status = gpgme_error_from_syserror ();
         _gpg_raise_exception (err_status);
       }
-      if (! err_status && write(fd, "\n", 1) < 0) {
+      if (! err_status && gpgme_io_writen (fd, "\n", 1) < 0) {
         err_status = gpgme_error_from_syserror ();
         _gpg_raise_exception (err_status);
       }

@@ -25,11 +25,6 @@
 #include <gpgme.h>
 #include "Python.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#define write(fd, str, sz) {DWORD written; WriteFile((HANDLE) fd, str, sz, &written, 0);}
-#endif
-
 /* Flag specifying whether this is an in-tree build.  */
 extern int gpg_in_tree_build;
 
