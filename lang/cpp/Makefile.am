@@ -18,6 +18,12 @@
 # License along with this program; if not, see <https://gnu.org/licenses/>.
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
-SUBDIRS = src tests
+if RUN_GPG_TESTS
+tests = tests
+else
+tests =
+endif
+
+SUBDIRS = src ${tests}
 
 EXTRA_DIST = README

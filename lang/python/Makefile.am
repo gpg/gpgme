@@ -23,7 +23,13 @@ EXTRA_DIST = \
 	gpgme.i \
 	helpers.c helpers.h private.h
 
-SUBDIRS = . tests examples doc src
+if RUN_GPG_TESTS
+tests = tests
+else
+tests =
+endif
+
+SUBDIRS = . ${tests} examples doc src
 
 .PHONY: prepare
 prepare: copystamp
