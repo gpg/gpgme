@@ -3445,7 +3445,7 @@ gpg_keysign (void *engine, gpgme_key_t key, const char *userid,
 
   if (!err)
     err = add_arg (gpg, key->fpr);
-  if (!err && userid)
+  if (!err && userid && *userid)
     {
       if ((flags & GPGME_KEYSIGN_LFSEP))
         {
@@ -3491,7 +3491,7 @@ gpg_revsig (void *engine, gpgme_key_t key, gpgme_key_t signing_key,
   if (!err)
     err = add_arg (gpg, signing_key->fpr);
 
-  if (!err && userid)
+  if (!err && userid && *userid)
     {
       if ((flags & GPGME_REVSIG_LFSEP))
         {
