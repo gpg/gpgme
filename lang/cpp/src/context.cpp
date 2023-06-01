@@ -142,7 +142,7 @@ int Error::sourceID() const
 
 bool Error::isCanceled() const
 {
-    return code() == GPG_ERR_CANCELED;
+    return code() == GPG_ERR_CANCELED || code() == GPG_ERR_FULLY_CANCELED;
 }
 
 int Error::toErrno() const

@@ -1649,6 +1649,11 @@ when requested.
 @item GPG_ERR_CANCELED
 This value means that the operation was canceled.
 
+@item GPG_ERR_FULLY_CANCELED
+This value means that the operation was canceled. It is sometimes returned
+instead of @code{GPG_ERR_CANCELED} for internal reasons in GnuPG. You should
+treat both values identically.
+
 @item GPG_ERR_INV_ENGINE
 This value means that the engine that implements the desired protocol
 is currently not available.  This can either be because the sources

@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.21.0 (unreleased)
 -------------------------------------------------
 
+ * Error::isCanceled now also returns true for error code
+   GPG_ERR_FULLY_CANCELED.  [T6510]
+
 
 Noteworthy changes in version 1.20.0 (2023-04-20)
 -------------------------------------------------
