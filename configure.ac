@@ -923,7 +923,7 @@ AH_BOTTOM([
 #endif
 
 /* Under Windows we use the gettext code from gpgrt.  */
-#define GPG_ERR_ENABLE_GETTEXT_MACROS
+#define GPG_ERR_ENABLE_GETTEXT_MACROS 1
 
 /* Under WindowsCE we need gpg-error's strerror macro.  */
 #define GPG_ERR_ENABLE_ERRNO_MACROS 1
