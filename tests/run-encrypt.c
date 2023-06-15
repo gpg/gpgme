@@ -36,6 +36,7 @@
 
 
 static int verbose;
+static int cancel_after_progress;
 
 
 static char *
@@ -63,7 +64,10 @@ status_cb (void *opaque, const char *keyword, const char *value)
 static void
 progress_cb (void *opaque, const char *what, int type, int current, int total)
 {
-  (void)opaque;
+  static int count;
+  gpgme_ctx_t ctx = opaque;
+  gpg_error_t err;
+
   (void)type;
 
   if (total)
@@ -73,6 +77,19 @@ progress_cb (void *opaque, const char *what, int type, int current, int total)
   else
     fprintf (stderr, "progress for '%s' %d\n", nonnull(what), current);
   fflush (stderr);
+  count++;
+  if (cancel_after_progress && count > cancel_after_progress)
+    {
+      err = gpgme_cancel_async (ctx);
+      if (err)
+        fprintf (stderr, "gpgme_cancel failed: %s <%s>\n",
+                 gpg_strerror (err), gpg_strsource (err));
+      else
+        {
+          fprintf (stderr, "operation canceled\n");
+          cancel_after_progress = 0;
+        }
+    }
 }
 
 
@@ -136,6 +153,7 @@ show_usage (int ex)
          "  --archive          encrypt given file or directory into an archive\n"
          "  --directory DIR    switch to directory DIR before encrypting into an archive\n"
          "  --diagnostics      print diagnostics\n"
+         "  --cancel N         cancel after N progress lines\n"
          , stderr);
   exit (ex);
 }
@@ -281,6 +299,14 @@ main (int argc, char **argv)
           diagnostics = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--cancel"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          cancel_after_progress = atoi (*argv);
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -300,8 +326,8 @@ main (int argc, char **argv)
       gpgme_set_status_cb (ctx, status_cb, NULL);
       gpgme_set_ctx_flag (ctx, "full-status", "1");
     }
-  if (print_progress)
-    gpgme_set_progress_cb (ctx, progress_cb, NULL);
+  if (print_progress || cancel_after_progress)
+    gpgme_set_progress_cb (ctx, progress_cb, ctx);
   if (use_loopback)
     {
       gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
