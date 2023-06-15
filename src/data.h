@@ -96,7 +96,7 @@ struct gpgme_data
   char *file_name;
 
   /* Hint on the to be expected total size of the data.  */
-  gpgme_off_t size_hint;
+  uint64_t size_hint;
 
   /* If no 0 the size of an allocated inbound or outpund buffers.  The
    * value is at least BUFFER_SIZE and capped at 1MiB.  */
@@ -189,7 +189,7 @@ void _gpgme_data_release (gpgme_data_t dh);
 int _gpgme_data_get_fd (gpgme_data_t dh);
 
 /* Get the size-hint value for DH or 0 if not available.  */
-gpgme_off_t _gpgme_data_get_size_hint (gpgme_data_t dh);
+uint64_t _gpgme_data_get_size_hint (gpgme_data_t dh);
 
 
 #endif	/* DATA_H */

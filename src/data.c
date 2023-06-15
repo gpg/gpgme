@@ -572,7 +572,7 @@ gpgme_data_set_flag (gpgme_data_t dh, const char *name, const char *value)
     }
   else if (!strcmp (name, "io-buffer-size"))
     {
-      gpgme_off_t val;
+      uint64_t val;
 
       /* We may set this only once.  */
       if (dh->io_buffer_size)
@@ -744,7 +744,7 @@ _gpgme_data_get_fd (gpgme_data_t dh)
 
 
 /* Get the size-hint value for DH or 0 if not available.  */
-gpgme_off_t
+uint64_t
 _gpgme_data_get_size_hint (gpgme_data_t dh)
 {
   return dh ? dh->size_hint : 0;

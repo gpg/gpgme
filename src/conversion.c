@@ -434,10 +434,10 @@ _gpgme_strtoul_field (const char *string, unsigned long *result)
 /* Convert STRING into an offset value.  Note that this functions only
  * allows for a base-10 length.  This function is similar to atoi()
  * and thus there is no error checking.  */
-gpgme_off_t
+uint64_t
 _gpgme_string_to_off (const char *string)
 {
-  gpgme_off_t value = 0;
+  uint64_t value = 0;
 
   while (*string == ' ' || *string == '\t')
     string++;

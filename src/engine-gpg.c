@@ -1774,7 +1774,7 @@ start (engine_gpg_t gpg)
 static gpgme_error_t
 add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 {
-  gpgme_off_t value = _gpgme_data_get_size_hint (data);
+  uint64_t value = _gpgme_data_get_size_hint (data);
   char numbuf[50];  /* Large enough for even 2^128 in base-10.  */
   char *p;
 
