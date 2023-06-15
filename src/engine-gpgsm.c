@@ -1232,6 +1232,38 @@ gpgsm_reset (void *engine)
 #endif
 
 
+/* Send the input-size-hint option.  Note that we need to send it
+ * always so that we don't actually use a wrong hint from the last
+ * command.  */
+static gpgme_error_t
+send_input_size_hint (engine_gpgsm_t gpgsm, gpgme_data_t data)
+{
+  gpg_error_t err;
+  uint64_t value;
+  char numbuf[50];  /* Large enough for even 2^128 in base-10.  */
+  char cmd[100];
+  char *p;
+
+  value = _gpgme_data_get_size_hint (data);
+  if (!value)
+    value = 0;
+
+  p = numbuf + sizeof numbuf;
+  *--p = 0;
+  do
+    {
+      *--p = '0' + (value % 10);
+      value /= 10;
+    }
+  while (value);
+
+  snprintf (cmd, sizeof cmd, "OPTION input-size-hint=%s", p);
+  err = gpgsm_assuan_simple_command (gpgsm, cmd, NULL, NULL);
+  if (gpg_err_code (err) == GPG_ERR_UNKNOWN_OPTION)
+    err = 0; /* Ignore error from older gpgsm versions.  */
+  return err;
+}
+
 
 static gpgme_error_t
 gpgsm_decrypt (void *engine,
@@ -1255,6 +1287,10 @@ gpgsm_decrypt (void *engine,
 
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = send_input_size_hint (gpgsm, ciph);
+  if (err)
+    return err;
 
   gpgsm->input_cb.data = ciph;
   err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
@@ -1479,6 +1515,10 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
       if (err)
 	return err;
     }
+
+  err = send_input_size_hint (gpgsm, plain);
+  if (err)
+    return err;
 
   gpgsm->input_cb.data = plain;
   err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
@@ -2096,6 +2136,10 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
         return err;
     }
 
+  err = send_input_size_hint (gpgsm, in);
+  if (err)
+    return err;
+
   gpgsm->input_cb.data = in;
   err = gpgsm_set_fd (gpgsm, INPUT_FD, map_data_enc (gpgsm->input_cb.data));
   if (err)
@@ -2137,6 +2181,10 @@ gpgsm_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
   if (!signed_text)
     {
       /* Normal or cleartext signature.  */
+      err = send_input_size_hint (gpgsm, sig);
+      if (err)
+        return err;
+
       if (plaintext)
         {
           gpgsm->output_cb.data = plaintext;
@@ -2152,6 +2200,10 @@ gpgsm_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
   else
     {
       /* Detached signature.  */
+      err = send_input_size_hint (gpgsm, signed_text);
+      if (err)
+        return err;
+
       gpgsm->message_cb.data = signed_text;
       err = gpgsm_set_fd (gpgsm, MESSAGE_FD, 0);
       gpgsm_clear_fd (gpgsm, OUTPUT_FD);
