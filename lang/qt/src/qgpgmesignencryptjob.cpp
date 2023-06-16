@@ -108,6 +108,9 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
 
     QGpgME::QIODeviceDataProvider in(plainText);
     Data indata(&in);
+    if (!plainText->isSequential()) {
+        indata.setSizeHint(plainText->size());
+    }
 
     const auto pureFileName = QFileInfo{fileName}.fileName().toStdString();
     if (!pureFileName.empty()) {

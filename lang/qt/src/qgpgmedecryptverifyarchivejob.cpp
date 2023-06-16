@@ -92,6 +92,9 @@ static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify(Context *ctx,
 
     QGpgME::QIODeviceDataProvider in{cipherText};
     Data indata(&in);
+    if (!cipherText->isSequential()) {
+        indata.setSizeHint(cipherText->size());
+    }
 
     Data outdata;
     if (!outputDirectory.isEmpty()) {

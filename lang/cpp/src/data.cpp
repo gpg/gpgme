@@ -285,3 +285,9 @@ GpgME::Error GpgME::Data::setFlag(const char *name, const char *value)
 {
     return Error(gpgme_data_set_flag(d->data, name, value));
 }
+
+GpgME::Error GpgME::Data::setSizeHint(uint64_t size)
+{
+    const std::string val = std::to_string(size);
+    return Error(gpgme_data_set_flag(d->data, "size-hint", val.c_str()));
+}

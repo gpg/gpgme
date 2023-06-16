@@ -76,7 +76,10 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify(Context *ctx, QThread 
     const _detail::ToThreadMover ptMover(plainText,  thread);
 
     QGpgME::QIODeviceDataProvider in(cipherText);
-    const Data indata(&in);
+    Data indata(&in);
+    if (!cipherText->isSequential()) {
+        indata.setSizeHint(cipherText->size());
+    }
 
     if (!plainText) {
         QGpgME::QByteArrayDataProvider out;

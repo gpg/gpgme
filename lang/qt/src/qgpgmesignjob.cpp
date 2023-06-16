@@ -81,7 +81,10 @@ static QGpgMESignJob::result_type sign(Context *ctx, QThread *thread,
     const _detail::ToThreadMover sgMover(signature, thread);
 
     QGpgME::QIODeviceDataProvider in(plainText);
-    const Data indata(&in);
+    Data indata(&in);
+    if (!plainText->isSequential()) {
+        indata.setSizeHint(plainText->size());
+    }
 
     ctx->clearSigningKeys();
     Q_FOREACH (const Key &signer, signers)

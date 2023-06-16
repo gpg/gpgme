@@ -71,6 +71,9 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached(Context *ctx, QThrea
 
     QGpgME::QIODeviceDataProvider dataDP(signedData);
     Data data(&dataDP);
+    if (!signedData->isSequential()) {
+        data.setSizeHint(signedData->size());
+    }
 
     const VerificationResult res = ctx->verifyDetachedSignature(sig, data);
     Error ae;

@@ -70,7 +70,10 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque(Context *ctx, QThread *t
     const _detail::ToThreadMover sdMover(signedData, thread);
 
     QGpgME::QIODeviceDataProvider in(signedData);
-    const Data indata(&in);
+    Data indata(&in);
+    if (!signedData->isSequential()) {
+        indata.setSizeHint(signedData->size());
+    }
 
     if (!plainText) {
         QGpgME::QByteArrayDataProvider out;

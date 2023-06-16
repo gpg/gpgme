@@ -27,6 +27,7 @@
 #include "key.h"
 
 #include <sys/types.h> // for size_t, off_t
+#include <cstdint> // unit64_t
 #include <cstdio> // FILE
 #include <algorithm>
 #include <memory>
@@ -124,6 +125,9 @@ public:
 
     /** See gpgme_data_set_flag */
     Error setFlag(const char *name, const char *value);
+
+    /** Set a size hint for this data e.g. for progress calculations. */
+    Error setSizeHint(uint64_t size);
 
     class Private;
     Private *impl()
