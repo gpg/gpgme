@@ -122,6 +122,9 @@ public:
     /** Return a copy of the data as std::string. Sets seek pos to 0 */
     std::string toString();
 
+    /** See gpgme_data_set_flag */
+    Error setFlag(const char *name, const char *value);
+
     class Private;
     Private *impl()
     {

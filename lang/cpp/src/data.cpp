@@ -280,3 +280,8 @@ std::string GpgME::Data::toString()
   seek (0, SEEK_SET);
   return ret;
 }
+
+GpgME::Error GpgME::Data::setFlag(const char *name, const char *value)
+{
+    return Error(gpgme_data_set_flag(d->data, name, value));
+}
