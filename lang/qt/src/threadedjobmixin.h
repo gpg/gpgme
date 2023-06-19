@@ -184,6 +184,7 @@ protected:
         m_thread.setFunction([this, func]() { return func(this->context()); });
     }
 
+public:
     template <typename T_binder>
     void run(const T_binder &func)
     {
@@ -219,6 +220,8 @@ protected:
         m_thread.setFunction(std::bind(func, this->context(), this->thread(), std::weak_ptr<QIODevice>(io1), std::weak_ptr<QIODevice>(io2)));
         m_thread.start();
     }
+
+protected:
     GpgME::Context *context() const
     {
         return m_ctx.get();
