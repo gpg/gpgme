@@ -146,7 +146,7 @@ void QGpgME::Job::startNow()
 {
     auto d = getJobPrivate(this);
     Q_ASSERT(d && "This Job class has no JobPrivate class");
-    d->start();
+    d->startNow();
 }
 
 #define make_job_subclass_ext(x,y)                \

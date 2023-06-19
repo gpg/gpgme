@@ -77,7 +77,7 @@ public:
     ~QGpgMEListAllKeysJobPrivate() override = default;
 
 private:
-    void start() override
+    void startNow() override
     {
         q->run();
     }
