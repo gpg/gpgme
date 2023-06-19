@@ -2367,9 +2367,17 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   if (!err)
     err = add_arg (gpg, "--output");
   if (!err)
-    err = add_arg (gpg, "-");
-  if (!err)
-    err = add_data (gpg, ciph, 1, 1);
+    {
+      const char *output = gpgme_data_get_file_name (ciph);
+      if (output)
+        err = add_arg (gpg, output);
+      else
+        {
+          err = add_arg (gpg, "-");
+          if (!err)
+            err = add_data (gpg, ciph, 1, 1);
+        }
+    }
   if (gpg->flags.use_gpgtar)
     {
       const char *file_name = gpgme_data_get_file_name (plain);
@@ -2479,9 +2487,17 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
   if (!err)
     err = add_arg (gpg, "--output");
   if (!err)
-    err = add_arg (gpg, "-");
-  if (!err)
-    err = add_data (gpg, ciph, 1, 1);
+    {
+      const char *output = gpgme_data_get_file_name (ciph);
+      if (output)
+        err = add_arg (gpg, output);
+      else
+        {
+          err = add_arg (gpg, "-");
+          if (!err)
+            err = add_data (gpg, ciph, 1, 1);
+        }
+    }
   if (gpg->flags.use_gpgtar)
     {
       const char *file_name = gpgme_data_get_file_name (plain);
@@ -3559,6 +3575,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
+  const char *output = NULL;
 
   (void)include_certs;
 
@@ -3599,6 +3616,17 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!err)
     err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_SIG);
 
+  if (!err)
+    {
+      output = gpgme_data_get_file_name (out);
+      if (output)
+        {
+          err = add_arg (gpg, "--output");
+          if (!err)
+            err = add_arg (gpg, output);
+        }
+    }
+
   /* Tell the gpg object about the data.  */
   if (gpg->flags.use_gpgtar)
     {
@@ -3634,7 +3662,7 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
         err = add_data (gpg, in, -1, 0);
     }
 
-  if (!err)
+  if (!err && !output)
     err = add_data (gpg, out, 1, 1);
 
   if (!err)

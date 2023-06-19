@@ -6332,10 +6332,12 @@ GnuPG 2.4.1.
 @deftypefun gpgme_error_t gpgme_op_sign (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{sig}}, @w{gpgme_sig_mode_t @var{mode}})
 The function @code{gpgme_op_sign} creates a signature for the text in
 the data object @var{plain} and returns it in the data object
-@var{sig}.  The type of the signature created is determined by the
-@acronym{ASCII} armor (or, if that is not set, by the encoding
-specified for @var{sig}), the text mode attributes set for the context
-@var{ctx} and the requested signature mode @var{mode}.
+@var{sig} or writes it directly to the file set with
+@code{gpgme_data_set_file_name} for the data object @var{sig}.  The type
+of the signature created is determined by the @acronym{ASCII} armor (or,
+if that is not set, by the encoding specified for @var{sig}), the text
+mode attributes set for the context @var{ctx} and the requested signature
+mode @var{mode}.
 
 If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested, then a
 signed archive is created from the files and directories given as
@@ -6510,10 +6512,12 @@ and then passed to the encryption operation.
 @deftypefun gpgme_error_t gpgme_op_encrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_key_t @var{recp}[]}, @w{gpgme_encrypt_flags_t @var{flags}}, @w{gpgme_data_t @var{plain}}, @w{gpgme_data_t @var{cipher}})
 The function @code{gpgme_op_encrypt} encrypts the plaintext in the
 data object @var{plain} for the recipients @var{recp} and stores the
-ciphertext in the data object @var{cipher}.  The type of the
-ciphertext created is determined by the @acronym{ASCII} armor (or, if
-that is not set, by the encoding specified for @var{cipher}) and the
-text mode attributes set for the context @var{ctx}.
+ciphertext in the data object @var{cipher} or writes it directly to the
+file set with @code{gpgme_data_set_file_name} for the data object
+@var{cipher}.  The type of the ciphertext created is determined by the
+@acronym{ASCII} armor (or, if that is not set, by the encoding specified
+for @var{cipher}) and the text mode attributes set for the context
+@var{ctx}.
 
 If the flag @code{GPGME_ENCRYPT_ARCHIVE} is set, then an encrypted
 archive is created from the files and directories given as NUL-separated

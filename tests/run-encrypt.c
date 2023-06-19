@@ -152,6 +152,7 @@ show_usage (int ex)
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
          "  --archive          encrypt given file or directory into an archive\n"
          "  --directory DIR    switch to directory DIR before encrypting into an archive\n"
+         "  --output FILE      write output to FILE instead of stdout\n"
          "  --diagnostics      print diagnostics\n"
          "  --cancel N         cancel after N progress lines\n"
          , stderr);
@@ -177,6 +178,7 @@ main (int argc, char **argv)
   int keycount = 0;
   char *keystring = NULL;
   const char *directory = NULL;
+  const char *output = NULL;
   int i;
   gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
   gpgme_off_t offset;
@@ -292,6 +294,14 @@ main (int argc, char **argv)
           if (!argc)
             show_usage (1);
           directory = *argv;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--output"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          output = *argv;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--diagnostics"))
@@ -410,6 +420,11 @@ main (int argc, char **argv)
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
+  if (output)
+    {
+      err = gpgme_data_set_file_name (out, output);
+      fail_if_err (err);
+    }
 
   if (sign)
     err = gpgme_op_encrypt_sign_ext (ctx, keycount ? keys : NULL, keystring,
@@ -451,9 +466,12 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  fputs ("Begin Output:\n", stdout);
-  print_data (out);
-  fputs ("End Output.\n", stdout);
+  if (!output)
+    {
+      fputs ("Begin Output:\n", stdout);
+      print_data (out);
+      fputs ("End Output.\n", stdout);
+    }
   gpgme_data_release (out);
 
   gpgme_data_release (in);

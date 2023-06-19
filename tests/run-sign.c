@@ -89,6 +89,7 @@ show_usage (int ex)
          "  --clear          create a clear text signature\n"
          "  --archive        create a signed archive with the given file or directory\n"
          "  --directory DIR  switch to directory DIR before creating the archive\n"
+         "  --output FILE    write output to FILE instead of stdout\n"
          "  --diagnostics    print diagnostics\n"
          , stderr);
   exit (ex);
@@ -103,6 +104,7 @@ main (int argc, char **argv)
   gpgme_ctx_t ctx;
   const char *key_string = NULL;
   const char *directory = NULL;
+  const char *output = NULL;
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   gpgme_sig_mode_t sigmode = GPGME_SIG_MODE_NORMAL;
   gpgme_data_t in, out;
@@ -196,6 +198,14 @@ main (int argc, char **argv)
           directory = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--output"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          output = *argv;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--diagnostics"))
         {
           diagnostics = 1;
@@ -283,6 +293,11 @@ main (int argc, char **argv)
 
   err = gpgme_data_new (&out);
   fail_if_err (err);
+  if (output)
+    {
+      err = gpgme_data_set_file_name (out, output);
+      fail_if_err (err);
+    }
 
   err = gpgme_op_sign (ctx, in, out, sigmode);
   result = gpgme_op_sign_result (ctx);
@@ -319,9 +334,12 @@ main (int argc, char **argv)
   if ((s = gpgme_get_ctx_flag (ctx, "redraw")) && *s)
     fputs ("Screen redraw suggested\n", stdout);
 
-  fputs ("Begin Output:\n", stdout);
-  print_data (out);
-  fputs ("End Output.\n", stdout);
+  if (!output)
+    {
+      fputs ("Begin Output:\n", stdout);
+      print_data (out);
+      fputs ("End Output.\n", stdout);
+    }
   gpgme_data_release (out);
 
   gpgme_data_release (in);
