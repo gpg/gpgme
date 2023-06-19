@@ -56,10 +56,18 @@ public:
 // BCI: Add a real d-pointer to Job
 void setJobPrivate(const Job *job, std::unique_ptr<JobPrivate> d);
 
-JobPrivate *getJobPrivate(const Job *job);
+const JobPrivate *getJobPrivate(const Job *job);
+
+JobPrivate *getJobPrivate(Job *job);
 
 template <typename T>
-static T *jobPrivate(const Job *job) {
+static const T *jobPrivate(const Job *job) {
+    auto d = getJobPrivate(job);
+    return dynamic_cast<const T *>(d);
+}
+
+template <typename T>
+static T *jobPrivate(Job *job) {
     auto d = getJobPrivate(job);
     return dynamic_cast<T *>(d);
 }

@@ -94,7 +94,12 @@ void QGpgME::setJobPrivate(const Job *job, std::unique_ptr<JobPrivate> d)
     ref = std::move(d);
 }
 
-QGpgME::JobPrivate *QGpgME::getJobPrivate(const Job *job)
+const QGpgME::JobPrivate *QGpgME::getJobPrivate(const Job *job)
+{
+    return d_func()->operator[](job).get();
+}
+
+QGpgME::JobPrivate *QGpgME::getJobPrivate(Job *job)
 {
     return d_func()->operator[](job).get();
 }
