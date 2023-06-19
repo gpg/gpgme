@@ -12,6 +12,7 @@ Noteworthy changes in version 1.21.0 (unreleased)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: Data::setFlag                         NEW.
  cpp: Data::setSizeHint                     NEW.
+ qt: Job::startIt                           NEW.
 
 Noteworthy changes in version 1.20.0 (2023-04-20)
 -------------------------------------------------

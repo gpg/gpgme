@@ -142,6 +142,13 @@ GpgME::Context *QGpgME::Job::context(QGpgME::Job *job)
     return QGpgME::g_context_map.value (job, nullptr);
 }
 
+GpgME::Error QGpgME::Job::startIt()
+{
+    auto d = getJobPrivate(this);
+    Q_ASSERT(d && "This Job class has no JobPrivate class");
+    return d->startIt();
+}
+
 void QGpgME::Job::startNow()
 {
     auto d = getJobPrivate(this);

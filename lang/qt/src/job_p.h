@@ -49,6 +49,8 @@ class JobPrivate
 public:
     virtual ~JobPrivate() {}
 
+    virtual GpgME::Error startIt() = 0;
+
     virtual void startNow() = 0;
 };
 

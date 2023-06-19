@@ -95,6 +95,12 @@ public:
      */
     static GpgME::Context *context(Job *job);
 
+    /** Starts the job.
+     *
+     * Starts the job with the values set for the concrete job.
+     */
+    GpgME::Error startIt();
+
     /** Starts a deferred job.
      *
      * The job needs to have been prepared for a deferred start by calling the
