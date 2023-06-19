@@ -1,18 +1,49 @@
 Noteworthy changes in version 1.21.0 (unreleased)
 -------------------------------------------------
 
- * Qt Jobs working with QIODeviceDataProvider now properly
- handle input-size hints and progress for files larger.
- 2^32 bytes in 32 bit builds.  [T6534]
+ * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and
+   gpgme_op_sign* to allow writing the output directly to a
+   file.  [T6530]
 
- * Error::isCanceled now also returns true for error code
+ * qt: Allow writing the created archives directly to a
+   file.  [T6530]
+
+ * qt: Qt Jobs working with QIODeviceDataProvider now properly
+   handle input-size hints and progress for files larger.
+   2^32 bytes in 32 bit builds.  [T6534]
+
+ * cpp: Error::isCanceled now also returns true for error code
    GPG_ERR_FULLY_CANCELED.  [T6510]
 
-* Interface changes relative to the 1.20.0 release:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Interface changes relative to the 1.20.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  cpp: Data::setFlag                         NEW.
  cpp: Data::setSizeHint                     NEW.
  qt: Job::startIt                           NEW.
+ qt: EncryptArchiveJob::setRecipients       NEW.
+ qt: EncryptArchiveJob::recipients          NEW.
+ qt: EncryptArchiveJob::setInputPaths       NEW.
+ qt: EncryptArchiveJob::inputPaths          NEW.
+ qt: EncryptArchiveJob::setOutputFile       NEW.
+ qt: EncryptArchiveJob::outputFile          NEW.
+ qt: EncryptArchiveJob::setEncryptionFlags  NEW.
+ qt: EncryptArchiveJob::encryptionFlags     NEW.
+ qt: SignArchiveJob::setSigners             NEW.
+ qt: SignArchiveJob::signers                NEW.
+ qt: SignArchiveJob::setInputPaths          NEW.
+ qt: SignArchiveJob::inputPaths             NEW.
+ qt: SignArchiveJob::setOutputFile          NEW.
+ qt: SignArchiveJob::outputFile             NEW.
+ qt: SignEncryptArchiveJob::setSigners      NEW.
+ qt: SignEncryptArchiveJob::signers         NEW.
+ qt: SignEncryptArchiveJob::setRecipients   NEW.
+ qt: SignEncryptArchiveJob::recipients      NEW.
+ qt: SignEncryptArchiveJob::setInputPaths   NEW.
+ qt: SignEncryptArchiveJob::inputPaths      NEW.
+ qt: SignEncryptArchiveJob::setOutputFile   NEW.
+ qt: SignEncryptArchiveJob::outputFile      NEW.
+ qt: SignEncryptArchiveJob::setEncryptionFlags NEW.
+ qt: SignEncryptArchiveJob::encryptionFlags NEW.
 
 Noteworthy changes in version 1.20.0 (2023-04-20)
 -------------------------------------------------

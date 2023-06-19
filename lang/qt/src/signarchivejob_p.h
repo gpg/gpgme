@@ -41,6 +41,9 @@ namespace QGpgME
 
 struct SignArchiveJobPrivate : public JobPrivate
 {
+    std::vector<GpgME::Key> m_signers;
+    std::vector<QString> m_inputPaths;
+    QString m_outputFilePath;
     QString m_baseDirectory;
 };
 

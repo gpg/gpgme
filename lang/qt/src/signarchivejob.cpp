@@ -56,6 +56,42 @@ bool SignArchiveJob::isSupported()
     return (gpgVersion >= "2.4.1") || (gpgVersion >= "2.2.42" && gpgVersion < "2.3.0");
 }
 
+void SignArchiveJob::setSigners(const std::vector<GpgME::Key> &signers)
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    d->m_signers = signers;
+}
+
+std::vector<GpgME::Key> SignArchiveJob::signers() const
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    return d->m_signers;
+}
+
+void SignArchiveJob::setInputPaths(const std::vector<QString> &paths)
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    d->m_inputPaths = paths;
+}
+
+std::vector<QString> SignArchiveJob::inputPaths() const
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    return d->m_inputPaths;
+}
+
+void SignArchiveJob::setOutputFile(const QString &path)
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    d->m_outputFilePath = path;
+}
+
+QString SignArchiveJob::outputFile() const
+{
+    auto d = jobPrivate<SignArchiveJobPrivate>(this);
+    return d->m_outputFilePath;
+}
+
 void SignArchiveJob::setBaseDirectory(const QString &baseDirectory)
 {
     auto d = jobPrivate<SignArchiveJobPrivate>(this);

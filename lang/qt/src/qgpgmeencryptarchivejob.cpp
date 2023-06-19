@@ -44,6 +44,8 @@
 #include "encryptarchivejob_p.h"
 #include "filelistdataprovider.h"
 
+#include <QFile>
+
 #include <data.h>
 
 using namespace QGpgME;
@@ -65,11 +67,7 @@ public:
     ~QGpgMEEncryptArchiveJobPrivate() override = default;
 
 private:
-    GpgME::Error startIt() override
-    {
-        Q_ASSERT(!"Not supported by this Job class.");
-        return Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-    }
+    GpgME::Error startIt() override;
 
     void startNow() override
     {
@@ -90,30 +88,52 @@ QGpgMEEncryptArchiveJob::QGpgMEEncryptArchiveJob(Context *context)
 }
 
 static QGpgMEEncryptArchiveJob::result_type encrypt(Context *ctx,
-                                                    QThread *thread,
                                                     const std::vector<Key> &recipients,
                                                     const std::vector<QString> &paths,
-                                                    const std::weak_ptr<QIODevice> &cipherText_,
+                                                    GpgME::Data &outdata,
                                                     Context::EncryptionFlags flags,
                                                     const QString &baseDirectory)
 {
-    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
-    const _detail::ToThreadMover ctMover(cipherText, thread);
-
     QGpgME::FileListDataProvider in{paths};
     Data indata(&in);
     if (!baseDirectory.isEmpty()) {
         indata.setFileName(baseDirectory.toStdString());
     }
 
-    QGpgME::QIODeviceDataProvider out{cipherText};
-    Data outdata(&out);
-
     flags = static_cast<Context::EncryptionFlags>(flags | Context::EncryptArchive);
     const EncryptionResult res = ctx->encrypt(recipients, indata, outdata, flags);
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(res, log, ae);
+}
+
+static QGpgMEEncryptArchiveJob::result_type encrypt_to_io_device(Context *ctx,
+                                                                 QThread *thread,
+                                                                 const std::vector<Key> &recipients,
+                                                                 const std::vector<QString> &paths,
+                                                                 const std::weak_ptr<QIODevice> &cipherText_,
+                                                                 Context::EncryptionFlags flags,
+                                                                 const QString &baseDirectory)
+{
+    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
+    const _detail::ToThreadMover ctMover(cipherText, thread);
+    QGpgME::QIODeviceDataProvider out{cipherText};
+    Data outdata(&out);
+
+    return encrypt(ctx, recipients, paths, outdata, flags, baseDirectory);
+}
+
+static QGpgMEEncryptArchiveJob::result_type encrypt_to_filename(Context *ctx,
+                                                                const std::vector<Key> &recipients,
+                                                                const std::vector<QString> &paths,
+                                                                const QString &outputFile,
+                                                                Context::EncryptionFlags flags,
+                                                                const QString &baseDirectory)
+{
+    Data outdata;
+    outdata.setFileName(QFile::encodeName(outputFile).constData());
+
+    return encrypt(ctx, recipients, paths, outdata, flags, baseDirectory);
 }
 
 GpgME::Error QGpgMEEncryptArchiveJob::start(const std::vector<GpgME::Key> &recipients,
@@ -125,7 +145,7 @@ GpgME::Error QGpgMEEncryptArchiveJob::start(const std::vector<GpgME::Key> &recip
         return Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
-    run(std::bind(&encrypt,
+    run(std::bind(&encrypt_to_io_device,
                   std::placeholders::_1,
                   std::placeholders::_2,
                   recipients,
@@ -134,6 +154,19 @@ GpgME::Error QGpgMEEncryptArchiveJob::start(const std::vector<GpgME::Key> &recip
                   flags,
                   baseDirectory()),
         cipherText);
+    return {};
+}
+
+GpgME::Error QGpgMEEncryptArchiveJobPrivate::startIt()
+{
+    if (m_outputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return encrypt_to_filename(ctx, m_recipients, m_inputPaths, m_outputFilePath, m_encryptionFlags, m_baseDirectory);
+    });
+
     return {};
 }
 

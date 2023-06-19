@@ -41,7 +41,9 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 
 #include <context.h>
 #include <encryptionresult.h>
@@ -95,23 +97,14 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     return options;
 }
 
-std::shared_ptr<QIODevice> createOutput(const QString &fileName)
+QString checkOutputFilePath(const QString &fileName, const QString &baseDirectory)
 {
-    std::shared_ptr<QFile> output;
-
-    if (fileName.isEmpty()) {
-        output.reset(new QFile);
-        output->open(stdout, QIODevice::WriteOnly);
-    } else {
-        if (QFile::exists(fileName)) {
-            qCritical() << "File" << fileName << "exists. Bailing out.";
-        } else {
-            output.reset(new QFile{fileName});
-            output->open(QIODevice::WriteOnly);
-        }
+    const QFileInfo fi{QDir{baseDirectory}, fileName};
+    if (fi.exists()) {
+        qCritical() << "File" << fi.filePath() << "exists. Bailing out.";
+        return {};
     }
-
-    return output;
+    return fileName;
 }
 
 int main(int argc, char **argv)
@@ -129,9 +122,16 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    auto output = createOutput(options.archiveName);
-    if (!output) {
-        return 1;
+    std::shared_ptr<QFile> output;
+    QString outputFilePath;
+    if (options.archiveName.isEmpty() || options.archiveName == QLatin1String{"-"}) {
+        output.reset(new QFile);
+        output->open(stdout, QIODevice::WriteOnly);
+    } else {
+        outputFilePath = checkOutputFilePath(options.archiveName, options.baseDirectory);
+        if (outputFilePath.isEmpty()) {
+            return 1;
+        }
     }
 
     if (options.sign) {
@@ -148,7 +148,14 @@ int main(int argc, char **argv)
             qApp->quit();
         });
 
-        const auto err = job->start({}, {}, options.filesAndDirectories, output, GpgME::Context::None);
+        GpgME::Error err;
+        if (output) {
+            err = job->start({}, {}, options.filesAndDirectories, output, GpgME::Context::None);
+        } else {
+            job->setInputPaths(options.filesAndDirectories);
+            job->setOutputFile(outputFilePath);
+            err = job->startIt();
+        }
         if (err) {
             std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
             return 1;
@@ -166,7 +173,14 @@ int main(int argc, char **argv)
             qApp->quit();
         });
 
-        const auto err = job->start({}, options.filesAndDirectories, output, GpgME::Context::None);
+        GpgME::Error err;
+        if (output) {
+            err = job->start({}, options.filesAndDirectories, output, GpgME::Context::None);
+        } else {
+            job->setInputPaths(options.filesAndDirectories);
+            job->setOutputFile(outputFilePath);
+            err = job->startIt();
+        }
         if (err) {
             std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
             return 1;

@@ -44,14 +44,9 @@
 #include "signencryptarchivejob_p.h"
 #include "filelistdataprovider.h"
 
-// #include <context.h>
+#include <QFile>
+
 #include <data.h>
-// #include <encryptionresult.h>
-//
-// #include <QBuffer>
-// #include <QFileInfo>
-//
-// #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
@@ -72,11 +67,7 @@ public:
     ~QGpgMESignEncryptArchiveJobPrivate() override = default;
 
 private:
-    GpgME::Error startIt() override
-    {
-        Q_ASSERT(!"Not supported by this Job class.");
-        return Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-    }
+    GpgME::Error startIt() override;
 
     void startNow() override
     {
@@ -97,25 +88,18 @@ QGpgMESignEncryptArchiveJob::QGpgMESignEncryptArchiveJob(Context *context)
 }
 
 static QGpgMESignEncryptArchiveJob::result_type sign_encrypt(Context *ctx,
-                                                             QThread *thread,
                                                              const std::vector<GpgME::Key> &signers,
                                                              const std::vector<Key> &recipients,
                                                              const std::vector<QString> &paths,
-                                                             const std::weak_ptr<QIODevice> &cipherText_,
+                                                             GpgME::Data &outdata,
                                                              Context::EncryptionFlags encryptionFlags,
                                                              const QString &baseDirectory)
 {
-    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
-    const _detail::ToThreadMover ctMover(cipherText, thread);
-
     QGpgME::FileListDataProvider in{paths};
     Data indata(&in);
     if (!baseDirectory.isEmpty()) {
         indata.setFileName(baseDirectory.toStdString());
     }
-
-    QGpgME::QIODeviceDataProvider out{cipherText};
-    Data outdata(&out);
 
     ctx->clearSigningKeys();
     for (const Key &signer : signers) {
@@ -133,6 +117,37 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt(Context *ctx,
     return std::make_tuple(res.first, res.second, log, ae);
 }
 
+static QGpgMESignEncryptArchiveJob::result_type sign_encrypt_to_io_device(Context *ctx,
+                                                                          QThread *thread,
+                                                                          const std::vector<GpgME::Key> &signers,
+                                                                          const std::vector<Key> &recipients,
+                                                                          const std::vector<QString> &paths,
+                                                                          const std::weak_ptr<QIODevice> &cipherText_,
+                                                                          Context::EncryptionFlags encryptionFlags,
+                                                                          const QString &baseDirectory)
+{
+    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
+    const _detail::ToThreadMover ctMover(cipherText, thread);
+    QGpgME::QIODeviceDataProvider out{cipherText};
+    Data outdata(&out);
+
+    return sign_encrypt(ctx, signers, recipients, paths, outdata, encryptionFlags, baseDirectory);
+}
+
+static QGpgMESignEncryptArchiveJob::result_type sign_encrypt_to_filename(Context *ctx,
+                                                                         const std::vector<GpgME::Key> &signers,
+                                                                         const std::vector<Key> &recipients,
+                                                                         const std::vector<QString> &paths,
+                                                                         const QString &outputFile,
+                                                                         Context::EncryptionFlags encryptionFlags,
+                                                                         const QString &baseDirectory)
+{
+    Data outdata;
+    outdata.setFileName(QFile::encodeName(outputFile).constData());
+
+    return sign_encrypt(ctx, signers, recipients, paths, outdata, encryptionFlags, baseDirectory);
+}
+
 GpgME::Error QGpgMESignEncryptArchiveJob::start(const std::vector<GpgME::Key> &signers,
                                                 const std::vector<GpgME::Key> &recipients,
                                                 const std::vector<QString> &paths,
@@ -143,7 +158,7 @@ GpgME::Error QGpgMESignEncryptArchiveJob::start(const std::vector<GpgME::Key> &s
         return Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
-    run(std::bind(&sign_encrypt,
+    run(std::bind(&sign_encrypt_to_io_device,
                   std::placeholders::_1,
                   std::placeholders::_2,
                   signers,
@@ -153,6 +168,19 @@ GpgME::Error QGpgMESignEncryptArchiveJob::start(const std::vector<GpgME::Key> &s
                   encryptionFlags,
                   baseDirectory()),
         cipherText);
+    return {};
+}
+
+GpgME::Error QGpgMESignEncryptArchiveJobPrivate::startIt()
+{
+    if (m_outputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return sign_encrypt_to_filename(ctx, m_signers, m_recipients, m_inputPaths, m_outputFilePath, m_encryptionFlags, m_baseDirectory);
+    });
+
     return {};
 }
 

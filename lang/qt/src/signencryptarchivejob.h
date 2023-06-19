@@ -63,6 +63,61 @@ public:
 
     static bool isSupported();
 
+    /**
+     * Sets the keys to use for signing the archive.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setSigners(const std::vector<GpgME::Key> &signers);
+    std::vector<GpgME::Key> signers() const;
+
+    /**
+     * Sets the keys to use for encrypting the archive.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setRecipients(const std::vector<GpgME::Key> &recipients);
+    std::vector<GpgME::Key> recipients() const;
+
+    /**
+     * Sets the paths of the files and folders to put into the archive.
+     *
+     * If base directory is set, then the paths must be relative to the
+     * base directory.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setInputPaths(const std::vector<QString> &paths);
+    std::vector<QString> inputPaths() const;
+
+    /**
+     * Sets the path of the file to write the created archive to.
+     *
+     * If \a path is a relative path and base directory is set, then the
+     * path is interpreted relative to the base directory.
+     *
+     * Used if the job is started with startIt().
+     *
+     * \note If a file with this path exists, then the job will fail, i.e. you
+     * need to delete an existing file that shall be overwritten before you
+     * start the job.
+     */
+    void setOutputFile(const QString &path);
+    QString outputFile() const;
+
+    /**
+     * Sets the flags to use for encryption. Defaults to \c EncryptArchive.
+     * The \c EncryptArchive flag is always assumed set for this job.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setEncryptionFlags(GpgME::Context::EncryptionFlags flags);
+    GpgME::Context::EncryptionFlags encryptionFlags() const;
+
+    /**
+     * Sets the base directory for the relative paths of the input files and
+     * the output file.
+     */
     void setBaseDirectory(const QString &baseDirectory);
     QString baseDirectory() const;
 

@@ -41,7 +41,11 @@ namespace QGpgME
 
 struct EncryptArchiveJobPrivate : public JobPrivate
 {
+    std::vector<GpgME::Key> m_recipients;
+    std::vector<QString> m_inputPaths;
+    QString m_outputFilePath;
     QString m_baseDirectory;
+    GpgME::Context::EncryptionFlags m_encryptionFlags = GpgME::Context::EncryptArchive;
 };
 
 }

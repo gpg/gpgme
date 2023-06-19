@@ -56,6 +56,66 @@ bool SignEncryptArchiveJob::isSupported()
     return (gpgVersion >= "2.4.1") || (gpgVersion >= "2.2.42" && gpgVersion < "2.3.0");
 }
 
+void SignEncryptArchiveJob::setSigners(const std::vector<GpgME::Key> &signers)
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    d->m_signers = signers;
+}
+
+std::vector<GpgME::Key> SignEncryptArchiveJob::signers() const
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    return d->m_signers;
+}
+
+void SignEncryptArchiveJob::setRecipients(const std::vector<GpgME::Key> &recipients)
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    d->m_recipients = recipients;
+}
+
+std::vector<GpgME::Key> SignEncryptArchiveJob::recipients() const
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    return d->m_recipients;
+}
+
+void SignEncryptArchiveJob::setInputPaths(const std::vector<QString> &paths)
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    d->m_inputPaths = paths;
+}
+
+std::vector<QString> SignEncryptArchiveJob::inputPaths() const
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    return d->m_inputPaths;
+}
+
+void SignEncryptArchiveJob::setOutputFile(const QString &path)
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    d->m_outputFilePath = path;
+}
+
+QString SignEncryptArchiveJob::outputFile() const
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    return d->m_outputFilePath;
+}
+
+void SignEncryptArchiveJob::setEncryptionFlags(GpgME::Context::EncryptionFlags flags)
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    d->m_encryptionFlags = static_cast<GpgME::Context::EncryptionFlags>(flags | GpgME::Context::EncryptArchive);
+}
+
+GpgME::Context::EncryptionFlags SignEncryptArchiveJob::encryptionFlags() const
+{
+    auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);
+    return d->m_encryptionFlags;
+}
+
 void SignEncryptArchiveJob::setBaseDirectory(const QString &baseDirectory)
 {
     auto d = jobPrivate<SignEncryptArchiveJobPrivate>(this);

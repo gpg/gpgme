@@ -44,6 +44,8 @@
 #include "signarchivejob_p.h"
 #include "filelistdataprovider.h"
 
+#include <QFile>
+
 #include <data.h>
 
 using namespace QGpgME;
@@ -65,11 +67,7 @@ public:
     ~QGpgMESignArchiveJobPrivate() override = default;
 
 private:
-    GpgME::Error startIt() override
-    {
-        Q_ASSERT(!"Not supported by this Job class.");
-        return Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-    }
+    GpgME::Error startIt() override;
 
     void startNow() override
     {
@@ -90,23 +88,16 @@ QGpgMESignArchiveJob::QGpgMESignArchiveJob(Context *context)
 }
 
 static QGpgMESignArchiveJob::result_type sign(Context *ctx,
-                                              QThread *thread,
                                               const std::vector<Key> &signers,
                                               const std::vector<QString> &paths,
-                                              const std::weak_ptr<QIODevice> &output_,
+                                              GpgME::Data &outdata,
                                               const QString &baseDirectory)
 {
-    const std::shared_ptr<QIODevice> output = output_.lock();
-    const _detail::ToThreadMover ctMover(output, thread);
-
     QGpgME::FileListDataProvider in{paths};
     Data indata(&in);
     if (!baseDirectory.isEmpty()) {
         indata.setFileName(baseDirectory.toStdString());
     }
-
-    QGpgME::QIODeviceDataProvider out{output};
-    Data outdata(&out);
 
     ctx->clearSigningKeys();
     for (const Key &signer : signers) {
@@ -123,6 +114,33 @@ static QGpgMESignArchiveJob::result_type sign(Context *ctx,
     return std::make_tuple(res, log, ae);
 }
 
+static QGpgMESignArchiveJob::result_type sign_to_io_device(Context *ctx,
+                                                           QThread *thread,
+                                                           const std::vector<Key> &signers,
+                                                           const std::vector<QString> &paths,
+                                                           const std::weak_ptr<QIODevice> &output_,
+                                                           const QString &baseDirectory)
+{
+    const std::shared_ptr<QIODevice> output = output_.lock();
+    const _detail::ToThreadMover ctMover(output, thread);
+    QGpgME::QIODeviceDataProvider out{output};
+    Data outdata(&out);
+
+    return sign(ctx, signers, paths, outdata, baseDirectory);
+}
+
+static QGpgMESignArchiveJob::result_type sign_to_filename(Context *ctx,
+                                                          const std::vector<Key> &signers,
+                                                          const std::vector<QString> &paths,
+                                                          const QString &outputFile,
+                                                          const QString &baseDirectory)
+{
+    Data outdata;
+    outdata.setFileName(QFile::encodeName(outputFile).constData());
+
+    return sign(ctx, signers, paths, outdata, baseDirectory);
+}
+
 GpgME::Error QGpgMESignArchiveJob::start(const std::vector<GpgME::Key> &signers,
                                             const std::vector<QString> &paths,
                                             const std::shared_ptr<QIODevice> &output)
@@ -131,7 +149,7 @@ GpgME::Error QGpgMESignArchiveJob::start(const std::vector<GpgME::Key> &signers,
         return Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
-    run(std::bind(&sign,
+    run(std::bind(&sign_to_io_device,
                   std::placeholders::_1,
                   std::placeholders::_2,
                   signers,
@@ -139,6 +157,20 @@ GpgME::Error QGpgMESignArchiveJob::start(const std::vector<GpgME::Key> &signers,
                   std::placeholders::_3,
                   baseDirectory()),
         output);
+    return {};
+}
+
+
+GpgME::Error QGpgMESignArchiveJobPrivate::startIt()
+{
+    if (m_outputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return sign_to_filename(ctx, m_signers, m_inputPaths, m_outputFilePath, m_baseDirectory);
+    });
+
     return {};
 }
 
