@@ -239,6 +239,7 @@ show_usage (int ex)
          "  --archive        extract files from a signed archive FILE\n"
          "  --directory DIR  extract the files into the directory DIR\n"
          "  --diagnostics    print diagnostics\n"
+         "  --direct-file-io pass file names instead of streams with content of files to backend\n"
          , stderr);
   exit (ex);
 }
@@ -258,6 +259,7 @@ main (int argc, char **argv)
   int auto_key_import = 0;
   gpgme_data_encoding_t encoding = GPGME_DATA_ENCODING_NONE;
   int diagnostics = 0;
+  int direct_file_io = 0;
   int repeats = 1;
   int i;
 
@@ -343,6 +345,11 @@ main (int argc, char **argv)
           diagnostics = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--direct-file-io"))
+        {
+          direct_file_io = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -369,23 +376,26 @@ main (int argc, char **argv)
           printf ("Repeat: %i\n", i);
         }
 
-      fp_sig = fopen (argv[0], "rb");
-      if (!fp_sig)
+      if (!direct_file_io)
         {
-          err = gpgme_error_from_syserror ();
-          fprintf (stderr, PGM ": can't open `%s': %s\n",
-                   argv[0], gpgme_strerror (err));
-          exit (1);
-        }
-      if (argc > 1)
-        {
-          fp_msg = fopen (argv[1], "rb");
-          if (!fp_msg)
+          fp_sig = fopen (argv[0], "rb");
+          if (!fp_sig)
             {
               err = gpgme_error_from_syserror ();
               fprintf (stderr, PGM ": can't open `%s': %s\n",
-                       argv[1], gpgme_strerror (err));
+                       argv[0], gpgme_strerror (err));
               exit (1);
+            }
+          if (argc > 1)
+            {
+              fp_msg = fopen (argv[1], "rb");
+              if (!fp_msg)
+                {
+                  err = gpgme_error_from_syserror ();
+                  fprintf (stderr, PGM ": can't open `%s': %s\n",
+                           argv[1], gpgme_strerror (err));
+                  exit (1);
+                }
             }
         }
 
@@ -429,7 +439,10 @@ main (int argc, char **argv)
           fail_if_err (err);
         }
 
-      err = gpgme_data_new_from_stream (&sig, fp_sig);
+      if (direct_file_io)
+        err = gpgme_data_new (&sig);
+      else
+        err = gpgme_data_new_from_stream (&sig, fp_sig);
       if (err)
         {
           fprintf (stderr, PGM ": error allocating data object: %s\n",
@@ -437,14 +450,37 @@ main (int argc, char **argv)
           exit (1);
         }
       gpgme_data_set_encoding (sig, encoding);
-      if (fp_msg)
+      if (direct_file_io)
         {
-          err = gpgme_data_new_from_stream (&msg, fp_msg);
+          err = gpgme_data_set_file_name (sig, argv[0]);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error setting file name (sig): %s\n",
+                       gpgme_strerror (err));
+              exit (1);
+            }
+        }
+      if (argc > 1)
+        {
+          if (direct_file_io)
+            err = gpgme_data_new (&msg);
+          else
+            err = gpgme_data_new_from_stream (&msg, fp_msg);
           if (err)
             {
               fprintf (stderr, PGM ": error allocating data object: %s\n",
                        gpgme_strerror (err));
               exit (1);
+            }
+          if (direct_file_io)
+            {
+              err = gpgme_data_set_file_name (msg, argv[1]);
+              if (err)
+                {
+                  fprintf (stderr, PGM ": error setting file name (msg): %s\n",
+                           gpgme_strerror (err));
+                  exit (1);
+                }
             }
         }
 
@@ -454,14 +490,14 @@ main (int argc, char **argv)
           if (err)
             {
               fprintf (stderr, PGM ": error allocating data object: %s\n",
-                      gpgme_strerror (err));
+                       gpgme_strerror (err));
               exit (1);
             }
           err = gpgme_data_set_file_name (out, directory);
           if (err)
             {
               fprintf (stderr, PGM ": error setting file name (out): %s\n",
-                      gpgme_strerror (err));
+                       gpgme_strerror (err));
               exit (1);
             }
         }

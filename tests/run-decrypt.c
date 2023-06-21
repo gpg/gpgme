@@ -94,6 +94,7 @@ show_usage (int ex)
          "  --archive        extract files from an encrypted archive\n"
          "  --directory DIR  extract the files into the directory DIR\n"
          "  --diagnostics    print diagnostics\n"
+         "  --direct-file-io pass FILE instead of stream with content of FILE to backend\n"
          , stderr);
   exit (ex);
 }
@@ -122,6 +123,7 @@ main (int argc, char **argv)
   int large_buffers = 0;
   int sensitive = 0;
   int diagnostics = 0;
+  int direct_file_io = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -221,6 +223,11 @@ main (int argc, char **argv)
           directory = *argv;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--direct-file-io"))
+        {
+          direct_file_io = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -229,13 +236,16 @@ main (int argc, char **argv)
   if (argc < 1 || argc > 2)
     show_usage (1);
 
-  fp_in = fopen (argv[0], "rb");
-  if (!fp_in)
+  if (!direct_file_io)
     {
-      err = gpgme_error_from_syserror ();
-      fprintf (stderr, PGM ": can't open `%s': %s\n",
-               argv[0], gpgme_strerror (err));
-      exit (1);
+      fp_in = fopen (argv[0], "rb");
+      if (!fp_in)
+        {
+          err = gpgme_error_from_syserror ();
+          fprintf (stderr, PGM ": can't open `%s': %s\n",
+                   argv[0], gpgme_strerror (err));
+          exit (1);
+        }
     }
 
   init_gpgme (protocol);
@@ -303,12 +313,25 @@ main (int argc, char **argv)
         }
     }
 
-  err = gpgme_data_new_from_stream (&in, fp_in);
+  if (direct_file_io)
+    err = gpgme_data_new (&in);
+  else
+    err = gpgme_data_new_from_stream (&in, fp_in);
   if (err)
     {
       fprintf (stderr, PGM ": error allocating data object: %s\n",
                gpgme_strerror (err));
       exit (1);
+    }
+  if (direct_file_io)
+    {
+      err = gpgme_data_set_file_name (in, argv[0]);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting file name (in): %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
     }
 
   err = gpgme_data_new (&out);

@@ -365,6 +365,18 @@ add_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
   return add_data_ext (gpg, data, dup_to, inbound, 0);
 }
 
+
+static gpgme_error_t
+add_file_name_arg_or_data (engine_gpg_t gpg, gpgme_data_t data, int dup_to, int inbound)
+{
+  const char *file_name = gpgme_data_get_file_name (data);
+  if (file_name)
+    return add_arg (gpg, file_name);
+  else
+    return add_data (gpg, data, dup_to, inbound);
+}
+
+
 /* Return true if the engine's version is at least VERSION.  */
 static int
 have_gpg_version (engine_gpg_t gpg, const char *version)
@@ -1883,7 +1895,7 @@ gpg_decrypt (void *engine,
       if (!err)
         err = add_arg (gpg, "--");
       if (!err)
-        err = add_data (gpg, ciph, 0, 0);
+        err = add_file_name_arg_or_data (gpg, ciph, 0, 0);
     }
   else
     {
@@ -1898,7 +1910,7 @@ gpg_decrypt (void *engine,
       if (!err)
         err = add_arg (gpg, "--");
       if (!err)
-        err = add_data (gpg, ciph, -1, 0);
+        err = add_file_name_arg_or_data (gpg, ciph, -1, 0);
     }
 
   if (!err)
@@ -3707,7 +3719,7 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
       if (!err)
         err = add_arg (gpg, "--");
       if (!err)
-        err = add_data (gpg, sig, 0, 0);
+        err = add_file_name_arg_or_data (gpg, sig, 0, 0);
     }
   else if (plaintext)
     {
@@ -3720,7 +3732,7 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
-	err = add_data (gpg, sig, -1, 0);
+	err = add_file_name_arg_or_data (gpg, sig, -1, 0);
       if (!err)
 	err = add_data (gpg, plaintext, 1, 1);
     }
@@ -3732,9 +3744,9 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
-	err = add_data (gpg, sig, -1, 0);
+	err = add_file_name_arg_or_data (gpg, sig, -1, 0);
       if (!err && signed_text)
-	err = add_data (gpg, signed_text, -1, 0);
+	err = add_file_name_arg_or_data (gpg, signed_text, -1, 0);
     }
 
   if (!err)

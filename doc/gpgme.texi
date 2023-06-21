@@ -5592,8 +5592,9 @@ An error code describing the reason why the key was found invalid.
 
 @deftypefun gpgme_error_t gpgme_op_decrypt (@w{gpgme_ctx_t @var{ctx}}, @w{gpgme_data_t @var{cipher}}, @w{gpgme_data_t @var{plain}})
 The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
-data object @var{cipher} and stores it into the data object
-@var{plain}.
+data object @var{cipher} or, if a file name is set on the data object,
+the ciphertext stored in the corresponding file.  The decrypted
+ciphertext is stored into the data object @var{plain}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
@@ -5806,7 +5807,10 @@ detached signature, then the signed text should be provided in
 Otherwise, if @var{sig} is a normal (or cleartext) signature,
 @var{signed_text} should be a null pointer and @var{plain} should be a
 writable data object that will contain the plaintext after successful
-verification.
+verification.  If a file name is set on the data object @var{sig} (or
+on the data object @var{signed_text}), then the data of the signature
+(resp. the data of the signed text) is not read from the data object
+but from the file with the given file name.
 
 The results of the individual signature verifications can be retrieved
 with @code{gpgme_op_verify_result}.

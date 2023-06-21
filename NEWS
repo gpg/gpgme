@@ -5,6 +5,9 @@ Noteworthy changes in version 1.21.0 (unreleased)
    gpgme_op_sign* to allow writing the output directly to a
    file.  [T6530]
 
+ * Extended gpgme_op_decrypt* and gpgme_op_verify* to allow
+   reading the input data directly from files.  [T6530]
+
  * qt: Allow writing the created archives directly to a
    file.  [T6530]
 
