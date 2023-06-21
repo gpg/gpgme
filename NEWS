@@ -11,6 +11,9 @@ Noteworthy changes in version 1.21.0 (unreleased)
  * qt: Allow writing the created archives directly to a
    file.  [T6530]
 
+ * qt: Allow reading the signed/encrypted archive to decrypt
+   or verify directly from a file.  [T6530]
+
  * qt: Qt Jobs working with QIODeviceDataProvider now properly
    handle input-size hints and progress for files larger.
    2^32 bytes in 32 bit builds.  [T6534]
@@ -23,6 +26,8 @@ Noteworthy changes in version 1.21.0 (unreleased)
  cpp: Data::setFlag                         NEW.
  cpp: Data::setSizeHint                     NEW.
  qt: Job::startIt                           NEW.
+ qt: DecryptVerifyArchiveJob::setInputFile  NEW.
+ qt: DecryptVerifyArchiveJob::inputFile     NEW.
  qt: EncryptArchiveJob::setRecipients       NEW.
  qt: EncryptArchiveJob::recipients          NEW.
  qt: EncryptArchiveJob::setInputPaths       NEW.

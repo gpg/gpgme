@@ -40,7 +40,6 @@
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
-#include <QFile>
 
 #include <context.h>
 #include <decryptionresult.h>
@@ -85,20 +84,6 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     return options;
 }
 
-std::shared_ptr<QIODevice> createInput(const QString &fileName)
-{
-    std::shared_ptr<QFile> input;
-
-    if (!QFile::exists(fileName)) {
-        qCritical() << "Error: File" << fileName << "does not exist.";
-    } else {
-        input.reset(new QFile{fileName});
-        input->open(QIODevice::ReadOnly);
-    }
-
-    return input;
-}
-
 int main(int argc, char **argv)
 {
     GpgME::initializeLibrary();
@@ -113,16 +98,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    auto input = createInput(options.archiveName);
-    if (!input) {
-        return 1;
-    }
-
     auto job = QGpgME::openpgp()->decryptVerifyArchiveJob();
     if (!job) {
         std::cerr << "Error: Could not create job" << std::endl;
         return 1;
     }
+    job->setInputFile(options.archiveName);
     job->setOutputDirectory(options.outputDirectory);
     QObject::connect(job, &QGpgME::DecryptVerifyArchiveJob::result, &app, [](const GpgME::DecryptionResult &decryptionResult, const GpgME::VerificationResult &verificationResult, const QString &auditLog, const GpgME::Error &) {
         std::cerr << "Diagnostics: " << auditLog << std::endl;
@@ -131,7 +112,7 @@ int main(int argc, char **argv)
         qApp->quit();
     });
 
-    const auto err = job->start(input);
+    const auto err = job->startIt();
     if (err) {
         std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
         return 1;

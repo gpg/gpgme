@@ -41,6 +41,7 @@ namespace QGpgME
 
 struct DecryptVerifyArchiveJobPrivate : public JobPrivate
 {
+    QString m_inputFilePath;
     QString m_outputDirectory;
 };
 

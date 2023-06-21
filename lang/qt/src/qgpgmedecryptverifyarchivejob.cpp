@@ -43,6 +43,8 @@
 #include "dataprovider.h"
 #include "decryptverifyarchivejob_p.h"
 
+#include <QFile>
+
 #include <data.h>
 
 using namespace QGpgME;
@@ -64,11 +66,7 @@ public:
     ~QGpgMEDecryptVerifyArchiveJobPrivate() override = default;
 
 private:
-    GpgME::Error startIt() override
-    {
-        Q_ASSERT(!"Not supported by this Job class.");
-        return Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-    }
+    GpgME::Error startIt() override;
 
     void startNow() override
     {
@@ -89,19 +87,9 @@ QGpgMEDecryptVerifyArchiveJob::QGpgMEDecryptVerifyArchiveJob(Context *context)
 }
 
 static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify(Context *ctx,
-                                                                 QThread *thread,
-                                                                 const std::weak_ptr<QIODevice> &cipherText_,
+                                                                 const GpgME::Data &indata,
                                                                  const QString &outputDirectory)
 {
-    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
-    const _detail::ToThreadMover ctMover(cipherText, thread);
-
-    QGpgME::QIODeviceDataProvider in{cipherText};
-    Data indata(&in);
-    if (!cipherText->isSequential()) {
-        indata.setSizeHint(cipherText->size());
-    }
-
     Data outdata;
     if (!outputDirectory.isEmpty()) {
         outdata.setFileName(outputDirectory.toStdString());
@@ -113,18 +101,57 @@ static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify(Context *ctx,
     return std::make_tuple(res.first, res.second, log, ae);
 }
 
+static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_io_device(Context *ctx,
+                                                                                QThread *thread,
+                                                                                const std::weak_ptr<QIODevice> &cipherText_,
+                                                                                const QString &outputDirectory)
+{
+    const std::shared_ptr<QIODevice> cipherText = cipherText_.lock();
+    const _detail::ToThreadMover ctMover(cipherText, thread);
+    QGpgME::QIODeviceDataProvider in{cipherText};
+    Data indata(&in);
+    if (!cipherText->isSequential()) {
+        indata.setSizeHint(cipherText->size());
+    }
+
+    return decrypt_verify(ctx, indata, outputDirectory);
+}
+
+static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_file_name(Context *ctx,
+                                                                                const QString &inputFile,
+                                                                                const QString &outputDirectory)
+{
+    Data indata;
+    indata.setFileName(QFile::encodeName(inputFile).constData());
+
+    return decrypt_verify(ctx, indata, outputDirectory);
+}
+
 GpgME::Error QGpgMEDecryptVerifyArchiveJob::start(const std::shared_ptr<QIODevice> &cipherText)
 {
     if (!cipherText) {
         return Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
-    run(std::bind(&decrypt_verify,
+    run(std::bind(&decrypt_verify_from_io_device,
                   std::placeholders::_1,
                   std::placeholders::_2,
                   std::placeholders::_3,
                   outputDirectory()),
         cipherText);
+    return {};
+}
+
+GpgME::Error QGpgMEDecryptVerifyArchiveJobPrivate::startIt()
+{
+    if (m_inputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return decrypt_verify_from_file_name(ctx, m_inputFilePath, m_outputDirectory);
+    });
+
     return {};
 }
 

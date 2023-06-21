@@ -56,6 +56,18 @@ bool DecryptVerifyArchiveJob::isSupported()
     return (gpgVersion >= "2.4.1") || (gpgVersion >= "2.2.42" && gpgVersion < "2.3.0");
 }
 
+void DecryptVerifyArchiveJob::setInputFile(const QString &path)
+{
+    auto d = jobPrivate<DecryptVerifyArchiveJobPrivate>(this);
+    d->m_inputFilePath = path;
+}
+
+QString DecryptVerifyArchiveJob::inputFile() const
+{
+    auto d = jobPrivate<DecryptVerifyArchiveJobPrivate>(this);
+    return d->m_inputFilePath;
+}
+
 void DecryptVerifyArchiveJob::setOutputDirectory(const QString &outputDirectory)
 {
     auto d = jobPrivate<DecryptVerifyArchiveJobPrivate>(this);

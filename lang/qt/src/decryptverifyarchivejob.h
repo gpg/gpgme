@@ -63,6 +63,18 @@ public:
 
     static bool isSupported();
 
+    /**
+     * Sets the path of the file to read the archive from.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setInputFile(const QString &path);
+    QString inputFile() const;
+
+    /**
+     * Sets the directory the content of the decrypted archive shall be
+     * written to.
+     */
     void setOutputDirectory(const QString &outputDirectory);
     QString outputDirectory() const;
 
