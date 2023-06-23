@@ -38,6 +38,8 @@ EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in  \
              ChangeLog-2011 m4/ChangeLog-2011     \
              conf/whatisthis VERSION LICENSES
 
+# This artificial line is to put a dependency to conf/config.h for 'all'
+BUILT_SOURCES = conf/config.h
 
 if RUN_GPG_TESTS
 tests = tests
