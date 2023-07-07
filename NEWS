@@ -1,12 +1,16 @@
-Noteworthy changes in version 1.21.0 (unreleased)
+Noteworthy changes in version 1.21.0 (2023-07-07)
 -------------------------------------------------
 
- * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and
-   gpgme_op_sign* to allow writing the output directly to a
-   file.  [T6530]
+ * Extended gpgme_op_encrypt, gpgme_op_encrypt_sign, and gpgme_op_sign
+   to allow writing the output directly to a file.  [T6530]
 
- * Extended gpgme_op_decrypt* and gpgme_op_verify* to allow
-   reading the input data directly from files.  [T6530]
+ * Extended gpgme_op_decrypt and gpgme_op_verify to allow reading the
+   input data directly from files.  [T6530]
+
+ * For key signing and uid revoking allow an empty user id.
+   [rMfbc3963d62]
+
+ * Pass an input-size-hint also to the gpgsm engine.  [T6534]
 
  * qt: Allow writing the created archives directly to a
    file.  [T6530]
@@ -20,6 +24,8 @@ Noteworthy changes in version 1.21.0 (unreleased)
 
  * cpp: Error::isCanceled now also returns true for error code
    GPG_ERR_FULLY_CANCELED.  [T6510]
+
+ * python: Fix wrong use of write.  [T6501]
 
  * Interface changes relative to the 1.20.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,6 +58,11 @@ Noteworthy changes in version 1.21.0 (unreleased)
  qt: SignEncryptArchiveJob::outputFile      NEW.
  qt: SignEncryptArchiveJob::setEncryptionFlags NEW.
  qt: SignEncryptArchiveJob::encryptionFlags NEW.
+
+ [c=C41/A30/R0 cpp=C24/A18/R0 qt=C18/A3/R0]
+
+ Release-info: https://dev.gnupg.org/T6585
+
 
 Noteworthy changes in version 1.20.0 (2023-04-20)
 -------------------------------------------------
