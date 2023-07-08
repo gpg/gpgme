@@ -67,9 +67,11 @@ set_target_properties(QGpgme PROPERTIES
   INTERFACE_LINK_LIBRARIES "Gpgmepp;Qt5::Core"
   IMPORTED_LOCATION "@resolved_bindir@/libqgpgme-15.dll"
 )
+get_target_property(_libpath QGpgme IMPORTED_IMPLIB_RELEASE)
+get_target_property(_dllpath QGpgme IMPORTED_LOCATION)
 
 list(APPEND _IMPORT_CHECK_TARGETS QGpgme )
-list(APPEND _IMPORT_CHECK_FILES_FOR_QGpgme "@resolved_libdir@/libqgpgme.dll.a" "@resolved_bindir@/libqgpgme-15.dll" )
+list(APPEND _IMPORT_CHECK_FILES_FOR_QGpgme "${_libpath}" "${_dllpath}" )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
   message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
@@ -93,6 +95,8 @@ but not all the files it references.
   unset(_IMPORT_CHECK_FILES_FOR_${target})
 endforeach()
 unset(_IMPORT_CHECK_TARGETS)
+unset(_dllpath)
+unset(_libpath)
 
 # This file does not depend on other imported targets which have
 # been exported from the same project but in a separate export set.

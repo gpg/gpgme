@@ -67,9 +67,11 @@ set_target_properties(QGpgmeQt6 PROPERTIES
   INTERFACE_LINK_LIBRARIES "Gpgmepp;Qt6::Core"
   IMPORTED_LOCATION "@resolved_bindir@/libqgpgmeqt6-15.dll"
 )
+get_target_property(_libpath QGpgmeQt6 IMPORTED_IMPLIB_RELEASE)
+get_target_property(_dllpath QGpgmeQt6 IMPORTED_LOCATION)
 
 list(APPEND _IMPORT_CHECK_TARGETS QGpgmeQt6 )
-list(APPEND _IMPORT_CHECK_FILES_FOR_QGpgmeQt6 "@resolved_libdir@/libqgpgmeqt6.dll.a" "@resolved_bindir@/libqgpgmeqt6-15.dll" )
+list(APPEND _IMPORT_CHECK_FILES_FOR_QGpgmeQt6 "${_libpath}" "${_dllpath}" )
 
 if(CMAKE_VERSION VERSION_LESS 2.8.12)
   message(FATAL_ERROR "This file relies on consumers using CMake 2.8.12 or greater.")
@@ -93,6 +95,8 @@ but not all the files it references.
   unset(_IMPORT_CHECK_FILES_FOR_${target})
 endforeach()
 unset(_IMPORT_CHECK_TARGETS)
+unset(_dllpath)
+unset(_libpath)
 
 # This file does not depend on other imported targets which have
 # been exported from the same project but in a separate export set.
