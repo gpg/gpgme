@@ -75,6 +75,7 @@ public:
     }
     bool isWrongKeyUsage() const;
     bool isDeVs() const;
+    bool isMime() const;
 
     const char *fileName() const;
 

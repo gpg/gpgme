@@ -122,6 +122,11 @@ bool GpgME::DecryptionResult::isDeVs() const
     return d && d->res.is_de_vs;
 }
 
+bool GpgME::DecryptionResult::isMime() const
+{
+    return d && d->res.is_mime;
+}
+
 const char *GpgME::DecryptionResult::fileName() const
 {
     return d ? d->res.file_name : nullptr ;
