@@ -35,6 +35,7 @@
 #define __QGPGME_ENCRYPTJOB_P_H__
 
 #include "job_p.h"
+#include "data.h"
 
 namespace QGpgME
 {
@@ -42,6 +43,7 @@ namespace QGpgME
 struct EncryptJobPrivate : public JobPrivate
 {
     QString m_fileName;
+    GpgME::Data::Encoding m_inputEncoding;
 };
 
 }

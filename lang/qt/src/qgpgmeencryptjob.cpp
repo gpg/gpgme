@@ -107,6 +107,7 @@ static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
         const std::weak_ptr<QIODevice> &cipherText_,
         const Context::EncryptionFlags eflags,
         bool outputIsBsse64Encoded,
+        Data::Encoding inputEncoding,
         const QString &fileName)
 {
 
@@ -118,6 +119,8 @@ static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
 
     QGpgME::QIODeviceDataProvider in(plainText);
     Data indata(&in);
+    indata.setEncoding(inputEncoding);
+
     if (!plainText->isSequential()) {
         indata.setSizeHint(plainText->size());
     }
@@ -155,20 +158,20 @@ static QGpgMEEncryptJob::result_type encrypt(Context *ctx, QThread *thread,
 
 }
 
-static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded, const QString &fileName)
+static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector<Key> &recipients, const QByteArray &plainText, const Context::EncryptionFlags eflags, bool outputIsBsse64Encoded, Data::Encoding inputEncoding, const QString &fileName)
 {
     const std::shared_ptr<QBuffer> buffer(new QBuffer);
     buffer->setData(plainText);
     if (!buffer->open(QIODevice::ReadOnly)) {
         assert(!"This should never happen: QBuffer::open() failed");
     }
-    return encrypt(ctx, nullptr, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded, fileName);
+    return encrypt(ctx, nullptr, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded, inputEncoding, fileName);
 }
 
 Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
     run(std::bind(&encrypt_qba, std::placeholders::_1, recipients, plainText,
-                  alwaysTrust ? Context::AlwaysTrust : Context::None, mOutputIsBase64Encoded, fileName()));
+                  alwaysTrust ? Context::AlwaysTrust : Context::None, mOutputIsBase64Encoded, inputEncoding(), fileName()));
     return Error();
 }
 
@@ -181,6 +184,7 @@ void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shar
                     std::placeholders::_3, std::placeholders::_4,
                     eflags,
                     mOutputIsBase64Encoded,
+                    inputEncoding(),
                     fileName()),
         plainText, cipherText);
 }
@@ -188,7 +192,7 @@ void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shar
 EncryptionResult QGpgMEEncryptJob::exec(const std::vector<Key> &recipients, const QByteArray &plainText,
                                         const Context::EncryptionFlags eflags, QByteArray &cipherText)
 {
-    const result_type r = encrypt_qba(context(), recipients, plainText, eflags, mOutputIsBase64Encoded, fileName());
+    const result_type r = encrypt_qba(context(), recipients, plainText, eflags, mOutputIsBase64Encoded, inputEncoding(), fileName());
     cipherText = std::get<1>(r);
     resultHook(r);
     return mResult;

@@ -38,6 +38,7 @@
 #define __KLEO_ENCRYPTJOB_H__
 
 #include "job.h"
+#include "data.h"
 
 #include <memory>
 #include <vector>
@@ -84,6 +85,9 @@ public:
 
     void setFileName(const QString &fileName);
     QString fileName() const;
+
+    void setInputEncoding(GpgME::Data::Encoding);
+    GpgME::Data::Encoding inputEncoding() const;
 
     /**
        Starts the encryption operation. \a recipients is the a list of

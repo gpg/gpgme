@@ -51,3 +51,15 @@ QString EncryptJob::fileName() const
     auto d = jobPrivate<EncryptJobPrivate>(this);
     return d->m_fileName;
 }
+
+void EncryptJob::setInputEncoding(GpgME::Data::Encoding inputEncoding)
+{
+    auto d = jobPrivate<EncryptJobPrivate>(this);
+    d->m_inputEncoding = inputEncoding;
+}
+
+GpgME::Data::Encoding EncryptJob::inputEncoding() const
+{
+    auto d = jobPrivate<EncryptJobPrivate>(this);
+    return d->m_inputEncoding;
+}
