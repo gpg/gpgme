@@ -979,7 +979,7 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_UNEXPECTED:
       opd->only_newsig_seen = 0;
       if (!sig)
-	return gpg_error (GPG_ERR_GENERAL);
+	return gpg_error (GPG_ERR_BAD_DATA);
       sig->status = gpg_error (GPG_ERR_NO_DATA);
       break;
 
