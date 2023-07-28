@@ -86,6 +86,44 @@ static const char double_plaintext_sig[] =
 "=6+AK\n"
 "-----END PGP MESSAGE-----\n";
 
+/* A clear-signed message followed by a public key block. */
+static const char clearsigned_plus_key_block[] =
+"-----BEGIN PGP SIGNED MESSAGE-----\n"
+"Hash: SHA256\n"
+"\n"
+"bar\n"
+"-----BEGIN PGP SIGNATURE-----\n"
+"\n"
+"iQEzBAEBCAAdFiEE0MFuEqOl54V/b8HTD1vkKiPJHOMFAmTBMWMACgkQD1vkKiPJ\n"
+"HONzdQf/aty0AjMuKRbI7s9oN2fTMzKglnopBBsJH/ozravsHt3NzW6qeI+JN8Ga\n"
+"yMgwu7991di2q3+dHzLylL/uLxomh3TQnQTsak3kfzVJt8fKgY3lpFZamgpGQlme\n"
+"r0xioe5ylaIipItt06XIeZMnwrS+dfDhAW1G6x98nSOCN+SlqmrPpVrf2+J3hLXq\n"
+"4oRZExYD3WIQAOl5a6LBJ7nKxal7Y+ZzLNKo1Fdv0BSeaClVXTeUFCivZiw0zcEI\n"
+"eguDK8fk7kx3MDuwQxV3+juWaMDCNNVV4QBIMZjXusv2i7vHkfTWrPy+m+CmkIJz\n"
+"MEHj/W7d30v2HqNYtrwOSmMhv1+wOg==\n"
+"=vlPl\n"
+"-----END PGP SIGNATURE-----\n"
+"-----BEGIN PGP PUBLIC KEY BLOCK-----\n"
+"\n"
+"mDMEYg5XKRYJKwYBBAHaRw8BAQdAoiviwSeMJbcbE8t9mHgrSqgT5F4LQyLzUckU\n"
+"E6Sx5aiIgwQgFgoAKxYhBIHOfS+ZLzoe/uBZMa7qmxcSWxd7BQJiQaR2DR0BbGlu\n"
+"ZTEKbGluZTIACgkQruqbFxJbF3uT1wD/UzkNkMwK/kDHxT4xxwY6OeRZdeZauGtv\n"
+"vKnvcyM16V0A/0IEIlQmSKyp/OEFZy45VBunJZJkReRMS9pA0Y+ouBgKtB9KYW5l\n"
+"IERvZSA8amFuZS5kb2VAZXhhbXBsZS5uZXQ+iJoEExYKAEICGwMFCQAosgcFCwkI\n"
+"BwIDIgIBBhUKCQgLAgQWAgMBAh4HAheAFiEEgc59L5kvOh7+4FkxruqbFxJbF3sF\n"
+"AmLyVRUACgkQruqbFxJbF3s/cgEAqwbErDdIhKudkFrk8wY6VkNBDf4jf2SGyDz1\n"
+"BL9pJt0A/0IkhlpHU6rtqylJuuCFpLmKbFlXdXdrCoEwisFrY8QJtAZibGFibGGI\n"
+"nAQTFgoARAIbAwUJACiyBwULCQgHAgIiAgYVCgkICwIEFgIDAQIeBwIXgBYhBIHO\n"
+"fS+ZLzoe/uBZMa7qmxcSWxd7BQJi8lUWAhkBAAoJEK7qmxcSWxd7H+UBAP/y1phn\n"
+"ojnKvF72jm7uaLN+mTVKjt71nxPi8TvBASC1AP0bt5vAiAqlCOYACvm2mg8pw18f\n"
+"1YXXOBkcbTLUimkyD7g4BGIOVykSCisGAQQBl1UBBQEBB0DkecMMBdYTabaTqAbV\n"
+"GlWplsf68h+uv8N78t0bEjVmGAMBCAeIfgQYFgoAJhYhBIHOfS+ZLzoe/uBZMa7q\n"
+"mxcSWxd7BQJiDlcpAhsMBQkAKLIHAAoJEK7qmxcSWxd7GgsBAMvJUPcHIs4dHlqS\n"
+"o2P7NfJvkFpqFUeGaP8upALUiijRAQDz13cloc0StTGn5uWPZCGQkzn8MzX+yiPZ\n"
+"mxnjHfafCg==\n"
+"=+jHe\n"
+"-----END PGP PUBLIC KEY BLOCK-----\n";
+
 
 
 
@@ -361,6 +399,22 @@ main (int argc, char *argv[])
       exit (1);
     }
 
+  gpgme_data_release (sig);
+  gpgme_data_release (text);
+
+  /* Checking clear-signed message followed by public key block.  */
+  err = gpgme_data_new_from_mem (&sig, clearsigned_plus_key_block,
+                                 strlen (clearsigned_plus_key_block), 0);
+  fail_if_err (err);
+  err = gpgme_data_new (&text);
+  fail_if_err (err);
+  err = gpgme_op_verify (ctx, sig, NULL, text);
+  fail_if_err (err);
+  result = gpgme_op_verify_result (ctx);
+  check_result (result, 1, 0, GPGME_SIGSUM_KEY_MISSING,
+                "D0C16E12A3A5E7857F6FC1D30F5BE42A23C91CE3",
+		GPG_ERR_NO_PUBKEY, 0, GPGME_VALIDITY_UNKNOWN);
+  check_data (text, "bar\n");
 
   gpgme_data_release (sig);
   gpgme_data_release (text);

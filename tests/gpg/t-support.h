@@ -32,6 +32,10 @@
 
 #include <gpgme.h>
 
+#ifndef PGM
+#define PGM "unknown program; define PGM before including t-support.h"
+#endif
+
 #ifndef DIM
 #define DIM(v)		     (sizeof(v)/sizeof((v)[0]))
 #endif
@@ -99,6 +103,46 @@ print_data (gpgme_data_t dh)
     fwrite (buf, ret, 1, stdout);
   if (ret < 0)
     fail_if_err (gpgme_err_code_from_errno (errno));
+#undef BUF_SIZE
+}
+
+
+void
+check_data (gpgme_data_t dh, const char *expected)
+{
+#define BUF_SIZE 512
+  char buf[BUF_SIZE + 1];
+  int expectedlen;
+  int ret;
+
+  if (!expected)
+    {
+      fprintf (stderr, "%s:%i: Expected data must not be NULL.\n",
+               PGM, __LINE__);
+      exit (1);
+    }
+  expectedlen = strlen (expected);
+  if (expectedlen > BUF_SIZE)
+    {
+      fprintf (stderr, "%s:%i: Size of expected data (%d) is greater than "
+               "BUF_SIZE (%d).\n", PGM, __LINE__, expectedlen, BUF_SIZE);
+      exit (1);
+    }
+
+  ret = gpgme_data_seek (dh, 0, SEEK_SET);
+  if (ret)
+    fail_if_err (gpgme_err_code_from_errno (errno));
+  if ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) < 0)
+    fail_if_err (gpgme_err_code_from_errno (errno));
+  buf[ret] = 0;
+  if (ret != expectedlen || strncmp (buf, expected, expectedlen))
+    {
+      fprintf (stderr, "%s:%i: Got unexpected data\n", PGM, __LINE__);
+      fprintf (stderr, "Expected data:\n---\n%s---\n", expected);
+      fprintf (stderr, "Actual data:\n---\n%s---\n", buf);
+      exit (1);
+    }
+#undef BUF_SIZE
 }
 
 

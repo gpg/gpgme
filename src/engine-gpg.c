@@ -3726,15 +3726,13 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
       /* Normal or cleartext signature.  */
       err = add_arg (gpg, "--output");
       if (!err)
-	err = add_arg (gpg, "-");
+	err = add_data (gpg, plaintext, -1, 1);
       if (!err)
         err = add_input_size_hint (gpg, sig);
       if (!err)
 	err = add_arg (gpg, "--");
       if (!err)
 	err = add_file_name_arg_or_data (gpg, sig, -1, 0);
-      if (!err)
-	err = add_data (gpg, plaintext, 1, 1);
     }
   else
     {
