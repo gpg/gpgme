@@ -68,6 +68,7 @@ typedef struct
 struct engine_gpgsm
 {
   assuan_context_t assuan_ctx;
+  char *version;
 
   int lc_ctype_set;
   int lc_messages_set;
@@ -254,6 +255,9 @@ gpgsm_release (void *engine)
 
   gpgsm_cancel (engine);
 
+  if (gpgsm->version)
+    free (gpgsm->version);
+
   gpgme_data_release (gpgsm->diagnostics);
 
   free (gpgsm->colon.attic.line);
@@ -281,11 +285,19 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
   char *optstr;
   unsigned int connect_flags;
 
-  (void)version; /* Not yet used.  */
-
   gpgsm = calloc (1, sizeof *gpgsm);
   if (!gpgsm)
     return gpg_error_from_syserror ();
+
+  if (version)
+    {
+      gpgsm->version = strdup (version);
+      if (!gpgsm->version)
+	{
+	  err = gpg_error_from_syserror ();
+	  goto leave;
+	}
+    }
 
   gpgsm->status_cb.fd = -1;
   gpgsm->status_cb.dir = 1;
