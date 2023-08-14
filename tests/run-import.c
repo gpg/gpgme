@@ -46,6 +46,7 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --offline        use offline mode\n"
          "  --key-origin     use the specified key origin\n"
          "  --url            import from given URLs\n"
          "  -0               URLs are delimited by a nul\n"
@@ -66,6 +67,7 @@ main (int argc, char **argv)
   gpgme_protocol_t protocol = GPGME_PROTOCOL_OpenPGP;
   char *import_filter = NULL;
   char *key_origin = NULL;
+  int offline = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -120,6 +122,11 @@ main (int argc, char **argv)
           key_origin = strdup (*argv);
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--offline"))
+        {
+          offline = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -133,6 +140,8 @@ main (int argc, char **argv)
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
+
+  gpgme_set_offline (ctx, offline);
 
   if (import_filter)
     {
