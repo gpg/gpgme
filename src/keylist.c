@@ -1126,7 +1126,6 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   gpgme_error_t err;
   void *hook;
   op_data_t opd;
-  int flags = 0;
 
   TRACE_BEG  (DEBUG_CTX, "gpgme_op_keylist_start", ctx,
 	      "pattern=%s, secret_only=%i", pattern, secret_only);
@@ -1155,11 +1154,8 @@ gpgme_op_keylist_start (gpgme_ctx_t ctx, const char *pattern, int secret_only)
   if (err)
     return TRACE_ERR (err);
 
-  if (ctx->offline)
-    flags |= GPGME_ENGINE_FLAG_OFFLINE;
-
   err = _gpgme_engine_op_keylist (ctx->engine, pattern, secret_only,
-				  ctx->keylist_mode, flags);
+				  ctx->keylist_mode);
   return TRACE_ERR (err);
 }
 
@@ -1174,7 +1170,6 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   gpgme_error_t err;
   void *hook;
   op_data_t opd;
-  int flags = 0;
 
   TRACE_BEG  (DEBUG_CTX, "gpgme_op_keylist_ext_start", ctx,
 	      "secret_only=%i, reserved=0x%x", secret_only, reserved);
@@ -1202,12 +1197,8 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
   if (err)
     return TRACE_ERR (err);
 
-  if (ctx->offline)
-    flags |= GPGME_ENGINE_FLAG_OFFLINE;
-
   err = _gpgme_engine_op_keylist_ext (ctx->engine, pattern, secret_only,
-				      reserved, ctx->keylist_mode,
-				      flags);
+				      reserved, ctx->keylist_mode);
   return TRACE_ERR (err);
 }
 

@@ -2694,8 +2694,9 @@ for example completely disable the use of Dirmngr for any engine.
 
 For the CMS protocol the offline mode specifies whether Dirmngr shall
 be used to do additional validation that might require connecting
-external services (e.g. CRL / OCSP checks).  Here the offline mode
-only affects the keylist mode @code{GPGME_KEYLIST_MODE_VALIDATE}.
+external services (e.g. CRL / OCSP checks).  The offline mode is used
+for all operations on this context.  It has only an effect with
+GnuPG versions 2.1.6 or later.
 
 For the OpenPGP protocol offline mode entirely disables the use of the
 Dirmngr and will thus guarantee that no network connections are done

@@ -3341,12 +3341,10 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
 
 static gpgme_error_t
 gpg_keylist (void *engine, const char *pattern, int secret_only,
-	     gpgme_keylist_mode_t mode, int engine_flags)
+	     gpgme_keylist_mode_t mode)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
-
-  (void)engine_flags;
 
   err = gpg_keylist_build_options (gpg, secret_only, mode);
 
@@ -3362,12 +3360,10 @@ gpg_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpg_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		 int reserved, gpgme_keylist_mode_t mode, int engine_flags)
+		 int reserved, gpgme_keylist_mode_t mode)
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
-
-  (void)engine_flags;
 
   if (reserved)
     return gpg_error (GPG_ERR_INV_VALUE);

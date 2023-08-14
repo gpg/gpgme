@@ -148,14 +148,12 @@ gpgme_error_t _gpgme_engine_op_import (engine_t engine,
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,
 					int secret_only,
-					gpgme_keylist_mode_t mode,
-					int engine_flags);
+					gpgme_keylist_mode_t mode);
 gpgme_error_t _gpgme_engine_op_keylist_ext (engine_t engine,
 					    const char *pattern[],
 					    int secret_only,
 					    int reserved,
-					    gpgme_keylist_mode_t mode,
-					    int engine_flags);
+					    gpgme_keylist_mode_t mode);
 gpgme_error_t _gpgme_engine_op_keylist_data (engine_t engine,
 					     gpgme_keylist_mode_t mode,
 					     gpgme_data_t data);
@@ -226,9 +224,6 @@ gpgme_error_t _gpgme_engine_op_setexpire (engine_t engine,
                                           unsigned long expires,
                                           const char *subfprs,
                                           unsigned int reserved);
-
-/* The available engine option flags.  */
-#define GPGME_ENGINE_FLAG_OFFLINE        1
 
 
 #endif /* ENGINE_H */

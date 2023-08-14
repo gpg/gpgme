@@ -114,6 +114,10 @@ struct engine_gpgsm
 
   /* Memory data containing diagnostics (--logger-fd) of gpgsm */
   gpgme_data_t diagnostics;
+
+  struct {
+    unsigned int offline : 1;
+  } flags;
 };
 
 typedef struct engine_gpgsm *engine_gpgsm_t;
@@ -122,6 +126,13 @@ typedef struct engine_gpgsm *engine_gpgsm_t;
 static void gpgsm_io_event (void *engine,
                             gpgme_event_io_t type, void *type_data);
 
+
+/* Return true if the engine's version is at least VERSION.  */
+static int
+have_gpgsm_version (engine_gpgsm_t gpgsm, const char *version)
+{
+  return _gpgme_compare_versions (gpgsm->version, version);
+}
 
 
 static char *
@@ -613,6 +624,8 @@ gpgsm_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
     }
   else
     *gpgsm->request_origin = 0;
+
+  gpgsm->flags.offline = (ctx->offline && have_gpgsm_version (gpgsm, "2.1.6"));
 }
 
 
@@ -1174,6 +1187,12 @@ start (engine_gpgsm_t gpgsm, const char *command)
       if (err && gpg_err_code (err) != GPG_ERR_UNKNOWN_OPTION)
         return err;
     }
+
+  gpgsm_assuan_simple_command (gpgsm,
+                               gpgsm->flags.offline ?
+                               "OPTION offline=1":
+                               "OPTION offline=0" ,
+                               NULL, NULL);
 
   /* We need to know the fd used by assuan for reads.  We do this by
      using the assumption that the first returned fd from
@@ -1872,7 +1891,7 @@ gpgsm_import (void *engine, gpgme_data_t keydata, gpgme_key_t *keyarray,
 
 static gpgme_error_t
 gpgsm_keylist (void *engine, const char *pattern, int secret_only,
-	       gpgme_keylist_mode_t mode, int engine_flags)
+	       gpgme_keylist_mode_t mode)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -1928,12 +1947,6 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
                                NULL, NULL);
-  gpgsm_assuan_simple_command (gpgsm,
-                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
-                               "OPTION offline=1":
-                               "OPTION offline=0" ,
-                               NULL, NULL);
-
 
   /* Length is "LISTSECRETKEYS " + p + '\0'.  */
   line = malloc (15 + strlen (pattern) + 1);
@@ -1963,7 +1976,7 @@ gpgsm_keylist (void *engine, const char *pattern, int secret_only,
 
 static gpgme_error_t
 gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
-		   int reserved, gpgme_keylist_mode_t mode, int engine_flags)
+		   int reserved, gpgme_keylist_mode_t mode)
 {
   engine_gpgsm_t gpgsm = engine;
   char *line;
@@ -2002,11 +2015,6 @@ gpgsm_keylist_ext (void *engine, const char *pattern[], int secret_only,
                                (mode & GPGME_KEYLIST_MODE_WITH_SECRET)?
                                "OPTION with-secret=1":
                                "OPTION with-secret=0" ,
-                               NULL, NULL);
-  gpgsm_assuan_simple_command (gpgsm,
-                               (engine_flags & GPGME_ENGINE_FLAG_OFFLINE)?
-                               "OPTION offline=1":
-                               "OPTION offline=0" ,
                                NULL, NULL);
 
   if (pattern && *pattern)
