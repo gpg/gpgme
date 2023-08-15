@@ -36,6 +36,8 @@
 
 #include "qgpgme_export.h"
 
+#include <sstream>
+
 namespace GpgME
 {
 class Error;
@@ -44,5 +46,19 @@ class Error;
 class QDebug;
 
 QGPGME_EXPORT QDebug operator<<(QDebug debug, const GpgME::Error &err);
+
+namespace QGpgME
+{
+/**
+ * Helper to log GpgME objects which provide the output stream operator.
+ */
+template<class GpgMEClass>
+std::string toLogString(const GpgMEClass &object)
+{
+    std::stringstream stream;
+    stream << object;
+    return stream.str();
+}
+}
 
 #endif // QGPGME_DEBUG_H
