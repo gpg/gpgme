@@ -33,8 +33,6 @@
 
 #include <assert.h>
 
-#include <sstream>
-
 using namespace GpgME;
 
 GpgAgentGetInfoAssuanTransaction::GpgAgentGetInfoAssuanTransaction(InfoItem item)

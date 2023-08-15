@@ -31,7 +31,6 @@
 
 #include <gpgme.h>
 
-#include <sstream>
 #include <vector>
 
 // avoid conflict (msvc)

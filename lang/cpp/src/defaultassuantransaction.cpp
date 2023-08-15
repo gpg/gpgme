@@ -30,8 +30,6 @@
 #include "error.h"
 #include "data.h"
 
-#include <sstream>
-
 using namespace GpgME;
 
 DefaultAssuanTransaction::DefaultAssuanTransaction()

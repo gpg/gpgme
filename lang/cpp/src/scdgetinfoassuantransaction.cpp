@@ -31,7 +31,6 @@
 #include "data.h"
 #include "util.h"
 
-#include <sstream>
 #include <assert.h>
 
 using namespace GpgME;

@@ -38,7 +38,6 @@
 #include "verificationresult.h"
 
 #include <memory>
-#include <sstream>
 #include <iostream>
 
 using namespace GpgME;
