@@ -44,6 +44,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QTimer>
 
 #include <context.h>
 #include <encryptionresult.h>
@@ -63,6 +64,7 @@ struct CommandLineOptions {
     bool sign = false;
     QString archiveName;
     QString baseDirectory;
+    std::chrono::seconds cancelTimeout{0};
     std::vector<QString> filesAndDirectories;
 };
 
@@ -78,6 +80,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
         {{"o", "output"}, "Write output to FILE.", "FILE"},
         {{"a", "armor"}, "Create ASCII armored output."},
         {{"C", "directory"}, "Change to DIRECTORY before creating the archive.", "DIRECTORY"},
+        {"cancel-after", "Cancel the running job after SECONDS seconds.", "SECONDS"},
     });
     parser.addPositionalArgument("files", "Files and directories to add to the archive", "[files] [directories]");
 
@@ -92,6 +95,13 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     options.sign = parser.isSet("sign");
     options.archiveName = parser.value("output");
     options.baseDirectory = parser.value("directory");
+    if (parser.isSet("cancel-after")) {
+        bool ok;
+        options.cancelTimeout = std::chrono::seconds{parser.value("cancel-after").toInt(&ok)};
+        if (!ok) {
+            options.cancelTimeout = std::chrono::seconds{-1};
+        }
+    }
     std::copy(args.begin(), args.end(), std::back_inserter(options.filesAndDirectories));
 
     return options;
@@ -115,6 +125,9 @@ int main(int argc, char **argv)
     app.setApplicationName("run-encryptarchivejob");
 
     const auto options = parseCommandLine(app.arguments());
+    if (options.cancelTimeout.count() < 0) {
+        std::cerr << "Ignoring invalid timeout for cancel." << std::endl;
+    }
 
     if ((options.sign && !QGpgME::SignEncryptArchiveJob::isSupported())
         || (!options.sign && !QGpgME::EncryptArchiveJob::isSupported())) {
@@ -147,6 +160,12 @@ int main(int argc, char **argv)
             std::cerr << "Encryption Result: " << encryptionResult << std::endl;
             qApp->quit();
         });
+        if (options.cancelTimeout.count() > 0) {
+            QTimer::singleShot(options.cancelTimeout, job, [job]() {
+                std::cerr << "Canceling job" << std::endl;
+                job->slotCancel();
+            });
+        }
 
         GpgME::Error err;
         if (output) {
@@ -172,6 +191,12 @@ int main(int argc, char **argv)
             std::cerr << "Result: " << result << std::endl;
             qApp->quit();
         });
+        if (options.cancelTimeout.count() > 0) {
+            QTimer::singleShot(options.cancelTimeout, job, [job]() {
+                std::cerr << "Canceling job" << std::endl;
+                job->slotCancel();
+            });
+        }
 
         GpgME::Error err;
         if (output) {

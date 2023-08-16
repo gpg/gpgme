@@ -43,6 +43,7 @@
 #include "dataprovider.h"
 #include "signarchivejob_p.h"
 #include "filelistdataprovider.h"
+#include "qgpgme_debug.h"
 
 #include <QFile>
 
@@ -108,10 +109,21 @@ static QGpgMESignArchiveJob::result_type sign(Context *ctx,
         }
     }
 
-    const SigningResult res = ctx->sign(indata, outdata, GpgME::SignArchive);
+    const auto signingResult = ctx->sign(indata, outdata, GpgME::SignArchive);
+
+    const auto outputFileName = QFile::decodeName(outdata.fileName());
+    if (!outputFileName.isEmpty() && signingResult.error().code()) {
+        // ensure that the output file is removed if the operation was canceled or failed
+        if (QFile::exists(outputFileName)) {
+            qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "after error or cancel";
+            if (!QFile::remove(outputFileName)) {
+                qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "failed";
+            }
+        }
+    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return std::make_tuple(res, log, ae);
+    return std::make_tuple(signingResult, log, ae);
 }
 
 static QGpgMESignArchiveJob::result_type sign_to_io_device(Context *ctx,

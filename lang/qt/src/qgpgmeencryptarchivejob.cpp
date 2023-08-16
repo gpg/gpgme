@@ -43,6 +43,7 @@
 #include "dataprovider.h"
 #include "encryptarchivejob_p.h"
 #include "filelistdataprovider.h"
+#include "qgpgme_debug.h"
 
 #include <QFile>
 
@@ -101,10 +102,21 @@ static QGpgMEEncryptArchiveJob::result_type encrypt(Context *ctx,
     }
 
     flags = static_cast<Context::EncryptionFlags>(flags | Context::EncryptArchive);
-    const EncryptionResult res = ctx->encrypt(recipients, indata, outdata, flags);
+    const auto encryptionResult = ctx->encrypt(recipients, indata, outdata, flags);
+
+    const auto outputFileName = QFile::decodeName(outdata.fileName());
+    if (!outputFileName.isEmpty() && encryptionResult.error().code()) {
+        // ensure that the output file is removed if the operation was canceled or failed
+        if (QFile::exists(outputFileName)) {
+            qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "after error or cancel";
+            if (!QFile::remove(outputFileName)) {
+                qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "failed";
+            }
+        }
+    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return std::make_tuple(res, log, ae);
+    return std::make_tuple(encryptionResult, log, ae);
 }
 
 static QGpgMEEncryptArchiveJob::result_type encrypt_to_io_device(Context *ctx,

@@ -43,6 +43,7 @@
 #include "dataprovider.h"
 #include "signencryptarchivejob_p.h"
 #include "filelistdataprovider.h"
+#include "qgpgme_debug.h"
 
 #include <QFile>
 
@@ -112,9 +113,22 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt(Context *ctx,
 
     encryptionFlags = static_cast<Context::EncryptionFlags>(encryptionFlags | Context::EncryptArchive);
     const auto res = ctx->signAndEncrypt(recipients, indata, outdata, encryptionFlags);
+    const auto &signingResult = res.first;
+    const auto &encryptionResult = res.second;
+
+    const auto outputFileName = QFile::decodeName(outdata.fileName());
+    if (!outputFileName.isEmpty() && (signingResult.error().code() || encryptionResult.error().code())) {
+        // ensure that the output file is removed if the operation was canceled or failed
+        if (QFile::exists(outputFileName)) {
+            qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "after error or cancel";
+            if (!QFile::remove(outputFileName)) {
+                qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "failed";
+            }
+        }
+    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
-    return std::make_tuple(res.first, res.second, log, ae);
+    return std::make_tuple(signingResult, encryptionResult, log, ae);
 }
 
 static QGpgMESignEncryptArchiveJob::result_type sign_encrypt_to_io_device(Context *ctx,
