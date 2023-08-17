@@ -36,6 +36,7 @@ DISTCHECK_CONFIGURE_FLAGS =
 
 EXTRA_DIST = autogen.sh autogen.rc gpgme.spec.in  \
              ChangeLog-2011 m4/ChangeLog-2011     \
+             build-aux/libtool-patch.sed          \
              conf/whatisthis VERSION LICENSES
 
 # This artificial line is to put a dependency to conf/config.h for 'all'
