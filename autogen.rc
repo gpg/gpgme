@@ -11,4 +11,4 @@ case "$myhost" in
 esac
 
 
-final_info="./configure --enable-maintainer-mode && make"
+final_info="mkdir build && cd build && ../configure --enable-maintainer-mode && make"
