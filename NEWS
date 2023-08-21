@@ -30,7 +30,7 @@ Noteworthy changes in version 1.22.0 (2023-08-21)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  qt: EncryptJob::setInputEncoding           NEW.
  qt: DecryptionResult::isMime               NEW.
- qt: std::string::toLogString               NEW.
+ qt: toLogString                            NEW.
 
  [c=C42/A31/R0 cpp=C25/A19/R0 qt=C19/A4/R0]
 
