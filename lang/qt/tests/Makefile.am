@@ -97,6 +97,7 @@ run_keyformailboxjob_SOURCES = run-keyformailboxjob.cpp
 run_receivekeysjob_SOURCES = run-receivekeysjob.cpp
 run_refreshkeysjob_SOURCES = run-refreshkeysjob.cpp
 run_signarchivejob_SOURCES = run-signarchivejob.cpp
+run_wkdrefreshjob_SOURCES = run-wkdrefreshjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
 
@@ -112,7 +113,8 @@ noinst_PROGRAMS = \
 	run-decryptverifyarchivejob \
 	run-encryptarchivejob \
 	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob \
-	run-signarchivejob
+	run-signarchivejob \
+	run-wkdrefreshjob
 
 
 CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \

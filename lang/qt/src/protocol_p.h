@@ -71,6 +71,7 @@
 #include "qgpgmereceivekeysjob.h"
 #include "qgpgmerevokekeyjob.h"
 #include "qgpgmesetprimaryuseridjob.h"
+#include "qgpgmewkdrefreshjob.h"
 
 namespace
 {
@@ -554,6 +555,17 @@ public:
         }
         if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
             return new QGpgME::QGpgMEDecryptVerifyArchiveJob{context};
+        }
+        return nullptr;
+    }
+
+    QGpgME::WKDRefreshJob *wkdRefreshJob() const override
+    {
+        if (mProtocol != GpgME::OpenPGP) {
+            return nullptr;
+        }
+        if (auto context = GpgME::Context::createForProtocol(mProtocol)) {
+            return new QGpgME::QGpgMEWKDRefreshJob{context};
         }
         return nullptr;
     }

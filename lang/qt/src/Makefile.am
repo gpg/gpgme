@@ -56,6 +56,7 @@ qgpgme_sources = \
     qgpgmesignencryptarchivejob.cpp \
     qgpgmesignjob.cpp qgpgmesignkeyjob.cpp qgpgmeverifydetachedjob.cpp \
     qgpgmeverifyopaquejob.cpp qgpgmewkdlookupjob.cpp threadedjobmixin.cpp \
+    qgpgmewkdrefreshjob.cpp \
     qgpgmekeyformailboxjob.cpp qgpgme_debug.cpp \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
@@ -64,7 +65,8 @@ qgpgme_sources = \
     signencryptjob.cpp \
     signencryptarchivejob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
-    util.cpp
+    util.cpp \
+    wkdrefreshjob.cpp
 
 # If you add one here make sure that you also add one in camelcase
 qgpgme_headers= \
@@ -115,6 +117,7 @@ qgpgme_headers= \
     tofupolicyjob.h \
     wkdlookupjob.h \
     wkdlookupresult.h \
+    wkdrefreshjob.h \
     wkspublishjob.h \
     gpgcardjob.h \
     dn.h
@@ -166,6 +169,7 @@ camelcase_headers= \
     DefaultKeyGenerationJob \
     WKDLookupJob \
     WKDLookupResult \
+    WKDRefreshJob \
     WKSPublishJob \
     TofuPolicyJob \
     GpgCardJob
@@ -211,6 +215,7 @@ private_qgpgme_headers = \
     qgpgmeverifydetachedjob.h \
     qgpgmeverifyopaquejob.h \
     qgpgmewkdlookupjob.h \
+    qgpgmewkdrefreshjob.h \
     qgpgmekeyformailboxjob.h \
     qgpgmewkspublishjob.h \
     qgpgmetofupolicyjob.h \
@@ -220,7 +225,8 @@ private_qgpgme_headers = \
     signencryptjob_p.h \
     signencryptarchivejob_p.h \
     threadedjobmixin.h \
-    util.h
+    util.h \
+    wkdrefreshjob_p.h
 
 qgpgme_moc_sources = \
     abstractimportjob.moc \
@@ -275,6 +281,7 @@ qgpgme_moc_sources = \
     qgpgmeverifydetachedjob.moc \
     qgpgmeverifyopaquejob.moc \
     qgpgmewkdlookupjob.moc \
+    qgpgmewkdrefreshjob.moc \
     qgpgmewkspublishjob.moc \
     tofupolicyjob.moc \
     qgpgmetofupolicyjob.moc \
@@ -291,6 +298,7 @@ qgpgme_moc_sources = \
     verifydetachedjob.moc \
     verifyopaquejob.moc \
     wkdlookupjob.moc \
+    wkdrefreshjob.moc \
     keyformailboxjob.moc \
     wkspublishjob.moc \
     qgpgmekeyformailboxjob.moc \

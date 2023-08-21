@@ -1,6 +1,12 @@
 Noteworthy changes in version 1.22.1 (unreleased)
 -------------------------------------------------
 
+ * qt: Support refreshing keys via WKD.  [T6672]
+
+ * Interface changes relative to the 1.22.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ qt: Protocol::wkdRefreshJob                NEW.
+ qt: WKDRefreshJob                          NEW.
 
 Noteworthy changes in version 1.22.0 (2023-08-21)
 -------------------------------------------------
