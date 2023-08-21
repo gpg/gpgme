@@ -51,10 +51,10 @@ LDADD = ../../cpp/src/libgpgmepp.la ../src/libqgpgme.la \
         ../../../src/libgpgme.la @GPGME_QT5_LIBS@ @GPG_ERROR_LIBS@ \
         @GPGME_QT5TEST_LIBS@ @LDADD_FOR_TESTS_KLUDGE@ -lstdc++
 
-AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
+AM_CPPFLAGS = -I$(top_srcdir)/lang/qt/src -I$(top_srcdir)/lang/cpp/src \
+              -I$(top_builddir)/src \
               @GPG_ERROR_CFLAGS@ @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ \
               @LIBASSUAN_CFLAGS@ @GPGME_QT5TEST_CFLAGS@ -DBUILDING_QGPGME \
-              -I$(top_srcdir)/lang/qt/src \
               -DTOP_SRCDIR="$(top_srcdir)"
 endif
 if WANT_QT6
