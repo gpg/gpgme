@@ -1,5 +1,36 @@
-Noteworthy changes in version 1.21.1 (unreleased)
+Noteworthy changes in version 1.22.0 (2023-08-21)
 -------------------------------------------------
+
+ * Prevent wrong plaintext when verifying clearsigned signature.  [T6622]
+
+ * Return bad data error instead of general error on unexpected data.
+   [T6617]
+
+ * Take care of offline mode for all operations of gpgsm engine.
+   [T6648]
+
+ * Prepare the use of the forthcoming libassuan version 3.
+
+ * New configure option --with-libtool-modification.  [T6619]
+
+ * cpp: Expose gpgme_decrypt_result_t.is_mime.  [T6199]
+
+ * qt: Clean up after failure or cancel of sign/encrypt archive
+   operation.  [T6584]
+
+ * qt: Add setInputEncoding to QGpgMe::EncryptJob.  [T6166]
+
+ * qt: Make toLogString helper public.  [T6584]
+
+ * Interface changes relative to the 1.21.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ qt: EncryptJob::setInputEncoding           NEW.
+ qt: DecryptionResult::isMime               NEW.
+ qt: std::string::toLogString               NEW.
+
+ [c=C42/A31/R0 cpp=C25/A19/R0 qt=C19/A4/R0]
+
+ Release-info: https://dev.gnupg.org/T6668
 
 
 Noteworthy changes in version 1.21.0 (2023-07-07)
