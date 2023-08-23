@@ -88,6 +88,21 @@ static QStringList toEmailAddressesOriginatingFromWKD(const std::vector<GpgME::K
     return emails;
 }
 
+static QStringList toEmailAddresses(const std::vector<GpgME::UserID> &userIds)
+{
+    const QStringList emails = std::accumulate(
+        std::begin(userIds),
+        std::end(userIds),
+        QStringList{},
+        [](QStringList &emails, const UserID &userId) {
+            if (!userId.isRevoked() && !userId.addrSpec().empty()) {
+                emails.push_back(QString::fromStdString(userId.addrSpec()));
+            }
+            return emails;
+        });
+    return emails;
+}
+
 }
 
 QGpgMEWKDRefreshJob::QGpgMEWKDRefreshJob(Context *context)
@@ -99,12 +114,11 @@ QGpgMEWKDRefreshJob::QGpgMEWKDRefreshJob(Context *context)
 
 QGpgMEWKDRefreshJob::~QGpgMEWKDRefreshJob() = default;
 
-static ImportResult locate_external_keys(Context *ctx, const std::vector<Key> &keys)
+static QGpgMEWKDRefreshJob::result_type locate_external_keys(Context *ctx, const QStringList &emails)
 {
-    const auto emails = toEmailAddressesOriginatingFromWKD(keys);
     qCDebug(QGPGME_LOG) << __func__ << "locating external keys for" << emails;
     if (emails.empty()) {
-        return ImportResult{};
+        return std::make_tuple(ImportResult{}, QString{}, Error{});
     }
 
     Context::KeyListModeSaver saver{ctx};
@@ -121,24 +135,22 @@ static ImportResult locate_external_keys(Context *ctx, const std::vector<Key> &k
     qCDebug(QGPGME_LOG) << __func__ << "result:" << toLogString(result).c_str();
     job.release();
 
-    return result;
-}
-
-static QGpgMEWKDRefreshJob::result_type refresh_keys(Context *ctx, const std::vector<Key> &keys)
-{
-    const auto result = locate_external_keys(ctx, keys);
-
     return std::make_tuple(result, QString{}, Error{});
 }
 
 GpgME::Error QGpgMEWKDRefreshJobPrivate::startIt()
 {
-    if (m_keys.empty()) {
-        return Error::fromCode(GPG_ERR_INV_VALUE);
+    QStringList emails;
+    if (!m_keys.empty()) {
+        emails = toEmailAddressesOriginatingFromWKD(m_keys);
+    } else {
+        emails = toEmailAddresses(m_userIds);
     }
+    std::sort(emails.begin(), emails.end());
+    emails.erase(std::unique(emails.begin(), emails.end()), emails.end());
 
-    q->run([=](Context *ctx) {
-        return refresh_keys(ctx, m_keys);
+    q->run([emails](Context *ctx) {
+        return locate_external_keys(ctx, emails);
     });
 
     return {};

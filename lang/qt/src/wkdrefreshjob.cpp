@@ -54,4 +54,11 @@ GpgME::Error WKDRefreshJob::start(const std::vector<GpgME::Key> &keys)
     return d->startIt();
 }
 
+GpgME::Error WKDRefreshJob::start(const std::vector<GpgME::UserID> &userIDs)
+{
+    auto d = jobPrivate<WKDRefreshJobPrivate>(this);
+    d->m_userIds = userIDs;
+    return d->startIt();
+}
+
 #include "wkdrefreshjob.moc"

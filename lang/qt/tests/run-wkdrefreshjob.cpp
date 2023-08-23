@@ -38,6 +38,7 @@
 #include <protocol.h>
 #include <wkdrefreshjob.h>
 
+#include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QDebug>
 
@@ -51,6 +52,36 @@ using namespace GpgME;
 std::ostream &operator<<(std::ostream &os, const QString &s)
 {
     return os << s.toLocal8Bit().constData();
+}
+
+struct CommandLineOptions {
+    bool allUserIds;
+    QString keyId;
+};
+
+CommandLineOptions parseCommandLine(const QStringList &arguments)
+{
+    CommandLineOptions options;
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Test program for WKDRefreshJob");
+    parser.addHelpOption();
+    parser.addOptions({
+        {"all-userids", "Query WKD for all user IDs."},
+    });
+    parser.addPositionalArgument("key ID", "Key to refresh");
+
+    parser.process(arguments);
+
+    const auto args = parser.positionalArguments();
+    if (args.size() != 1) {
+        parser.showHelp(1);
+    }
+
+    options.allUserIds = parser.isSet("all-userids");
+    options.keyId = args[0];
+
+    return options;
 }
 
 Key getOpenPGPKey(const QString &keyId, Error &err)
@@ -74,22 +105,19 @@ int main(int argc, char **argv)
 {
     GpgME::initializeLibrary();
 
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " KEYID" << std::endl;
-        return 1;
-    }
-
     QCoreApplication app{argc, argv};
-    const auto keyId = qApp->arguments().last();
+    app.setApplicationName("run-wkdrefreshjob");
+
+    const auto options = parseCommandLine(app.arguments());
 
     Error err;
-    const auto key = getOpenPGPKey(keyId, err);
+    const auto key = getOpenPGPKey(options.keyId, err);
     if (err.code() == GPG_ERR_AMBIGUOUS_NAME) {
-        std::cerr << "Error: Multiple OpenPGP keys matching '" << keyId << "' found" << std::endl;
+        std::cerr << "Error: Multiple OpenPGP keys matching '" << options.keyId << "' found" << std::endl;
         return 1;
     }
     if (key.isNull()) {
-        std::cerr << "Error: No OpenPGP key matching '" << keyId << "' found" << std::endl;
+        std::cerr << "Error: No OpenPGP key matching '" << options.keyId << "' found" << std::endl;
         return 1;
     }
     if (err) {
@@ -111,7 +139,11 @@ int main(int argc, char **argv)
         }
         qApp->quit();
     });
-    err = job->start({key});
+    if (options.allUserIds) {
+        err = job->start(key.userIDs());
+    } else {
+        err = job->start({key});
+    }
     if (err) {
         std::cerr << "Error: " << err.asString() << std::endl;
         return 1;

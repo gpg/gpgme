@@ -43,14 +43,14 @@ namespace GpgME
 {
 class Error;
 class Key;
+class UserID;
 }
 
 namespace QGpgME
 {
 
 /**
- * This job refreshes OpenPGP keys via WKD. Only user IDs that have WKD set as
- * origin are used for the WKD lookup. Revoked user IDs are ignored.
+ * This job refreshes OpenPGP keys via WKD.
  */
 class QGPGME_EXPORT WKDRefreshJob : public AbstractImportJob
 {
@@ -61,9 +61,18 @@ public:
     ~WKDRefreshJob() override;
 
     /**
-     * Starts a refresh of the \a keys.
+     * Starts a refresh of the \a keys. Only user IDs that have WKD set as
+     * origin are used for the WKD lookup. Revoked user IDs are ignored.
+     *
+     * Use the other start overload to use all user IDs for the WKD lookup.
      */
     GpgME::Error start(const std::vector<GpgME::Key> &keys);
+
+    /**
+     * Starts a refresh of the keys belonging to the user IDs \a userIDs.
+     * All user IDs are used for the WKD lookup. Revoked user IDs are ignored.
+     */
+    GpgME::Error start(const std::vector<GpgME::UserID> &userIDs);
 };
 
 }

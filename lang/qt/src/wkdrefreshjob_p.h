@@ -44,6 +44,7 @@ namespace QGpgME
 struct WKDRefreshJobPrivate : public JobPrivate
 {
     std::vector<GpgME::Key> m_keys;
+    std::vector<GpgME::UserID> m_userIds;
 };
 
 }
