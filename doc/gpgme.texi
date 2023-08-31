@@ -6546,6 +6546,10 @@ recipients in @var{recp} should be trusted, even if the keys do not
 have a high enough validity in the keyring.  This flag should be used
 with care; in general it is not a good idea to use any untrusted keys.
 
+For the S/MIME (CMS) protocol this flag allows to encrypt to a
+certificate without running any checks on the validity of the
+certificate.
+
 @item GPGME_ENCRYPT_NO_ENCRYPT_TO
 @since{1.2.0}
 

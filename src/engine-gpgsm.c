@@ -1255,7 +1255,7 @@ gpgsm_reset (void *engine)
 
   /* IF we have an active connection we must send a reset because we
      need to reset the list of signers.  Note that RESET does not
-     reset OPTION commands. */
+     reset all OPTION commands. */
   return (gpgsm->assuan_ctx
           ? gpgsm_assuan_simple_command (gpgsm, "RESET", NULL, NULL)
           : 0);
@@ -1545,6 +1545,17 @@ gpgsm_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 					 "OPTION no-encrypt-to", NULL, NULL);
       if (err)
 	return err;
+    }
+
+  if ((flags & GPGME_ENCRYPT_ALWAYS_TRUST))
+    {
+      /* Note that a RESET and the actual operation resets the
+       * always-trust option.  To support older gnupg versions we
+       * ignore the unknown option error.  */
+      err = gpgsm_assuan_simple_command (gpgsm,
+                                         "OPTION always-trust", NULL, NULL);
+      if (err && gpg_err_code (err) != GPG_ERR_UNKNOWN_OPTION)
+        return err;
     }
 
   err = send_input_size_hint (gpgsm, plain);

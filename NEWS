@@ -1,5 +1,7 @@
-Noteworthy changes in version 1.22.1 (unreleased)
+Noteworthy changes in version 1.23.0 (unreleased)
 -------------------------------------------------
+
+ * Support GPGME_ENCRYPT_ALWAYS_TRUST also for S/MIME.  [T6559]
 
  * qt: Support refreshing keys via WKD.  [T6672]
 
@@ -7,6 +9,7 @@ Noteworthy changes in version 1.22.1 (unreleased)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  qt: Protocol::wkdRefreshJob                NEW.
  qt: WKDRefreshJob                          NEW.
+
 
 Noteworthy changes in version 1.22.0 (2023-08-21)
 -------------------------------------------------

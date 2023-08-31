@@ -147,6 +147,7 @@ show_usage (int ex)
          "  --key NAME         encrypt to key NAME\n"
          "  --keystring NAMES  encrypt to ';' delimited NAMES\n"
          "  --throw-keyids     use this option\n"
+         "  --always-trust     use this option\n"
          "  --no-symkey-cache  disable the use of that cache\n"
          "  --wrap             assume input is valid OpenPGP message\n"
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
@@ -180,7 +181,7 @@ main (int argc, char **argv)
   const char *directory = NULL;
   const char *output = NULL;
   int i;
-  gpgme_encrypt_flags_t flags = GPGME_ENCRYPT_ALWAYS_TRUST;
+  gpgme_encrypt_flags_t flags = 0;
   gpgme_off_t offset;
   int no_symkey_cache = 0;
   int diagnostics = 0;
@@ -261,6 +262,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--throw-keyids"))
         {
           flags |= GPGME_ENCRYPT_THROW_KEYIDS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--always-trust"))
+        {
+          flags |= GPGME_ENCRYPT_ALWAYS_TRUST;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--wrap"))
