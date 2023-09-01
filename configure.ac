@@ -216,9 +216,9 @@ AM_CONDITIONAL(HAVE_LD_VERSION_SCRIPT, test "$have_ld_version_script" = "yes")
 #
 AC_ARG_WITH([libtool-modification],
   AS_HELP_STRING([--with-libtool-modification=apply|never|try],
-                 [how to handle libtool modification (default=apply)]),
+                 [how to handle libtool modification (default=never)]),
                  build_libtool_modification=$withval,
-                 build_libtool_modification=apply)
+                 build_libtool_modification=never)
 
 #
 # Apply a patch (locally maintained one of ours) to libtool
