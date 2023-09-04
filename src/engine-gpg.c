@@ -3267,6 +3267,12 @@ gpg_keylist_build_options (engine_gpg_t gpg, int secret_only,
         err = add_arg (gpg, "--with-fingerprint");
     }
 
+  if (!err && (mode & GPGME_KEYLIST_MODE_WITH_V5FPR)
+      && (have_gpg_version (gpg, "2.4.4")
+          || (have_gpg_version (gpg, "2.2.42")
+              && !have_gpg_version (gpg, "2.3.0"))))
+    err = add_arg (gpg, "--with-v5-fingerprint");
+
   if (!err && (mode & GPGME_KEYLIST_MODE_WITH_TOFU)
       && have_gpg_version (gpg, "2.1.16"))
     err = add_arg (gpg, "--with-tofu-info");

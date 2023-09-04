@@ -58,6 +58,9 @@ typedef struct
   /* The error code from ERROR keydb_search. */
   gpgme_error_t keydb_search_err;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   gpgme_key_t tmp_key;
 
   /* This points to the last uid in tmp_key.  */
@@ -144,6 +147,13 @@ keylist_status_handler (void *priv, gpgme_status_code_t code, char *args)
       if (!opd->keydb_search_err && !strcmp (args, "keydb_search"))
         opd->keydb_search_err = err;
       err = 0;
+      break;
+
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
+      if (opd->failure_code && !strcmp (args, "option-parser")
+          && gpg_err_code (opd->failure_code) == GPG_ERR_GENERAL)
+        err = gpg_error (GPG_ERR_INV_ENGINE);
       break;
 
     case GPGME_STATUS_IMPORT_OK:
@@ -570,7 +580,7 @@ keylist_colon_handler (void *priv, char *line)
   gpgme_ctx_t ctx = (gpgme_ctx_t) priv;
   enum
     {
-      RT_NONE, RT_SIG, RT_UID, RT_TFS, RT_SUB, RT_PUB, RT_FPR, RT_GRP,
+      RT_NONE, RT_SIG, RT_UID, RT_TFS, RT_SUB, RT_PUB, RT_FPR, RT_FP2, RT_GRP,
       RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
     }
   rectype = RT_NONE;
@@ -623,6 +633,8 @@ keylist_colon_handler (void *priv, char *line)
     rectype = RT_CRS;
   else if (!strcmp (field[0], "fpr") && key)
     rectype = RT_FPR;
+  else if (!strcmp (field[0], "fp2") && key)
+    rectype = RT_FP2;
   else if (!strcmp (field[0], "grp") && key)
     rectype = RT_GRP;
   else if (!strcmp (field[0], "uid") && key)
@@ -913,6 +925,27 @@ keylist_colon_handler (void *priv, char *line)
 	    return gpg_error_from_syserror ();
 	}
       break;
+
+    case RT_FP2:
+      /* Either the SHA256 fingerprint of an X.509 cert or the
+       * alternate fingerprint of a v4 OpenPGP packet. (We take only
+       * the first one).  */
+      if (fields >= 10 && field[9] && *field[9])
+	{
+          /* Need to apply it to the last subkey because all subkeys
+             do have fingerprints. */
+          subkey = key->_last_subkey;
+          if (!subkey->v5fpr)
+            {
+              subkey->v5fpr = strdup (field[9]);
+              if (!subkey->v5fpr)
+                return gpg_error_from_syserror ();
+            }
+          /* Note that we don't store a copy in the key object as we
+           * do with the standard fingerprint.  */
+	}
+      break;
+
 
     case RT_GRP:
       /* Field 10 has the keygrip.  */
@@ -1299,12 +1332,21 @@ gpgme_op_keylist_next (gpgme_ctx_t ctx, gpgme_key_t *r_key)
 gpgme_error_t
 gpgme_op_keylist_end (gpgme_ctx_t ctx)
 {
+  void *hook;
+  op_data_t opd;
+  gpg_error_t err;
+
   TRACE (DEBUG_CTX, "gpgme_op_keylist_end", ctx, "");
 
   if (!ctx)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  return 0;
+  err = _gpgme_op_data_lookup (ctx, OPDATA_KEYLIST, &hook, -1, NULL);
+  opd = hook;
+  if (!err && opd && opd->failure_code)
+    err = opd->failure_code;
+
+  return err;
 }
 
 

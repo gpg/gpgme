@@ -384,6 +384,7 @@ gpgme_protocol_t;
 #define GPGME_KEYLIST_MODE_EPHEMERAL            128
 #define GPGME_KEYLIST_MODE_VALIDATE		256
 #define GPGME_KEYLIST_MODE_FORCE_EXTERN		512
+#define GPGME_KEYLIST_MODE_WITH_V5FPR		1024
 
 #define GPGME_KEYLIST_MODE_LOCATE		(1|2)
 #define GPGME_KEYLIST_MODE_LOCATE_EXTERNAL	(1|2|512)
@@ -616,6 +617,9 @@ struct _gpgme_subkey
 
   /* The keygrip of the subkey in hex digit form or NULL if not available.  */
   char *keygrip;
+
+  /* For OpenPGP the v5 fpr of a v4 key. For X.509 the SHA256 fingerprint.  */
+  char *v5fpr;
 };
 typedef struct _gpgme_subkey *gpgme_subkey_t;
 

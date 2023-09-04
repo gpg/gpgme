@@ -2901,6 +2901,12 @@ option also makes sure that the keygrip is available in the output.
 The @code{GPGME_KEYLIST_MODE_EPHEMERAL} symbol specifies that keys
 flagged as ephemeral are included in the listing.
 
+@item GPGME_KEYLIST_MODE_WITH_V5FPR
+@since{1.23.0}
+
+The @code{GPGME_KEYLIST_MODE_WITH_V5FPR} symbol specifies that key
+listings shall also provide v5 style fingerprints for v4 OpenPGp keys.
+
 @item GPGME_KEYLIST_MODE_VALIDATE
 @since{0.4.5}
 
@@ -3609,6 +3615,10 @@ This is the key ID of the subkey in hexadecimal digits.
 @item char *fpr
 This is the fingerprint of the subkey in hexadecimal digits, if
 available.
+
+@item char *v5fpr
+For a v4 OpenPGP key this is its v5 style fingerprint of the subkey in
+hexadecimal digits, if available.
 
 @item char *keygrip
 @since{1.7.0}

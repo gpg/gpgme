@@ -342,6 +342,7 @@ gpgme_key_unref (gpgme_key_t key)
     {
       gpgme_subkey_t next = subkey->next;
       free (subkey->fpr);
+      free (subkey->v5fpr);
       free (subkey->curve);
       free (subkey->keygrip);
       free (subkey->card_number);

@@ -3,10 +3,13 @@ Noteworthy changes in version 1.23.0 (unreleased)
 
  * Support GPGME_ENCRYPT_ALWAYS_TRUST also for S/MIME.  [T6559]
 
+ * New keylist mode GPGME_KEYLIST_MODE_WITH_V5FPR.  [T6705]
+
  * qt: Support refreshing keys via WKD.  [T6672]
 
  * Interface changes relative to the 1.22.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_KEYLIST_MODE_WITH_V5FPR              NEW.
  qt: Protocol::wkdRefreshJob                NEW.
  qt: WKDRefreshJob                          NEW.
 
