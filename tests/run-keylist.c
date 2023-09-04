@@ -180,9 +180,9 @@ main (int argc, char **argv)
           mode |= GPGME_KEYLIST_MODE_VALIDATE;
           argc--; argv++;
         }
-      else if (!strcmp (*argv, "--validate"))
+      else if (!strcmp (*argv, "--with-secret"))
         {
-          mode |= GPGME_KEYLIST_MODE_VALIDATE;
+          mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--v5fpr"))
