@@ -35,7 +35,12 @@
 /* Local operation data.  */
 typedef struct
 {
-  gpg_error_t err;  /* Error encountered during the export.  */
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
+  /* Error encountered during the export.  */
+  gpg_error_t err;
+
 } *op_data_t;
 
 
@@ -108,6 +113,10 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
       else if (!strcmp (loc, "keyserver_send")
                || !strcmp (loc, "export_keys.secret"))
         opd->err = err;
+      break;
+
+    case GPGME_STATUS_FAILURE:
+      opd->failure_code = _gpgme_parse_failure (args);
       break;
 
     default:
@@ -356,7 +365,7 @@ gpgme_op_export_ext (gpgme_ctx_t ctx, const char *pattern[],
           err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
           opd = hook;
           if (!err)
-            err = opd->err;
+            err = opd->err ? opd->err : opd->failure_code;
         }
     }
 
@@ -501,7 +510,7 @@ gpgme_op_export_keys (gpgme_ctx_t ctx,
           err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
           opd = hook;
           if (!err)
-            err = opd->err;
+            err = opd->err ? opd->err : opd->failure_code;
         }
     }
 
