@@ -338,6 +338,25 @@ if test x$fixed_search_path != x ; then
                     [Locate binaries only via this PATH])
 fi
 
+# Option --enable-no-direct-extern-access
+#
+# Some distributions build Qt 6 with -mno-direct-extern-access. Libraries and
+# applications using Qt then must also be build with this flag. As workaround
+# for a bug in Qt's pkgconfig files which don't have this flag we allow
+# building with this flag explicitly.
+AC_LANG_PUSH(C++)
+AX_CHECK_COMPILE_FLAG([-mno-direct-extern-access],
+                      [have_no_direct_extern_access="yes"],
+                      [have_no_direct_extern_access="no"],
+                      [-Werror])
+AC_LANG_POP()
+AC_ARG_ENABLE([no-direct-extern-access],
+              AS_HELP_STRING([--enable-no-direct-extern-access],
+                             [build Qt 6 bindinds with
+                              -mno-direct-extern-access]),
+              [use_no_direct_extern_access="$enableval"],
+              [use_no_direct_extern_access=""])
+
 
 # Note: You need to declare all possible languages also in
 #       lang/Makefile.am's DIST_SUBDIRS.

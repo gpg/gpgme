@@ -32,7 +32,13 @@ AC_DEFUN([FIND_QT6],
       have_qt6_libs="no";
     fi
   fi
+
   if test "$have_qt6_libs" = "yes"; then
+    if test "$have_no_direct_extern_access" = "yes" \
+       && test "$use_no_direct_extern_access" = "yes"; then
+      GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -mno-direct-extern-access"
+    fi
+
     dnl Check that a binary can actually be build with this qt.
     dnl pkg-config may be set up in a way that it looks also for libraries
     dnl of the build system and not only for the host system. In that case
