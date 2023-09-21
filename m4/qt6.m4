@@ -34,9 +34,24 @@ AC_DEFUN([FIND_QT6],
   fi
 
   if test "$have_qt6_libs" = "yes"; then
-    if test "$have_no_direct_extern_access" = "yes" \
-       && test "$use_no_direct_extern_access" = "yes"; then
-      GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -mno-direct-extern-access"
+    if test "$have_no_direct_extern_access" = yes; then
+      if test -z "$use_no_direct_extern_access" && test "$have_w32_system" != yes; then
+        mkspecsdir=$($PKG_CONFIG --variable mkspecsdir Qt6Platform)
+        if test -n "$mkspecsdir"; then
+          AC_MSG_CHECKING([whether Qt was built with -mno-direct-extern-access])
+          if grep -q "QT_CONFIG .* no_direct_extern_access" $mkspecsdir/qconfig.pri; then
+            use_no_direct_extern_access="yes"
+          else
+            use_no_direct_extern_access="no"
+          fi
+          AC_MSG_RESULT([$use_no_direct_extern_access])
+        else
+          AC_MSG_WARN([Failed to determine Qt's mkspecs directory. Cannot check its build configuration.])
+        fi
+      fi
+      if test "$use_no_direct_extern_access" = yes; then
+        GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -mno-direct-extern-access"
+      fi
     fi
 
     dnl Check that a binary can actually be build with this qt.
