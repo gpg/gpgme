@@ -122,7 +122,11 @@ static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_file_name(
                                                                                 const QString &outputDirectory)
 {
     Data indata;
+#ifdef Q_OS_WIN
+    indata.setFileName(inputFile.toUtf8().constData());
+#else
     indata.setFileName(QFile::encodeName(inputFile).constData());
+#endif
 
     return decrypt_verify(ctx, indata, outputDirectory);
 }

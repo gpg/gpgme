@@ -116,7 +116,11 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt(Context *ctx,
     const auto &signingResult = res.first;
     const auto &encryptionResult = res.second;
 
+#ifdef Q_OS_WIN
+    const auto outputFileName = QString::fromUtf8(outdata.fileName());
+#else
     const auto outputFileName = QFile::decodeName(outdata.fileName());
+#endif
     if (!outputFileName.isEmpty() && (signingResult.error().code() || encryptionResult.error().code())) {
         // ensure that the output file is removed if the operation was canceled or failed
         if (QFile::exists(outputFileName)) {
@@ -157,7 +161,11 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt_to_filename(Context
                                                                          const QString &baseDirectory)
 {
     Data outdata;
+#ifdef Q_OS_WIN
+    outdata.setFileName(outputFile.toUtf8().constData());
+#else
     outdata.setFileName(QFile::encodeName(outputFile).constData());
+#endif
 
     return sign_encrypt(ctx, signers, recipients, paths, outdata, encryptionFlags, baseDirectory);
 }

@@ -104,7 +104,11 @@ static QGpgMEEncryptArchiveJob::result_type encrypt(Context *ctx,
     flags = static_cast<Context::EncryptionFlags>(flags | Context::EncryptArchive);
     const auto encryptionResult = ctx->encrypt(recipients, indata, outdata, flags);
 
+#ifdef Q_OS_WIN
+    const auto outputFileName = QString::fromUtf8(outdata.fileName());
+#else
     const auto outputFileName = QFile::decodeName(outdata.fileName());
+#endif
     if (!outputFileName.isEmpty() && encryptionResult.error().code()) {
         // ensure that the output file is removed if the operation was canceled or failed
         if (QFile::exists(outputFileName)) {
@@ -143,7 +147,11 @@ static QGpgMEEncryptArchiveJob::result_type encrypt_to_filename(Context *ctx,
                                                                 const QString &baseDirectory)
 {
     Data outdata;
+#ifdef Q_OS_WIN
+    outdata.setFileName(outputFile.toUtf8().constData());
+#else
     outdata.setFileName(QFile::encodeName(outputFile).constData());
+#endif
 
     return encrypt(ctx, recipients, paths, outdata, flags, baseDirectory);
 }

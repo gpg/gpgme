@@ -111,7 +111,11 @@ static QGpgMESignArchiveJob::result_type sign(Context *ctx,
 
     const auto signingResult = ctx->sign(indata, outdata, GpgME::SignArchive);
 
+#ifdef Q_OS_WIN
+    const auto outputFileName = QString::fromUtf8(outdata.fileName());
+#else
     const auto outputFileName = QFile::decodeName(outdata.fileName());
+#endif
     if (!outputFileName.isEmpty() && signingResult.error().code()) {
         // ensure that the output file is removed if the operation was canceled or failed
         if (QFile::exists(outputFileName)) {
@@ -148,7 +152,11 @@ static QGpgMESignArchiveJob::result_type sign_to_filename(Context *ctx,
                                                           const QString &baseDirectory)
 {
     Data outdata;
+#ifdef Q_OS_WIN
+    outdata.setFileName(outputFile.toUtf8().constData());
+#else
     outdata.setFileName(QFile::encodeName(outputFile).constData());
+#endif
 
     return sign(ctx, signers, paths, outdata, baseDirectory);
 }
