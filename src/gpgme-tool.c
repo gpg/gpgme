@@ -1909,7 +1909,19 @@ server_data_obj (assuan_fd_t fd, char *fn, int out,
       err = gpgme_data_new_from_stream (data, *fs);
     }
   else
-    err = gpgme_data_new_from_fd (data, (int) fd);
+    {
+      int posix_fd;
+
+#if defined(HAVE_W32_SYSTEM)
+      posix_fd = _open_osfhandle ((intptr_t)fd, out ? 1 : 0);
+      if (posix_fd == -1)
+        return gpg_error_from_syserror ();
+#else
+      posix_fd = fd;
+#endif
+
+      err = gpgme_data_new_from_fd (data, posix_fd);
+    }
 
   if (err)
     return err;
