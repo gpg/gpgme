@@ -28,7 +28,7 @@ from groups import group_lists
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License and the GNU
-# Lesser General Public along with this program; if not, see
+# Lesser General Public License along with this program; if not, see
 # <https://www.gnu.org/licenses/>.
 
 print("""
