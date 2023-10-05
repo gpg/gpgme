@@ -5,13 +5,19 @@ Noteworthy changes in version 1.23.0 (unreleased)
 
  * New keylist mode GPGME_KEYLIST_MODE_WITH_V5FPR.  [T6705]
 
+ * New key capability flags has_*.  [T6748]
+
  * qt: Support refreshing keys via WKD.  [T6672]
 
  * Interface changes relative to the 1.22.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- GPGME_KEYLIST_MODE_WITH_V5FPR              NEW.
- qt: Protocol::wkdRefreshJob                NEW.
- qt: WKDRefreshJob                          NEW.
+ GPGME_KEYLIST_MODE_WITH_V5FPR   NEW.
+ gpgme_key_t                     EXTENDED: New field has_encrypt.
+ gpgme_key_t                     EXTENDED: New field has_sign.
+ gpgme_key_t                     EXTENDED: New field has_certify.
+ gpgme_key_t                     EXTENDED: New field has_authenticate.
+ qt: Protocol::wkdRefreshJob     NEW.
+ qt: WKDRefreshJob               NEW.
 
 
 Noteworthy changes in version 1.22.0 (2023-08-21)

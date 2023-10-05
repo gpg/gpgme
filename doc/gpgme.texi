@@ -3461,22 +3461,47 @@ listings if the key could not be validated due to missing
 certificates or unmatched policies.
 
 @item unsigned int can_encrypt : 1
-This is true if the key (ie one of its subkeys) can be used for
-encryption.
+This is true if the key or one of its subkeys can be used for
+encryption and the encryption will likely succeed.
 
 @item unsigned int can_sign : 1
-This is true if the key (ie one of its subkeys) can be used to create
-data signatures.
+This is true if the key or one of its subkeys can be used to create
+data signatures and the signing will likely succeed.
 
 @item unsigned int can_certify : 1
-This is true if the key (ie one of its subkeys) can be used to create
+This is true if the key or one of its subkeys can be used to create
 key certificates.
 
 @item unsigned int can_authenticate : 1
 @since{0.4.5}
 
 This is true if the key (ie one of its subkeys) can be used for
-authentication.
+authentication and the authentication will likely succeed.
+
+@item unsigned int has_encrypt : 1
+@since{1.23.0}
+
+This is true if the key or one of its subkeys is capable of encryption.
+Note that this flag is set even if the key is expired.
+
+@item unsigned int has_sign : 1
+@since{1.23.0}
+
+This is true if the key or one of its subkeys is capable of signing.
+Note that this flag is set even if the key is expired.
+
+@item unsigned int has_certify : 1
+@since{1.23.0}
+
+This is true if the key or one of its subkeys is capable of signing.
+Note that this flag is set even if the key is expired.
+
+@item unsigned int has_authenticate : 1
+@since{1.23.0}
+
+This is true if the key or one of its subkeys is capable of
+authentication.  Note that this flag is set even if the key is
+expired.
 
 @item unsigned int is_qualified : 1
 @since{1.1.0}

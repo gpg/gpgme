@@ -291,11 +291,16 @@ main (int argc, char **argv)
       int nsigs;
 
       printf ("keyid   : %s\n", key->subkeys?nonnull (key->subkeys->keyid):"?");
-      printf ("caps    : %s%s%s%s\n",
+      printf ("can_cap : %s%s%s%s\n",
               key->can_encrypt? "e":"",
               key->can_sign? "s":"",
               key->can_certify? "c":"",
               key->can_authenticate? "a":"");
+      printf ("has_cap : %s%s%s%s\n",
+              key->has_encrypt? "e":"",
+              key->has_sign? "s":"",
+              key->has_certify? "c":"",
+              key->has_authenticate? "a":"");
       printf ("flags   :%s%s%s%s%s%s%s%s\n",
               key->secret? " secret":"",
               key->revoked? " revoked":"",

@@ -563,6 +563,26 @@ static void
 finish_key (gpgme_ctx_t ctx, op_data_t opd)
 {
   gpgme_key_t key = opd->tmp_key;
+  gpgme_subkey_t subkey;
+
+  /* Set the has_foo flags from the subkey capabilities.  */
+  if (key)
+    {
+      /* Note that we could have set has_certify always for OpenPGP
+       * but for X.509 a key is often not allowed to certify and thus
+       * we better take it from the subkey capabilities.  */
+      for (subkey = key->subkeys; subkey; subkey = subkey->next)
+        {
+          if (subkey->can_encrypt)
+            key->has_encrypt = 1;
+          if (subkey->can_sign)
+            key->has_sign = 1;
+          if (subkey->can_certify)
+            key->has_certify = 1;
+          if (subkey->can_authenticate)
+            key->has_authenticate = 1;
+        }
+    }
 
   opd->tmp_key = NULL;
   opd->tmp_uid = NULL;

@@ -800,8 +800,20 @@ struct _gpgme_key
   /* True if subkey is qualified for signatures according to German law.  */
   unsigned int is_qualified : 1;
 
+  /* True if key has at least one encryption subkey.  */
+  unsigned int has_encrypt : 1;
+
+  /* True if key has at least one signing subkey.  */
+  unsigned int has_sign : 1;
+
+  /* True if key has a certification capability.  */
+  unsigned int has_certify : 1;
+
+  /* True if key has at least one authentication subkey.  */
+  unsigned int has_authenticate : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 17;
+  unsigned int _unused : 13;
 
   /* Origin of this key.  */
   unsigned int origin : 5;
