@@ -3493,8 +3493,8 @@ Note that this flag is set even if the key is expired.
 @item unsigned int has_certify : 1
 @since{1.23.0}
 
-This is true if the key or one of its subkeys is capable of signing.
-Note that this flag is set even if the key is expired.
+This is true if the key or one of its subkeys is capable of
+certification.  Note that this flag is set even if the key is expired.
 
 @item unsigned int has_authenticate : 1
 @since{1.23.0}
