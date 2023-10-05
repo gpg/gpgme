@@ -16,6 +16,10 @@ Noteworthy changes in version 1.23.0 (unreleased)
  gpgme_key_t                     EXTENDED: New field has_sign.
  gpgme_key_t                     EXTENDED: New field has_certify.
  gpgme_key_t                     EXTENDED: New field has_authenticate.
+ cpp: Key::canCertify            NEW.
+ cpp: Key::canSign               NEW.
+ cpp: Key::canEncrypt            NEW.
+ cpp: Key::canAuthenticate       NEW.
  qt: Protocol::wkdRefreshJob     NEW.
  qt: WKDRefreshJob               NEW.
 

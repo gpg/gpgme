@@ -109,13 +109,30 @@ public:
      *                          isDisabled || isInvalid */
     bool isBad() const;
 
+    /** Returns true, if the key can be used for encryption (i.e. it's not bad
+     *  and has an encryption subkey) or if the primary subkey can encrypt. */
     bool canEncrypt() const;
+    /** Returns true, if the key can be used for signing (i.e. it's not bad
+     *  and has a signing subkey) or if the primary subkey can sign. */
     bool canSign() const;
     GPGMEPP_DEPRECATED bool canReallySign() const;
+    /** Returns true, if the key can be used for certification (i.e. it's not bad
+     *  and has a certification subkey) or if the primary subkey can certify. */
     bool canCertify() const;
+    /** Returns true, if the key can be used for authentication (i.e. it's not bad
+     *  and has a authentication subkey) or if the primary subkey can authenticate. */
     bool canAuthenticate() const;
     bool isQualified() const;
     bool isDeVs() const;
+
+    /** Returns true, if the key has a certification subkey. */
+    bool hasCertify() const;
+    /** Returns true, if the key has a signing subkey. */
+    bool hasSign() const;
+    /** Returns true, if the key has an encryption subkey. */
+    bool hasEncrypt() const;
+    /** Returns true, if the key has an authentication subkey. */
+    bool hasAuthenticate() const;
 
     bool hasSecret() const;
     GPGMEPP_DEPRECATED bool isSecret() const

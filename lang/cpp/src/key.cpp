@@ -247,6 +247,26 @@ bool Key::isDeVs() const
     return true;
 }
 
+bool Key::hasCertify() const
+{
+    return key && key->has_certify;
+}
+
+bool Key::hasSign() const
+{
+    return key && key->has_sign;
+}
+
+bool Key::hasEncrypt() const
+{
+    return key && key->has_encrypt;
+}
+
+bool Key::hasAuthenticate() const
+{
+    return key && key->has_authenticate;
+}
+
 const char *Key::issuerSerial() const
 {
     return key ? key->issuer_serial : nullptr ;
