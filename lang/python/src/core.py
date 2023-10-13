@@ -813,7 +813,7 @@ class Context(GpgmeWrapper):
         Keyword arguments:
         algorithm    -- public key algorithm, see above (default: reasonable)
         expires_in   -- expiration time in seconds (default: reasonable)
-        expires      -- whether or not the key should expire (default: True)
+        expires      -- whether the key should expire (default: True)
         sign         -- request the signing capability (see above)
         encrypt      -- request the encryption capability (see above)
         certify      -- request the certification capability (see above)
@@ -901,7 +901,7 @@ class Context(GpgmeWrapper):
         Keyword arguments:
         algorithm    -- public key algorithm, see above (default: reasonable)
         expires_in   -- expiration time in seconds (default: reasonable)
-        expires      -- whether or not the subkey should expire (default: True)
+        expires      -- whether the subkey should expire (default: True)
         sign         -- request the signing capability (see above)
         encrypt      -- request the encryption capability (see above)
         authenticate -- request the authentication capability (see above)
@@ -1032,7 +1032,7 @@ class Context(GpgmeWrapper):
 
         If command is a string or bytes, it will be used as-is.  If it
         is an iterable of strings, it will be properly escaped and
-        joined into an well-formed assuan command.
+        joined into a well-formed assuan command.
 
         Keyword arguments:
         data_cb		-- a callback receiving data lines

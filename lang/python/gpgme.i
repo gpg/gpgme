@@ -26,7 +26,7 @@
 %ignore HAVE_CXX11;
 
 %{
-/* We use public symbols (eg. "_obsolete_class") which are marked as
+/* We use public symbols (e.g. "_obsolete_class") which are marked as
  * deprecated but we need to keep them.  Silence the warning.  */
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 %}

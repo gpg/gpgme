@@ -88,7 +88,7 @@ with support.EphemeralContext() as ctx:
     except gpg.errors.GpgError:
         pass
 
-    # try to add an pre-existent UID
+    # try to add a pre-existent UID
     try:
         ctx.key_add_uid(key, bravo)
         assert False, "Expected an error but got none"
