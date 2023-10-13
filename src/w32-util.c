@@ -97,13 +97,13 @@
 DEFINE_STATIC_LOCK (get_path_lock);
 
 /* The module handle of this DLL.  If we are linked statically,
-   dllmain does not exists and thus the value of my_hmodule will be
+   dllmain does not exist and thus the value of my_hmodule will be
    NULL.  The effect is that a GetModuleFileName always returns the
    file name of the DLL or executable which contains the gpgme code.  */
 static HMODULE my_hmodule;
 
 /* These variables store the malloced name of alternative default
-   binaries.  The are set only once by gpgme_set_global_flag.  */
+   binaries.  They are set only once by gpgme_set_global_flag.  */
 static char *default_gpg_name;
 static char *default_gpgconf_name;
 /* If this variable is not NULL the value is assumed to be the
@@ -179,7 +179,7 @@ wchar_to_utf8 (const wchar_t *string)
 }
 
 
-/* Return a malloced wide char string from an UTF-8 encoded input
+/* Return a malloced wide char string from a UTF-8 encoded input
    string STRING.  Caller must free this value. On failure returns
    NULL; caller may use GetLastError to get the actual error number.
    Calling this function with STRING set to NULL is not defined. */

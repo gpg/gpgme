@@ -488,7 +488,7 @@ _gpgme_get_default_uisrv_socket (void)
   return get_gpgconf_item (WANT_UISRV_SOCKET);
 }
 
-/* Return true if we are in GnuPG-1 mode - ie. no gpgconf and agent
+/* Return true if we are in GnuPG-1 mode - i.e. no gpgconf and agent
    being optional.  */
 int
 _gpgme_in_gpg_one_mode (void)

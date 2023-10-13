@@ -488,7 +488,7 @@ main (int argc, char *argv[])
 
   if (!check_gpg_version ("2.1.18"))
     {
-      /* Lets not break too much or have to test all combinations */
+      /* Let us not break too much or have to test all combinations */
       printf ("Testsuite skipped. Minimum GnuPG version (2.1.18) "
               "not found.\n");
       exit(0);

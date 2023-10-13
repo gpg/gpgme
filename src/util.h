@@ -99,7 +99,7 @@ int _gpgme_ttyname_r (int fd, char *buf, size_t buflen);
 
 /*-- conversion.c --*/
 
-/* Make sure to to erase the memory (PTR,LEN).  */
+/* Make sure to erase the memory (PTR,LEN).  */
 void _gpgme_wipememory (void *ptr, size_t len);
 
 /* Concatenate the string S1 with all the following strings up to a
@@ -135,7 +135,7 @@ gpgme_error_t _gpgme_encode_percent_string (const char *src, char **destp,
 					    size_t len);
 
 /* Split a string into space delimited fields and remove leading and
- * trailing spaces from each field.  A pointer to the each field is
+ * trailing spaces from each field.  A pointer to each field is
  * stored in ARRAY.  Stop splitting at ARRAYSIZE fields.  The function
  * modifies STRING.  The number of parsed fields is returned.  */
 int _gpgme_split_fields (char *string, char **array, int arraysize);

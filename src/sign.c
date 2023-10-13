@@ -125,7 +125,7 @@ gpgme_op_sign_result (gpgme_ctx_t ctx)
   if (gpgme_signers_count (ctx)
       && signatures + inv_signers != gpgme_signers_count (ctx))
     {
-      /* In this case at least one signatures was not created perhaps
+      /* In this case at least one signature was not created perhaps
          due to a bad passphrase etc.  Thus the entire message is
          broken and should not be used.  We add the already created
          signatures to the invalid signers list and thus this case can

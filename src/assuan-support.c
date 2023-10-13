@@ -371,7 +371,7 @@ my_connect (assuan_context_t ctx, int sock, struct sockaddr *addr,
 /* Note for Windows: Ignore the incompatible pointer type warning for
    my_read and my_write.  Mingw has been changed to use int for
    ssize_t on 32 bit systems while we use long.  For 64 bit we use
-   int64_t while mingw uses __int64_t.  It doe not matter at all
+   int64_t while mingw uses __int64_t.  It does not matter at all
    because under Windows long and int are both 32 bit even on 64
    bit.  */
 struct assuan_system_hooks _gpgme_assuan_system_hooks =

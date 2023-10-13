@@ -186,7 +186,7 @@ _gpgme_compare_versions (const char *my_version,
 }
 
 
-/* Check that the the version of the library is at minimum the
+/* Check that the version of the library is at minimum the
    requested one and return the version string; return NULL if the
    condition is not met.  If a NULL is passed to this function, no
    check is done and the version string is simply returned.
@@ -203,7 +203,7 @@ gpgme_check_version (const char *req_version)
 
   /* Catch-22: We need to get at least the debug subsystem ready
      before using the trace facility.  If we won't the trace would
-     automagically initialize the debug system with out the locks
+     automagically initialize the debug system without the locks
      being initialized and missing the assuan log level setting. */
   TRACE (DEBUG_INIT, "gpgme_check_version", NULL,
 	  "req_version=%s, VERSION=%s",

@@ -65,7 +65,7 @@ trustlist_status_handler (void *priv, gpgme_status_code_t code, char *args)
    With TYPE = U for a user ID
                K for a key
    The RECNO is either the one of the dir record or the one of the uid
-   record.  OT is the the usual trust letter and only available on K
+   record.  OT is the usual trust letter and only available on K
    lines.  VAL is the calculated validity MC is the marginal trust
    counter and only available on U lines CC is the same for the
    complete count NAME ist the username and only printed on U

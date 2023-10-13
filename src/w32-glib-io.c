@@ -903,7 +903,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       TRACE_END (dbg_help, "]");
     }
 
-  /* COUNT is used to stop the lop as soon as possible.  */
+  /* COUNT is used to stop the loop as soon as possible.  */
   for (n = count, i = 0; i < npollfds && n; i++)
     {
       j = pollfds_map[i];
