@@ -190,7 +190,7 @@ public:
 
     /*! The value that is in the config file (or null, if it's not set). */
     Argument activeValue() const;
-    /*! The value that is in this object, ie. either activeValue(), newValue(), or defaultValue() */
+    /*! The value that is in this object, i.e. either activeValue(), newValue(), or defaultValue() */
     Argument currentValue() const;
 
     Argument newValue() const;

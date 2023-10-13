@@ -89,7 +89,7 @@ main (int argc, char **argv)
         return -1;
     }
 
-    // try do connect to dirmngr
+    // try to connect to dirmngr
     err = ctx->assuanTransact("GETINFO version");
     if (err && err.code() != GPG_ERR_ASS_CONNECT_FAILED) {
         std::cerr << "Failed to start assuan transaction (Error: " << err.asString() << ")\n";
