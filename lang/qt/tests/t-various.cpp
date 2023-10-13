@@ -254,7 +254,7 @@ private Q_SLOTS:
         QVERIFY(job);
         hookUpPassphraseProvider(job.get());
 
-        // Setup the job
+        // Set up the job
         job->setExportable(true);
         job->setSigningKey(seckey);
         job->setDupeOk(true);
@@ -309,7 +309,7 @@ private Q_SLOTS:
         QVERIFY(job);
         hookUpPassphraseProvider(job.get());
 
-        // Setup the job
+        // Set up the job
         job->setExportable(true);
         job->setSigningKey(seckey);
         job->setDupeOk(true);

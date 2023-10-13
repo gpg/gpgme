@@ -76,7 +76,7 @@ public:
         QVERIFY (job);
         hookUpPassphraseProvider(job);
 
-        // Setup the job
+        // Set up the job
         job->setExportable(false);
         std::vector<unsigned int> uids;
         uids.push_back(0);
@@ -127,7 +127,7 @@ private Q_SLOTS:
         QVERIFY (job);
         hookUpPassphraseProvider(job);
 
-        // Setup the job
+        // Set up the job
         job->setExportable(true);
         std::vector<unsigned int> uids;
         uids.push_back(0);
@@ -159,7 +159,7 @@ private Q_SLOTS:
         QVERIFY (job3);
         hookUpPassphraseProvider(job3);
 
-        // Setup the job
+        // Set up the job
         job3->setExportable(false);
         job3->setUserIDsToSign(uids);
         job3->setSigningKey(seckey);
@@ -237,7 +237,7 @@ private Q_SLOTS:
         QVERIFY (job3);
         hookUpPassphraseProvider(job3);
 
-        // Setup the job
+        // Set up the job
         job3->setExportable(false);
         job3->setUserIDsToSign(uids);
         job3->setSigningKey(zulu);
@@ -291,7 +291,7 @@ private Q_SLOTS:
         QVERIFY (job);
         hookUpPassphraseProvider(job);
 
-        // Setup the job
+        // Set up the job
         job->setExportable(false);
         std::vector<unsigned int> uids;
         uids.push_back(0);
@@ -323,7 +323,7 @@ private Q_SLOTS:
         QVERIFY (job3);
         hookUpPassphraseProvider(job3);
 
-        // Setup the job
+        // Set up the job
         job3->setExportable(false);
         job3->setUserIDsToSign(uids);
         job3->setSigningKey(seckey);
@@ -372,7 +372,7 @@ private Q_SLOTS:
         QVERIFY (job);
         hookUpPassphraseProvider(job);
 
-        // Setup the job
+        // Set up the job
         job->setExportable(false);
         std::vector<unsigned int> uids;
         uids.push_back(0);
@@ -403,7 +403,7 @@ private Q_SLOTS:
         QVERIFY (job2);
         hookUpPassphraseProvider(job2);
 
-        // Setup the job
+        // Set up the job
         job2->setExportable(false);
         job2->setUserIDsToSign(uids);
         job2->setSigningKey(seckey);
@@ -424,7 +424,7 @@ private Q_SLOTS:
         QVERIFY (job3);
         hookUpPassphraseProvider(job3);
 
-        // Setup the job
+        // Set up the job
         job3->setExportable(false);
         job3->setUserIDsToSign(uids);
         job3->setSigningKey(seckey);
