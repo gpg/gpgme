@@ -103,7 +103,7 @@ static QGpgMEChangeExpiryJob::result_type change_expiry(Context *ctx, const Key 
     if (subkeys.empty() || (options & ChangeExpiryJob::UpdatePrimaryKey)) {
         // update the expiration date of the primary key
         auto err = ctx->setExpire(key, expires);
-        if (err) {
+        if (err || err.isCanceled()) {
             return std::make_tuple(err, QString(), Error());
         }
     }
