@@ -41,11 +41,11 @@ See the file INSTALL for generic installation instructions.
 Check that you have unmodified sources.  See below on how to do this.
 Don't skip it - this is an important step!
 
-To build GPGME, you need to install libgpg-error (>= 1.24) and
+To build GPGME, you need to install libgpg-error (>= 1.36) and
 Libassuan (>= 2.4.2).
 
-For support of the OpenPGP and the CMS protocols, you should use the
-latest version of GnuPG (>= 2.1.18) , available at:
+For support of the OpenPGP and the CMS protocols, you should use at
+least GnuPG version 2.2.41 or 2.4.3, available at:
 https://gnupg.org/ftp/gcrypt/gnupg/.
 
 For building the Git version of GPGME please see the file README.GIT

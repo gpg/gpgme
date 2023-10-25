@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.23.0 (unreleased)
+Noteworthy changes in version 1.23.0 (2023-10-25)
 -------------------------------------------------
 
  * Support GPGME_ENCRYPT_ALWAYS_TRUST also for S/MIME.  [T6559]
@@ -7,7 +7,11 @@ Noteworthy changes in version 1.23.0 (unreleased)
 
  * New key capability flags has_*.  [T6748]
 
+ * gpgme-tool: Support use of Windows HANDLE.  [T6634]
+
  * qt: Support refreshing keys via WKD.  [T6672]
+
+ * qt: Handle cancel in changeexpiryjob.  [T6754]
 
  * Interface changes relative to the 1.22.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -22,6 +26,10 @@ Noteworthy changes in version 1.23.0 (unreleased)
  cpp: Key::canAuthenticate       NEW.
  qt: Protocol::wkdRefreshJob     NEW.
  qt: WKDRefreshJob               NEW.
+
+ [c=C43/A32/R0 cpp=C26/A20/R0 qt=C20/A5/R0]
+
+ Release-info: https://dev.gnupg.org/T6774
 
 
 Noteworthy changes in version 1.22.0 (2023-08-21)
