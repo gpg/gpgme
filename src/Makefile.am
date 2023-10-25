@@ -120,6 +120,8 @@ if HAVE_W32_SYSTEM
 # wrapper process.
 libexec_PROGRAMS = gpgme-w32spawn
 
+gpgme_w32spawn_CFLAGS = -municode
+
 RCCOMPILE = $(RC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES)
 LTRCCOMPILE = $(LIBTOOL) --mode=compile --tag=RC $(RCCOMPILE)
 

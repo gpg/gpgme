@@ -54,13 +54,13 @@ static FILE *mystderr;
 
 
 
-static char *
-build_commandline (char **argv)
+static wchar_t *
+build_commandline (wchar_t **argv)
 {
   int i;
   int n = 0;
-  char *buf;
-  char *p;
+  wchar_t *buf;
+  wchar_t *p;
 
   /* We have to quote some things because under Windows the program
      parses the commandline and does some unquoting.  We enclose the
@@ -75,7 +75,7 @@ build_commandline (char **argv)
       while (*p)
 	{
 	  /* An extra one for each literal that must be escaped.  */
-	  if (*p == '\\' || *p == '"')
+	  if (*p == L'\\' || *p == L'"')
 	    n++;
 	  n++;
 	  p++;
@@ -86,22 +86,22 @@ build_commandline (char **argv)
   /* And a trailing zero.  */
   n++;
 
-  buf = p = malloc (n);
+  buf = p = malloc (n * sizeof (wchar_t));
   if (!buf)
     return NULL;
   for (i = 0; argv[i]; i++)
     {
-      char *argvp = argv[i];
+      wchar_t *argvp = argv[i];
 
-      *(p++) = '"';
+      *(p++) = L'"';
       while (*argvp)
 	{
-	  if (*argvp == '\\' || *argvp == '"')
-	    *(p++) = '\\';
+	  if (*argvp == L'\\' || *argvp == L'"')
+	    *(p++) = L'\\';
 	  *(p++) = *(argvp++);
 	}
-      *(p++) = '"';
-      *(p++) = ' ';
+      *(p++) = L'"';
+      *(p++) = L' ';
     }
   *(p++) = 0;
 
@@ -110,7 +110,7 @@ build_commandline (char **argv)
 
 
 int
-my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
+my_spawn (wchar_t **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 {
   SECURITY_ATTRIBUTES sec_attr;
   PROCESS_INFORMATION pi =
@@ -120,12 +120,11 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       0,         /* returns pid */
       0          /* returns tid */
     };
-  STARTUPINFO si;
-  char *envblock = NULL;
+  STARTUPINFOW si;
   int cr_flags = CREATE_DEFAULT_ERROR_MODE
     | GetPriorityClass (GetCurrentProcess ());
   int i;
-  char *arg_string;
+  wchar_t *arg_string;
   int duped_stdin = 0;
   int duped_stdout = 0;
   int duped_stderr = 0;
@@ -134,7 +133,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   i = 0;
   while (argv[i])
     {
-      fprintf (mystderr, PGM": argv[%2i] = %s\n", i, argv[i]);
+      fprintf (mystderr, PGM": argv[%2i] = %S\n", i, argv[i]);
       i++;
     }
 
@@ -184,13 +183,13 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       memset (&sa, 0, sizeof sa);
       sa.nLength = sizeof sa;
       sa.bInheritHandle = TRUE;
-      hnul = CreateFile ("nul",
-			 GENERIC_READ|GENERIC_WRITE,
-			 FILE_SHARE_READ|FILE_SHARE_WRITE,
-			 &sa,
-			 OPEN_EXISTING,
-			 FILE_ATTRIBUTE_NORMAL,
-			 NULL);
+      hnul = CreateFileW (L"nul",
+			  GENERIC_READ|GENERIC_WRITE,
+			  FILE_SHARE_READ|FILE_SHARE_WRITE,
+			  &sa,
+			  OPEN_EXISTING,
+			  FILE_ATTRIBUTE_NORMAL,
+			  NULL);
       if (hnul == INVALID_HANDLE_VALUE)
 	{
 	  free (arg_string);
@@ -210,13 +209,13 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
     }
 
   cr_flags |= CREATE_SUSPENDED;
-  if (!CreateProcessA (argv[0],
+  if (!CreateProcessW (argv[0],
 		       arg_string,
 		       &sec_attr,     /* process security attributes */
 		       &sec_attr,     /* thread security attributes */
 		       TRUE,          /* inherit handles */
 		       cr_flags,      /* creation flags */
-		       envblock,      /* environment */
+		       NULL,      /* environment */
 		       NULL,          /* use current drive/directory */
 		       &si,           /* startup information */
 		       &pi))          /* returns process information */
@@ -247,7 +246,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
         {
           /* Available since W2000; thus we dynload it.  */
           initialized = 1;
-          handle = LoadLibrary ("user32.dll");
+          handle = LoadLibraryA ("user32.dll");
           if (handle)
             {
               func = GetProcAddress (handle, "AllowSetForegroundWindow");
@@ -275,7 +274,7 @@ my_spawn (char **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
 #define MAX_TRANS 10
 
 int
-translate_get_from_file (const char *trans_file,
+translate_get_from_file (const wchar_t *trans_file,
 			 struct spawn_fd_item_s *fd_list,
                          unsigned int *r_flags)
 {
@@ -292,7 +291,7 @@ translate_get_from_file (const char *trans_file,
 
   *r_flags = 0;
 
-  fd = open (trans_file, O_RDONLY);
+  fd = _wopen (trans_file, O_RDONLY);
   if (fd < 0)
     return -1;
 
@@ -389,14 +388,14 @@ translate_get_from_file (const char *trans_file,
 /* Read the translated handles from TRANS_FILE and do a substitution
    in ARGV.  Returns the new argv and the list of substitutions in
    FD_LIST (which must be MAX_TRANS+1 large).  */
-char **
-translate_handles (const char *trans_file, const char * const *argv,
+wchar_t **
+translate_handles (const wchar_t *trans_file, const wchar_t * const *argv,
 		   struct spawn_fd_item_s *fd_list, unsigned int *r_flags)
 {
   int res;
   int idx;
   int n_args;
-  char **args;
+  wchar_t **args;
 
   res = translate_get_from_file (trans_file, fd_list, r_flags);
   if (res < 0)
@@ -407,7 +406,7 @@ translate_handles (const char *trans_file, const char * const *argv,
   args = malloc (sizeof (*args) * (idx + 1));
   for (idx = 0; argv[idx]; idx++)
     {
-      args[idx] = strdup (argv[idx]);
+      args[idx] = wcsdup (argv[idx]);
       if (!args[idx])
 	return NULL;
     }
@@ -416,7 +415,7 @@ translate_handles (const char *trans_file, const char * const *argv,
 
   for (idx = 0; fd_list[idx].fd != -1; idx++)
     {
-      char buf[25];
+      wchar_t buf[25];
       int aidx;
 
       aidx = fd_list[idx].arg_loc;
@@ -439,20 +438,27 @@ translate_handles (const char *trans_file, const char * const *argv,
       /* NOTE: Here is the part where application specific knowledge
 	 comes in.  GPGME/GnuPG uses two forms of descriptor
 	 specification, a plain number and a "-&" form.  */
-      if (argv[aidx][0] == '-' && argv[aidx][1] == '&')
-	snprintf (args[aidx], sizeof (buf), "-&%d", fd_list[idx].peer_name);
+      if (argv[aidx][0] == L'-' && argv[aidx][1] == L'&')
+	snwprintf (args[aidx], sizeof (buf), L"-&%d", fd_list[idx].peer_name);
       else
-	snprintf (args[aidx], sizeof (buf), "%d", fd_list[idx].peer_name);
+	snwprintf (args[aidx], sizeof (buf), L"%d", fd_list[idx].peer_name);
     }
   return args;
 }
 
 
+/* Since GPGME might be installed in a unicode directory it
+   must be callable with CreateProcessW which provides the
+   arguments in Unicode form.
+
+   So GPGME converts from its internal UTF-8 representation
+   to wchar, spawns gpgme-w32-spawn with CreateProcessW and then
+   we also forward this as wchar. */
 int
-main (int argc, const char * const *argv)
+wmain (int argc, const wchar_t * const *argv)
 {
   int rc = 0;
-  char **argv_spawn;
+  wchar_t **argv_spawn;
   struct spawn_fd_item_s fd_list[MAX_TRANS + 1];
   unsigned int flags;
 
@@ -479,7 +485,7 @@ main (int argc, const char * const *argv)
   rc = my_spawn (argv_spawn, fd_list, flags);
   if (rc < 0)
     {
-      fprintf (mystderr, PGM": executing `%s' failed: %s\n",
+      fprintf (mystderr, PGM": executing `%S' failed: %s\n",
 	       argv[0], strerror (errno));
       rc = 2;
       goto leave;
@@ -491,8 +497,8 @@ main (int argc, const char * const *argv)
   /* Always try to delete the temporary file.  */
   if (argc >= 2)
     {
-      if (DeleteFile (argv[1]) == 0)
-	fprintf (mystderr, PGM": failed to delete %s: ec=%ld\n",
+      if (DeleteFileW (argv[1]) == 0)
+	fprintf (mystderr, PGM": failed to delete %S: ec=%ld\n",
 		 argv[1], GetLastError ());
     }
   return rc;
