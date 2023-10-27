@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.23.1 (unreleased)
+Noteworthy changes in version 1.23.1 (2023-10-27)
 -------------------------------------------------
+
+ * w32: Change gpgme-w32-spawn to use Unicode arguments.  [T6728]
+
+ [c=C43/A32/R0 cpp=C26/A20/R0 qt=C20/A5/R0]
+
+ Release-info: https://dev.gnupg.org/T6774
 
 
 Noteworthy changes in version 1.23.0 (2023-10-25)
