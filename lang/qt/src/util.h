@@ -57,4 +57,26 @@ QStringList toFingerprints(const std::vector<GpgME::Key> &keys);
 
 void removeFile(const QString &fileName);
 
+/**
+ * Helper for using a temporary "part" file for writing a result to, similar
+ * to what browsers do when downloading files.
+ * On success, you commit() which renames the temporary file to the
+ * final file name. Otherwise, you do nothing and let the helper remove the
+ * temporary file on destruction.
+ */
+class PartialFileGuard
+{
+public:
+    explicit PartialFileGuard(const QString &fileName);
+    ~PartialFileGuard();
+
+    QString tempFileName() const;
+
+    bool commit();
+
+private:
+    QString mFileName;
+    QString mTempFileName;
+};
+
 #endif // __QGPGME_UTIL_H__

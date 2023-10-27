@@ -40,6 +40,8 @@
 #include "qgpgme_debug.h"
 
 #include <QFile>
+#include <QFileInfo>
+#include <QRandomGenerator>
 
 #include <key.h>
 
@@ -75,4 +77,107 @@ void removeFile(const QString &fileName)
             qCDebug(QGPGME_LOG) << __func__ << "- Removing file" << fileName << "failed";
         }
     }
+}
+
+/**
+ * Generates a string of random characters for the file names of temporary files.
+ * Never use this for generating passwords or similar use cases requiring highly
+ * secure random data.
+ */
+static QString getRandomCharacters(const int count)
+{
+    if (count < 0) {
+        return {};
+    }
+
+    QString randomChars;
+    randomChars.reserve(count);
+
+    do {
+        // get a 32-bit random number to generate up to 5 random characters from
+        // the set {A-Z, a-z, 0-9}; set the highest bit for the break condition
+        for (quint32 rnd = QRandomGenerator::global()->generate() | (1 << 31); rnd > 3; rnd = rnd >> 6)
+        {
+            // take the last 6 bits; ignore 62 and 63
+            const char ch = rnd & ((1 << 6) - 1);
+            if (ch < 26) {
+                randomChars += QLatin1Char(ch + 'A');
+            } else if (ch < 26 + 26) {
+                randomChars += QLatin1Char(ch - 26 + 'a');
+            } else if (ch < 26 + 26 + 10) {
+                randomChars += QLatin1Char(ch - 26 - 26 + '0');
+            }
+            if (randomChars.size() >= count) {
+                break;
+            }
+        }
+    } while (randomChars.size() < count);
+
+    return randomChars;
+}
+
+/**
+ * Creates a temporary file name with extension \c .part for the given file name
+ * \a fileName. The function makes sure that the created file name is not in use
+ * at the time the file name is chosen.
+ *
+ * Example: For the file name "this.is.an.archive.tar.gpg" the temporary file name
+ * "this.YHgf2tEl.is.an.archive.tar.gpg.part" could be returned.
+ */
+static QString createPartFileName(const QString &fileName)
+{
+    static const int maxAttempts = 10;
+
+    const QFileInfo fi{fileName};
+    const QString path = fi.path(); // path without trailing '/'
+    const QString baseName = fi.baseName();
+    const QString suffix = fi.completeSuffix();
+    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
+        const QString candidate = (path + QLatin1Char('/')
+                                   + baseName + QLatin1Char('.')
+                                   + getRandomCharacters(8) + QLatin1Char('.')
+                                   + suffix
+                                   + QLatin1String(".part"));
+        if (!QFile::exists(candidate)) {
+            return candidate;
+        }
+    }
+
+    qCWarning(QGPGME_LOG) << __func__ << "- Failed to create temporary file name for" << fileName;
+    return {};
+}
+
+PartialFileGuard::PartialFileGuard(const QString &fileName)
+    : mFileName{fileName}
+    , mTempFileName{createPartFileName(fileName)}
+{
+    qCDebug(QGPGME_LOG) << __func__ << "- Using temporary file name" << mTempFileName;
+}
+
+PartialFileGuard::~PartialFileGuard()
+{
+    if (!mTempFileName.isEmpty()) {
+        removeFile(mTempFileName);
+    }
+}
+
+QString PartialFileGuard::tempFileName() const
+{
+    return mTempFileName;
+}
+
+bool PartialFileGuard::commit()
+{
+    if (mTempFileName.isEmpty()) {
+        qCWarning(QGPGME_LOG) << "PartialFileGuard::commit: Called more than once";
+        return false;
+    }
+    const bool success = QFile::rename(mTempFileName, mFileName);
+    if (success) {
+        qCDebug(QGPGME_LOG) << __func__ << "- Renamed" << mTempFileName << "to" << mFileName;
+        mTempFileName.clear();
+    } else {
+        qCDebug(QGPGME_LOG) << __func__ << "- Renaming" << mTempFileName << "to" << mFileName << "failed";
+    }
+    return success;
 }
