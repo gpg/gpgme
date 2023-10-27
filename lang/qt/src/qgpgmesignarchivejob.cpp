@@ -44,6 +44,7 @@
 #include "signarchivejob_p.h"
 #include "filelistdataprovider.h"
 #include "qgpgme_debug.h"
+#include "util.h"
 
 #include <QFile>
 
@@ -111,20 +112,6 @@ static QGpgMESignArchiveJob::result_type sign(Context *ctx,
 
     const auto signingResult = ctx->sign(indata, outdata, GpgME::SignArchive);
 
-#ifdef Q_OS_WIN
-    const auto outputFileName = QString::fromUtf8(outdata.fileName());
-#else
-    const auto outputFileName = QFile::decodeName(outdata.fileName());
-#endif
-    if (!outputFileName.isEmpty() && signingResult.error().code()) {
-        // ensure that the output file is removed if the operation was canceled or failed
-        if (QFile::exists(outputFileName)) {
-            qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "after error or cancel";
-            if (!QFile::remove(outputFileName)) {
-                qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "failed";
-            }
-        }
-    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(signingResult, log, ae);
@@ -148,17 +135,24 @@ static QGpgMESignArchiveJob::result_type sign_to_io_device(Context *ctx,
 static QGpgMESignArchiveJob::result_type sign_to_filename(Context *ctx,
                                                           const std::vector<Key> &signers,
                                                           const std::vector<QString> &paths,
-                                                          const QString &outputFile,
+                                                          const QString &outputFileName,
                                                           const QString &baseDirectory)
 {
     Data outdata;
 #ifdef Q_OS_WIN
-    outdata.setFileName(outputFile.toUtf8().constData());
+    outdata.setFileName(outputFileName.toUtf8().constData());
 #else
-    outdata.setFileName(QFile::encodeName(outputFile).constData());
+    outdata.setFileName(QFile::encodeName(outputFileName).constData());
 #endif
 
-    return sign(ctx, signers, paths, outdata, baseDirectory);
+    const auto result = sign(ctx, signers, paths, outdata, baseDirectory);
+    const auto &signingResult = std::get<0>(result);
+    if (signingResult.error().code()) {
+        // ensure that the output file is removed if the operation was canceled or failed
+        removeFile(outputFileName);
+    }
+
+    return result;
 }
 
 GpgME::Error QGpgMESignArchiveJob::start(const std::vector<GpgME::Key> &signers,

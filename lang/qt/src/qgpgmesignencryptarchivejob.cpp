@@ -44,6 +44,7 @@
 #include "signencryptarchivejob_p.h"
 #include "filelistdataprovider.h"
 #include "qgpgme_debug.h"
+#include "util.h"
 
 #include <QFile>
 
@@ -116,20 +117,6 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt(Context *ctx,
     const auto &signingResult = res.first;
     const auto &encryptionResult = res.second;
 
-#ifdef Q_OS_WIN
-    const auto outputFileName = QString::fromUtf8(outdata.fileName());
-#else
-    const auto outputFileName = QFile::decodeName(outdata.fileName());
-#endif
-    if (!outputFileName.isEmpty() && (signingResult.error().code() || encryptionResult.error().code())) {
-        // ensure that the output file is removed if the operation was canceled or failed
-        if (QFile::exists(outputFileName)) {
-            qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "after error or cancel";
-            if (!QFile::remove(outputFileName)) {
-                qCDebug(QGPGME_LOG) << __func__ << "Removing output file" << outputFileName << "failed";
-            }
-        }
-    }
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
     return std::make_tuple(signingResult, encryptionResult, log, ae);
@@ -156,18 +143,26 @@ static QGpgMESignEncryptArchiveJob::result_type sign_encrypt_to_filename(Context
                                                                          const std::vector<GpgME::Key> &signers,
                                                                          const std::vector<Key> &recipients,
                                                                          const std::vector<QString> &paths,
-                                                                         const QString &outputFile,
+                                                                         const QString &outputFileName,
                                                                          Context::EncryptionFlags encryptionFlags,
                                                                          const QString &baseDirectory)
 {
     Data outdata;
 #ifdef Q_OS_WIN
-    outdata.setFileName(outputFile.toUtf8().constData());
+    outdata.setFileName(outputFileName.toUtf8().constData());
 #else
-    outdata.setFileName(QFile::encodeName(outputFile).constData());
+    outdata.setFileName(QFile::encodeName(outputFileName).constData());
 #endif
 
-    return sign_encrypt(ctx, signers, recipients, paths, outdata, encryptionFlags, baseDirectory);
+    const auto result = sign_encrypt(ctx, signers, recipients, paths, outdata, encryptionFlags, baseDirectory);
+    const auto &signingResult = std::get<0>(result);
+    const auto &encryptionResult = std::get<1>(result);
+    if (signingResult.error().code() || encryptionResult.error().code()) {
+        // ensure that the output file is removed if the operation was canceled or failed
+        removeFile(outputFileName);
+    }
+
+    return result;
 }
 
 GpgME::Error QGpgMESignEncryptArchiveJob::start(const std::vector<GpgME::Key> &signers,

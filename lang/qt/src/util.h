@@ -55,4 +55,6 @@ std::vector<std::string> toStrings(const QStringList &l);
 
 QStringList toFingerprints(const std::vector<GpgME::Key> &keys);
 
+void removeFile(const QString &fileName);
+
 #endif // __QGPGME_UTIL_H__
