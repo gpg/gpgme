@@ -338,6 +338,18 @@ if test x$fixed_search_path != x ; then
                     [Locate binaries only via this PATH])
 fi
 
+# Option --enable-reduce-relocations
+#
+# Allow building the Qt 6 bindings explicitly with -fPIC if the automatic
+# detection fails. Note: We assume that this flag is always available (unless
+# we built for Windows).
+AC_ARG_ENABLE([reduce-relocations],
+              AS_HELP_STRING([--enable-reduce-relocations],
+                             [build Qt 6 bindings with -fPIC (default is
+                              auto)]),
+              [use_reduce_relocations="$enableval"],
+              [use_reduce_relocations=""])
+
 # Option --enable-no-direct-extern-access
 #
 # Some distributions build Qt 6 with -mno-direct-extern-access. Libraries and
@@ -352,8 +364,8 @@ AX_CHECK_COMPILE_FLAG([-mno-direct-extern-access],
 AC_LANG_POP()
 AC_ARG_ENABLE([no-direct-extern-access],
               AS_HELP_STRING([--enable-no-direct-extern-access],
-                             [build Qt 6 bindinds with
-                              -mno-direct-extern-access]),
+                             [build Qt 6 bindings with
+                              -mno-direct-extern-access (default is auto)]),
               [use_no_direct_extern_access="$enableval"],
               [use_no_direct_extern_access=""])
 

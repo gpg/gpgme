@@ -34,20 +34,37 @@ AC_DEFUN([FIND_QT6],
   fi
 
   if test "$have_qt6_libs" = "yes"; then
+    if test "$have_w32_system" != yes; then
+      mkspecsdir=$($PKG_CONFIG --variable mkspecsdir Qt6Platform)
+      if test -z "$mkspecsdir"; then
+        AC_MSG_WARN([Failed to determine Qt's mkspecs directory. Cannot check its build configuration.])
+      fi
+    fi
+
+    # check if we need -fPIC
+    if test -z "$use_reduce_relocations" && test -n "$mkspecsdir"; then
+      AC_MSG_CHECKING([whether Qt was built with -fPIC])
+      if grep -q "QT_CONFIG .* reduce_relocations" $mkspecsdir/qconfig.pri; then
+        use_reduce_relocations="yes"
+      else
+        use_reduce_relocations="no"
+      fi
+      AC_MSG_RESULT([$use_reduce_relocations])
+    fi
+    if test "$use_reduce_relocations" = yes; then
+      GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -fPIC"
+    fi
+
+    # check if we need -mno-direct-extern-access
     if test "$have_no_direct_extern_access" = yes; then
-      if test -z "$use_no_direct_extern_access" && test "$have_w32_system" != yes; then
-        mkspecsdir=$($PKG_CONFIG --variable mkspecsdir Qt6Platform)
-        if test -n "$mkspecsdir"; then
-          AC_MSG_CHECKING([whether Qt was built with -mno-direct-extern-access])
-          if grep -q "QT_CONFIG .* no_direct_extern_access" $mkspecsdir/qconfig.pri; then
-            use_no_direct_extern_access="yes"
-          else
-            use_no_direct_extern_access="no"
-          fi
-          AC_MSG_RESULT([$use_no_direct_extern_access])
+      if test -z "$use_no_direct_extern_access" && test -n "$mkspecsdir"; then
+        AC_MSG_CHECKING([whether Qt was built with -mno-direct-extern-access])
+        if grep -q "QT_CONFIG .* no_direct_extern_access" $mkspecsdir/qconfig.pri; then
+          use_no_direct_extern_access="yes"
         else
-          AC_MSG_WARN([Failed to determine Qt's mkspecs directory. Cannot check its build configuration.])
+          use_no_direct_extern_access="no"
         fi
+        AC_MSG_RESULT([$use_no_direct_extern_access])
       fi
       if test "$use_no_direct_extern_access" = yes; then
         GPGME_QT6_CFLAGS="$GPGME_QT6_CFLAGS -mno-direct-extern-access"
