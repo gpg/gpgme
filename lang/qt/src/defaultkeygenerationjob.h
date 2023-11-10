@@ -44,8 +44,10 @@ namespace QGpgME{
 
 /**
  * Generates a PGP RSA/2048 bit key pair for given name and email address.
+ *
+ * This job is deprecated. Use QuickJob::startCreate instead.
  */
-class QGPGME_EXPORT DefaultKeyGenerationJob : public Job
+class QGPGME_DEPRECATED_EXPORT DefaultKeyGenerationJob : public Job
 {
     Q_OBJECT
 public:
