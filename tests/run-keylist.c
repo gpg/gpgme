@@ -47,6 +47,7 @@ show_usage (int ex)
          "  --verbose        run in verbose mode\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --chain          list all keys of the X.509 chain\n"
          "  --secret         list only secret keys\n"
          "  --with-secret    list pubkeys with secret info filled\n"
          "  --local          use GPGME_KEYLIST_MODE_LOCAL\n"
@@ -66,6 +67,19 @@ show_usage (int ex)
          "  --trust-model    use the specified trust-model\n"
          , stderr);
   exit (ex);
+}
+
+
+static char *
+xstrdup (const char *string)
+{
+  char *p = strdup (string);
+  if (!p)
+    {
+      fprintf (stderr, "strdup failed\n");
+      exit (2);
+    }
+  return p;
 }
 
 
@@ -108,9 +122,11 @@ main (int argc, char **argv)
   int no_trust_check = 0;
   int from_file = 0;
   int from_wkd = 0;
+  int with_chain = 0;
   gpgme_data_t data = NULL;
   char *trust_model = NULL;
-
+  char *chain_id = NULL;
+  char *last_chain_id = NULL;
 
   if (argc)
     { argc--; argv++; }
@@ -138,6 +154,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--cms"))
         {
           protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--chain"))
+        {
+          with_chain = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--secret"))
@@ -281,6 +302,7 @@ main (int argc, char **argv)
     err = gpgme_op_keylist_start (ctx, argc? argv[0]:NULL, only_secret);
   fail_if_err (err);
 
+ next_cert:
   while (!(err = gpgme_op_keylist_next (ctx, &key)))
     {
       gpgme_user_id_t uid;
@@ -311,6 +333,12 @@ main (int argc, char **argv)
               key->subkeys && key->subkeys->is_de_vs? " de-vs":"",
               key->subkeys && key->subkeys->is_cardkey? " cardkey":"");
       printf ("upd     : %lu (%u)\n", key->last_update, key->origin);
+      if (key->chain_id)
+        {
+          printf ("chain_id: %s\n", nonnull (key->chain_id));
+          free (chain_id);
+          chain_id = xstrdup (key->chain_id);
+        }
 
       subkey = key->subkeys;
       for (nsub=0; subkey; subkey = subkey->next, nsub++)
@@ -445,6 +473,25 @@ main (int argc, char **argv)
   for (keyidx=0; keyarray[keyidx]; keyidx++)
     gpgme_key_unref (keyarray[keyidx]);
 
+
+  if (with_chain && chain_id && *chain_id
+      && (!last_chain_id || strcmp (last_chain_id, chain_id)))
+    {
+      if (++with_chain > 30)
+        {
+          fprintf (stderr, PGM ": certificate chain too long - circle?\n");
+          exit (1);
+        }
+
+      free (last_chain_id);
+      last_chain_id = xstrdup (chain_id);
+      err = gpgme_op_keylist_start (ctx, chain_id, 0);
+      fail_if_err (err);
+      goto next_cert;
+    }
+
+  free (chain_id);
+  free (last_chain_id);
   free (trust_model);
 
   gpgme_release (ctx);
