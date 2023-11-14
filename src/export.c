@@ -116,7 +116,9 @@ export_status_handler (void *priv, gpgme_status_code_t code, char *args)
       break;
 
     case GPGME_STATUS_FAILURE:
-      opd->failure_code = _gpgme_parse_failure (args);
+      if (!opd->failure_code
+          || gpg_err_code (opd->failure_code) == GPG_ERR_GENERAL)
+        opd->failure_code = _gpgme_parse_failure (args);
       break;
 
     default:
