@@ -551,7 +551,7 @@ convention for 32 bit Windows by using @code{long} there.
 and thus we are able to use @code{int64_t} instead of @code{off_t}
 there.  For easier migration the typedef @code{gpgme_off_t} has been
 defined.  The reason we cannot use @code{off_t} directly is that some
-toolchains (e.g. mingw64) introduce a POSIX compatible hack for
+toolchains (e.g., mingw64) introduce a POSIX compatible hack for
 @code{off_t}.  Some widely used toolkits make use of this hack and in
 turn @acronym{GPGME} would need to use it also.  However, this would
 introduce an ABI break and existing software making use of libgpgme
@@ -1304,8 +1304,8 @@ returned.
 
 The function @code{gpgme_pubkey_algo_string} is a convenience function
 to build and return an algorithm string in the same way GnuPG does
-(e.g. ``rsa2048'' or ``ed25519'').  The caller must free the result
-using @code{gpgme_free}.  On error (e.g. invalid argument or memory
+(e.g., ``rsa2048'' or ``ed25519'').  The caller must free the result
+using @code{gpgme_free}.  On error (e.g., invalid argument or memory
 exhausted), the function returns NULL and sets @code{ERRNO}.
 @end deftypefun
 
@@ -1795,7 +1795,7 @@ is used.
 
 On POSIX platforms the @code{gpgme_off_t} type is an alias for
 @code{off_t}; it may be used interchangeable.  On Windows platforms
-@code{gpgme_off_t} is defined as a long (i.e. 32 bit) for 32 bit
+@code{gpgme_off_t} is defined as a long (i.e., 32 bit) for 32 bit
 Windows and as a 64 bit signed integer for 64 bit Windows.
 @end deftp
 
@@ -2231,7 +2231,7 @@ for a new data object.  The backend will try its best to detect the
 encoding automatically.
 
 @item GPGME_DATA_ENCODING_BINARY
-This specifies that the data is encoding in binary form; i.e. there is
+This specifies that the data is encoding in binary form; i.e., there is
 no special encoding.
 
 @item GPGME_DATA_ENCODING_BASE64
@@ -2271,7 +2271,7 @@ characters percent escaped.  This mode is is not yet implemented.
 @deftypefun gpgme_data_encoding_t gpgme_data_get_encoding (@w{gpgme_data_t @var{dh}})
 The function @code{gpgme_data_get_encoding} returns the encoding of
 the data object with the handle @var{dh}.  If @var{dh} is not a valid
-pointer (e.g. @code{NULL}) @code{GPGME_DATA_ENCODING_NONE} is
+pointer (e.g., @code{NULL}) @code{GPGME_DATA_ENCODING_NONE} is
 returned.
 @end deftypefun
 
@@ -2694,7 +2694,7 @@ for example completely disable the use of Dirmngr for any engine.
 
 For the CMS protocol the offline mode specifies whether Dirmngr shall
 be used to do additional validation that might require connecting
-external services (e.g. CRL / OCSP checks).  The offline mode is used
+external services (e.g., CRL / OCSP checks).  The offline mode is used
 for all operations on this context.  It has only an effect with
 GnuPG versions 2.1.6 or later.
 
@@ -3623,7 +3623,7 @@ Brainpool curve.
 
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.  Note that it will be
-false if the key is actually a stub key; i.e. a secret key operation
+false if the key is actually a stub key; i.e., a secret key operation
 is currently not possible (offline-key).  This is only set if a
 listing of secret keys has been requested or if
 @code{GPGME_KEYLIST_MODE_WITH_SECRET} is active.
@@ -4266,7 +4266,7 @@ GnuPG.
 @var{userid} is commonly the mail address associated with the key.
 GPGME does not require a specific syntax but if more than a mail
 address is given, RFC-822 style format is suggested.  The value is
-expected to be in UTF-8 encoding (i.e. no IDN encoding for mail
+expected to be in UTF-8 encoding (i.e., no IDN encoding for mail
 addresses).  This is a required parameter.
 
 @var{algo} specifies the algorithm for the new key (actually a keypair
@@ -4475,7 +4475,7 @@ requires at least version 2.1.13 of GnuPG.
 the mail address to be associated with the key.  GPGME does not
 require a specific syntax but if more than a mail address is given,
 RFC-822 style format is suggested.  The value is expected to be in
-UTF-8 encoding (i.e. no IDN encoding for mail addresses).  This is a
+UTF-8 encoding (i.e., no IDN encoding for mail addresses).  This is a
 required parameter.
 
 @var{flags} are currently not used and must be set to zero.
@@ -4684,7 +4684,7 @@ retrieved with @code{gpgme_op_genkey_result}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 operation could be started successfully, @code{GPG_ERR_INV_VALUE} if
-@var{parms} is not a well-formed string (e.g. does not have the
+@var{parms} is not a well-formed string (e.g., does not have the
 expected tag-like headers and footers), @code{GPG_ERR_NOT_SUPPORTED}
 if @var{public} or @var{secret} is not valid, and
 @code{GPG_ERR_GENERAL} if no key was created by the backend.
@@ -5147,7 +5147,7 @@ The function @code{gpgme_op_import_keys} adds the keys described by
 the @code{NULL} terminated array @var{keys} to the key ring of the
 crypto engine used by @var{ctx}.  It is used to actually import and
 make keys permanent which have been retrieved from an external source
-(i.e. using @code{GPGME_KEYLIST_MODE_EXTERN}) earlier.  The external
+(i.e., using @code{GPGME_KEYLIST_MODE_EXTERN}) earlier.  The external
 keylisting must have been made with the same context configuration (in
 particular the same home directory).  @footnote{Thus it is a
 replacement for the usual workaround of exporting and then importing a
@@ -5157,7 +5157,7 @@ require another access to the keyserver over the network.
 Only keys of the currently selected protocol of @var{ctx} are
 considered for import.  Other keys specified by the @var{keys} are
 ignored.  As of now all considered keys must have been retrieved using
-the same method, i.e. the used key listing mode must be identical.
+the same method, i.e., the used key listing mode must be identical.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_import_result}.
@@ -5229,7 +5229,7 @@ This is a pointer to the next status structure in the linked list, or
 
 @item char *fpr
 This is the fingerprint of the key that was considered, or @code{NULL}
-if the fingerprint of the key is not known, e.g. because the key to
+if the fingerprint of the key is not known, e.g., because the key to
 import was encrypted and decryption failed.
 
 @item gpgme_error_t result
@@ -6025,7 +6025,7 @@ The defined bits are:
 
   @item GPGME_SIGSUM_RED
   The signature is bad. It might be useful to check other bits and
-  display more information, i.e. a revoked certificate might not render a
+  display more information, i.e., a revoked certificate might not render a
   signature invalid when the message was received prior to the cause for
   the revocation.
 
@@ -6271,7 +6271,7 @@ functions in GPGME and GnuPG:
 
 Return the mail address (called ``addr-spec'' in RFC-5322) from the
 string @var{uid} which is assumed to be a user id (called ``address''
-in RFC-5322).  All plain ASCII characters (i.e. those with bit 7
+in RFC-5322).  All plain ASCII characters (i.e., those with bit 7
 cleared) in the result are converted to lowercase.  Caller must free
 the result using @code{gpgme_free}.  Returns @code{NULL} if no valid
 address was found (in which case @code{ERRNO} is set to @code{EINVAL})
@@ -6604,7 +6604,7 @@ may reveal information about the plaintext.
 @item GPGME_ENCRYPT_PREPARE
 @itemx GPGME_ENCRYPT_EXPECT_SIGN
 The @code{GPGME_ENCRYPT_PREPARE} symbol is used with the UI Server
-protocol to prepare an encryption (i.e. sending the
+protocol to prepare an encryption (i.e., sending the
 @code{PREP_ENCRYPT} command).  With the
 @code{GPGME_ENCRYPT_EXPECT_SIGN} symbol the UI Server is advised to
 also expect a sign command.
