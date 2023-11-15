@@ -37,6 +37,7 @@
 
 #include "util.h"
 
+#include "cleaner.h"
 #include "qgpgme_debug.h"
 
 #include <QFile>
@@ -66,17 +67,6 @@ QStringList toFingerprints(const std::vector<GpgME::Key> &keys)
         return QString::fromLatin1(k.primaryFingerprint());
     });
     return fprs;
-}
-
-void removeFile(const QString &fileName)
-{
-    if (QFile::exists(fileName)) {
-        if (QFile::remove(fileName)) {
-            qCDebug(QGPGME_LOG) << __func__ << "- Removed file" << fileName;
-        } else {
-            qCDebug(QGPGME_LOG) << __func__ << "- Removing file" << fileName << "failed";
-        }
-    }
 }
 
 /**
@@ -157,7 +147,7 @@ PartialFileGuard::PartialFileGuard(const QString &fileName)
 PartialFileGuard::~PartialFileGuard()
 {
     if (!mTempFileName.isEmpty()) {
-        removeFile(mTempFileName);
+        Cleaner::removeFile(mTempFileName);
     }
 }
 

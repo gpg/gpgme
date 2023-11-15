@@ -1,8 +1,8 @@
 /*
-    util.h - some internal helpers
+    cleaner.h
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2022 g10 Code GmbH
+    Copyright (c) 2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -31,50 +31,30 @@
     your version.
 */
 
-#ifndef __QGPGME_UTIL_H__
-#define __QGPGME_UTIL_H__
+#ifndef __QGPGME_CLEANER_H__
+#define __QGPGME_CLEANER_H__
 
-#include <QStringList>
+#include <QObject>
+#include <QString>
+#include <QTimer>
 
-#include <gpgme.h>
-
-#include <string>
-#include <vector>
-
-namespace GpgME
+/** Helper class that tries to remove files at regular intervals and on destruction. */
+class Cleaner : public QObject
 {
-class Key;
-}
-
-static inline gpgme_error_t make_error(gpgme_err_code_t code)
-{
-    return gpgme_err_make((gpgme_err_source_t)22, code);
-}
-
-std::vector<std::string> toStrings(const QStringList &l);
-
-QStringList toFingerprints(const std::vector<GpgME::Key> &keys);
-
-/**
- * Helper for using a temporary "part" file for writing a result to, similar
- * to what browsers do when downloading files.
- * On success, you commit() which renames the temporary file to the
- * final file name. Otherwise, you do nothing and let the helper remove the
- * temporary file on destruction.
- */
-class PartialFileGuard
-{
+    Q_OBJECT
 public:
-    explicit PartialFileGuard(const QString &fileName);
-    ~PartialFileGuard();
-
-    QString tempFileName() const;
-
-    bool commit();
+    /** Tries to remove the file. If this fails it creates a Cleaner for the file. */
+    static void removeFile(const QString &filePath);
 
 private:
-    QString mFileName;
-    QString mTempFileName;
+    explicit Cleaner(const QString &filePath, QObject *parent=nullptr);
+    ~Cleaner() override;
+
+    Q_DISABLE_COPY_MOVE(Cleaner)
+
+private:
+    QString mFilePath;
+    QTimer mTimer;
 };
 
-#endif // __QGPGME_UTIL_H__
+#endif // __QGPGME_CLEANER_H__

@@ -32,6 +32,7 @@ EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
              QGpgmeQt6Config-w32.cmake.in.in QGpgmeQt6ConfigVersion.cmake.in
 
 qgpgme_sources = \
+    cleaner.cpp \
     dataprovider.cpp \
     debug.cpp \
     decryptverifyarchivejob.cpp \
@@ -176,6 +177,7 @@ camelcase_headers= \
 
 private_qgpgme_headers = \
     changeexpiryjob_p.h \
+    cleaner.h \
     decryptverifyarchivejob_p.h \
     encryptarchivejob_p.h \
     encryptjob_p.h \
@@ -235,6 +237,7 @@ qgpgme_moc_sources = \
     changeexpiryjob.moc \
     changeownertrustjob.moc \
     changepasswdjob.moc \
+    cleaner.moc \
     decryptjob.moc \
     decryptverifyarchivejob.moc \
     decryptverifyjob.moc \
