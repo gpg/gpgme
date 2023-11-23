@@ -64,22 +64,22 @@ static GpgME::Error startDirmngr(Context *assuanCtx)
     if (err) {
         qCDebug(QGPGME_LOG) << "Error: Failed to get context for spawn engine (" << err.asString() << ")";
     }
-
-    const auto dirmngrProgram = GpgME::dirInfo("dirmngr-name");
+    const auto gpgconfProgram = GpgME::dirInfo("gpgconf-name");
     const auto homedir = GpgME::dirInfo("homedir");
     const char *argv[] = {
-        dirmngrProgram,
+        gpgconfProgram,
         "--homedir",
         homedir,
-        "--daemon",
+        "--launch",
+        "dirmngr",
         NULL
     };
     auto ignoreIO = Data{Data::null};
     if (!err) {
         qCDebug(QGPGME_LOG) << "Starting dirmngr ...";
-        err = spawnCtx->spawnAsync(dirmngrProgram, argv,
-                                   ignoreIO, ignoreIO, ignoreIO,
-                                   Context::SpawnDetached);
+        err = spawnCtx->spawn(gpgconfProgram, argv,
+                              ignoreIO, ignoreIO, ignoreIO,
+                              Context::SpawnDetached);
     }
 
     if (!err) {
