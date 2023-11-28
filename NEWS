@@ -1,5 +1,13 @@
-Noteworthy changes in version 1.23.2 (unreleased)
+Noteworthy changes in version 1.23.2 (2023-11-28)
 -------------------------------------------------
+
+ * Preserve more specific existing failure code.  [T6575]
+
+ * qt: Start dirmngr with gpgconf to avoid multiple instances. [T6833]
+
+ * qt: On Windows, use UTF-8 when logging the error text.  [T5960]
+
+ * qt: Remove left-over partial files more persistently.  [T6584]
 
  * qt: Use a temporary file name when creating signed or encrypted
    archives. [T6721]
@@ -7,9 +15,13 @@ Noteworthy changes in version 1.23.2 (unreleased)
  * qt: Build Qt 6 bindings with -fPIC if requested or Qt 6 was built with
    this flag. [T6781]
 
- * Interface changes relative to the 1.23.1 release:
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ Notes:
+ ~~~~~~
  qt: DefaultKeyGenerationJob     DEPRECATED.
+
+ [c=C43/A32/R1 cpp=C26/A20/R1 qt=C20/A5/R1]
+
+ Release-info: https://dev.gnupg.org/T6782
 
 
 Noteworthy changes in version 1.23.1 (2023-10-27)
