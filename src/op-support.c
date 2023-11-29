@@ -388,9 +388,12 @@ _gpgme_parse_plaintext (char *args, char **filenamep, int *r_mime)
   *tail = '\0';
   if (filenamep && *args != '\0')
     {
-      char *filename = strdup (args);
-      if (!filename)
-	return gpg_error_from_syserror ();
+      gpgme_error_t err = 0;
+      char *filename = NULL;
+
+      err = _gpgme_decode_percent_string (args, &filename, 0, 0);
+      if (err)
+        return err;
 
       *filenamep = filename;
     }
