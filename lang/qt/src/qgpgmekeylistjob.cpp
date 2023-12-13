@@ -152,7 +152,7 @@ KeyListResult QGpgMEKeyListJob::exec(const QStringList &patterns, bool secretOnl
 void QGpgMEKeyListJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);
-    Q_FOREACH (const Key &key, std::get<1>(tuple)) {
+    for (const Key &key : std::get<1>(tuple)) {
         Q_EMIT nextKey(key);
     }
 }

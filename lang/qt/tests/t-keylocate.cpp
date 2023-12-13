@@ -75,7 +75,7 @@ private Q_SLOTS:
             Key k = keys.front();
             QVERIFY(k.numUserIDs());
             bool found = false;
-            Q_FOREACH (const UserID uid, k.userIDs()) {
+            for (const UserID &uid : k.userIDs()) {
                 const QString mailBox = QString::fromUtf8(uid.email());
                 if (mTestpattern.toLower() == mailBox.toLower()) {
                     found = true;
@@ -109,7 +109,7 @@ private Q_SLOTS:
             Key k = keys.front();
             QVERIFY(k.numUserIDs());
             bool found = false;
-            Q_FOREACH (const UserID uid, k.userIDs()) {
+            for (const UserID &uid : k.userIDs()) {
                 const QString mailBox = QString::fromUtf8(uid.email());
                 if (mTestpattern.toLower() == mailBox.toLower()) {
                     found = true;

@@ -86,12 +86,12 @@ static QGpgMEKeyForMailboxJob::result_type do_work(Context *ctx, const QString &
     // See: https://bugs.gnupg.org/gnupg/issue2359
     Key keyC;
     UserID uidC;
-    Q_FOREACH (const Key k, keys) {
+    for (const Key &k : keys) {
         if (canEncrypt && !k.canEncrypt()) {
             continue;
         }
         /* First get the uid that matches the mailbox */
-        Q_FOREACH (const UserID u, k.userIDs()) {
+        for (const UserID &u : k.userIDs()) {
             if (QString::fromUtf8(u.email()).toLower() == mailbox.toLower()) {
                 if (uidC.isNull()) {
                     keyC = k;
@@ -103,13 +103,13 @@ static QGpgMEKeyForMailboxJob::result_type do_work(Context *ctx, const QString &
                 } else if (uidC.validity() == u.validity() && uidIsOk(u)) {
                     /* Both are the same check which one is newer. */
                     time_t oldTime = 0;
-                    Q_FOREACH (const Subkey s, keyC.subkeys()) {
+                    for (const Subkey &s : keyC.subkeys()) {
                         if ((canEncrypt && s.canEncrypt()) && subkeyIsOk(s)) {
                             oldTime = s.creationTime();
                         }
                     }
                     time_t newTime = 0;
-                    Q_FOREACH (const Subkey s, k.subkeys()) {
+                    for (const Subkey &s : k.subkeys()) {
                         if ((canEncrypt && s.canEncrypt()) && subkeyIsOk(s)) {
                             newTime = s.creationTime();
                         }

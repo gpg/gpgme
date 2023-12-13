@@ -124,11 +124,13 @@ static QGpgMESignEncryptJob::result_type sign_encrypt(Context *ctx, QThread *thr
     }
 
     ctx->clearSigningKeys();
-    Q_FOREACH (const Key &signer, signers)
-        if (!signer.isNull())
+    for (const Key &signer : signers) {
+        if (!signer.isNull()) {
             if (const Error err = ctx->addSigningKey(signer)) {
                 return std::make_tuple(SigningResult(err), EncryptionResult(), QByteArray(), QString(), Error());
             }
+        }
+    }
 
     if (!cipherText) {
         QGpgME::QByteArrayDataProvider out;

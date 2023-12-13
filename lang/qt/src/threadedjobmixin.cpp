@@ -108,7 +108,7 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
 static QList<QByteArray> from_sl(const QStringList &sl)
 {
     QList<QByteArray> result;
-    Q_FOREACH (const QString &str, sl) {
+    for (const QString &str : sl) {
         result.append(str.toUtf8());
     }
 

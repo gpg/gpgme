@@ -119,7 +119,7 @@ private Q_SLOTS:
             { Subkey::AlgoEDDSA,  QStringLiteral("EdDSA") },
             { Subkey::AlgoUnknown, QString() }
         };
-        Q_FOREACH (Subkey::PubkeyAlgo algo, expected.keys()) {
+        for (Subkey::PubkeyAlgo algo : expected.keys()) {
             QVERIFY(QString::fromUtf8(Subkey::publicKeyAlgorithmAsString(algo)) ==
                      expected.value(algo));
         }

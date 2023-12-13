@@ -87,11 +87,13 @@ static QGpgMESignJob::result_type sign(Context *ctx, QThread *thread,
     }
 
     ctx->clearSigningKeys();
-    Q_FOREACH (const Key &signer, signers)
-        if (!signer.isNull())
+    for (const Key &signer : signers) {
+        if (!signer.isNull()) {
             if (const Error err = ctx->addSigningKey(signer)) {
                 return std::make_tuple(SigningResult(err), QByteArray(), QString(), Error());
             }
+        }
+    }
 
     if (!signature) {
         QGpgME::QByteArrayDataProvider out;
