@@ -64,7 +64,8 @@ static QGpgMEQuickJob::result_type createWorker(GpgME::Context *ctx,
     auto err = ctx->createKey(uid.toUtf8().constData(),
                               algo,
                               0,
-                              expires.isValid() ? (unsigned long) (expires.toMSecsSinceEpoch() / 1000) : 0,
+                              expires.isValid() ? (unsigned long) (expires.toMSecsSinceEpoch() / 1000
+                                  - QDateTime::currentSecsSinceEpoch()) : 0,
                               key,
                               flags);
     return std::make_tuple(err, QString(), Error());
@@ -77,7 +78,8 @@ static QGpgMEQuickJob::result_type addSubkeyWorker(GpgME::Context *ctx,
                                                     unsigned int flags)
 {
     auto err = ctx->createSubkey(key, algo,  0,
-                                 expires.isValid() ? (unsigned long) (expires.toMSecsSinceEpoch() / 1000): 0,
+                                 expires.isValid() ? (unsigned long) (expires.toMSecsSinceEpoch() / 1000
+                                     - QDateTime::currentSecsSinceEpoch()): 0,
                                  flags);
     return std::make_tuple(err, QString(), Error());
 }
