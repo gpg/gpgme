@@ -51,7 +51,7 @@ class QGPGME_DEPRECATED_EXPORT DefaultKeyGenerationJob : public Job
 {
     Q_OBJECT
 public:
-    explicit DefaultKeyGenerationJob(QObject *parent = Q_NULLPTR);
+    explicit DefaultKeyGenerationJob(QObject *parent = nullptr);
     ~DefaultKeyGenerationJob();
 
     GpgME::Error start(const QString &email, const QString &name);

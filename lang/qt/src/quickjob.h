@@ -56,7 +56,7 @@ class QGPGME_EXPORT QuickJob : public Job
 {
     Q_OBJECT
 public:
-    explicit QuickJob(QObject *parent = Q_NULLPTR);
+    explicit QuickJob(QObject *parent = nullptr);
     ~QuickJob();
 
     /** Start --quick-gen-key */

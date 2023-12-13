@@ -68,8 +68,8 @@ public:
     static const char OpenPGP[];
     static const char SMIME[];
 
-    bool checkForOpenPGP(QString *reason = Q_NULLPTR) const;
-    bool checkForSMIME(QString *reason = Q_NULLPTR) const;
+    bool checkForOpenPGP(QString *reason = nullptr) const;
+    bool checkForSMIME(QString *reason = nullptr) const;
     bool checkForProtocol(const char *name, QString *reason) const;
 
     bool supportsOpenPGP() const
