@@ -6557,7 +6557,14 @@ file set with @code{gpgme_data_set_file_name} for the data object
 @var{cipher}.  The type of the ciphertext created is determined by the
 @acronym{ASCII} armor (or, if that is not set, by the encoding specified
 for @var{cipher}) and the text mode attributes set for the context
-@var{ctx}.
+@var{ctx}.  If a filename has been set with @code{gpgme_data_set_file_name}
+for the data object @var{plain} then this filename is stored in the
+ciphertext.
+
+If the flag @code{GPGME_ENCRYPT_FILE} is set and a filename has been set
+with @code{gpgme_data_set_file_name} for the data object @var{plain},
+then this filename is passed to gpg, so that gpg reads the plaintext
+directly from this file instead of from the data object @var{plain}.
 
 If the flag @code{GPGME_ENCRYPT_ARCHIVE} is set, then an encrypted
 archive is created from the files and directories given as NUL-separated
@@ -6652,6 +6659,15 @@ The @code{GPGME_ENCRYPT_ARCHIVE} symbol specifies that the input is a
 NUL-separated list of file paths and directory paths that shall be
 encrypted into an archive.  This feature is currently only supported
 for the OpenPGP crypto engine and requires GnuPG 2.4.1.
+
+@item GPGME_ENCRYPT_FILE
+@since{1.24.0}
+
+The @code{GPGME_ENCRYPT_FILE} symbol specifies that the filename set
+with @code{gpgme_data_set_file_name} for the data object @var{plain}
+is passed to gpg, so that gpg reads the plaintext directly from this
+file instead of from the data object @var{plain}.  This feature is
+currently only supported for the OpenPGP crypto engine.
 
 @end table
 

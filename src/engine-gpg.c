@@ -2317,11 +2317,15 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
+  const char *file_name = NULL;
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
   if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_FILE))
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_WRAP))
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -2390,9 +2394,10 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
             err = add_data (gpg, ciph, 1, 1);
         }
     }
+  if (!err)
+    file_name = gpgme_data_get_file_name (plain);
   if (gpg->flags.use_gpgtar)
     {
-      const char *file_name = gpgme_data_get_file_name (plain);
       if (!err && file_name)
         {
           err = add_arg (gpg, "--directory");
@@ -2411,9 +2416,17 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
       if (!err)
         err = add_data (gpg, plain, 0, 0);
     }
+  else if (flags & GPGME_ENCRYPT_FILE)
+    {
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err && (!file_name || !*file_name))
+        err = gpg_error (GPG_ERR_INV_VALUE);
+      if (!err)
+	err = add_arg (gpg, file_name);
+    }
   else
     {
-      const char *file_name = gpgme_data_get_file_name (plain);
       if (!err && file_name)
 	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)
@@ -2440,11 +2453,15 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err = 0;
+  const char *file_name = NULL;
 
   gpg->flags.use_gpgtar = !!(flags & GPGME_ENCRYPT_ARCHIVE);
 
   if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_FILE))
+    return gpg_error (GPG_ERR_INV_VALUE);
 
   if (recp || recpstring)
     err = add_arg (gpg, "--encrypt");
@@ -2510,9 +2527,10 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
             err = add_data (gpg, ciph, 1, 1);
         }
     }
+  if (!err)
+    file_name = gpgme_data_get_file_name (plain);
   if (gpg->flags.use_gpgtar)
     {
-      const char *file_name = gpgme_data_get_file_name (plain);
       if (!err && file_name)
         {
           err = add_arg (gpg, "--directory");
@@ -2531,9 +2549,17 @@ gpg_encrypt_sign (void *engine, gpgme_key_t recp[],
       if (!err)
         err = add_data (gpg, plain, 0, 0);
     }
+  else if (flags & GPGME_ENCRYPT_FILE)
+    {
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err && (!file_name || !*file_name))
+        err = gpg_error (GPG_ERR_INV_VALUE);
+      if (!err)
+	err = add_arg (gpg, file_name);
+    }
   else
     {
-      const char *file_name = gpgme_data_get_file_name (plain);
       if (!err && file_name)
 	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)

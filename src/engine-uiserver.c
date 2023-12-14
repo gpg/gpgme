@@ -1145,7 +1145,7 @@ uiserver_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   else
     return gpgme_error (GPG_ERR_UNSUPPORTED_PROTOCOL);
 
-  if (flags & GPGME_ENCRYPT_ARCHIVE)
+  if (flags & (GPGME_ENCRYPT_ARCHIVE | GPGME_ENCRYPT_FILE))
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
   if (flags & GPGME_ENCRYPT_PREPARE)

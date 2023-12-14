@@ -151,6 +151,7 @@ show_usage (int ex)
          "  --no-symkey-cache  disable the use of that cache\n"
          "  --wrap             assume input is valid OpenPGP message\n"
          "  --symmetric        encrypt symmetric (OpenPGP only)\n"
+         "  --direct-file-io   pass FILE instead of stream with content of FILE to backend\n"
          "  --archive          encrypt given file or directory into an archive\n"
          "  --directory DIR    switch to directory DIR before encrypting into an archive\n"
          "  --output FILE      write output to FILE instead of stdout\n"
@@ -186,6 +187,7 @@ main (int argc, char **argv)
   int no_symkey_cache = 0;
   int diagnostics = 0;
   int sign = 0;
+  int direct_file_io = 0;
 
   if (argc)
     { argc--; argv++; }
@@ -289,6 +291,11 @@ main (int argc, char **argv)
           no_symkey_cache = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--direct-file-io"))
+        {
+          direct_file_io = 1;
+          argc--; argv++;
+        }
       else if (!strcmp (*argv, "--archive"))
         {
           flags |= GPGME_ENCRYPT_ARCHIVE;
@@ -377,6 +384,14 @@ main (int argc, char **argv)
           err = gpgme_data_set_file_name (in, directory);
           fail_if_err (err);
         }
+    }
+  else if (direct_file_io)
+    {
+      flags |= GPGME_ENCRYPT_FILE;
+      err = gpgme_data_new (&in);
+      fail_if_err (err);
+      err = gpgme_data_set_file_name (in, *argv);
+      fail_if_err (err);
     }
   else
     {
