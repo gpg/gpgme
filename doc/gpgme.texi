@@ -6381,10 +6381,10 @@ mode @var{mode}.
 
 If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested, then a
 signed archive is created from the files and directories given as
-NUL-separated list in the data object @var{plain} and returned in the
-data object @var{sig}.  The paths of the files and directories have to
-be given as paths relative to the current working directory or relative
-to the base directory set with @code{gpgme_data_set_file_name}.
+NUL-separated list in the data object @var{plain}.  The paths of the files
+and directories have to be given as paths relative to the current working
+directory or relative to the base directory set with
+@code{gpgme_data_set_file_name} for the data object @var{plain}.
 
 After the operation completed successfully, the result can be
 retrieved with @code{gpgme_op_sign_result}.
@@ -6561,10 +6561,10 @@ for @var{cipher}) and the text mode attributes set for the context
 
 If the flag @code{GPGME_ENCRYPT_ARCHIVE} is set, then an encrypted
 archive is created from the files and directories given as NUL-separated
-list in the data object @var{plain} and returned in the data object
-@var{cipher}.  The paths of the files and directories have to
-be given as paths relative to the current working directory or relative
-to the base directory set with @code{gpgme_data_set_file_name}.
+list in the data object @var{plain}.  The paths of the files and
+directories have to be given as paths relative to the current working
+directory or relative to the base directory set with
+@code{gpgme_data_set_file_name} for the data object @var{plain}.
 
 @var{recp} must be a @code{NULL}-terminated array of keys.  The user
 must keep references for all keys during the whole duration of the
