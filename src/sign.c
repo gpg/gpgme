@@ -450,7 +450,8 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
 
   if (flags & ~(GPGME_SIG_MODE_DETACH
                 |GPGME_SIG_MODE_CLEAR
-                |GPGME_SIG_MODE_ARCHIVE))
+                |GPGME_SIG_MODE_ARCHIVE
+                |GPGME_SIG_MODE_FILE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!plain)

@@ -2128,7 +2128,9 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   if (!gpgsm)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (flags & (GPGME_SIG_MODE_CLEAR | GPGME_SIG_MODE_ARCHIVE))
+  if (flags & (GPGME_SIG_MODE_CLEAR
+               | GPGME_SIG_MODE_ARCHIVE
+               | GPGME_SIG_MODE_FILE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
   /* FIXME: This does not work as RESET does not reset it so we can't

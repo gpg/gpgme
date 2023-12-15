@@ -6366,6 +6366,16 @@ A signed archive is created from the given files and directories.  This
 feature is currently only supported for the OpenPGP crypto engine and requires
 GnuPG 2.4.1.
 
+@item GPGME_SIG_MODE_FILE
+@since{1.24.0}
+
+The filename set with @code{gpgme_data_set_file_name} for the data object
+@var{plain} is passed to gpg, so that gpg reads the plaintext directly from
+this file instead of from the data object @var{plain}.  This flag can be
+combined with @code{GPGME_SIG_MODE_NORMAL}, @code{GPGME_SIG_MODE_DETACH},
+and @code{GPGME_SIG_MODE_CLEAR}, but not with @code{GPGME_SIG_MODE_ARCHIVE}.
+This feature is currently only supported for the OpenPGP crypto engine.
+
 @end table
 @end deftp
 
@@ -6379,7 +6389,12 @@ if that is not set, by the encoding specified for @var{sig}), the text
 mode attributes set for the context @var{ctx} and the requested signature
 mode @var{mode}.
 
-If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested, then a
+If the signature mode flag @code{GPGME_SIG_MODE_FILE} is set and a filename
+has been set with @code{gpgme_data_set_file_name} for the data object
+@var{plain}, then this filename is passed to gpg, so that gpg reads the
+plaintext directly from this file instead of from the data object @var{plain}.
+
+If signature mode @code{GPGME_SIG_MODE_ARCHIVE} is requested then a
 signed archive is created from the files and directories given as
 NUL-separated list in the data object @var{plain}.  The paths of the files
 and directories have to be given as paths relative to the current working

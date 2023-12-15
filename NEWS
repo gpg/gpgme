@@ -1,12 +1,13 @@
 Noteworthy changes in version 1.23.3 (unrelease)
 -------------------------------------------------
 
- * Extended gpgme_op_encrypt* and gpgme_op_encrypt_sign* to allow reading
-   the input data directly from a file.  [T6550]
+ * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and gpgme_op_sign*
+   to allow reading the input data directly from a file.  [T6550]
 
  * Interface changes relative to the 1.23.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_ENCRYPT_FILE              NEW.
+ GPGME_SIG_MODE_FILE             NEW.
 
 
 Noteworthy changes in version 1.23.2 (2023-11-28)

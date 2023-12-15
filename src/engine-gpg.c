@@ -3615,25 +3615,32 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
 {
   engine_gpg_t gpg = engine;
   gpgme_error_t err;
-  const char *output = NULL;
+  const char *file_name = NULL;
+  unsigned int mode = flags & (GPGME_SIG_MODE_NORMAL
+                               |GPGME_SIG_MODE_DETACH
+                               |GPGME_SIG_MODE_CLEAR
+                               |GPGME_SIG_MODE_ARCHIVE);
 
   (void)include_certs;
 
-  if ((flags != GPGME_SIG_MODE_NORMAL) && (flags != GPGME_SIG_MODE_DETACH)
-      && (flags != GPGME_SIG_MODE_CLEAR) && (flags != GPGME_SIG_MODE_ARCHIVE))
+  if ((mode != GPGME_SIG_MODE_NORMAL) && (mode != GPGME_SIG_MODE_DETACH)
+      && (mode != GPGME_SIG_MODE_CLEAR) && (mode != GPGME_SIG_MODE_ARCHIVE))
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  gpg->flags.use_gpgtar = !!(flags & GPGME_SIG_MODE_ARCHIVE);
+  gpg->flags.use_gpgtar = !!(mode == GPGME_SIG_MODE_ARCHIVE);
 
   if (gpg->flags.use_gpgtar && !have_usable_gpgtar (gpg))
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
-  if (flags & GPGME_SIG_MODE_CLEAR)
+  if (gpg->flags.use_gpgtar && (flags & GPGME_SIG_MODE_FILE))
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (mode == GPGME_SIG_MODE_CLEAR)
     err = add_arg (gpg, "--clearsign");
   else
     {
       err = add_arg (gpg, "--sign");
-      if (!err && (flags & GPGME_SIG_MODE_DETACH))
+      if (!err && (mode == GPGME_SIG_MODE_DETACH))
 	err = add_arg (gpg, "--detach");
       if (!err && use_armor)
 	err = add_gpg_arg (gpg, "--armor");
@@ -3657,20 +3664,24 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
     err = append_args_from_sig_notations (gpg, ctx, NOTATION_FLAG_SIG);
 
   if (!err)
+    err = add_arg (gpg, "--output");
+  if (!err)
     {
-      output = gpgme_data_get_file_name (out);
+      const char *output = gpgme_data_get_file_name (out);
       if (output)
+        err = add_arg (gpg, output);
+      else
         {
-          err = add_arg (gpg, "--output");
+          err = add_arg (gpg, "-");
           if (!err)
-            err = add_arg (gpg, output);
+            err = add_data (gpg, out, 1, 1);
         }
     }
-
+  if (!err)
+    file_name = gpgme_data_get_file_name (in);
   /* Tell the gpg object about the data.  */
   if (gpg->flags.use_gpgtar)
     {
-      const char *file_name = gpgme_data_get_file_name (in);
       if (!err && file_name)
         {
           err = add_arg (gpg, "--directory");
@@ -3689,9 +3700,17 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (!err)
         err = add_data (gpg, in, 0, 0);
     }
+  else if (flags & GPGME_SIG_MODE_FILE)
+    {
+      if (!err)
+        err = add_arg (gpg, "--");
+      if (!err && (!file_name || !*file_name))
+        err = gpg_error (GPG_ERR_INV_VALUE);
+      if (!err)
+	err = add_arg (gpg, file_name);
+    }
   else
     {
-      const char *file_name = gpgme_data_get_file_name (in);
       if (!err && file_name)
 	err = add_gpg_arg_with_value (gpg, "--set-filename=", file_name, 0);
       if (!err)
@@ -3701,9 +3720,6 @@ gpg_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (!err)
         err = add_data (gpg, in, -1, 0);
     }
-
-  if (!err && !output)
-    err = add_data (gpg, out, 1, 1);
 
   if (!err)
     err = start (gpg);

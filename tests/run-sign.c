@@ -87,6 +87,8 @@ show_usage (int ex)
          "  --sender MBOX    use MBOX as sender address\n"
          "  --include-key-block  use this option with gpg\n"
          "  --clear          create a clear text signature\n"
+         "  --detach         create a detached signature\n"
+         "  --direct-file-io  pass FILE instead of stream with content of FILE to backend\n"
          "  --archive        create a signed archive with the given file or directory\n"
          "  --directory DIR  switch to directory DIR before creating the archive\n"
          "  --output FILE    write output to FILE instead of stdout\n"
@@ -113,6 +115,7 @@ main (int argc, char **argv)
   int use_loopback = 0;
   int include_key_block = 0;
   int diagnostics = 0;
+  int direct_file_io = 0;
   const char *sender = NULL;
   const char *s;
 
@@ -183,6 +186,16 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--clear"))
         {
           sigmode = GPGME_SIG_MODE_CLEAR;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--detach"))
+        {
+          sigmode = GPGME_SIG_MODE_DETACH;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--direct-file-io"))
+        {
+          direct_file_io = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--archive"))
@@ -269,7 +282,15 @@ main (int argc, char **argv)
         }
     }
 
-  if (sigmode == GPGME_SIG_MODE_ARCHIVE)
+  if (direct_file_io)
+    {
+      sigmode |= GPGME_SIG_MODE_FILE;
+      err = gpgme_data_new (&in);
+      fail_if_err (err);
+      err = gpgme_data_set_file_name (in, *argv);
+      fail_if_err (err);
+    }
+  else if (sigmode == GPGME_SIG_MODE_ARCHIVE)
     {
       const char *path = *argv;
       err = gpgme_data_new_from_mem (&in, path, strlen (path), 0);

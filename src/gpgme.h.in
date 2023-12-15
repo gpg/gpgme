@@ -309,7 +309,8 @@ typedef enum
     GPGME_SIG_MODE_NORMAL = 0,
     GPGME_SIG_MODE_DETACH = 1,
     GPGME_SIG_MODE_CLEAR  = 2,
-    GPGME_SIG_MODE_ARCHIVE = 4
+    GPGME_SIG_MODE_ARCHIVE = 4,
+    GPGME_SIG_MODE_FILE = 8
   }
 gpgme_sig_mode_t;
 
