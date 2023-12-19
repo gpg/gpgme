@@ -79,6 +79,7 @@ enum SignatureMode {
     Detached = 1,
     Clearsigned = 2,
     SignArchive = 4,
+    SignFile = 8,
 };
 
 enum class RevocationReason {

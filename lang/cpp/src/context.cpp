@@ -1301,6 +1301,9 @@ static gpgme_sig_mode_t sigflags2sigflags(SignatureMode flags)
     if (flags & SignatureMode::SignArchive) {
         result |= GPGME_SIG_MODE_ARCHIVE;
     }
+    if (flags & SignatureMode::SignFile) {
+        result |= GPGME_SIG_MODE_FILE;
+    }
     return static_cast<gpgme_sig_mode_t>(result);
 }
 
@@ -1362,6 +1365,9 @@ static gpgme_encrypt_flags_t encryptflags2encryptflags(Context::EncryptionFlags 
     }
     if (flags & Context::EncryptArchive) {
         result |= GPGME_ENCRYPT_ARCHIVE;
+    }
+    if (flags & Context::EncryptFile) {
+        result |= GPGME_ENCRYPT_FILE;
     }
     return static_cast<gpgme_encrypt_flags_t>(result);
 }
@@ -1927,6 +1933,7 @@ std::ostream &operator<<(std::ostream &os, SignatureMode mode)
     }
 #define CHECK( x ) if ( !(mode & (x)) ) {} else do { os << #x " "; } while (0)
         CHECK(SignArchive);
+        CHECK(SignFile);
 #undef CHECK
     return os << ')';
 }
@@ -1945,6 +1952,7 @@ std::ostream &operator<<(std::ostream &os, Context::EncryptionFlags flags)
     CHECK(EncryptWrap);
     CHECK(WantAddress);
     CHECK(EncryptArchive);
+    CHECK(EncryptFile);
 #undef CHECK
     return os << ')';
 }
