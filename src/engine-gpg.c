@@ -1899,12 +1899,18 @@ gpg_decrypt (void *engine,
     }
   else
     {
+      const char *output = gpgme_data_get_file_name (plain);
       if (!err)
         err = add_arg (gpg, "--output");
-      if (!err)
-        err = add_arg (gpg, "-");
-      if (!err)
-        err = add_data (gpg, plain, 1, 1);
+      if (!err && output)
+        err = add_arg (gpg, output);
+      else
+        {
+          if (!err)
+            err = add_arg (gpg, "-");
+          if (!err)
+            err = add_data (gpg, plain, 1, 1);
+        }
       if (!err)
         err = add_input_size_hint (gpg, ciph);
       if (!err)
@@ -3768,9 +3774,12 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
   else if (plaintext)
     {
       /* Normal or cleartext signature.  */
+      const char *output = gpgme_data_get_file_name (plaintext);
       err = add_arg (gpg, "--output");
-      if (!err)
-	err = add_data (gpg, plaintext, -1, 1);
+      if (!err && output)
+        err = add_arg (gpg, output);
+      else if (!err)
+        err = add_data (gpg, plaintext, -1, 1);
       if (!err)
         err = add_input_size_hint (gpg, sig);
       if (!err)

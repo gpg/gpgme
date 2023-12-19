@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.23.3 (unrelease)
 -------------------------------------------------
 
+ * Extended gpgme_op_decrypt* and gpgme_op_verify* to allow writing the
+   output directly to a file.  [T6550]
+
  * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and gpgme_op_sign*
    to allow reading the input data directly from a file.  [T6550]
 

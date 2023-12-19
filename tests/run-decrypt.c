@@ -91,6 +91,7 @@ show_usage (int ex)
          "  --unwrap         remove only the encryption layer\n"
          "  --large-buffers  use large I/O buffer\n"
          "  --sensitive      mark data objects as sensitive\n"
+         "  --output FILE    write output to FILE instead of stdout\n"
          "  --archive        extract files from an encrypted archive\n"
          "  --directory DIR  extract the files into the directory DIR\n"
          "  --diagnostics    print diagnostics\n"
@@ -116,6 +117,7 @@ main (int argc, char **argv)
   int export_session_key = 0;
   const char *override_session_key = NULL;
   const char *request_origin = NULL;
+  const char *output = NULL;
   const char *directory = NULL;
   int no_symkey_cache = 0;
   int ignore_mdc_error = 0;
@@ -208,6 +210,14 @@ main (int argc, char **argv)
         {
           flags |= GPGME_DECRYPT_UNWRAP;
           raw_output = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--output"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          output = *argv;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--archive"))
@@ -341,6 +351,16 @@ main (int argc, char **argv)
                gpgme_strerror (err));
       exit (1);
     }
+  if (output && !(flags & GPGME_DECRYPT_ARCHIVE))
+    {
+      err = gpgme_data_set_file_name (out, output);
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting file name (out): %s\n",
+                   gpgme_strerror (err));
+          exit (1);
+        }
+    }
   if (directory && (flags & GPGME_DECRYPT_ARCHIVE))
     {
       err = gpgme_data_set_file_name (out, directory);
@@ -407,11 +427,14 @@ main (int argc, char **argv)
     {
       if (!raw_output)
         print_result (result);
-      if (!raw_output)
-        fputs ("Begin Output:\n", stdout);
-      print_data (out);
-      if (!raw_output)
-        fputs ("End Output.\n", stdout);
+      if (!output)
+        {
+          if (!raw_output)
+            fputs ("Begin Output:\n", stdout);
+          print_data (out);
+          if (!raw_output)
+            fputs ("End Output.\n", stdout);
+        }
     }
 
   gpgme_data_release (out);

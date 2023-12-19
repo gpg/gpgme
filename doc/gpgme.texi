@@ -5630,7 +5630,9 @@ An error code describing the reason why the key was found invalid.
 The function @code{gpgme_op_decrypt} decrypts the ciphertext in the
 data object @var{cipher} or, if a file name is set on the data object,
 the ciphertext stored in the corresponding file.  The decrypted
-ciphertext is stored into the data object @var{plain}.
+ciphertext is stored into the data object @var{plain} or written to
+the file set with @code{gpgme_data_set_file_name} for the data object
+@var{plain}.
 
 The function returns the error code @code{GPG_ERR_NO_ERROR} if the
 ciphertext could be decrypted successfully, @code{GPG_ERR_INV_VALUE}
@@ -5846,7 +5848,9 @@ writable data object that will contain the plaintext after successful
 verification.  If a file name is set on the data object @var{sig} (or
 on the data object @var{signed_text}), then the data of the signature
 (resp. the data of the signed text) is not read from the data object
-but from the file with the given file name.
+but from the file with the given file name.  If a file name is set on
+the data object @var{plain} then the plaintext is not stored in the
+data object but it is written to a file with the given file name.
 
 The results of the individual signature verifications can be retrieved
 with @code{gpgme_op_verify_result}.

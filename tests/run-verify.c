@@ -236,6 +236,7 @@ show_usage (int ex)
          "  --repeat N       repeat the operation N times\n"
          "  --auto-key-retrieve\n"
          "  --auto-key-import\n"
+         "  --output FILE    write output to FILE instead of stdout\n"
          "  --archive        extract files from a signed archive FILE\n"
          "  --directory DIR  extract the files into the directory DIR\n"
          "  --diagnostics    print diagnostics\n"
@@ -254,6 +255,7 @@ main (int argc, char **argv)
   gpgme_verify_flags_t flags = 0;
   int print_status = 0;
   const char *sender = NULL;
+  const char *output = NULL;
   const char *directory = NULL;
   int auto_key_retrieve = 0;
   int auto_key_import = 0;
@@ -325,6 +327,14 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--auto-key-import"))
         {
           auto_key_import = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--output"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          output = *argv;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--archive"))
@@ -484,6 +494,23 @@ main (int argc, char **argv)
             }
         }
 
+      if (output && !(flags & GPGME_VERIFY_ARCHIVE))
+        {
+          err = gpgme_data_new (&out);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error allocating data object: %s\n",
+                       gpgme_strerror (err));
+              exit (1);
+            }
+          err = gpgme_data_set_file_name (out, output);
+          if (err)
+            {
+              fprintf (stderr, PGM ": error setting file name (out): %s\n",
+                      gpgme_strerror (err));
+              exit (1);
+            }
+        }
       if (directory && (flags & GPGME_VERIFY_ARCHIVE))
         {
           err = gpgme_data_new (&out);
