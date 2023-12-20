@@ -213,12 +213,4 @@ void QGpgMEEncryptJob::resultHook(const result_type &tuple)
     mResult = std::get<0>(tuple);
 }
 
-#if 0
-void QGpgMEEncryptJob::showErrorDialog(QWidget *parent, const QString &caption) const
-{
-    if (mResult.error() && !mResult.error().isCanceled()) {
-        MessageBox::error(parent, mResult, this, caption);
-    }
-}
-#endif
 #include "qgpgmeencryptjob.moc"

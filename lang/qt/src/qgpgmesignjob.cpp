@@ -161,13 +161,4 @@ void QGpgMESignJob::resultHook(const result_type &tuple)
     mResult = std::get<0>(tuple);
 }
 
-#if 0
-TODO port
-void QGpgMESignJob::showErrorDialog(QWidget *parent, const QString &caption) const
-{
-    if (mResult.error() && !mResult.error().isCanceled()) {
-        MessageBox::error(parent, mResult, this, caption);
-    }
-}
-#endif
 #include "qgpgmesignjob.moc"

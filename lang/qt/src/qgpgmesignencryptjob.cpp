@@ -201,19 +201,6 @@ std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std:
     return exec(signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, cipherText);
 }
 
-
-#if 0
-
-TODO port?
-void QGpgMESignEncryptJob::showErrorDialog(QWidget *parent, const QString &caption) const
-{
-    if ((mResult.first.error()  && !mResult.first.error().isCanceled()) ||
-            (mResult.second.error() && !mResult.second.error().isCanceled())) {
-        MessageBox::error(parent, mResult.first, mResult.second, this, caption);
-    }
-}
-#endif
-
 void QGpgMESignEncryptJob::resultHook(const result_type &tuple)
 {
     mResult = std::make_pair(std::get<0>(tuple), std::get<1>(tuple));
