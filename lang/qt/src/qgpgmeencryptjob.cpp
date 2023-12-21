@@ -40,13 +40,13 @@
 
 #include "qgpgmeencryptjob.h"
 
-#include "encryptjob_p.h"
-
 #include "dataprovider.h"
+#include "encryptjob_p.h"
+#include "util.h"
 
-#include "context.h"
-#include "encryptionresult.h"
-#include "data.h"
+#include <context.h>
+#include <data.h>
+#include <encryptionresult.h>
 
 #include <QBuffer>
 #include <QFileInfo>
@@ -72,11 +72,7 @@ public:
     ~QGpgMEEncryptJobPrivate() override = default;
 
 private:
-    GpgME::Error startIt() override
-    {
-        Q_ASSERT(!"Not supported by this Job class.");
-        return Error::fromCode(GPG_ERR_NOT_SUPPORTED);
-    }
+    GpgME::Error startIt() override;
 
     void startNow() override
     {
@@ -168,6 +164,44 @@ static QGpgMEEncryptJob::result_type encrypt_qba(Context *ctx, const std::vector
     return encrypt(ctx, nullptr, recipients, buffer, std::shared_ptr<QIODevice>(), eflags, outputIsBsse64Encoded, inputEncoding, fileName);
 }
 
+static QGpgMEEncryptJob::result_type encrypt_to_filename(Context *ctx,
+                                                         const std::vector<Key> &recipients,
+                                                         const QString &inputFilePath,
+                                                         const QString &outputFilePath,
+                                                         Context::EncryptionFlags flags)
+{
+    Data indata;
+#ifdef Q_OS_WIN
+    indata.setFileName(inputFilePath().toUtf8().constData());
+#else
+    indata.setFileName(QFile::encodeName(inputFilePath).constData());
+#endif
+
+    PartialFileGuard partFileGuard{outputFilePath};
+    if (partFileGuard.tempFileName().isEmpty()) {
+        return std::make_tuple(EncryptionResult{Error::fromCode(GPG_ERR_EEXIST)}, QByteArray{}, QString{}, Error{});
+    }
+
+    Data outdata;
+#ifdef Q_OS_WIN
+    outdata.setFileName(partFileGuard.tempFileName().toUtf8().constData());
+#else
+    outdata.setFileName(QFile::encodeName(partFileGuard.tempFileName()).constData());
+#endif
+
+    flags = static_cast<Context::EncryptionFlags>(flags | Context::EncryptFile);
+    const auto encryptionResult = ctx->encrypt(recipients, indata, outdata, flags);
+
+    if (!encryptionResult.error().code()) {
+        // the operation succeeded -> save the result under the requested file name
+        partFileGuard.commit();
+    }
+
+    Error ae;
+    const QString log = _detail::audit_log_as_html(ctx, ae);
+    return std::make_tuple(encryptionResult, QByteArray{}, log, ae);
+}
+
 Error QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust)
 {
     run(std::bind(&encrypt_qba, std::placeholders::_1, recipients, plainText,
@@ -211,6 +245,19 @@ EncryptionResult QGpgMEEncryptJob::exec(const std::vector<Key> &recipients, cons
 void QGpgMEEncryptJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);
+}
+
+GpgME::Error QGpgMEEncryptJobPrivate::startIt()
+{
+    if (m_inputFilePath.isEmpty() || m_outputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return encrypt_to_filename(ctx, m_recipients, m_inputFilePath, m_outputFilePath, m_encryptionFlags);
+    });
+
+    return {};
 }
 
 #include "qgpgmeencryptjob.moc"

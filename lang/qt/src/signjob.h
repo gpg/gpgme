@@ -70,6 +70,15 @@ namespace QGpgME
    will have scheduled it's own destruction with a call to
    QObject::deleteLater().
 
+   Alternatively, the job can be started with startIt() after setting
+   an input file and an output file and, optionally, signers or flags.
+   If the job is started this way then the backend reads the input and
+   writes the output directly from/to the specified input file and output
+   file. In this case the signature value of the result signal will always
+   be empty. This direct IO mode is currently only supported for OpenPGP.
+   Note that startIt() does not schedule the job's destruction if starting
+   the job failed.
+
    After result() is emitted, the SignJob will schedule it's own
    destruction by calling QObject::deleteLater().
 */
@@ -79,7 +88,46 @@ class QGPGME_EXPORT SignJob : public Job
 protected:
     explicit SignJob(QObject *parent);
 public:
-    ~SignJob();
+    ~SignJob() override;
+
+    /**
+     * Sets the keys to use for signing.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setSigners(const std::vector<GpgME::Key> &signers);
+    std::vector<GpgME::Key> signers() const;
+
+    /**
+     * Sets the path of the file to sign.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setInputFile(const QString &path);
+    QString inputFile() const;
+
+    /**
+     * Sets the path of the file to write the signing result to.
+     *
+     * Used if the job is started with startIt().
+     *
+     * \note If a file with this path exists, then the job will fail, i.e. you
+     * need to delete an existing file that shall be overwritten before you
+     * start the job.
+     */
+    void setOutputFile(const QString &path);
+    QString outputFile() const;
+
+    /**
+     * Sets the flags to use for signing.
+     *
+     * Defaults to \c SignFile.
+     *
+     * Used if the job is started with startIt(). The \c SignFile flag is
+     * always assumed set.
+     */
+    void setSigningFlags(GpgME::SignatureMode flags);
+    GpgME::SignatureMode signingFlags() const;
 
     /**
        Starts the signing operation. \a signers is the list of keys to

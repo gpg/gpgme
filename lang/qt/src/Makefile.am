@@ -65,6 +65,7 @@ qgpgme_sources = \
     signarchivejob.cpp \
     signencryptjob.cpp \
     signencryptarchivejob.cpp \
+    signjob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
     util.cpp \
     wkdrefreshjob.cpp
@@ -226,6 +227,7 @@ private_qgpgme_headers = \
     signarchivejob_p.h \
     signencryptjob_p.h \
     signencryptarchivejob_p.h \
+    signjob_p.h \
     threadedjobmixin.h \
     util.h \
     wkdrefreshjob_p.h

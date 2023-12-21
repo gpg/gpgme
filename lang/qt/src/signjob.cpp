@@ -1,8 +1,8 @@
 /*
-    signencryptjob_p.h
+    signjob.cpp
 
     This file is part of qgpgme, the Qt API binding for gpgme
-    Copyright (c) 2022,2023 g10 Code GmbH
+    Copyright (c) 2023 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
@@ -31,29 +31,68 @@
     your version.
 */
 
-#ifndef __QGPGME_SIGNENCRYPTJOB_P_H__
-#define __QGPGME_SIGNENCRYPTJOB_P_H__
+#ifdef HAVE_CONFIG_H
+ #include "config.h"
+#endif
 
-#include "job_p.h"
+#include "signjob.h"
+#include "signjob_p.h"
 
-#include <key.h>
+using namespace QGpgME;
 
-namespace QGpgME
+SignJob::SignJob(QObject *parent)
+    : Job{parent}
 {
-
-struct SignEncryptJobPrivate : public JobPrivate
-{
-    // used by start() functions
-    QString m_fileName;
-
-    // used by startIt()
-    std::vector<GpgME::Key> m_signers;
-    std::vector<GpgME::Key> m_recipients;
-    QString m_inputFilePath;
-    QString m_outputFilePath;
-    GpgME::Context::EncryptionFlags m_encryptionFlags = GpgME::Context::EncryptFile;
-};
-
 }
 
-#endif // __QGPGME_SIGNENCRYPTJOB_P_H__
+SignJob::~SignJob() = default;
+
+void SignJob::setSigners(const std::vector<GpgME::Key> &signers)
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    d->m_signers = signers;
+}
+
+std::vector<GpgME::Key> SignJob::signers() const
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    return d->m_signers;
+}
+
+void SignJob::setInputFile(const QString &path)
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    d->m_inputFilePath = path;
+}
+
+QString SignJob::inputFile() const
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    return d->m_inputFilePath;
+}
+
+void SignJob::setOutputFile(const QString &path)
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    d->m_outputFilePath = path;
+}
+
+QString SignJob::outputFile() const
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    return d->m_outputFilePath;
+}
+
+void SignJob::setSigningFlags(GpgME::SignatureMode flags)
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    d->m_signingFlags = static_cast<GpgME::SignatureMode>(flags | GpgME::SignFile);
+}
+
+GpgME::SignatureMode SignJob::signingFlags() const
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    return d->m_signingFlags;
+}
+
+#include "signjob.moc"

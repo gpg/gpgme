@@ -39,23 +39,52 @@
 #include "qgpgmesignjob.h"
 
 #include "dataprovider.h"
+#include "signjob_p.h"
+#include "util.h"
 
-#include "context.h"
-#include "signingresult.h"
-#include "data.h"
+#include <context.h>
+#include <data.h>
+#include <signingresult.h>
 
 #include <QBuffer>
-
+#include <QFile>
 
 #include <cassert>
 
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+
+class QGpgMESignJobPrivate : public SignJobPrivate
+{
+    QGpgMESignJob *q = nullptr;
+
+public:
+    QGpgMESignJobPrivate(QGpgMESignJob *qq)
+        : q{qq}
+    {
+    }
+
+    ~QGpgMESignJobPrivate() override = default;
+
+private:
+    GpgME::Error startIt() override;
+
+    void startNow() override
+    {
+        q->run();
+    }
+};
+
+}
+
 QGpgMESignJob::QGpgMESignJob(Context *context)
     : mixin_type(context),
       mOutputIsBase64Encoded(false)
 {
+    setJobPrivate(this, std::unique_ptr<QGpgMESignJobPrivate>{new QGpgMESignJobPrivate{this}});
     lateInitialization();
 }
 
@@ -137,6 +166,56 @@ static QGpgMESignJob::result_type sign_qba(Context *ctx,
     return sign(ctx, nullptr, signers, buffer, std::shared_ptr<QIODevice>(), mode, outputIsBsse64Encoded);
 }
 
+static QGpgMESignJob::result_type sign_to_filename(Context *ctx,
+                                                   const std::vector<Key> &signers,
+                                                   const QString &inputFilePath,
+                                                   const QString &outputFilePath,
+                                                   SignatureMode flags)
+{
+    Data indata;
+#ifdef Q_OS_WIN
+    indata.setFileName(inputFilePath().toUtf8().constData());
+#else
+    indata.setFileName(QFile::encodeName(inputFilePath).constData());
+#endif
+
+    PartialFileGuard partFileGuard{outputFilePath};
+    if (partFileGuard.tempFileName().isEmpty()) {
+        return std::make_tuple(SigningResult{Error::fromCode(GPG_ERR_EEXIST)},
+                               QByteArray{},
+                               QString{},
+                               Error{});
+    }
+
+    Data outdata;
+#ifdef Q_OS_WIN
+    outdata.setFileName(partFileGuard.tempFileName().toUtf8().constData());
+#else
+    outdata.setFileName(QFile::encodeName(partFileGuard.tempFileName()).constData());
+#endif
+
+    ctx->clearSigningKeys();
+    for (const Key &signer : signers) {
+        if (!signer.isNull()) {
+            if (const Error err = ctx->addSigningKey(signer)) {
+                return std::make_tuple(SigningResult{err}, QByteArray{}, QString{}, Error{});
+            }
+        }
+    }
+
+    flags = static_cast<SignatureMode>(flags | SignFile);
+    const auto signingResult = ctx->sign(indata, outdata, flags);
+
+    if (!signingResult.error().code()) {
+        // the operation succeeded -> save the result under the requested file name
+        partFileGuard.commit();
+    }
+
+    Error ae;
+    const QString log = _detail::audit_log_as_html(ctx, ae);
+    return std::make_tuple(signingResult, QByteArray{}, log, ae);
+}
+
 Error QGpgMESignJob::start(const std::vector<Key> &signers, const QByteArray &plainText, SignatureMode mode)
 {
     run(std::bind(&sign_qba, std::placeholders::_1, signers, plainText, mode, mOutputIsBase64Encoded));
@@ -159,6 +238,19 @@ SigningResult QGpgMESignJob::exec(const std::vector<Key> &signers, const QByteAr
 void QGpgMESignJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);
+}
+
+GpgME::Error QGpgMESignJobPrivate::startIt()
+{
+    if (m_inputFilePath.isEmpty() || m_outputFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return sign_to_filename(ctx, m_signers, m_inputFilePath, m_outputFilePath, m_signingFlags);
+    });
+
+    return {};
 }
 
 #include "qgpgmesignjob.moc"

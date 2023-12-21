@@ -35,15 +35,24 @@
 #define __QGPGME_ENCRYPTJOB_P_H__
 
 #include "job_p.h"
-#include "data.h"
+
+#include <data.h>
+#include <key.h>
 
 namespace QGpgME
 {
 
 struct EncryptJobPrivate : public JobPrivate
 {
+    // used by start() functions
     QString m_fileName;
     GpgME::Data::Encoding m_inputEncoding;
+
+    // used by startIt()
+    std::vector<GpgME::Key> m_recipients;
+    QString m_inputFilePath;
+    QString m_outputFilePath;
+    GpgME::Context::EncryptionFlags m_encryptionFlags = GpgME::Context::EncryptFile;
 };
 
 }
