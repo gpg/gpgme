@@ -44,7 +44,6 @@
 #include "keylistjob.h"
 #include "listallkeysjob.h"
 #include "decryptjob.h"
-#include "decryptverifyjob.h"
 #include "signkeyjob.h"
 #include "verifydetachedjob.h"
 #include "verifyopaquejob.h"
@@ -162,7 +161,6 @@ void QGpgME::Job::startNow()
 make_job_subclass(KeyListJob)
 make_job_subclass(ListAllKeysJob)
 make_job_subclass(DecryptJob)
-make_job_subclass(DecryptVerifyJob)
 make_job_subclass(SignKeyJob)
 make_job_subclass(VerifyDetachedJob)
 make_job_subclass(VerifyOpaqueJob)
@@ -197,7 +195,6 @@ make_job_subclass(SetPrimaryUserIDJob)
 #include "keylistjob.moc"
 #include "listallkeysjob.moc"
 #include "decryptjob.moc"
-#include "decryptverifyjob.moc"
 #include "signkeyjob.moc"
 #include "verifydetachedjob.moc"
 #include "verifyopaquejob.moc"

@@ -89,6 +89,7 @@ t_wkdlookup_SOURCES = t-wkdlookup.cpp $(support_src)
 t_import_SOURCES = t-import.cpp $(support_src)
 t_revokekey_SOURCES = t-revokekey.cpp $(support_src)
 t_setprimaryuserid_SOURCES = t-setprimaryuserid.cpp $(support_src)
+run_decryptverifyjob_SOURCES = run-decryptverifyjob.cpp
 run_decryptverifyarchivejob_SOURCES = run-decryptverifyarchivejob.cpp
 run_encryptarchivejob_SOURCES = run-encryptarchivejob.cpp
 run_encryptjob_SOURCES = run-encryptjob.cpp
@@ -113,6 +114,7 @@ noinst_PROGRAMS = \
 	t-trustsignatures t-changeexpiryjob t-wkdlookup t-import t-revokekey \
 	t-setprimaryuserid \
 	run-decryptverifyarchivejob \
+	run-decryptverifyjob \
 	run-encryptarchivejob \
 	run-encryptjob \
 	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob \

@@ -36,6 +36,7 @@ qgpgme_sources = \
     dataprovider.cpp \
     debug.cpp \
     decryptverifyarchivejob.cpp \
+    decryptverifyjob.cpp \
     encryptarchivejob.cpp \
     filelistdataprovider.cpp \
     job.cpp multideletejob.cpp qgpgmeadduseridjob.cpp \
@@ -180,6 +181,7 @@ private_qgpgme_headers = \
     changeexpiryjob_p.h \
     cleaner.h \
     decryptverifyarchivejob_p.h \
+    decryptverifyjob_p.h \
     encryptarchivejob_p.h \
     encryptjob_p.h \
     importjob_p.h \
