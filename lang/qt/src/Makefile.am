@@ -69,6 +69,7 @@ qgpgme_sources = \
     signjob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
     util.cpp \
+    verifyopaquejob.cpp \
     wkdrefreshjob.cpp
 
 # If you add one here make sure that you also add one in camelcase
@@ -232,6 +233,7 @@ private_qgpgme_headers = \
     signjob_p.h \
     threadedjobmixin.h \
     util.h \
+    verifyopaquejob_p.h \
     wkdrefreshjob_p.h
 
 qgpgme_moc_sources = \

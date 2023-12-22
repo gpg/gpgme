@@ -100,6 +100,7 @@ run_receivekeysjob_SOURCES = run-receivekeysjob.cpp
 run_refreshkeysjob_SOURCES = run-refreshkeysjob.cpp
 run_signarchivejob_SOURCES = run-signarchivejob.cpp
 run_signjob_SOURCES = run-signjob.cpp
+run_verifyopaquejob_SOURCES = run-verifyopaquejob.cpp
 run_wkdrefreshjob_SOURCES = run-wkdrefreshjob.cpp
 
 nodist_t_keylist_SOURCES = $(moc_files)
@@ -120,6 +121,7 @@ noinst_PROGRAMS = \
 	run-importjob run-exportjob run-receivekeysjob run-refreshkeysjob \
 	run-signarchivejob \
 	run-signjob \
+	run-verifyopaquejob \
 	run-wkdrefreshjob
 
 
