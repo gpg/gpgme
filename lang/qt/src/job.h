@@ -97,7 +97,10 @@ public:
 
     /** Starts the job.
      *
-     * Starts the job with the values set for the concrete job.
+     * Starts the job with the values set for the concrete job. If starting
+     * the job failed then you are responsible for destroying it. Therefore,
+     * it's recommended to store the job in a std::unique_ptr until it has
+     * been started successfully.
      */
     GpgME::Error startIt();
 
