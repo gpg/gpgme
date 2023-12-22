@@ -3775,6 +3775,8 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
     {
       /* Normal or cleartext signature.  */
       const char *output = gpgme_data_get_file_name (plaintext);
+      if (have_gpg_version (gpg, "2.1.16"))
+        err = add_arg (gpg, "--verify");
       err = add_arg (gpg, "--output");
       if (!err && output)
         err = add_arg (gpg, output);
