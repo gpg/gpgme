@@ -4355,6 +4355,11 @@ override this check.
 
 Request generation of keys that do not expire.
 
+@item GPGME_CREATE_ADSK
+@since{1.24.0}
+
+Add an ADSK to the key.
+
 @end table
 
 After the operation completed successfully, information about the
@@ -4429,6 +4434,10 @@ values for timestamps and thus can only encode dates up to the year
 
 @var{flags} takes the same values as described above for
 @code{gpgme_op_createkey}.
+
+If the @code{GPGME_CREATE_ADSK} flag is set, the subkey fingerprint
+given in the @code{algo} parameter is added as an ADSK
+to the key.
 
 After the operation completed successfully, information about the
 created key can be retrieved with @code{gpgme_op_genkey_result}.

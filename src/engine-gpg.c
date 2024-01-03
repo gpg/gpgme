@@ -2856,6 +2856,33 @@ gpg_adduid (engine_gpg_t gpg,
 
 
 static gpgme_error_t
+gpg_addadsk (engine_gpg_t gpg, gpgme_key_t key, const char *adskfpr)
+{
+  gpgme_error_t err;
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!adskfpr || !*adskfpr)
+    return gpg_error (GPG_ERR_INV_ARG);
+
+  if (!have_gpg_version (gpg, "2.4.1"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  err = add_arg (gpg, "--quick-add-adsk");
+  if (!err)
+    err = add_arg (gpg, "--");
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+  if (!err)
+    err = add_arg (gpg, adskfpr);
+  if (!err)
+    err = start (gpg);
+  return err;
+}
+
+
+static gpgme_error_t
 gpg_genkey (void *engine,
             const char *userid, const char *algo,
             unsigned long reserved, unsigned long expires,
@@ -2878,6 +2905,8 @@ gpg_genkey (void *engine,
    * !USERID &&  KEY          - Add a new subkey to KEY (gpg >= 2.1.14)
    *  USERID &&  KEY && !ALGO - Add a new user id to KEY (gpg >= 2.1.14).
    *                            or set a flag on a user id.
+   * !USERID &&  KEY &&  ALGO
+   *    &&  GPGME_CREATE_ADSK - Add ALGO as an ADSK to KEY.
    */
   if (help_data)
     {
@@ -2894,10 +2923,12 @@ gpg_genkey (void *engine,
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
   else if (userid && !key)
     err = gpg_createkey (gpg, userid, algo, expires, flags, extraflags);
-  else if (!userid && key)
+  else if (!userid && key && !(flags & GPGME_CREATE_ADSK))
     err = gpg_addkey (gpg, algo, expires, key, flags, extraflags);
   else if (userid && key && !algo)
     err = gpg_adduid (gpg, key, userid, extraflags);
+  else if (!userid && key && algo && (flags & GPGME_CREATE_ADSK))
+    err = gpg_addadsk (gpg, key, algo);
   else
     err = gpg_error (GPG_ERR_INV_VALUE);
 

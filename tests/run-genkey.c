@@ -215,6 +215,7 @@ show_usage (int ex)
          "   for revuid: FPR    USERID\n"
          "   for setexpire: FPR EXPIRE [SUBFPRS]\n"
          "   for set-primary: FPR    USERID\n"
+         "   for addadsk: FPR   ADSKFPR\n"
          "Options:\n"
          "  --addkey         add a subkey to the key with FPR\n"
          "  --adduid         add a user id to the key with FPR\n"
@@ -222,6 +223,7 @@ show_usage (int ex)
          "  --set-primary    set the primary key flag on USERID\n"
          "  --setexpire      set the expiration time of the key FPR\n"
          "                   or of its subkeys SUBFPRS\n"
+         "  --addadsk        add the subkey with ADSKFPR to the key FPR\n"
          "  --verbose        run in verbose mode\n"
          "  --status         print status lines from the backend\n"
          "  --progress       print progress info\n"
@@ -250,6 +252,7 @@ main (int argc, char **argv)
   int revuid = 0;
   int setpri = 0;
   int setexpire = 0;
+  int addadsk = 0;
   const char *userid;
   const char *algo = NULL;
   const char *newuserid = NULL;
@@ -260,6 +263,7 @@ main (int argc, char **argv)
   int i;
   size_t n;
   char *subfprs_buffer = NULL;
+  char *adskfpr = NULL;
 
   if (argc)
     { argc--; argv++; }
@@ -281,6 +285,7 @@ main (int argc, char **argv)
           revuid = 0;
           setpri = 0;
           setexpire = 0;
+          addadsk = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--adduid"))
@@ -290,6 +295,7 @@ main (int argc, char **argv)
           revuid = 0;
           setpri = 0;
           setexpire = 0;
+          addadsk = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--revuid"))
@@ -299,6 +305,7 @@ main (int argc, char **argv)
           revuid = 1;
           setpri = 0;
           setexpire = 0;
+          addadsk = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--set-primary"))
@@ -308,6 +315,7 @@ main (int argc, char **argv)
           revuid = 0;
           setpri = 1;
           setexpire = 0;
+          addadsk = 0;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--setexpire"))
@@ -317,6 +325,17 @@ main (int argc, char **argv)
           revuid = 0;
           setpri = 0;
           setexpire = 1;
+          addadsk = 0;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--addadsk"))
+        {
+          addkey = 0;
+          adduid = 0;
+          revuid = 0;
+          setpri = 0;
+          setexpire = 0;
+          addadsk = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--verbose"))
@@ -412,6 +431,13 @@ main (int argc, char **argv)
           subfprs = NULL;
         }
     }
+  else if (addadsk)
+    {
+      if (argc != 2)
+        show_usage(1);
+      userid = argv[0];
+      adskfpr = argv[1];
+    }
   else
     {
       if (!argc || argc > 4)
@@ -445,7 +471,7 @@ main (int argc, char **argv)
     }
 
 
-  if (addkey || adduid || revuid || setpri || setexpire)
+  if (addkey || adduid || revuid || setpri || setexpire || addadsk)
     {
       gpgme_key_t akey;
 
@@ -507,6 +533,17 @@ main (int argc, char **argv)
               exit (1);
             }
         }
+      else if (addadsk)
+        {
+          err = gpgme_op_createsubkey(ctx, akey, adskfpr, 0, 0,
+                                      GPGME_CREATE_ADSK);
+          if (err)
+            {
+              fprintf (stderr, PGM ": gpgme_op_createsubkey failed: %s\n",
+                      gpg_strerror (err));
+              exit (1);
+            }
+        }
 
       gpgme_key_unref (akey);
     }
@@ -521,7 +558,7 @@ main (int argc, char **argv)
         }
     }
 
-  if (!setpri && !setexpire)
+  if (!setpri && !setexpire && !addadsk)
     {
       result = gpgme_op_genkey_result (ctx);
       if (!result)
