@@ -39,10 +39,14 @@
 #include "qgpgmeverifydetachedjob.h"
 
 #include "dataprovider.h"
+#include "util.h"
+#include "verifydetachedjob_p.h"
 
-#include "context.h"
-#include "verificationresult.h"
-#include "data.h"
+#include <QFile>
+
+#include <context.h>
+#include <data.h>
+#include <verificationresult.h>
 
 #include <cassert>
 
@@ -50,9 +54,36 @@
 using namespace QGpgME;
 using namespace GpgME;
 
+namespace
+{
+
+class QGpgMEVerifyDetachedJobPrivate : public VerifyDetachedJobPrivate
+{
+    QGpgMEVerifyDetachedJob *q = nullptr;
+
+public:
+    QGpgMEVerifyDetachedJobPrivate(QGpgMEVerifyDetachedJob *qq)
+        : q{qq}
+    {
+    }
+
+    ~QGpgMEVerifyDetachedJobPrivate() override = default;
+
+private:
+    GpgME::Error startIt() override;
+
+    void startNow() override
+    {
+        q->run();
+    }
+};
+
+}
+
 QGpgMEVerifyDetachedJob::QGpgMEVerifyDetachedJob(Context *context)
     : mixin_type(context)
 {
+    setJobPrivate(this, std::unique_ptr<QGpgMEVerifyDetachedJobPrivate>{new QGpgMEVerifyDetachedJobPrivate{this}});
     lateInitialization();
 }
 
@@ -98,6 +129,31 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached_qba(Context *ctx, co
 
 }
 
+static QGpgMEVerifyDetachedJob::result_type verify_from_filename(Context *ctx,
+                                                                 const QString &signatureFilePath,
+                                                                 const QString &signedFilePath)
+{
+    Data signatureData;
+#ifdef Q_OS_WIN
+    signatureData.setFileName(signatureFilePath().toUtf8().constData());
+#else
+    signatureData.setFileName(QFile::encodeName(signatureFilePath).constData());
+#endif
+
+    Data signedData;
+#ifdef Q_OS_WIN
+    signedData.setFileName(signedFilePath().toUtf8().constData());
+#else
+    signedData.setFileName(QFile::encodeName(signedFilePath).constData());
+#endif
+
+    const auto verificationResult = ctx->verifyDetachedSignature(signatureData, signedData);
+
+    Error ae;
+    const QString log = _detail::audit_log_as_html(ctx, ae);
+    return std::make_tuple(verificationResult, log, ae);
+}
+
 Error QGpgMEVerifyDetachedJob::start(const QByteArray &signature, const QByteArray &signedData)
 {
     run(std::bind(&verify_detached_qba, std::placeholders::_1, signature, signedData));
@@ -117,10 +173,22 @@ GpgME::VerificationResult QGpgME::QGpgMEVerifyDetachedJob::exec(const QByteArray
     return mResult;
 }
 
-//PENDING(marc) implement showErrorDialog()
-
 void QGpgME::QGpgMEVerifyDetachedJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);
 }
+
+GpgME::Error QGpgMEVerifyDetachedJobPrivate::startIt()
+{
+    if (m_signatureFilePath.isEmpty() || m_signedFilePath.isEmpty()) {
+        return Error::fromCode(GPG_ERR_INV_VALUE);
+    }
+
+    q->run([=](Context *ctx) {
+        return verify_from_filename(ctx, m_signatureFilePath, m_signedFilePath);
+    });
+
+    return {};
+}
+
 #include "qgpgmeverifydetachedjob.moc"

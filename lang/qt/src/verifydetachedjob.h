@@ -36,7 +36,6 @@
 #define __KLEO_VERIFYDETACHEDJOB_H__
 
 #include "job.h"
-#include "qgpgme_export.h"
 
 #include <memory>
 
@@ -62,6 +61,12 @@ namespace QGpgME
    VerifyDetachedJob instance will have scheduled it's own
    destruction with a call to QObject::deleteLater().
 
+   Alternatively, the job can be started with startIt() after setting
+   the input files. If the job is started this way then the backend reads the
+   input directly from the specified input files. This direct IO mode is
+   currently only supported for OpenPGP. Note that startIt() does not schedule
+   the job's destruction if starting the job failed.
+
    After result() is emitted, the VerifyDetachedJob will schedule
    it's own destruction by calling QObject::deleteLater().
 */
@@ -71,7 +76,23 @@ class QGPGME_EXPORT VerifyDetachedJob : public Job
 protected:
     explicit VerifyDetachedJob(QObject *parent);
 public:
-    ~VerifyDetachedJob();
+    ~VerifyDetachedJob() override;
+
+    /**
+     * Sets the path of the file containing the signature to verify.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setSignatureFile(const QString &path);
+    QString signatureFile() const;
+
+    /**
+     * Sets the path of the file containing the signed data to verify.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setSignedFile(const QString &path);
+    QString signedFile() const;
 
     /**
        Starts the verification operation. \a signature contains the

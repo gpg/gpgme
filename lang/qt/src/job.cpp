@@ -45,7 +45,6 @@
 #include "listallkeysjob.h"
 #include "decryptjob.h"
 #include "signkeyjob.h"
-#include "verifydetachedjob.h"
 #include "keygenerationjob.h"
 #include "importjob.h"
 #include "importfromkeyserverjob.h"
@@ -161,7 +160,6 @@ make_job_subclass(KeyListJob)
 make_job_subclass(ListAllKeysJob)
 make_job_subclass(DecryptJob)
 make_job_subclass(SignKeyJob)
-make_job_subclass(VerifyDetachedJob)
 make_job_subclass(KeyGenerationJob)
 make_job_subclass(AbstractImportJob)
 make_job_subclass_ext(ImportJob, AbstractImportJob)
@@ -194,7 +192,6 @@ make_job_subclass(SetPrimaryUserIDJob)
 #include "listallkeysjob.moc"
 #include "decryptjob.moc"
 #include "signkeyjob.moc"
-#include "verifydetachedjob.moc"
 #include "keygenerationjob.moc"
 #include "abstractimportjob.moc"
 #include "importjob.moc"

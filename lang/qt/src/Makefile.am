@@ -69,6 +69,7 @@ qgpgme_sources = \
     signjob.cpp \
     dn.cpp cryptoconfig.cpp wkdlookupresult.cpp \
     util.cpp \
+    verifydetachedjob.cpp \
     verifyopaquejob.cpp \
     wkdrefreshjob.cpp
 
@@ -233,6 +234,7 @@ private_qgpgme_headers = \
     signjob_p.h \
     threadedjobmixin.h \
     util.h \
+    verifydetachedjob_p.h \
     verifyopaquejob_p.h \
     wkdrefreshjob_p.h
 
