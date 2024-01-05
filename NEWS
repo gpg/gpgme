@@ -7,10 +7,56 @@ Noteworthy changes in version 1.23.3 (unrelease)
  * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and gpgme_op_sign*
    to allow reading the input data directly from a file.  [T6550]
 
+ * qt: Allow reading the data to decrypt/encrypt/sign/verify directly from
+   files.  [T6550]
+
+ * qt: Allow writing the decrypted/encrypted/signed/verified data directly
+   to files.  [T6550]
+
  * Interface changes relative to the 1.23.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- GPGME_ENCRYPT_FILE              NEW.
- GPGME_SIG_MODE_FILE             NEW.
+ GPGME_ENCRYPT_FILE                      NEW.
+ GPGME_SIG_MODE_FILE                     NEW.
+ cpp: Context::EncryptFile               NEW.
+ cpp: SignatureMode::SignFile            NEW.
+ qt: DecryptVerifyJob::setInputFile      NEW.
+ qt: DecryptVerifyJob::inputFile         NEW.
+ qt: DecryptVerifyJob::setOutputFile     NEW.
+ qt: DecryptVerifyJob::outputFile        NEW.
+ qt: EncryptJob::setRecipients           NEW.
+ qt: EncryptJob::recipients              NEW.
+ qt: EncryptJob::setInputFile            NEW.
+ qt: EncryptJob::inputFile               NEW.
+ qt: EncryptJob::setOutputFile           NEW.
+ qt: EncryptJob::outputFile              NEW.
+ qt: EncryptJob::setEncryptionFlags      NEW.
+ qt: EncryptJob::encryptionFlags         NEW.
+ qt: SignEncryptJob::setSigners          NEW.
+ qt: SignEncryptJob::signers             NEW.
+ qt: SignEncryptJob::setRecipients       NEW.
+ qt: SignEncryptJob::recipients          NEW.
+ qt: SignEncryptJob::setInputFile        NEW.
+ qt: SignEncryptJob::inputFile           NEW.
+ qt: SignEncryptJob::setOutputFile       NEW.
+ qt: SignEncryptJob::outputFile          NEW.
+ qt: SignEncryptJob::setEncryptionFlags  NEW.
+ qt: SignEncryptJob::encryptionFlags     NEW.
+ qt: SignJob::setSigners                 NEW.
+ qt: SignJob::signers                    NEW.
+ qt: SignJob::setInputFile               NEW.
+ qt: SignJob::inputFile                  NEW.
+ qt: SignJob::setOutputFile              NEW.
+ qt: SignJob::outputFile                 NEW.
+ qt: SignJob::setSigningFlags            NEW.
+ qt: SignJob::signingFlags               NEW.
+ qt: VerifyDetachedJob::setSignatureFile NEW.
+ qt: VerifyDetachedJob::signatureFile    NEW.
+ qt: VerifyDetachedJob::setSignedFile    NEW.
+ qt: VerifyDetachedJob::signedFile       NEW.
+ qt: VerifyOpaqueJob::setInputFile       NEW.
+ qt: VerifyOpaqueJob::inputFile          NEW.
+ qt: VerifyOpaqueJob::setOutputFile      NEW.
+ qt: VerifyOpaqueJob::outputFile         NEW.
 
 
 Noteworthy changes in version 1.23.2 (2023-11-28)
