@@ -71,6 +71,7 @@ public:
                         unsigned int flags = 0) override;
     void startRevokeSignature(const GpgME::Key &key, const GpgME::Key &signingKey,
                               const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) override;
+    void startAddAdsk(const GpgME::Key &key, const char *adsk) override;
 };
 
 }

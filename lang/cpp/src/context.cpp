@@ -1799,6 +1799,16 @@ Error Context::startRevokeSignature(const Key &key, const Key &signingKey,
                  key.impl(), signingKey.impl(), uids.c_str(), flags));
 }
 
+Error Context::addAdsk(const Key &k, const char *adsk)
+{
+    return Error(d->lasterr = gpgme_op_createsubkey(d->ctx, k.impl(), adsk, 0, 0, GPGME_CREATE_ADSK));
+}
+
+Error Context::startAddAdsk(const Key &k, const char *adsk)
+{
+    return Error(d->lasterr = gpgme_op_createsubkey_start(d->ctx, k.impl(), adsk, 0, 0, GPGME_CREATE_ADSK));
+}
+
 Error Context::setFlag(const char *name, const char *value)
 {
   return Error(d->lasterr = gpgme_set_ctx_flag(d->ctx, name, value));

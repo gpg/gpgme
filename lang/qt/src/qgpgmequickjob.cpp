@@ -109,6 +109,12 @@ static QGpgMEQuickJob::result_type revokeSignatureWorker(Context *ctx,
     return std::make_tuple(err, QString(), Error());
 }
 
+static QGpgMEQuickJob::result_type addAdskWorker(Context *ctx, const Key &key, const char *adsk)
+{
+    const auto err = ctx->addAdsk(key, adsk);
+    return std::make_tuple(err, QString(), Error());
+}
+
 void QGpgMEQuickJob::startCreate(const QString &uid,
                  const char *algo,
                  const QDateTime &expires,
@@ -140,6 +146,11 @@ void QGpgMEQuickJob::startAddSubkey(const GpgME::Key &key, const char *algo,
 void QGpgMEQuickJob::startRevokeSignature(const Key &key, const Key &signingKey, const std::vector<UserID> &userIds)
 {
     run(std::bind(&revokeSignatureWorker, std::placeholders::_1, key, signingKey, userIds));
+}
+
+void QGpgMEQuickJob::startAddAdsk(const GpgME::Key &key, const char *adsk)
+{
+    run(std::bind(&addAdskWorker, std::placeholders::_1, key, adsk));
 }
 
 #include "qgpgmequickjob.moc"

@@ -324,6 +324,9 @@ public:
     Error startRevokeSignature(const Key &key, const Key &signingKey,
                                const std::vector<UserID> &userIds = std::vector<UserID>());
 
+    Error addAdsk(const Key &k, const char *adsk);
+    Error startAddAdsk(const Key &k, const char *adsk);
+
     // using TofuInfo::Policy
     Error setTofuPolicy(const Key &k, unsigned int policy);
     Error setTofuPolicyStart(const Key &k, unsigned int policy);

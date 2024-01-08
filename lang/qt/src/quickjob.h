@@ -85,6 +85,9 @@ public:
     virtual void startRevokeSignature(const GpgME::Key &key, const GpgME::Key &signingKey,
                                       const std::vector<GpgME::UserID> &userIds = std::vector<GpgME::UserID>()) = 0;
 
+    /** Start --quick-add-adsk */
+    virtual void startAddAdsk(const GpgME::Key &key, const char *adsk) = 0;
+
 Q_SIGNALS:
     void result(const GpgME::Error &error,
                 const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
