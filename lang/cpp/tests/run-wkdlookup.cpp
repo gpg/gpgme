@@ -103,19 +103,22 @@ main (int argc, char **argv)
             return -1;
         }
 
-        const auto dirmngrProgram = GpgME::dirInfo("dirmngr-name");
-        const auto homedir = GpgME::dirInfo("homedir");
+        const auto gpgconfProgram = GpgME::dirInfo("gpgconf-name");
+        // replace backslashes with forward slashes in homedir to work around bug T6833
+        std::string homedir{GpgME::dirInfo("homedir")};
+        std::replace(homedir.begin(), homedir.end(), '\\', '/');
         const char *argv[] = {
-            dirmngrProgram,
+            gpgconfProgram,
             "--homedir",
-            homedir,
-            "--daemon",
+            homedir.c_str(),
+            "--launch",
+            "dirmngr",
             NULL
         };
         auto ignoreIO = Data{Data::null};
-        err = spawnCtx->spawnAsync(dirmngrProgram, argv,
-                                   ignoreIO, ignoreIO, ignoreIO,
-                                   Context::SpawnDetached);
+        err = spawnCtx->spawn(gpgconfProgram, argv,
+                              ignoreIO, ignoreIO, ignoreIO,
+                              Context::SpawnDetached);
         if (err) {
             std::cerr << "Failed to start dirmngr (Error: " << err.asString() << ")\n";
             return -1;
