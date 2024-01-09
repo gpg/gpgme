@@ -65,11 +65,13 @@ static GpgME::Error startDirmngr(Context *assuanCtx)
         qCDebug(QGPGME_LOG) << "Error: Failed to get context for spawn engine (" << err.asString() << ")";
     }
     const auto gpgconfProgram = GpgME::dirInfo("gpgconf-name");
-    const auto homedir = GpgME::dirInfo("homedir");
+    // replace backslashes with forward slashes in homedir to work around bug T6833
+    std::string homedir{GpgME::dirInfo("homedir")};
+    std::replace(homedir.begin(), homedir.end(), '\\', '/');
     const char *argv[] = {
         gpgconfProgram,
         "--homedir",
-        homedir,
+        homedir.c_str(),
         "--launch",
         "dirmngr",
         NULL
