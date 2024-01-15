@@ -2601,7 +2601,7 @@ addresses is not supported.
 
 The function @code{gpgme_set_sender} specifies the sender address for
 use in sign and verify operations.  @var{address} is expected to be
-the ``addr-spec'' part of an address but my also be a complete mailbox
+the ``addr-spec'' part of an address but may also be a complete mailbox
 address, in which case this function extracts the ``addr-spec'' from
 it.  Using @code{NULL} for @var{address} clears the sender address.
 
