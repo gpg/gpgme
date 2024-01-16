@@ -274,8 +274,11 @@ EOD`
 		fi
 
 		# Make the versioning information available to the compiler
-		AC_DEFINE_UNQUOTED([HAVE_PYTHON], ["$ac_python_version"],
-                                   [If available, contains the Python version number currently in use.])
+
+		# JW: We don't need it and it interferes with the hack
+		# to detect multiple Python versions
+		#AC_DEFINE_UNQUOTED([HAVE_PYTHON], ["$ac_python_version"],
+		#                   [If available, contains the Python version number currently in use.])
 
 		# First, the library directory:
 		ac_python_libdir=`cat<<EOD | $PYTHON -
