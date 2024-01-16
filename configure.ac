@@ -607,7 +607,7 @@ if test "$found_py" = "1"; then
 	    unset am_cv_python_pythondir
 	    unset am_cv_python_pyexecdir
 	    AM_PATH_PYTHON(mym4pythonver, [
-		AX_PYTHON_DEVEL
+		AX_PYTHON_DEVEL([], [true])
 		if test "$PYTHON_VERSION"; then
 			PYTHONS="$(echo $PYTHONS $PYTHON)"
 			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
