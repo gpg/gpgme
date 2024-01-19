@@ -72,12 +72,6 @@ public:
 
     /* form VerifyOpaqueJob */
     GpgME::VerificationResult exec(const QByteArray &signedData, QByteArray &plainData) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::VerificationResult mResult;
 };
 
 }

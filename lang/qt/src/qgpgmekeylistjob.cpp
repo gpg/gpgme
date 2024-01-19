@@ -55,8 +55,8 @@ using namespace QGpgME;
 using namespace GpgME;
 
 QGpgMEKeyListJob::QGpgMEKeyListJob(Context *context)
-    : mixin_type(context),
-      mResult(), mSecretOnly(false)
+    : mixin_type(context)
+    , mSecretOnly(false)
 {
     lateInitialization();
 }
@@ -151,7 +151,6 @@ KeyListResult QGpgMEKeyListJob::exec(const QStringList &patterns, bool secretOnl
 
 void QGpgMEKeyListJob::resultHook(const result_type &tuple)
 {
-    mResult = std::get<0>(tuple);
     for (const Key &key : std::get<1>(tuple)) {
         Q_EMIT nextKey(key);
     }

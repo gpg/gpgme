@@ -69,12 +69,6 @@ public:
 
     /* from ImportFromKeyserverJob */
     GpgME::ImportResult exec(const std::vector<GpgME::Key> &keys) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::ImportResult mResult;
 };
 
 }

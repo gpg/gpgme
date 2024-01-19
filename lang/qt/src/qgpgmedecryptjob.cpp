@@ -122,13 +122,7 @@ GpgME::DecryptionResult QGpgME::QGpgMEDecryptJob::exec(const QByteArray &cipherT
 {
     const result_type r = decrypt_qba(context(), cipherText);
     plainText = std::get<1>(r);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgMEDecryptJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
+    return std::get<0>(r);
 }
 
 #include "qgpgmedecryptjob.moc"

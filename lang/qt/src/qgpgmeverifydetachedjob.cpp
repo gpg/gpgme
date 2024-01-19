@@ -169,13 +169,7 @@ GpgME::VerificationResult QGpgME::QGpgMEVerifyDetachedJob::exec(const QByteArray
         const QByteArray &signedData)
 {
     const result_type r = verify_detached_qba(context(), signature, signedData);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgME::QGpgMEVerifyDetachedJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
+    return std::get<0>(r);
 }
 
 GpgME::Error QGpgMEVerifyDetachedJobPrivate::startIt()

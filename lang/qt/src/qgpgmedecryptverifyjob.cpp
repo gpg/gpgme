@@ -195,13 +195,7 @@ QGpgME::QGpgMEDecryptVerifyJob::exec(const QByteArray &cipherText, QByteArray &p
 {
     const result_type r = decrypt_verify_qba(context(), cipherText);
     plainText = std::get<2>(r);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgMEDecryptVerifyJob::resultHook(const result_type &tuple)
-{
-    mResult = std::make_pair(std::get<0>(tuple), std::get<1>(tuple));
+    return std::make_pair(std::get<0>(r), std::get<1>(r));
 }
 
 GpgME::Error QGpgMEDecryptVerifyJobPrivate::startIt()

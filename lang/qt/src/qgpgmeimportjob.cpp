@@ -156,8 +156,7 @@ Error QGpgMEImportJob::start(const QByteArray &certData)
 GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
 {
     const result_type r = import_qba(context(), keyData, importFilter(), keyOrigin(), keyOriginUrl());
-    resultHook(r);
-    return mResult;
+    return std::get<0>(r);
 }
 
 Error QGpgMEImportJob::startLater(const QByteArray &certData)
@@ -166,8 +165,4 @@ Error QGpgMEImportJob::startLater(const QByteArray &certData)
     return {};
 }
 
-void QGpgME::QGpgMEImportJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
-}
 #include "qgpgmeimportjob.moc"

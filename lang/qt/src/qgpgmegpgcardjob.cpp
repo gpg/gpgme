@@ -122,7 +122,6 @@ Error QGpgMEGpgCardJob::exec(const QStringList &cmds, QString &std_out, QString 
         return Error(make_error(GPG_ERR_NOT_SUPPORTED));
     }
     const result_type r = do_work(cmds, cardpath);
-    resultHook(r);
     std_out = std::get<0>(r);
     std_err = std::get<1>(r);
     exitCode = std::get<2>(r);

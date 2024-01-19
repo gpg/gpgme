@@ -74,12 +74,7 @@ Error QGpgMEImportFromKeyserverJob::start(const std::vector<Key> &keys)
 GpgME::ImportResult QGpgME::QGpgMEImportFromKeyserverJob::exec(const std::vector<Key> &keys)
 {
     const result_type r = importfromkeyserver(context(), keys);
-    resultHook(r);
-    return mResult;
+    return std::get<0>(r);
 }
 
-void QGpgME::QGpgMEImportFromKeyserverJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
-}
 #include "qgpgmeimportfromkeyserverjob.moc"

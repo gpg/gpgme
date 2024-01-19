@@ -184,13 +184,7 @@ GpgME::VerificationResult QGpgME::QGpgMEVerifyOpaqueJob::exec(const QByteArray &
 {
     const result_type r = verify_opaque_qba(context(), signedData);
     plainText = std::get<1>(r);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgME::QGpgMEVerifyOpaqueJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
+    return std::get<0>(r);
 }
 
 GpgME::Error QGpgMEVerifyOpaqueJobPrivate::startIt()

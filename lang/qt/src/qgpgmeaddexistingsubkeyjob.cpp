@@ -90,7 +90,6 @@ Error QGpgMEAddExistingSubkeyJob::start(const GpgME::Key &key, const GpgME::Subk
 Error QGpgMEAddExistingSubkeyJob::exec(const GpgME::Key &key, const GpgME::Subkey &subkey)
 {
     const result_type r = add_subkey(context(), key, subkey);
-    resultHook(r);
     return std::get<0>(r);
 }
 

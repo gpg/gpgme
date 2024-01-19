@@ -242,18 +242,12 @@ std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std:
 {
     const result_type r = sign_encrypt_qba(context(), signers, recipients, plainText, eflags, mOutputIsBase64Encoded, fileName());
     cipherText = std::get<2>(r);
-    resultHook(r);
-    return mResult;
+    return std::make_pair(std::get<0>(r), std::get<1>(r));
 }
 
 std::pair<SigningResult, EncryptionResult> QGpgMESignEncryptJob::exec(const std::vector<Key> &signers, const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
 {
     return exec(signers, recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, cipherText);
-}
-
-void QGpgMESignEncryptJob::resultHook(const result_type &tuple)
-{
-    mResult = std::make_pair(std::get<0>(tuple), std::get<1>(tuple));
 }
 
 GpgME::Error QGpgMESignEncryptJobPrivate::startIt()

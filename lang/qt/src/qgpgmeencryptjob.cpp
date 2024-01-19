@@ -228,8 +228,7 @@ EncryptionResult QGpgMEEncryptJob::exec(const std::vector<Key> &recipients, cons
 {
     const result_type r = encrypt_qba(context(), recipients, plainText, eflags, mOutputIsBase64Encoded, inputEncoding(), fileName());
     cipherText = std::get<1>(r);
-    resultHook(r);
-    return mResult;
+    return std::get<0>(r);
 }
 
 void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shared_ptr<QIODevice> &plainText, const std::shared_ptr<QIODevice> &cipherText, bool alwaysTrust)
@@ -240,11 +239,6 @@ void QGpgMEEncryptJob::start(const std::vector<Key> &recipients, const std::shar
 EncryptionResult QGpgMEEncryptJob::exec(const std::vector<Key> &recipients, const QByteArray &plainText, bool alwaysTrust, QByteArray &cipherText)
 {
     return exec(recipients, plainText, alwaysTrust ? Context::AlwaysTrust : Context::None, cipherText);
-}
-
-void QGpgMEEncryptJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
 }
 
 GpgME::Error QGpgMEEncryptJobPrivate::startIt()

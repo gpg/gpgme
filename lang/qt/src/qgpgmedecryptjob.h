@@ -73,12 +73,6 @@ public:
     /* from DecryptJob */
     GpgME::DecryptionResult exec(const QByteArray &cipherText,
                                  QByteArray &plainText) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::DecryptionResult mResult;
 };
 
 }

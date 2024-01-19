@@ -109,12 +109,8 @@ public:
     /* from SignEncryptJob */
     void setOutputIsBase64Encoded(bool on) override;
 
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
 private:
     bool mOutputIsBase64Encoded;
-    std::pair<GpgME::SigningResult, GpgME::EncryptionResult> mResult;
 };
 
 }

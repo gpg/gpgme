@@ -80,7 +80,6 @@ public:
     /* from ThreadedJobMixin */
     void resultHook(const result_type &result) override;
 private:
-    GpgME::KeyListResult mResult;
     bool mSecretOnly;
 };
 

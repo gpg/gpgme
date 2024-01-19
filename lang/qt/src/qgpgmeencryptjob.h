@@ -97,12 +97,8 @@ public:
     /* from EncryptJob */
     void setOutputIsBase64Encoded(bool on) override;
 
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
 private:
     bool mOutputIsBase64Encoded;
-    GpgME::EncryptionResult mResult;
 };
 
 }

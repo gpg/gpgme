@@ -119,7 +119,6 @@ Error QGpgMERevokeKeyJob::exec(const GpgME::Key &key,
     Error err = check_arguments(key, reason, description);
     if (!err) {
         const result_type r = revoke_key(context(), key, reason, description);
-        resultHook(r);
         err = std::get<0>(r);
     }
     return err;

@@ -73,12 +73,6 @@ public:
     /* from VerifyDetachedJob */
     GpgME::VerificationResult exec(const QByteArray &signature,
                                    const QByteArray &signedData) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::VerificationResult mResult;
 };
 
 }

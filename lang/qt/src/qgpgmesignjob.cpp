@@ -231,13 +231,7 @@ SigningResult QGpgMESignJob::exec(const std::vector<Key> &signers, const QByteAr
 {
     const result_type r = sign_qba(context(), signers, plainText, mode, mOutputIsBase64Encoded);
     signature = std::get<1>(r);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgMESignJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
+    return std::get<0>(r);
 }
 
 GpgME::Error QGpgMESignJobPrivate::startIt()

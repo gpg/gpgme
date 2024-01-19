@@ -67,13 +67,7 @@ Error QGpgMEReceiveKeysJob::start(const QStringList &keyIds)
 GpgME::ImportResult QGpgME::QGpgMEReceiveKeysJob::exec(const QStringList &keyIds)
 {
     const result_type r = importfromkeyserver(context(), keyIds);
-    resultHook(r);
-    return mResult;
-}
-
-void QGpgME::QGpgMEReceiveKeysJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
+    return std::get<0>(r);
 }
 
 #include "qgpgmereceivekeysjob.moc"

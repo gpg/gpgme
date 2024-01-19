@@ -134,7 +134,6 @@ Error QGpgMEKeyForMailboxJob::start(const QString &mailbox, bool canEncrypt)
 KeyListResult QGpgMEKeyForMailboxJob::exec(const QString &mailbox, bool canEncrypt, Key &key, UserID &uid)
 {
     const result_type r = do_work(context(), mailbox, canEncrypt);
-    resultHook(r);
     key = std::get<1>(r);
     uid = std::get<2>(r);
     return std::get<0>(r);

@@ -73,12 +73,6 @@ public:
     GpgME::ImportResult exec(const QByteArray &keyData) override;
 
     GpgME::Error startLater(const QByteArray &keyData) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    GpgME::ImportResult mResult;
 };
 
 }

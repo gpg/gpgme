@@ -92,8 +92,7 @@ private:
 }
 
 QGpgMEListAllKeysJob::QGpgMEListAllKeysJob(Context *context)
-    : mixin_type(context),
-      mResult()
+    : mixin_type(context)
 {
     setJobPrivate(this, std::unique_ptr<QGpgMEListAllKeysJobPrivate>{new QGpgMEListAllKeysJobPrivate{this}});
     lateInitialization();
@@ -234,15 +233,9 @@ Error QGpgMEListAllKeysJob::start(bool mergeKeys)
 KeyListResult QGpgMEListAllKeysJob::exec(std::vector<Key> &pub, std::vector<Key> &sec, bool mergeKeys)
 {
     const result_type r = list_keys(context(), mergeKeys, options());
-    resultHook(r);
     pub = std::get<1>(r);
     sec = std::get<2>(r);
     return std::get<0>(r);
-}
-
-void QGpgMEListAllKeysJob::resultHook(const result_type &tuple)
-{
-    mResult = std::get<0>(tuple);
 }
 
 #include "qgpgmelistallkeysjob.moc"

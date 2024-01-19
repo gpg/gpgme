@@ -78,12 +78,6 @@ public:
     /* from DecryptVerifyJob */
     std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>
     exec(const QByteArray &cipherText, QByteArray &plainText) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
-private:
-    std::pair<GpgME::DecryptionResult, GpgME::VerificationResult> mResult;
 };
 
 }

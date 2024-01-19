@@ -74,12 +74,6 @@ public:
 
     /* from ListAllKeysJob */
     GpgME::KeyListResult exec(std::vector<GpgME::Key> &pub, std::vector<GpgME::Key> &sec, bool mergeKeys) override;
-
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &result) override;
-
-private:
-    GpgME::KeyListResult mResult;
 };
 
 }

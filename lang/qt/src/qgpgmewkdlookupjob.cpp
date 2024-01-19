@@ -178,7 +178,6 @@ Error QGpgMEWKDLookupJob::start(const QString &email)
 WKDLookupResult QGpgMEWKDLookupJob::exec(const QString &email)
 {
     const result_type r = lookup_keys(context(), email);
-    resultHook(r);
     return std::get<0>(r);
 }
 

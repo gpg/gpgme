@@ -89,11 +89,7 @@ public:
     /* from SignJob */
     void setOutputIsBase64Encoded(bool on) override;
 
-    /* from ThreadedJobMixin */
-    void resultHook(const result_type &r) override;
-
 private:
-    GpgME::SigningResult mResult;
     bool mOutputIsBase64Encoded;
 };
 
