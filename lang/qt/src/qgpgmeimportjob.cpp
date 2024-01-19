@@ -166,8 +166,6 @@ Error QGpgMEImportJob::startLater(const QByteArray &certData)
     return {};
 }
 
-// PENDING(marc) implement showErrorDialog()
-
 void QGpgME::QGpgMEImportJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);

@@ -78,8 +78,6 @@ GpgME::ImportResult QGpgME::QGpgMEImportFromKeyserverJob::exec(const std::vector
     return mResult;
 }
 
-// PENDING(marc) implement showErrorDialog()
-
 void QGpgME::QGpgMEImportFromKeyserverJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);

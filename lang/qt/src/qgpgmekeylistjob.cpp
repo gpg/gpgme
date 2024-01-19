@@ -161,17 +161,5 @@ void QGpgMEKeyListJob::addMode(KeyListMode mode)
 {
     context()->addKeyListMode(mode);
 }
-#if 0
-void QGpgMEKeyListJob::showErrorDialog(QWidget *parent, const QString &caption) const
-{
-    if (!mResult.error() || mResult.error().isCanceled()) {
-        return;
-    }
-    const QString msg = i18n("<qt><p>An error occurred while fetching "
-                             "the keys from the backend:</p>"
-                             "<p><b>%1</b></p></qt>",
-                             QString::fromLocal8Bit(mResult.error().asString()));
-    KMessageBox::error(parent, msg, caption);
-}
-#endif
+
 #include "qgpgmekeylistjob.moc"

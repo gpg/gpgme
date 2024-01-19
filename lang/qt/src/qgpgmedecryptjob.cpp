@@ -126,8 +126,6 @@ GpgME::DecryptionResult QGpgME::QGpgMEDecryptJob::exec(const QByteArray &cipherT
     return mResult;
 }
 
-//PENDING(marc) implement showErrorDialog()
-
 void QGpgMEDecryptJob::resultHook(const result_type &tuple)
 {
     mResult = std::get<0>(tuple);

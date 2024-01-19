@@ -245,17 +245,4 @@ void QGpgMEListAllKeysJob::resultHook(const result_type &tuple)
     mResult = std::get<0>(tuple);
 }
 
-#if 0
-void QGpgMEListAllKeysJob::showErrorDialog(QWidget *parent, const QString &caption) const
-{
-    if (!mResult.error() || mResult.error().isCanceled()) {
-        return;
-    }
-    const QString msg = i18n("<qt><p>An error occurred while fetching "
-                             "the keys from the backend:</p>"
-                             "<p><b>%1</b></p></qt>",
-                             QString::fromLocal8Bit(mResult.error().asString()));
-    KMessageBox::error(parent, msg, caption);
-}
-#endif
 #include "qgpgmelistallkeysjob.moc"
