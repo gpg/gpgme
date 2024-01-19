@@ -88,6 +88,14 @@ Error QGpgMEExportJob::start(const QStringList &patterns)
     return Error();
 }
 
+Error QGpgMEExportJob::exec(const QStringList &patterns, QByteArray &data)
+{
+    auto mode = m_exportMode | m_additionalExportModeFlags;
+    const result_type r = export_qba(context(), patterns, mode);
+    data = std::get<1>(r);
+    return std::get<0>(r);
+}
+
 void QGpgMEExportJob::setExportFlags(unsigned int flags)
 {
     m_additionalExportModeFlags = flags;
@@ -97,4 +105,10 @@ void QGpgMEExportJob::setExportFlags(unsigned int flags)
 void ExportJob::setExportFlags(unsigned int)
 {
 }
+
+/* For ABI compat not pure virtual. */
+GpgME::Error ExportJob::exec(const QStringList &patterns, QByteArray &data)
+{
+}
+
 #include "qgpgmeexportjob.moc"

@@ -69,6 +69,7 @@ public:
 
     /* from ExportJob */
     GpgME::Error start(const QStringList &patterns) override;
+    GpgME::Error exec(const QStringList &patterns, QByteArray &data) override;
 
 private:
     unsigned int m_exportMode;

@@ -80,6 +80,12 @@ public:
 
     virtual void setExportFlags (unsigned int flags);
 
+    /**
+     * Starts the export operation synchronously, otherwise behaves identical to
+     * ExportJob::start
+     */
+    virtual GpgME::Error exec(const QStringList &patterns, QByteArray &data);
+
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QByteArray &keyData, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
 };
