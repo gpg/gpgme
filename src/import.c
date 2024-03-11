@@ -37,6 +37,9 @@ typedef struct
 {
   struct _gpgme_op_import_result result;
 
+  /* The error code from a FAILURE status line or 0.  */
+  gpg_error_t failure_code;
+
   /* A pointer to the next pointer of the last import status in the
      list.  This makes appending new imports painless while preserving
      the order.  */
@@ -307,6 +310,17 @@ _gpgme_import_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
       if (*opd->lastp)
         opd->lastp = &(*opd->lastp)->next;
+      break;
+
+    case GPGME_STATUS_FAILURE:
+      if (!opd->failure_code
+          || gpg_err_code (opd->failure_code) == GPG_ERR_GENERAL)
+        opd->failure_code = _gpgme_parse_failure (args);
+      break;
+
+    case GPGME_STATUS_EOF:
+      if (opd->failure_code)
+        return opd->failure_code;
       break;
 
     default:
