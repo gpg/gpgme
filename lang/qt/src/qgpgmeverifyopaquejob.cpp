@@ -140,7 +140,7 @@ static QGpgMEVerifyOpaqueJob::result_type verify_from_filename(Context *ctx,
 {
     Data indata;
 #ifdef Q_OS_WIN
-    indata.setFileName(inputFilePath().toUtf8().constData());
+    indata.setFileName(inputFilePath.toUtf8().constData());
 #else
     indata.setFileName(QFile::encodeName(inputFilePath).constData());
 #endif

@@ -174,7 +174,7 @@ static QGpgMESignJob::result_type sign_to_filename(Context *ctx,
 {
     Data indata;
 #ifdef Q_OS_WIN
-    indata.setFileName(inputFilePath().toUtf8().constData());
+    indata.setFileName(inputFilePath.toUtf8().constData());
 #else
     indata.setFileName(QFile::encodeName(inputFilePath).constData());
 #endif

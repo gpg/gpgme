@@ -135,14 +135,14 @@ static QGpgMEVerifyDetachedJob::result_type verify_from_filename(Context *ctx,
 {
     Data signatureData;
 #ifdef Q_OS_WIN
-    signatureData.setFileName(signatureFilePath().toUtf8().constData());
+    signatureData.setFileName(signatureFilePath.toUtf8().constData());
 #else
     signatureData.setFileName(QFile::encodeName(signatureFilePath).constData());
 #endif
 
     Data signedData;
 #ifdef Q_OS_WIN
-    signedData.setFileName(signedFilePath().toUtf8().constData());
+    signedData.setFileName(signedFilePath.toUtf8().constData());
 #else
     signedData.setFileName(QFile::encodeName(signedFilePath).constData());
 #endif

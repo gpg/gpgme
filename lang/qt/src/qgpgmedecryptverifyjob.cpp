@@ -148,7 +148,7 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify_from_filename(Context 
 {
     Data indata;
 #ifdef Q_OS_WIN
-    indata.setFileName(inputFilePath().toUtf8().constData());
+    indata.setFileName(inputFilePath.toUtf8().constData());
 #else
     indata.setFileName(QFile::encodeName(inputFilePath).constData());
 #endif
