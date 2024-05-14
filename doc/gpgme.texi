@@ -589,10 +589,16 @@ mode (@code{_LARGEFILE64_SOURCE}).
 @cindex automake
 @cindex autoconf
 
-It is much easier if you use GNU Automake instead of writing your own
-Makefiles.  If you do that you do not have to worry about finding and
-invoking the @command{pkg-config} script at all.  @acronym{GPGME}
-provides an extension to Automake that does all the work for you.
+You can simply use @code{PKG_CHECK_MODULES} macro with @command{pkg-config}:
+@example
+PKG_CHECK_MODULES([GPGME], [gpgme >= 1.23.1])
+@end example
+
+Alternatively, instead of using @command{pkg-config}, for building on
+an environment with no pkg-config, @acronym{GPGME} provides an
+extension to Automake that does all the work for you.  Please note
+that it is required to have gpgrt-config from libgpg-error installed
+in this case.
 
 @c A simple macro for optional variables.
 @macro ovar{varname}
