@@ -88,9 +88,13 @@ gpg-sample.stamp: $(private_keys)
         done
 	echo x > ./gpg-sample.stamp
 
-pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc gpg-sample.stamp
+pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
+	       $(top_srcdir)/tests/json/key-with-revokers.asc \
+	       gpg-sample.stamp
 	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
                --import $(top_srcdir)/tests/gpg/pubdemo.asc
+	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
+		--import $(top_srcdir)/tests/json/key-with-revokers.asc
 	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
 		--import $(top_srcdir)/tests/gpg/secdemo.asc
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all

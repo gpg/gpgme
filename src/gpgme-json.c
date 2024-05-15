@@ -1024,6 +1024,24 @@ subkey_to_json (gpgme_subkey_t sub)
   return result;
 }
 
+/* Create a revocation key json object */
+static cjson_t
+revocation_key_to_json (gpgme_revocation_key_t revkey)
+{
+  cjson_t result = xjson_CreateObject ();
+
+  xjson_AddBoolToObject (result, "sensitive", revkey->sensitive);
+
+  xjson_AddStringToObject0 (result, "fingerprint", revkey->fpr);
+  xjson_AddStringToObject0 (result, "pubkey_algo_name",
+                            gpgme_pubkey_algo_name (revkey->pubkey_algo));
+
+  xjson_AddNumberToObject (result, "pubkey_algo", revkey->pubkey_algo);
+  xjson_AddNumberToObject (result, "key_class", revkey->key_class);
+
+  return result;
+}
+
 /* Create a key json object */
 static cjson_t
 key_to_json (gpgme_key_t key)
@@ -1073,6 +1091,16 @@ key_to_json (gpgme_key_t key)
         cJSON_AddItemToArray (uid_array, uid_to_json (uid));
 
       xjson_AddItemToObject (result, "userids", uid_array);
+    }
+
+  /* Revocation keys */
+  if (key->revocation_keys)
+    {
+      gpgme_revocation_key_t revkey;
+      cjson_t array = xjson_CreateArray ();
+      for (revkey = key->revocation_keys; revkey; revkey = revkey->next)
+        cJSON_AddItemToArray (array, revocation_key_to_json (revkey));
+      xjson_AddItemToObject (result, "revocation_keys", array);
     }
 
   return result;
