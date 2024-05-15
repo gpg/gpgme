@@ -308,9 +308,11 @@ main (int argc, char **argv)
       gpgme_user_id_t uid;
       gpgme_tofu_info_t ti;
       gpgme_key_sig_t ks;
+      gpgme_revocation_key_t revkey;
       int nuids;
       int nsub;
       int nsigs;
+      int nrevkeys;
 
       printf ("keyid   : %s\n", key->subkeys?nonnull (key->subkeys->keyid):"?");
       printf ("can_cap : %s%s%s%s\n",
@@ -423,6 +425,13 @@ main (int argc, char **argv)
               printf (" trust value: %u\n", ks->trust_value);
               printf (" trust scope: %s\n", nonnull (ks->trust_scope));
             }
+        }
+
+      revkey = key->revocation_keys;
+      for (nrevkeys=0; revkey; revkey = revkey->next, nrevkeys++)
+        {
+          printf ("revkey%2d: %s\n", nrevkeys, revkey->fpr);
+          printf ("   class: %x\n", revkey->key_class);
         }
 
       putchar ('\n');

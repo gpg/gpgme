@@ -603,7 +603,7 @@ keylist_colon_handler (void *priv, char *line)
   enum
     {
       RT_NONE, RT_SIG, RT_UID, RT_TFS, RT_SUB, RT_PUB, RT_FPR, RT_FP2, RT_GRP,
-      RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK
+      RT_SSB, RT_SEC, RT_CRT, RT_CRS, RT_REV, RT_SPK, RT_RVK
     }
   rectype = RT_NONE;
 #define NR_FIELDS 20
@@ -669,6 +669,8 @@ keylist_colon_handler (void *priv, char *line)
     rectype = RT_SSB;
   else if (!strcmp (field[0], "spk") && key)
     rectype = RT_SPK;
+  else if (!strcmp (field[0], "rvk") && key)
+    rectype = RT_RVK;
   else
     rectype = RT_NONE;
 
@@ -1124,6 +1126,39 @@ keylist_colon_handler (void *priv, char *line)
 	      keysig->_last_notation = notation;
 	    }
 	}
+      break;
+
+    case RT_RVK:
+      /* Ignore revocation keys without fingerprint */
+      if (fields >= 10 && *field[9])
+        {
+          gpgme_revocation_key_t revkey = NULL;
+
+          err = _gpgme_key_add_rev_key (key, field[9]);
+          if (err)
+            return err;
+
+          revkey = key->_last_revkey;
+          assert (revkey);
+
+          /* Field 4 has the public key algorithm.  */
+          {
+            int i = atoi (field[3]);
+            if (i >= 1 && i < 128)
+              revkey->pubkey_algo = _gpgme_map_pk_algo (i, ctx->protocol);
+          }
+
+          /* Field 11 has the class (eg, 0x40 means sensitive).  */
+          if (fields >= 11 && field[10][0] && field[10][1])
+            {
+              int key_class = _gpgme_hextobyte (field[10]);
+              if (key_class >= 0)
+                revkey->key_class = key_class;
+              if (field[10][2] == 's')
+                revkey->sensitive = 1;
+            }
+        }
+      break;
 
     case RT_NONE:
       /* Unknown record.  */

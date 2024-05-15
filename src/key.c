@@ -304,6 +304,35 @@ _gpgme_key_add_sig (gpgme_key_t key, char *src)
 }
 
 
+gpgme_error_t
+_gpgme_key_add_rev_key (gpgme_key_t key, const char *src)
+{
+  gpgme_revocation_key_t revkey;
+  int src_len = src ? strlen (src) : 0;
+
+  assert (key);
+  /* malloc a buffer for the revocation key and the fingerprint.  */
+  revkey = malloc (sizeof (*revkey) + src_len + 1);
+  if (!revkey)
+    return gpg_error_from_syserror ();
+  memset (revkey, 0, sizeof *revkey);
+
+  revkey->fpr = ((char *) revkey) + sizeof (*revkey);
+  if (src)
+    memcpy (revkey->fpr, src, src_len + 1);
+  else
+    revkey->fpr[0] = '\0';
+
+  if (!key->revocation_keys)
+    key->revocation_keys = revkey;
+  if (key->_last_revkey)
+    key->_last_revkey->next = revkey;
+  key->_last_revkey = revkey;
+
+  return 0;
+}
+
+
 /* Acquire a reference to KEY.  */
 void
 gpgme_key_ref (gpgme_key_t key)
@@ -324,6 +353,7 @@ gpgme_key_unref (gpgme_key_t key)
 {
   gpgme_user_id_t uid;
   gpgme_subkey_t subkey;
+  gpgme_revocation_key_t revkey;
 
   if (!key)
     return;
@@ -390,6 +420,14 @@ gpgme_key_unref (gpgme_key_t key)
       free (uid->uidhash);
       free (uid);
       uid = next_uid;
+    }
+
+  revkey = key->revocation_keys;
+  while (revkey)
+    {
+      gpgme_revocation_key_t next = revkey->next;
+      free (revkey);
+      revkey = next;
     }
 
   free (key->issuer_serial);

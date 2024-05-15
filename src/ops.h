@@ -145,6 +145,7 @@ gpgme_error_t _gpgme_key_add_subkey (gpgme_key_t key,
 gpgme_error_t _gpgme_key_append_name (gpgme_key_t key,
                                       const char *src, int convert);
 gpgme_key_sig_t _gpgme_key_add_sig (gpgme_key_t key, char *src);
+gpgme_error_t _gpgme_key_add_rev_key (gpgme_key_t key, const char *src);
 
 
 
