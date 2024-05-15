@@ -409,12 +409,13 @@ main (int argc, char *argv[])
   err = gpgme_data_new (&text);
   fail_if_err (err);
   err = gpgme_op_verify (ctx, sig, NULL, text);
-  fail_if_err (err);
-  result = gpgme_op_verify_result (ctx);
-  check_result (result, 1, 0, GPGME_SIGSUM_KEY_MISSING,
-                "D0C16E12A3A5E7857F6FC1D30F5BE42A23C91CE3",
-		GPG_ERR_NO_PUBKEY, 0, GPGME_VALIDITY_UNKNOWN);
-  check_data (text, "bar\n");
+  if (gpgme_err_code (err) != GPG_ERR_BAD_DATA)
+    {
+      fprintf (stderr, "%s:%i: "
+               "Garbage following clear-signed message not detected\n",
+	       PGM, __LINE__);
+      exit (1);
+    }
 
   gpgme_data_release (sig);
   gpgme_data_release (text);
