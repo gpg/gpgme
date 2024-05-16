@@ -9,7 +9,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# Last-changed: 2024-05-14
+# Last-changed: 2024-05-16
 
 
 dnl
@@ -184,7 +184,8 @@ dnl config script does not match the host specification the script
 dnl is added to the gpg_config_script_warn variable.
 dnl
 AC_DEFUN([AM_PATH_GPGME],
-[ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
+[ AC_REQUIRE([AC_CANONICAL_HOST])dnl
+  AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
   tmp=ifelse([$1], ,1:0.4.2,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
      req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
