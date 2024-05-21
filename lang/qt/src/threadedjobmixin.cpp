@@ -98,8 +98,7 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
         } else if ((err = ctx->getAuditLog(data, CMSAuditLogFlags))) {
             return QString::fromLocal8Bit(err.asString());
         }
-        const QByteArray ba = dp.data();
-        return QString::fromUtf8(ba.data(), ba.size());
+        return QString::fromUtf8(dp.data());
     }
 
     return QStringLiteral("Unsupported protocol for Audit Log");
