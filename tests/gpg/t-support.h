@@ -53,6 +53,17 @@
     }								\
   while (0)
 
+#define fail_with_syserr()			         	\
+  do								\
+    {								\
+      gpg_error_t _err = gpgme_err_code_from_errno (errno);	\
+      fprintf (stderr, PGM": file %s line %d: <%s> %s\n",	\
+               __FILE__, __LINE__, gpgme_strsource (_err),	\
+              gpgme_strerror (_err));			        \
+      exit (1);						        \
+    }								\
+  while (0)
+
 
 #ifdef GPGRT_HAVE_MACRO_FUNCTION
 void GPGRT_ATTR_NORETURN
@@ -131,9 +142,9 @@ check_data (gpgme_data_t dh, const char *expected)
 
   ret = gpgme_data_seek (dh, 0, SEEK_SET);
   if (ret)
-    fail_if_err (gpgme_err_code_from_errno (errno));
+    fail_with_syserr ();
   if ((ret = gpgme_data_read (dh, buf, BUF_SIZE)) < 0)
-    fail_if_err (gpgme_err_code_from_errno (errno));
+    fail_with_syserr ();
   buf[ret] = 0;
   if (ret != expectedlen || strncmp (buf, expected, expectedlen))
     {

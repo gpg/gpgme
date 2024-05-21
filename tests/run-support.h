@@ -48,6 +48,18 @@
   while (0)
 
 
+#define fail_with_syserr()			         	\
+  do								\
+    {								\
+      gpg_error_t _err = gpgme_err_code_from_errno (errno);	\
+      fprintf (stderr, PGM": file %s line %d: <%s> %s\n",	\
+               __FILE__, __LINE__, gpgme_strsource (_err),	\
+              gpgme_strerror (_err));			        \
+      exit (1);						        \
+    }								\
+  while (0)
+
+
 static const char *
 nonnull (const char *s)
 {
@@ -196,4 +208,3 @@ print_import_result (gpgme_import_result_t r)
           r->not_imported,
           r->skipped_v3_keys);
 }
-
