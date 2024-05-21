@@ -122,6 +122,37 @@ std::vector<Subkey> Key::subkeys() const
     return v;
 }
 
+RevocationKey Key::revocationKey(unsigned int index) const
+{
+    return RevocationKey(key, index);
+}
+
+unsigned int Key::numRevocationKeys() const
+{
+    if (!key) {
+        return 0;
+    }
+    unsigned int count = 0;
+    for (auto revkey = key->revocation_keys; revkey; revkey = revkey->next) {
+        ++count;
+    }
+    return count;
+}
+
+std::vector<RevocationKey> Key::revocationKeys() const
+{
+    if (!key) {
+        return std::vector<RevocationKey>();
+    }
+
+    std::vector<RevocationKey> v;
+    v.reserve(numRevocationKeys());
+    for (auto revkey = key->revocation_keys; revkey; revkey = revkey->next) {
+        v.push_back(RevocationKey(key, revkey));
+    }
+    return v;
+}
+
 Key::OwnerTrust Key::ownerTrust() const
 {
     if (!key) {
@@ -1256,6 +1287,68 @@ bool UserID::Signature::isBad() const
     return isNull() || isExpired() || isInvalid();
 }
 
+//
+//
+// class RevocationKey
+//
+//
+
+static gpgme_revocation_key_t find_revkey(const shared_gpgme_key_t &key, unsigned int idx)
+{
+    if (key) {
+        for (gpgme_revocation_key_t s = key->revocation_keys; s; s = s->next, --idx) {
+            if (idx == 0) {
+                return s;
+            }
+        }
+    }
+    return nullptr;
+}
+
+static gpgme_revocation_key_t verify_revkey(const shared_gpgme_key_t &key, gpgme_revocation_key_t revkey)
+{
+    if (key) {
+        for (gpgme_revocation_key_t s = key->revocation_keys; s; s = s->next) {
+            if (s == revkey) {
+                return revkey;
+            }
+        }
+    }
+    return nullptr;
+}
+
+RevocationKey::RevocationKey() : key(), revkey(nullptr) {}
+
+RevocationKey::RevocationKey(const shared_gpgme_key_t &k, unsigned int idx)
+    : key(k), revkey(find_revkey(k, idx))
+{
+}
+
+RevocationKey::RevocationKey(const shared_gpgme_key_t &k, gpgme_revocation_key_t sk)
+    : key(k), revkey(verify_revkey(k, sk))
+{
+}
+
+Key RevocationKey::parent() const
+{
+    return Key(key);
+}
+
+const char *RevocationKey::fingerprint() const
+{
+    return revkey ? revkey->fpr : nullptr;
+}
+
+bool RevocationKey::isSensitive() const
+{
+    return revkey ? revkey->sensitive : false;
+}
+
+int RevocationKey::algorithm() const
+{
+    return revkey ? revkey->pubkey_algo : 0;
+}
+
 std::ostream &operator<<(std::ostream &os, const UserID &uid)
 {
     os << "GpgME::UserID(";
@@ -1325,6 +1418,20 @@ std::ostream &operator<<(std::ostream &os, const Key &key)
         const std::vector<Subkey> subkeys = key.subkeys();
         std::copy(subkeys.begin(), subkeys.end(),
                   std::ostream_iterator<Subkey>(os, "\n"));
+        os << " revocationKeys:\n";
+        const std::vector<RevocationKey> revkeys = key.revocationKeys();
+        std::copy(revkeys.begin(), revkeys.end(),
+                  std::ostream_iterator<RevocationKey>(os, "\n"));
+    }
+    return os << ')';
+}
+
+std::ostream &operator<<(std::ostream &os, const RevocationKey &revkey)
+{
+    os << "GpgME::RevocationKey(";
+    if (!revkey.isNull()) {
+        os << "\n fingerprint: " << protect(revkey.fingerprint())
+           << "\n isSensitive: " << revkey.isSensitive();
     }
     return os << ')';
 }

@@ -44,6 +44,7 @@ class Context;
 class Subkey;
 class UserID;
 class TofuInfo;
+class RevocationKey;
 
 typedef std::shared_ptr< std::remove_pointer<gpgme_key_t>::type > shared_gpgme_key_t;
 
@@ -99,6 +100,10 @@ public:
 
     std::vector<UserID> userIDs() const;
     std::vector<Subkey> subkeys() const;
+
+    RevocationKey revocationKey(unsigned int index) const;
+    unsigned int numRevocationKeys() const;
+    std::vector<RevocationKey> revocationKeys() const;
 
     bool isRevoked() const;
     bool isExpired() const;
@@ -547,9 +552,53 @@ private:
     gpgme_key_sig_t sig;
 };
 
+//
+// class RevocationKey
+//
+
+class GPGMEPP_EXPORT RevocationKey
+{
+public:
+    RevocationKey();
+    RevocationKey(const shared_gpgme_key_t &key, gpgme_revocation_key_t revkey);
+    RevocationKey(const shared_gpgme_key_t &key, unsigned int idx);
+
+    // Rule of Zero
+
+    void swap(RevocationKey &other)
+    {
+        using std::swap;
+        swap(this->key, other.key);
+        swap(this->revkey, other.revkey);
+    }
+
+    bool isNull() const
+    {
+        return !key || !revkey;
+    }
+
+    Key parent() const;
+
+    const char *fingerprint() const;
+
+    bool isSensitive() const;
+
+    int algorithm() const;
+
+private:
+    shared_gpgme_key_t key;
+    gpgme_revocation_key_t revkey;
+};
+
+inline void swap(RevocationKey& v1, RevocationKey& v2)
+{
+    v1.swap(v2);
+}
+
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const UserID &uid);
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Subkey &subkey);
 GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const Key &key);
+GPGMEPP_EXPORT std::ostream &operator<<(std::ostream &os, const RevocationKey &revkey);
 
 } // namespace GpgME
 
