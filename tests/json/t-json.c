@@ -260,7 +260,7 @@ test_contains (cjson_t needle, cjson_t hay)
           fprintf (stderr, "Depth mismatch. Expected child for %s\n",
                    nonnull (needle->string));
         }
-      if (test_contains (needle->child, hay->child))
+      else if (test_contains (needle->child, hay->child))
         {
           int found = 0;
           cjson_t hit;
