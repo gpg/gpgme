@@ -107,8 +107,9 @@ void ExportJob::setExportFlags(unsigned int)
 }
 
 /* For ABI compat not pure virtual. */
-GpgME::Error ExportJob::exec(const QStringList &patterns, QByteArray &data)
+GpgME::Error ExportJob::exec(const QStringList &, QByteArray &)
 {
+    return Error();
 }
 
 #include "qgpgmeexportjob.moc"
