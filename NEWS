@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.23.3 (unrelease)
+Noteworthy changes in version 1.24.0 (unrelease)
 -------------------------------------------------
 
  * Extended gpgme_op_decrypt* and gpgme_op_verify* to allow writing the
