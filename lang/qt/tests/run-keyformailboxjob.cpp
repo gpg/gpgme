@@ -30,10 +30,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "keyformailboxjob.h"
 #include "keylistjob.h"
 #include "protocol.h"

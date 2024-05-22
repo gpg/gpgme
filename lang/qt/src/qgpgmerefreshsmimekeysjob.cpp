@@ -34,10 +34,6 @@
 
 #define MAX_CMD_LENGTH 32768
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "qgpgmerefreshsmimekeysjob.h"
 #include "util.h"
 

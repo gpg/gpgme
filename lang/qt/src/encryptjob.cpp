@@ -31,10 +31,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "encryptjob.h"
 #include "encryptjob_p.h"
 

@@ -32,10 +32,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "qgpgmedeletejob.h"
 
 #include <gpgme++/context.h>

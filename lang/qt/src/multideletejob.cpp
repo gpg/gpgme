@@ -30,10 +30,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "multideletejob.h"
 #include "protocol.h"
 #include "deletejob.h"

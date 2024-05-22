@@ -31,10 +31,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "listallkeysjob.h"
 #include "listallkeysjob_p.h"
 

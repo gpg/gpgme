@@ -31,10 +31,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "verifydetachedjob.h"
 #include "verifydetachedjob_p.h"
 

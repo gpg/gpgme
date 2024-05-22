@@ -34,10 +34,6 @@
     your version.
 */
 
-#ifdef HAVE_CONFIG_H
- #include "config.h"
-#endif
-
 #include "qgpgmeexportjob.h"
 
 #include "dataprovider.h"
