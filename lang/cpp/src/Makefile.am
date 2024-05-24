@@ -88,6 +88,14 @@ else
 libsuffix=.so
 endif
 
+copied_headers = $(gpgmepp_headers:%=gpgme++/%) $(interface_headers:%=gpgme++/%)
+
+$(copied_headers): Makefile.am
+	mkdir -p $(builddir)/gpgme++/interfaces
+	echo -n "#include \"$(srcdir)" > "$@"
+	echo -n "$@" | sed "s/gpgme++//" >> "$@"
+	echo "\"" >> "$@"
+
 if HAVE_W32_SYSTEM
 GpgmeppConfig.cmake: GpgmeppConfig-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
@@ -115,5 +123,8 @@ install-data-local: install-cmake-files
 
 uninstall-local: uninstall-cmake-files
 
+BUILT_SOURCES = $(copied_headers)
+
 CLEANFILES = GpgmeppConfig.cmake GpgmeppConfigVersion.cmake \
-             gpgmepp_version.h GpgmeppConfig.cmake.in
+             gpgmepp_version.h GpgmeppConfig.cmake.in \
+             $(copied_headers)
