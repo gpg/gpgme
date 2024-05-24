@@ -38,11 +38,7 @@
 #include "job.h"
 #include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-# include "key.h"
-#else
-# include <gpgme++/key.h>
-#endif
+#include <gpgme++/key.h>
 
 #include <QtCore/QStringList>
 

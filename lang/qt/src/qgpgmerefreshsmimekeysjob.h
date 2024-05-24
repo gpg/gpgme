@@ -36,11 +36,8 @@
 #define __QGPGME_QGPGMEREFRESHSMIMEKEYSJOB_H__
 
 #include "refreshkeysjob.h"
-#ifdef BUILDING_QGPGME
-# include "context.h"
-#else
-#include "gpgme++/context.h"
-#endif
+
+#include <gpgme++/context.h>
 
 #include <QStringList>
 #include <QProcess>

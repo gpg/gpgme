@@ -41,7 +41,7 @@
 
 #include <QString>
 
-#include <error.h>
+#include <gpgme++/error.h>
 
 #include <numeric>
 

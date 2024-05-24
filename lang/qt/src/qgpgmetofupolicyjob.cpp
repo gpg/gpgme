@@ -35,9 +35,9 @@
 
 #include "qgpgmetofupolicyjob.h"
 
-#include "context.h"
-#include "key.h"
-#include "tofuinfo.h"
+#include <gpgme++/context.h>
+#include <gpgme++/key.h>
+#include <gpgme++/tofuinfo.h>
 
 
 using namespace QGpgME;

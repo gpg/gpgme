@@ -38,16 +38,12 @@
 #define __KLEO_ENCRYPTJOB_H__
 
 #include "job.h"
-#include "data.h"
+#include <gpgme++/data.h>
 
 #include <memory>
 #include <vector>
 
-#ifdef BUILDING_QGPGME
-# include "context.h"
-#else
-# include <gpgme++/context.h>
-#endif
+#include <gpgme++/context.h>
 
 class QByteArray;
 class QIODevice;

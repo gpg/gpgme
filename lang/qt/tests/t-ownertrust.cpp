@@ -39,7 +39,7 @@
 #include <QSignalSpy>
 #include "keylistjob.h"
 #include "protocol.h"
-#include "keylistresult.h"
+#include <gpgme++/keylistresult.h>
 #include "changeownertrustjob.h"
 
 #include "t-support.h"

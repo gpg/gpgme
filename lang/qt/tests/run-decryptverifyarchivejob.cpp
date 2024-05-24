@@ -41,9 +41,9 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include <context.h>
-#include <decryptionresult.h>
-#include <verificationresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/decryptionresult.h>
+#include <gpgme++/verificationresult.h>
 
 #include <iostream>
 

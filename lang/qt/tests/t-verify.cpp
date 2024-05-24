@@ -40,8 +40,9 @@
 #include "protocol.h"
 
 #include "verifyopaquejob.h"
-#include "verificationresult.h"
-#include "key.h"
+#include <gpgme++/verificationresult.h>
+#include <gpgme++/key.h>
+
 #include "t-support.h"
 
 using namespace QGpgME;

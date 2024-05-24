@@ -39,10 +39,10 @@
 
 #include "dataprovider.h"
 
-#include <context.h>
-#include <data.h>
-#include <gpgrevokekeyeditinteractor.h>
-#include <key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/gpgrevokekeyeditinteractor.h>
+#include <gpgme++/key.h>
 
 #include <gpg-error.h>
 

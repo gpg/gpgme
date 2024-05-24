@@ -37,7 +37,7 @@
 #include <exportjob.h>
 #include <protocol.h>
 
-#include <context.h>
+#include <gpgme++/context.h>
 
 #include <QCoreApplication>
 

@@ -37,11 +37,7 @@
 
 #include "job.h"
 
-#ifdef BUILDING_QGPGME
-# include "key.h"
-#else
-# include <gpgme++/key.h>
-#endif
+#include <gpgme++/key.h>
 
 #include <vector>
 

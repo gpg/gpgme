@@ -35,7 +35,7 @@
  #include "config.h"
 #endif
 
-#include "error.h"
+#include <gpgme++/error.h>
 #include "debug.h"
 
 #include <QDebug>

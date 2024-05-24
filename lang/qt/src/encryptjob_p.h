@@ -36,8 +36,8 @@
 
 #include "job_p.h"
 
-#include <data.h>
-#include <key.h>
+#include <gpgme++/data.h>
+#include <gpgme++/key.h>
 
 namespace QGpgME
 {

@@ -43,11 +43,11 @@
 #include "listallkeysjob_p.h"
 
 #include "debug.h"
-#include "key.h"
-#include "context.h"
-#include "engineinfo.h"
-#include "global.h"
-#include "keylistresult.h"
+#include <gpgme++/key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
+#include <gpgme++/global.h>
+#include <gpgme++/keylistresult.h>
 #include "qgpgme_debug.h"
 
 #include <gpg-error.h>

@@ -39,11 +39,7 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "keygenerationresult.h"
-#else
 #include <gpgme++/keygenerationresult.h>
-#endif
 
 namespace QGpgME
 {

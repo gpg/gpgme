@@ -40,7 +40,7 @@
 
 #include "dataprovider.h"
 
-#include "data.h"
+#include <gpgme++/data.h>
 
 #include <QString>
 #include <QStringList>

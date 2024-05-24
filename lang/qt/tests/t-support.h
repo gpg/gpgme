@@ -32,7 +32,7 @@
 #ifndef T_SUPPORT_H
 #define T_SUPPORT_H
 
-#include "interfaces/passphraseprovider.h"
+#include <gpgme++/interfaces/passphraseprovider.h>
 #include <QObject>
 #include <QTest>
 

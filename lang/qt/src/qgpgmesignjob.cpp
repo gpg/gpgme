@@ -42,9 +42,9 @@
 #include "signjob_p.h"
 #include "util.h"
 
-#include <context.h>
-#include <data.h>
-#include <signingresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/signingresult.h>
 
 #include <QBuffer>
 #include <QFile>

@@ -41,11 +41,7 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "importresult.h"
-#else
 #include <gpgme++/importresult.h>
-#endif
 
 namespace QGpgME
 {

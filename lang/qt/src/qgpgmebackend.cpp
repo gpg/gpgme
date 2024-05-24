@@ -40,8 +40,8 @@
 
 #include "qgpgmegpgcardjob.h"
 
-#include "error.h"
-#include "engineinfo.h"
+#include <gpgme++/error.h>
+#include <gpgme++/engineinfo.h>
 
 #include "protocol_p.h"
 

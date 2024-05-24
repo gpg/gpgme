@@ -39,11 +39,7 @@
 
 #include <QDateTime>
 
-#ifdef BUILDING_QGPGME
-# include "key.h"
-#else
-# include <gpgme++/key.h>
-#endif
+#include <gpgme++/key.h>
 
 class QString;
 

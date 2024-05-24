@@ -39,7 +39,7 @@
 #include "t-support.h"
 #include "protocol.h"
 #include "cryptoconfig.h"
-#include "engineinfo.h"
+#include <gpgme++/engineinfo.h>
 
 #include <unistd.h>
 

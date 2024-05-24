@@ -42,9 +42,9 @@
 #include "util.h"
 #include "verifyopaquejob_p.h"
 
-#include <context.h>
-#include <data.h>
-#include <verificationresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/verificationresult.h>
 
 #include <QBuffer>
 #include <QFile>

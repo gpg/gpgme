@@ -40,11 +40,11 @@
 #include <QTemporaryDir>
 #include "keylistjob.h"
 #include "protocol.h"
-#include "keylistresult.h"
-#include "context.h"
-#include "engineinfo.h"
+#include <gpgme++/keylistresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
 #include "dn.h"
-#include "data.h"
+#include <gpgme++/data.h>
 #include "dataprovider.h"
 #include "signkeyjob.h"
 

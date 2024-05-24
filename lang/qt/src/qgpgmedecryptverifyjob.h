@@ -39,16 +39,8 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "decryptionresult.h"
-#else
 #include <gpgme++/decryptionresult.h>
-#endif
-#ifdef BUILDING_QGPGME
-# include "verificationresult.h"
-#else
 #include <gpgme++/verificationresult.h>
-#endif
 
 namespace QGpgME
 {

@@ -41,14 +41,14 @@
 #include "keylistjob.h"
 #include "encryptjob.h"
 #include "signencryptjob.h"
-#include "signingresult.h"
+#include <gpgme++/signingresult.h>
 #include "encryptjob.h"
-#include "encryptionresult.h"
-#include "decryptionresult.h"
+#include <gpgme++/encryptionresult.h>
+#include <gpgme++/decryptionresult.h>
 #include "decryptjob.h"
 #include "qgpgmebackend.h"
-#include "keylistresult.h"
-#include "engineinfo.h"
+#include <gpgme++/keylistresult.h>
+#include <gpgme++/engineinfo.h>
 #include "verifyopaquejob.h"
 #include "t-support.h"
 

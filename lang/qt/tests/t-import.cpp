@@ -36,12 +36,12 @@
 
 #include "t-support.h"
 
-#include "context.h"
-#include "engineinfo.h"
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
 #include "protocol.h"
 #include "importjob.h"
 
-#include <importresult.h>
+#include <gpgme++/importresult.h>
 
 #include <QDebug>
 #include <QSignalSpy>

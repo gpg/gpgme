@@ -38,7 +38,7 @@
 #include "encryptarchivejob.h"
 #include "encryptarchivejob_p.h"
 
-#include <engineinfo.h>
+#include <gpgme++/engineinfo.h>
 
 using namespace QGpgME;
 

@@ -41,11 +41,7 @@
 #include <QString>
 #include <QMap>
 
-#ifdef BUILDING_QGPGME
-# include "error.h"
-#else
-# include <gpgme++/error.h>
-#endif
+#include <gpgme++/error.h>
 
 class QWidget;
 

@@ -44,9 +44,9 @@
 #include <QFile>
 #include <QTimer>
 
-#include <context.h>
-#include <encryptionresult.h>
-#include <signingresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/encryptionresult.h>
+#include <gpgme++/signingresult.h>
 
 #include <iostream>
 

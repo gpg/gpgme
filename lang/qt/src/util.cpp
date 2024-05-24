@@ -44,7 +44,7 @@
 #include <QFileInfo>
 #include <QRandomGenerator>
 
-#include <key.h>
+#include <gpgme++/key.h>
 
 #include <algorithm>
 #include <functional>

@@ -39,9 +39,9 @@
 
 #include "qgpgme_debug.h"
 
-#include <context.h>
-#include <data.h>
-#include <defaultassuantransaction.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/defaultassuantransaction.h>
 
 #include <gpg-error.h>
 

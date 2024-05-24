@@ -45,8 +45,8 @@
 #include <QDir>
 #include <QList>
 
-#include "global.h"
-#include "error.h"
+#include <gpgme++/global.h>
+#include <gpgme++/error.h>
 #include "debug.h"
 
 #include <sstream>

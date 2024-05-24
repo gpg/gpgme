@@ -41,10 +41,10 @@
 #include "keylistjob.h"
 #include "listallkeysjob.h"
 #include "qgpgmebackend.h"
-#include "keylistresult.h"
+#include <gpgme++/keylistresult.h>
 
-#include "context.h"
-#include "engineinfo.h"
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
 
 #include <memory>
 

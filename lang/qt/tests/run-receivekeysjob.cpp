@@ -34,7 +34,7 @@
  #include "config.h"
 #endif
 
-#include <importresult.h>
+#include <gpgme++/importresult.h>
 #include <protocol.h>
 #include <receivekeysjob.h>
 

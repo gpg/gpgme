@@ -37,7 +37,7 @@
 #include "threadedjobmixin.h"
 #include "wkdrefreshjob.h"
 
-#include <importresult.h>
+#include <gpgme++/importresult.h>
 
 namespace QGpgME
 {

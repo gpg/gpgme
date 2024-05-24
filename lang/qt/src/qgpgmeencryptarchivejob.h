@@ -38,7 +38,7 @@
 
 #include "threadedjobmixin.h"
 
-#include <encryptionresult.h>
+#include <gpgme++/encryptionresult.h>
 
 namespace QGpgME
 {

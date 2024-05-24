@@ -40,13 +40,8 @@
 #include "job.h"
 #include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-# include "global.h"
-# include "context.h"
-#else
-# include <gpgme++/global.h>
-# include <gpgme++/context.h>
-#endif
+#include <gpgme++/global.h>
+#include <gpgme++/context.h>
 
 #include <memory>
 #include <vector>

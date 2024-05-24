@@ -39,11 +39,7 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "verificationresult.h"
-#else
 #include <gpgme++/verificationresult.h>
-#endif
 
 namespace QGpgME
 {

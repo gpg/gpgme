@@ -38,7 +38,7 @@
 #include "signarchivejob.h"
 #include "signarchivejob_p.h"
 
-#include <engineinfo.h>
+#include <gpgme++/engineinfo.h>
 
 using namespace QGpgME;
 

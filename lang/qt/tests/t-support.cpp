@@ -48,9 +48,9 @@
 #include <QDir>
 #include <QSignalSpy>
 
-#include "context.h"
-#include "engineinfo.h"
-#include "importresult.h"
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
+#include <gpgme++/importresult.h>
 
 using namespace GpgME;
 using namespace QGpgME;

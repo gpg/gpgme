@@ -43,9 +43,9 @@
 
 #include "dataprovider.h"
 
-#include "context.h"
-#include "data.h"
-#include "gpgsignkeyeditinteractor.h"
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/gpgsignkeyeditinteractor.h>
 
 #include "qgpgme_debug.h"
 

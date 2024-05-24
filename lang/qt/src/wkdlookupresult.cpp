@@ -37,7 +37,7 @@
 
 #include "wkdlookupresult.h"
 
-#include <data.h>
+#include <gpgme++/data.h>
 
 using namespace QGpgME;
 using namespace GpgME;

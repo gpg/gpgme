@@ -39,11 +39,7 @@
 #include "keylistjob.h"
 #include "cryptobackend.h"
 
-#ifdef BUILDING_QGPGME
-# include "keylistresult.h"
-#else
 #include <gpgme++/keylistresult.h>
-#endif
 
 #include <QPointer>
 

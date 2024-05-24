@@ -38,7 +38,7 @@
 #include "decryptverifyarchivejob.h"
 #include "decryptverifyarchivejob_p.h"
 
-#include <engineinfo.h>
+#include <gpgme++/engineinfo.h>
 
 using namespace QGpgME;
 

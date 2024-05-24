@@ -40,9 +40,9 @@
 
 #include "dataprovider.h"
 
-#include "context.h"
-#include "data.h"
-#include "key.h"
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/key.h>
 
 #include <cassert>
 
