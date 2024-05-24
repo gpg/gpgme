@@ -24,7 +24,7 @@
 #ifndef __GPGMEPP_GPGGENCARDKEYEDITINTERACTOR_H__
 #define __GPGMEPP_GPGGENCARDKEYEDITINTERACTOR_H__
 
-#include <editinteractor.h>
+#include "editinteractor.h"
 
 #include <string>
 #include <memory>

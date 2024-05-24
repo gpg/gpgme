@@ -25,8 +25,8 @@
 #ifndef __GPGMEPP_GPGSETOWNERTRUSTEDITINTERACTOR_H__
 #define __GPGMEPP_GPGSETOWNERTRUSTEDITINTERACTOR_H__
 
-#include <editinteractor.h>
-#include <key.h>
+#include "editinteractor.h"
+#include "key.h"
 
 #include <string>
 

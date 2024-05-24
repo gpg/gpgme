@@ -27,7 +27,7 @@
 #define __GPGMEPP_TRUSTITEM_H__
 
 #include "gpgmefw.h"
-#include <key.h>
+#include "key.h"
 #include "gpgmepp_export.h"
 
 #include <algorithm>

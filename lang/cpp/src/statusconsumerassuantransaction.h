@@ -24,7 +24,7 @@
 #ifndef __GPGMEPP_STATUSCONSUMERASSUANTRANSACTION_H__
 #define __GPGMEPP_STATUSCONSUMERASSUANTRANSACTION_H__
 
-#include <interfaces/assuantransaction.h>
+#include "interfaces/assuantransaction.h"
 
 namespace GpgME
 {

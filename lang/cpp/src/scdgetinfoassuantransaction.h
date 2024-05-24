@@ -25,7 +25,7 @@
 #ifndef __GPGMEPP_SCDGETINFOASSUANTRANSACTION_H__
 #define __GPGMEPP_SCDGETINFOASSUANTRANSACTION_H__
 
-#include <interfaces/assuantransaction.h>
+#include "interfaces/assuantransaction.h"
 
 #include <string>
 #include <vector>

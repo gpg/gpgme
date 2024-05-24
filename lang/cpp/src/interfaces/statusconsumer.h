@@ -24,7 +24,7 @@
 #ifndef __GPGMEPP_INTERFACES_STATUSCONSUMER_H__
 #define __GPGMEPP_INTERFACES_STATUSCONSUMER_H__
 
-#include "gpgmepp_export.h"
+#include "../gpgmepp_export.h"
 
 namespace GpgME
 {
