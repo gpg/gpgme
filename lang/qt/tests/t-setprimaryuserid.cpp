@@ -38,9 +38,9 @@
 #include <keylistjob.h>
 #include <protocol.h>
 
-#include <context.h>
-#include <engineinfo.h>
-#include <keylistresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
+#include <gpgme++/keylistresult.h>
 
 using namespace QGpgME;
 using namespace GpgME;

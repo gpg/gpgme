@@ -36,7 +36,7 @@
 
 #include <debug.h>
 #include <importjob.h>
-#include <importresult.h>
+#include <gpgme++/importresult.h>
 #include <protocol.h>
 
 #include <QFile>

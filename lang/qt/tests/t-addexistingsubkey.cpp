@@ -41,9 +41,9 @@
 #include <QSignalSpy>
 #include <QTest>
 
-#include "context.h"
-#include "data.h"
-#include "engineinfo.h"
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/engineinfo.h>
 
 #include <algorithm>
 

@@ -37,8 +37,8 @@
 #include "t-support.h"
 
 #include "changeexpiryjob.h"
-#include "context.h"
-#include "engineinfo.h"
+#include <gpgme++/context.h>
+#include <gpgme++/engineinfo.h>
 #include "protocol.h"
 
 #include <QSignalSpy>

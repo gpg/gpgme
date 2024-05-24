@@ -42,12 +42,7 @@
 #include <QStringList>
 #include <QVariant>
 
-#ifdef BUILDING_QGPGME
-# include "configuration.h"
-#else
-# include <gpgme++/configuration.h>
-#endif
-
+#include <gpgme++/configuration.h>
 
 #include <vector>
 #include <utility>

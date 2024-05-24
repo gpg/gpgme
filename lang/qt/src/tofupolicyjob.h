@@ -35,11 +35,7 @@
 
 #include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-# include "tofuinfo.h"
-#else
-# include <gpgme++/tofuinfo.h>
-#endif
+#include <gpgme++/tofuinfo.h>
 
 namespace GpgME
 {

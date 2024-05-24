@@ -44,10 +44,10 @@
 #include "signencryptjob_p.h"
 #include "util.h"
 
-#include <context.h>
-#include <data.h>
-#include <exception.h>
-#include <key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/exception.h>
+#include <gpgme++/key.h>
 
 #include <QBuffer>
 #include <QFileInfo>

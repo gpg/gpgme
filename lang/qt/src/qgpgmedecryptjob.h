@@ -39,11 +39,7 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "decryptionresult.h"
-#else
 #include <gpgme++/decryptionresult.h>
-#endif
 
 namespace QGpgME
 {

@@ -35,8 +35,8 @@
 
 #include "t-support.h"
 
-#include "data.h"
-#include "engineinfo.h"
+#include <gpgme++/data.h>
+#include <gpgme++/engineinfo.h>
 #include "protocol.h"
 #include "wkdlookupjob.h"
 #include "wkdlookupresult.h"

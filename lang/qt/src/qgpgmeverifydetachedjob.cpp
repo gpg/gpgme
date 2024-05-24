@@ -44,9 +44,9 @@
 
 #include <QFile>
 
-#include <context.h>
-#include <data.h>
-#include <verificationresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/verificationresult.h>
 
 #include <cassert>
 

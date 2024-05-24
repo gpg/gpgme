@@ -41,10 +41,10 @@
 
 #include <QDateTime>
 
-#include "context.h"
-#include "data.h"
-#include "gpgaddexistingsubkeyeditinteractor.h"
-#include "key.h"
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/gpgaddexistingsubkeyeditinteractor.h>
+#include <gpgme++/key.h>
 
 #include <gpg-error.h>
 

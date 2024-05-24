@@ -37,12 +37,7 @@
 
 #include "job.h"
 
-#ifdef BUILDING_QGPGME
-# include "global.h"
-#else
-# include <gpgme++/global.h>
-#endif
-
+#include <gpgme++/global.h>
 
 #include <vector>
 #include <memory>

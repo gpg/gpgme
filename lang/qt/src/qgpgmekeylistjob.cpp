@@ -38,9 +38,9 @@
 
 #include "qgpgmekeylistjob.h"
 
-#include "key.h"
-#include "context.h"
-#include "keylistresult.h"
+#include <gpgme++/key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/keylistresult.h>
 #include <gpg-error.h>
 
 #include <QStringList>

@@ -39,11 +39,11 @@
 #include <QTemporaryDir>
 #include "wkspublishjob.h"
 #include "keygenerationjob.h"
-#include "keygenerationresult.h"
+#include <gpgme++/keygenerationresult.h>
 #include "importjob.h"
-#include "importresult.h"
+#include <gpgme++/importresult.h>
 #include "protocol.h"
-#include "engineinfo.h"
+#include <gpgme++/engineinfo.h>
 
 #include "t-support.h"
 

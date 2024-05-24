@@ -39,16 +39,8 @@
 
 #include "threadedjobmixin.h"
 
-#ifdef BUILDING_QGPGME
-# include "signingresult.h"
-#else
 #include <gpgme++/signingresult.h>
-#endif
-#ifdef BUILDING_QGPGME
-# include "key.h"
-#else
 #include <gpgme++/key.h>
-#endif
 
 namespace QGpgME
 {

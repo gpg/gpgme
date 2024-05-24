@@ -38,8 +38,8 @@
 #include "keylistjob.h"
 #include "protocol.h"
 
-#include "key.h"
-#include "keylistresult.h"
+#include <gpgme++/key.h>
+#include <gpgme++/keylistresult.h>
 
 #include <QDebug>
 

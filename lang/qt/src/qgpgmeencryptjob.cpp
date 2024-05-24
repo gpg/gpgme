@@ -44,9 +44,9 @@
 #include "encryptjob_p.h"
 #include "util.h"
 
-#include <context.h>
-#include <data.h>
-#include <encryptionresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/encryptionresult.h>
 
 #include <QBuffer>
 #include <QFileInfo>

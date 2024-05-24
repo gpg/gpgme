@@ -40,8 +40,8 @@
 
 #include "dataprovider.h"
 
-#include "context.h"
-#include "data.h"
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
 
 #include <cassert>
 

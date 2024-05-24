@@ -43,9 +43,9 @@
 #include <QDebug>
 #include <QTest>
 
-#include <decryptionresult.h>
-#include <key.h>
-#include <verificationresult.h>
+#include <gpgme++/decryptionresult.h>
+#include <gpgme++/key.h>
+#include <gpgme++/verificationresult.h>
 
 using namespace QGpgME;
 using namespace GpgME;

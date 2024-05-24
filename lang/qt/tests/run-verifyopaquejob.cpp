@@ -43,8 +43,8 @@
 #include <QFile>
 #include <QTimer>
 
-#include <context.h>
-#include <verificationresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/verificationresult.h>
 
 #include <iostream>
 

@@ -44,8 +44,8 @@
 #include <QDebug>
 #include "qgpgme_debug.h"
 
-#include "context.h"
-#include <key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/key.h>
 
 #include <QByteArray>
 #include <QMetaObject>

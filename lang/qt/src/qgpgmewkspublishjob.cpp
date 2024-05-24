@@ -35,8 +35,9 @@
 
 #include "qgpgmewkspublishjob.h"
 
-#include "context.h"
-#include "key.h"
+#include <gpgme++/context.h>
+#include <gpgme++/key.h>
+
 #include "util.h"
 
 #include <QFileInfo>

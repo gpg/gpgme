@@ -26,11 +26,7 @@
 
 #include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-#include <interfaces/dataprovider.h>
-#else
 #include <gpgme++/interfaces/dataprovider.h>
-#endif
 
 #include <memory>
 

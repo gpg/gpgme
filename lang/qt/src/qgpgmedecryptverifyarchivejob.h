@@ -38,8 +38,8 @@
 
 #include "threadedjobmixin.h"
 
-#include <decryptionresult.h>
-#include <verificationresult.h>
+#include <gpgme++/decryptionresult.h>
+#include <gpgme++/verificationresult.h>
 
 namespace QGpgME
 {

@@ -42,8 +42,8 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include <context.h>
-#include <importresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/importresult.h>
 
 #include <iostream>
 

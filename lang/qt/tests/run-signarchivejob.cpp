@@ -45,8 +45,8 @@
 #include <QFileInfo>
 #include <QTimer>
 
-#include <context.h>
-#include <signingresult.h>
+#include <gpgme++/context.h>
+#include <gpgme++/signingresult.h>
 
 #include <iostream>
 

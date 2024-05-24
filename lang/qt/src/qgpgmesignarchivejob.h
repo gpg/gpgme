@@ -38,7 +38,7 @@
 
 #include "threadedjobmixin.h"
 
-#include <signingresult.h>
+#include <gpgme++/signingresult.h>
 
 namespace QGpgME
 {

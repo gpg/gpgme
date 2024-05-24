@@ -36,11 +36,7 @@
 
 #include "qgpgme_export.h"
 
-#ifdef BUILDING_QGPGME
-# include <result.h>
-#else
-# include <gpgme++/result.h>
-#endif
+#include <gpgme++/result.h>
 
 #include <memory>
 

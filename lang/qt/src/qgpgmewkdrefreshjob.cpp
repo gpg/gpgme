@@ -42,7 +42,7 @@
 #include "qgpgmekeylistjob.h"
 #include "wkdrefreshjob_p.h"
 
-#include <context.h>
+#include <gpgme++/context.h>
 
 #include <memory>
 

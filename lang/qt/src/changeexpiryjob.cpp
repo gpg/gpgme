@@ -38,7 +38,7 @@
 #include "changeexpiryjob.h"
 #include "changeexpiryjob_p.h"
 
-#include <context.h>
+#include <gpgme++/context.h>
 
 using namespace GpgME;
 using namespace QGpgME;

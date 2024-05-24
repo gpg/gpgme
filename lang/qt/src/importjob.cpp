@@ -38,7 +38,7 @@
 #include "importjob.h"
 #include "importjob_p.h"
 
-#include <context.h>
+#include <gpgme++/context.h>
 
 using namespace GpgME;
 using namespace QGpgME;

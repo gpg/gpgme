@@ -44,9 +44,9 @@
 
 #include "dataprovider.h"
 
-#include <context.h>
-#include <data.h>
-#include <key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
+#include <gpgme++/key.h>
 
 using namespace QGpgME;
 using namespace GpgME;

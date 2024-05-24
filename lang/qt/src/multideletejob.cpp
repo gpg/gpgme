@@ -38,9 +38,9 @@
 #include "protocol.h"
 #include "deletejob.h"
 
-#include <key.h>
-#include <context.h>
-#include <data.h>
+#include <gpgme++/key.h>
+#include <gpgme++/context.h>
+#include <gpgme++/data.h>
 
 #include <iterator>
 

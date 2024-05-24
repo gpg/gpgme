@@ -41,13 +41,8 @@
 #include <QString>
 #include <QIODevice>
 
-#ifdef BUILDING_QGPGME
-# include "context.h"
-# include "interfaces/progressprovider.h"
-#else
-# include <gpgme++/context.h>
-# include <gpgme++/interfaces/progressprovider.h>
-#endif
+#include <gpgme++/context.h>
+#include <gpgme++/interfaces/progressprovider.h>
 
 #include "job.h"
 

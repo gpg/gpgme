@@ -326,7 +326,7 @@ camelcaseinclude_HEADERS = $(camelcase_headers)
 nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 
 if WANT_QT5
-AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
+AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
@@ -339,7 +339,7 @@ libqgpgme_la_LDFLAGS = -no-undefined -version-info \
                        @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 endif
 if WANT_QT6
-AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
+AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant

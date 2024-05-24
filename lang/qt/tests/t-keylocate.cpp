@@ -39,8 +39,8 @@
 #include <QTemporaryDir>
 #include "keylistjob.h"
 #include "protocol.h"
-#include "keylistresult.h"
-#include "engineinfo.h"
+#include <gpgme++/keylistresult.h>
+#include <gpgme++/engineinfo.h>
 
 #include "t-support.h"
 

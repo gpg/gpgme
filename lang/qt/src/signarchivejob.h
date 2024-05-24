@@ -36,11 +36,7 @@
 
 #include "job.h"
 
-#ifdef BUILDING_QGPGME
-# include "context.h"
-#else
-# include <gpgme++/context.h>
-#endif
+#include <gpgme++/context.h>
 
 namespace GpgME
 {

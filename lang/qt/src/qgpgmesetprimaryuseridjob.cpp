@@ -39,7 +39,7 @@
 
 #include "util.h"
 
-#include <engineinfo.h>
+#include <gpgme++/engineinfo.h>
 
 using namespace QGpgME;
 using namespace GpgME;
