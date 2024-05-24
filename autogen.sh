@@ -136,6 +136,7 @@ die_p
 configure_opts=
 extraoptions=
 package_subdir=
+skip_autoheader=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
@@ -514,8 +515,10 @@ if [ -n "${ACLOCAL_FLAGS}" ]; then
 fi
 info "Running $ACLOCAL ${aclocal_flags} ..."
 $ACLOCAL ${aclocal_flags}
-info "Running autoheader..."
-$AUTOHEADER
+if [ -z "${skip_autoheader}" ]; then
+  info "Running autoheader..."
+  $AUTOHEADER
+fi
 info "Running automake --gnu ..."
 $AUTOMAKE --gnu;
 info "Running autoconf${FORCE} ..."
