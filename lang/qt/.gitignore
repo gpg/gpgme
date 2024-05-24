@@ -1,0 +1,10 @@
+# GnuPG exclusions
+/aclocal.m4
+/autom4te.cache
+/configure
+/config-to-make-autoheader-happy.h.in
+/VERSION
+Makefile.in
+
+# Hidden files
+*~

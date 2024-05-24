@@ -1,0 +1,69 @@
+#!/bin/sh
+# Copyright (C) 2013 g10 Code GmbH
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.  This file is
+# distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY, to the extent permitted by law; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+if [ -z "$(command -v gpg-connect-agent)" ]; then
+   echo "gpg-agent not installed and thus not started" >&2
+   exit 0;
+fi
+
+GPG_AGENT_INFO=
+export GPG_AGENT_INFO
+GPG_AGENT=$(which gpg-agent)
+
+token=$(echo "gpgme-$(pwd)" | tr ' ' '_')
+
+if [ "$1" = "--stop" ]; then
+  if [ "$(gpg-connect-agent --no-autostart getval\ $token /bye 2>/dev/null | head -1)" \
+        != "D set" ]; then
+    echo "gpg-agent not running" >&2
+    exit 0
+  fi
+  echo "stopping gpg-agent " >&2
+  gpg-connect-agent KILLAGENT /bye >/dev/null 2>&1
+  exit 0
+fi
+
+# Update 'agent-program' in the configuration files to make sure we
+# will always start exactly this agent again if we ever need to.
+for F in gpg.conf gpgsm.conf
+do
+  if test -f "$GNUPGHOME/$F"
+  then
+      cat "$GNUPGHOME/$F" > "$GNUPGHOME/$F~"
+      sed -e "s#^agent-program.*#agent-program ${GPG_AGENT}|--debug-quick-random#" \
+          >"$GNUPGHOME/$F" <"$GNUPGHOME/$F~"
+      rm -f "$GNUPGHOME/$F~"
+  fi
+done
+
+if [ "$(gpg-connect-agent --no-autostart getval\ $token /bye 2>/dev/null | head -1)" \
+      = "D set" ]; then
+  echo "gpg-agent already running" >&2
+  exit 0
+fi
+
+echo "starting gpg-agent.." >&2
+
+# GnuPG prior to 2.1.12 needs --allow-loopback-pinentry for the
+# loopback entry to work.  Old versions do not understand this though,
+# so we need to be careful.
+if "$GPG_AGENT" --gpgconf-test --allow-loopback-pinentry &&
+      test -f "$GNUPGHOME/gpg-agent.conf" &&
+      ! grep -q allow-loopback-pinentry "$GNUPGHOME/gpg-agent.conf"; then
+    echo allow-loopback-pinentry >> "$GNUPGHOME/gpg-agent.conf"
+fi
+
+gpg-connect-agent --agent-program="${GPG_AGENT}|--debug-quick-random" putval\ $token\ set /bye
+if [ $? -ne 0 -o "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
+      != "D set" ]; then
+  echo "error starting gpg-agent" >&2
+  exit 1
+fi
+exit 0

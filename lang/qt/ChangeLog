@@ -1,0 +1,17 @@
+No ChangeLog file
+=================
+
+Do not modify the ChangeLog file of QGpgME.  Since QGpgME was added
+to gpgme we put change information only in the GIT commit log, and
+generate a top-level ChangeLog file from logs at "make dist" time.
+As such, there are strict requirements on the form of the commit log
+messages.  See doc/HACKING (of gpgme) for details.
+
+Change information before QGpgME was added to gpgme can be found in
+the KDE repositories from where QGpgME has been imported.
+
+
+Local Variables:
+buffer-read-only: t
+mode: text
+End:

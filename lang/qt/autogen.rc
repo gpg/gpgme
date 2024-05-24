@@ -1,0 +1,7 @@
+# autogen.sh configuration for QGpgME                       -*- sh -*-
+
+package_subdir="lang/qt"
+
+skip_autoheader="yes"
+
+final_info="mkdir build && cd build && ../configure --enable-maintainer-mode && make"

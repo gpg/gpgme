@@ -326,28 +326,28 @@ camelcaseinclude_HEADERS = $(camelcase_headers)
 nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 
 if WANT_QT5
-AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
-              @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+AM_CPPFLAGS = @GPGMEPP_CFLAGS@ @GPGME_CFLAGS@ \
+              @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
-libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
-                      @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
+libqgpgme_la_LIBADD = @GPGMEPP_LIBS@ @GPGME_LIBS@ \
+                      @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
 libqgpgme_la_LDFLAGS = -no-undefined -version-info \
                        @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 endif
 if WANT_QT6
-AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
-              @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
+AM_CPPFLAGS = @GPGMEPP_CFLAGS@ @GPGME_CFLAGS@ \
+              @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
 libqgpgmeqt6_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
 
-libqgpgmeqt6_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
-                         @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT6_LIBS@
+libqgpgmeqt6_la_LIBADD = @GPGMEPP_LIBS@ @GPGME_LIBS@ \
+                         @GPG_ERROR_LIBS@ @GPGME_QT6_LIBS@
 libqgpgmeqt6_la_LDFLAGS = -no-undefined -version-info \
                           @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 endif
