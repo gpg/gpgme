@@ -41,6 +41,7 @@ static const char*tests[] = { "t-config", "t-version",
     "t-encrypt", "t-encrypt-sign", "t-sign", "t-verify",
     "t-decrypt-verify", "t-export", "t-createkey",
     "t-export-secret-info", "t-chunking", "t-sig-notations",
+    "t-keylist-revokers",
     /* For these two the order is important
      * as t-import imports the deleted key from t-delete */
     "t-delete", "t-import",

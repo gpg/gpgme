@@ -75,4 +75,7 @@ typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
 struct _gpgme_op_query_swdb_result;
 typedef struct _gpgme_op_query_swdb_result *gpgme_query_swdb_result_t;
 
+struct _gpgme_revocation_key;
+typedef struct _gpgme_revocation_key *gpgme_revocation_key_t;
+
 #endif // __GPGMEPP_GPGMEFW_H__

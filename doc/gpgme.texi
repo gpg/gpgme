@@ -3566,6 +3566,10 @@ be missing but this field may be set nevertheless.
 
 Reserved for the time of the last update of this key.
 
+@item gpgme_revocation_key_t revkeys
+@since{1.24.0}
+This is a linked list with the revocation keys for the key.
+
 @end table
 @end deftp
 
@@ -3904,6 +3908,37 @@ This is the email component of @code{uid}, if available.
 
 @item gpgme_sig_notation_t notations
 This is a linked list with the notation data and policy URLs.
+@end table
+@end deftp
+
+
+@deftp {Data type} gpgme_revocation_key_t
+@since{1.24.0}
+
+The @code{gpgme_revocation_key_t} type is a pointer to a revocation key
+structure.  Revocation key structures are one component of a
+@code{gpgme_key_t} object.  They provide information about the designated
+revocation keys for a key.
+
+The revocation key structure has the following members:
+
+@table @code
+@item gpgme_revocation_key_t next
+This is a pointer to the next revocation key structure in the linked list,
+or @code{NULL} if this is the last element.
+
+@item gpgme_pubkey_algo_t pubkey_algo
+This is the public key algorithm of the revocation key.
+
+@item char *fpr
+This is the fingerprint of the revocation_key in hexadecimal digits.
+
+@item unsigned int key_class
+This is the class of the revocation key signature subpacket.
+
+@item unsigned int sensitive : 1
+This is true if the revocation key is marked as sensitive.
+
 @end table
 @end deftp
 

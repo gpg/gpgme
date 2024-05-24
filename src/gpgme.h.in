@@ -763,6 +763,28 @@ struct _gpgme_user_id
 typedef struct _gpgme_user_id *gpgme_user_id_t;
 
 
+/* A designated revocation key for a key.
+ * This structure shall be considered read-only and an application
+ * must not allocate such a structure on its own.  */
+struct _gpgme_revocation_key
+{
+  struct _gpgme_revocation_key *next;
+
+  /* The public key algorithm of the revocation key.  */
+  gpgme_pubkey_algo_t pubkey_algo;
+
+  /* The fingerprint of the revocation_key in hex digit form.  */
+  char *fpr;
+
+  /* The class of the revocation key. */
+  unsigned int key_class;
+
+  /* True if the revocation key should not be exported.  */
+  unsigned int sensitive : 1;
+};
+typedef struct _gpgme_revocation_key *gpgme_revocation_key_t;
+
+
 /* A key from the keyring.
  * This structure shall be considered read-only and an application
  * must not allocate such a structure on its own.  */
@@ -860,6 +882,12 @@ struct _gpgme_key
 
   /* Time of the last refresh of the entire key.  0 if unknown.  */
   unsigned long last_update;
+
+  /* The revocation keys of the key.  */
+  gpgme_revocation_key_t revocation_keys;
+
+  /* Internal to GPGME, do not use.  */
+  gpgme_revocation_key_t _last_revkey;
 };
 typedef struct _gpgme_key *gpgme_key_t;
 

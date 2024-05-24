@@ -1,0 +1,5 @@
+{
+    "op": "keylist",
+    "keys": [ "key-with-revokers@example.net" ],
+    "with-secret": false
+}

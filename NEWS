@@ -7,6 +7,11 @@ Noteworthy changes in version 1.24.0 (unrelease)
  * Extended gpgme_op_encrypt*, gpgme_op_encrypt_sign*, and gpgme_op_sign*
    to allow reading the input data directly from a file.  [T6550]
 
+ * Add information about designated revocation keys.  [T7118]
+
+ * cpp: Provide information about designated revocation keys for a Key.
+   [T7118]
+
  * qt: Allow reading the data to decrypt/encrypt/sign/verify directly from
    files.  [T6550]
 
@@ -17,8 +22,14 @@ Noteworthy changes in version 1.24.0 (unrelease)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_ENCRYPT_FILE                      NEW.
  GPGME_SIG_MODE_FILE                     NEW.
+ gpgme_key_t                             EXTENDED: New field 'revkeys'.
+ gpgme_revocation_key_t                  NEW.
  cpp: Context::EncryptFile               NEW.
  cpp: SignatureMode::SignFile            NEW.
+ cpp: RevocationKey                      NEW.
+ cpp: Key::revocationKey                 NEW.
+ cpp: Key::numRevocationKeys             NEW.
+ cpp: Key::revocationKeys                NEW.
  qt: DecryptVerifyJob::setInputFile      NEW.
  qt: DecryptVerifyJob::inputFile         NEW.
  qt: DecryptVerifyJob::setOutputFile     NEW.

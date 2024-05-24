@@ -160,7 +160,10 @@ main (int argc, char **argv)
     std::stringstream ss;
     do {
         key = ctx->nextKey(err);
-        ss << key << "\n\n";
+        if (!err)
+        {
+            ss << key << "\n\n";
+        }
     } while (!err && !key.isNull());
 
     std::cout << ss.str();

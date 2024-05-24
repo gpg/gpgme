@@ -1,0 +1,97 @@
+{
+    "keys": [
+        {
+            "revoked": false,
+            "expired": false,
+            "disabled": false,
+            "invalid": false,
+            "can_encrypt": true,
+            "can_sign": true,
+            "can_certify": true,
+            "can_authenticate": false,
+            "secret": false,
+            "is_qualified": false,
+            "protocol": "OpenPGP",
+            "fingerprint": "C95C864B775F71D02F52CEF6BD07B828B2F75071",
+            "owner_trust": "unknown",
+            "origin": 0,
+            "last_update": 0,
+            "subkeys": [
+                {
+                    "revoked": false,
+                    "expired": false,
+                    "disabled": false,
+                    "invalid": false,
+                    "can_encrypt": false,
+                    "can_sign": true,
+                    "can_certify": true,
+                    "can_authenticate": false,
+                    "secret": false,
+                    "is_qualified": false,
+                    "is_cardkey": false,
+                    "is_de_vs": false,
+                    "pubkey_algo_name": "EdDSA",
+                    "pubkey_algo_string": "ed25519",
+                    "keyid": "BD07B828B2F75071",
+                    "curve": "ed25519",
+                    "pubkey_algo": 303,
+                    "length": 255,
+                    "timestamp": 1715782979,
+                    "expires": 1810390979
+                },
+                {
+                    "revoked": false,
+                    "expired": false,
+                    "disabled": false,
+                    "invalid": false,
+                    "can_encrypt": true,
+                    "can_sign": false,
+                    "can_certify": false,
+                    "can_authenticate": false,
+                    "secret": false,
+                    "is_qualified": false,
+                    "is_cardkey": false,
+                    "is_de_vs": false,
+                    "pubkey_algo_name": "ECDH",
+                    "pubkey_algo_string": "cv25519",
+                    "keyid": "94C2E4C722CADAF9",
+                    "curve": "cv25519",
+                    "pubkey_algo": 302,
+                    "length": 255,
+                    "timestamp": 1715782979,
+                    "expires": 0
+                }
+            ],
+            "userids": [
+                {
+                    "revoked": false,
+                    "invalid": false,
+                    "validity": "unknown",
+                    "uid": "key-with-revokers@example.net",
+                    "name": "",
+                    "email": "key-with-revokers@example.net",
+                    "comment": "",
+                    "address": "key-with-revokers@example.net",
+                    "origin": 0,
+                    "last_update": 0
+                }
+            ],
+            "revocation_keys": [
+                {
+                    "sensitive": true,
+                    "fingerprint": "A0FF4590BB6122EDEF6E3C542D727CC768697734",
+                    "pubkey_algo_name": "DSA",
+                    "pubkey_algo": 17,
+                    "key_class": 192
+                },
+                {
+                    "sensitive": false,
+                    "fingerprint": "23FD347A419429BACCD5E72D6BC4778054ACD246",
+                    "pubkey_algo_name": "DSA",
+                    "pubkey_algo": 17,
+                    "key_class": 128
+                }
+            ]
+        }
+    ]
+}
