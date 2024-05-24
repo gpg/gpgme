@@ -1,6 +1,6 @@
 #! /bin/sh
 # autogen.sh
-# Copyright (C) 2003, 2014, 2017, 2018, 2022 g10 Code GmbH
+# Copyright (C) 2003, 2014, 2017, 2018, 2022, 2024 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2023-03-15
+# Version: 2024-05-24
 
 configure_ac="configure.ac"
 
@@ -72,6 +72,7 @@ FORCE=
 SILENT=
 PRINT_HOST=no
 PRINT_BUILD=no
+IS_GIT_CLONE=no
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
 
@@ -134,6 +135,7 @@ die_p
 # these variables are replaced by the actual system root.
 configure_opts=
 extraoptions=
+package_subdir=
 # List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
@@ -214,6 +216,18 @@ if [ -f "$HOME/.gnupg-autogen.rc" ]; then
 fi
 
 
+# Find the .git directory (or file for work trees)
+if [ -e .git ]; then
+    IS_GIT_CLONE=yes
+elif [ -n "${package_subdir}" ]; then
+    # Look for .git in root of package containing the nested package
+    package_subdir=${package_subdir#/}
+    root_path=${tsdir%/${package_subdir}}
+    if [ -e "${root_path}/.git" ]; then
+        IS_GIT_CLONE=yes
+    fi
+fi
+
 # **** FIND VERSION ****
 # This is a helper for the configure.ac M4 magic
 # Called
@@ -243,7 +257,7 @@ if [ "$myhost" = "find-version" ]; then
     fi
 
     beta=no
-    if [ -e .git ]; then
+    if [ $IS_GIT_CLONE = yes ]; then
       ingit=yes
       tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
       if [ -n "$tmp" ]; then
