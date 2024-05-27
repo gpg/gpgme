@@ -1,0 +1,7 @@
+# autogen.sh configuration for GpgME++                      -*- sh -*-
+
+package_subdir="lang/cpp"
+
+skip_autoheader="yes"
+
+final_info="mkdir build && cd build && ../configure --enable-maintainer-mode && make"

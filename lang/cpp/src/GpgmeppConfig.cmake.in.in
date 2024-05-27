@@ -63,7 +63,7 @@ add_library(Gpgmepp SHARED IMPORTED)
 
 set_target_properties(Gpgmepp PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "@resolved_includedir@/gpgme++;@resolved_includedir@"
-  INTERFACE_LINK_LIBRARIES "pthread;@resolved_libdir@/libgpgme@libsuffix@;@LIBASSUAN_LIBS@"
+  INTERFACE_LINK_LIBRARIES "pthread;@resolved_libdir@/libgpgme@libsuffix@"
   IMPORTED_LOCATION "@resolved_libdir@/libgpgmepp@libsuffix@"
 )
 

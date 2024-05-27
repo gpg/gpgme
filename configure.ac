@@ -56,22 +56,11 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 LIBGPGME_LT_CURRENT=43
 LIBGPGME_LT_AGE=32
 LIBGPGME_LT_REVISION=1
-
-# If there is an ABI break in gpgmepp also bump the version in
-# IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in
-
-LIBGPGMEPP_LT_CURRENT=26
-LIBGPGMEPP_LT_AGE=20
-LIBGPGMEPP_LT_REVISION=1
 ################################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
 AC_SUBST(LIBGPGME_LT_AGE)
 AC_SUBST(LIBGPGME_LT_REVISION)
-
-AC_SUBST(LIBGPGMEPP_LT_CURRENT)
-AC_SUBST(LIBGPGMEPP_LT_AGE)
-AC_SUBST(LIBGPGMEPP_LT_REVISION)
 
 # If the API is changed in an incompatible way: increment the next counter.
 GPGME_CONFIG_API_VERSION=1
@@ -247,8 +236,8 @@ have_w32_system=no
 have_w64_system=no
 have_macos_system=no
 build_w32_glib=no
-available_languages="cl cpp python"
-default_languages="cl cpp python"
+available_languages="cl python"
+default_languages="cl python"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -335,10 +324,9 @@ fi
 AC_ARG_ENABLE([languages],
               AS_HELP_STRING([--enable-languages=languages],
                              [enable only specific language bindings:
-                              cl cpp python]),
+                              cl python]),
                              [enabled_languages=`echo $enableval | \
-                             tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
-                             sed 's/c++/cpp/'`],
+                             tr ',:' '  ' | tr '[A-Z]' '[a-z]'`],
                              [enabled_languages="maybe"])
 if test "x$enabled_languages" = "x" \
    -o "$enabled_languages" = "no"; then
@@ -360,36 +348,6 @@ for language in $enabled_languages; do
        AC_MSG_ERROR([unsupported language binding specified])
     fi
 done
-
-# Enable C++ 11 if cpp is requested (unless C++ 17 was already enabled)
-LIST_MEMBER("cpp", $enabled_languages)
-if test "$found" = "1" -a "$HAVE_CXX17" != "1"; then
-    AX_CXX_COMPILE_STDCXX(11, noext, optional)
-    if test "$HAVE_CXX11" != "1"; then
-        if test "$explicit_languages" = "1"; then
-            AC_MSG_ERROR([[
-***
-*** A compiler with c++11 support is required for the C++ binding.
-***]])
-        else
-            enabled_languages=$(echo $enabled_languages | sed 's/cpp//')
-            AC_MSG_WARN([[
-***
-*** No c++11 support detected. C++ bindings will be disabled.
-***]])
-        fi
-    fi
-fi
-
-# Check whether compiler supports visibility attribute (if cpp language is enabled)
-LIST_MEMBER("cpp", $enabled_languages)
-if test "$found" = "1"; then
-    AX_GCC_FUNC_ATTRIBUTE(visibility)
-    if test "$ax_cv_have_func_attribute_visibility" = "yes"; then
-        GPGME_CPP_CFLAGS="$GPGME_CPP_CFLAGS -fvisibility=hidden"
-    fi
-fi
-AC_SUBST(GPGME_CPP_CFLAGS)
 
 # Python bindings.
 LIST_MEMBER("python", $enabled_languages)
@@ -824,15 +782,11 @@ AH_BOTTOM([
 ])
 
 
-# Substitution used for gpgme-config and gpgme.pc and gpgmepp.pc
+# Substitution used for gpgme-config and gpgme.pc
 GPGME_CONFIG_LIBS="-lgpgme"
 GPGME_CONFIG_CFLAGS=""
 GPGME_CONFIG_HOST="$host"
 GPGME_CONFIG_AVAIL_LANG="$enabled_languages"
-
-GPGMEPP_PKGCONFIG_LIBS="-lgpgmepp"
-GPGMEPP_PKGCONFIG_CFLAGS=""
-GPGMEPP_PKGCONFIG_HOST="$host"
 
 case "$includedir" in
   /usr/include|/include) ;;
@@ -843,11 +797,6 @@ case "$includedir" in
       else
         GPGME_CONFIG_CFLAGS="-I\${includedir} $GPGME_CONFIG_CFLAGS"
       fi
-      if test -z "$GPGMEPP_PKGCONFIG_CFLAGS"; then
-        GPGMEPP_PKGCONFIG_CFLAGS="-I\${includedir}"
-      else
-        GPGMEPP_PKGCONFIG_CFLAGS="-I\${includedir} $GPGMEPP_PKGCONFIG_CFLAGS"
-      fi
     fi
     ;;
   *)
@@ -855,11 +804,6 @@ case "$includedir" in
       GPGME_CONFIG_CFLAGS="-I\${includedir}"
     else
       GPGME_CONFIG_CFLAGS="-I\${includedir} $GPGME_CONFIG_CFLAGS"
-    fi
-    if test -z "$GPGMEPP_PKGCONFIG_CFLAGS"; then
-      GPGMEPP_PKGCONFIG_CFLAGS="-I\${includedir}"
-    else
-      GPGMEPP_PKGCONFIG_CFLAGS="-I\${includedir} $GPGMEPP_PKGCONFIG_CFLAGS"
     fi
     ;;
 esac
@@ -869,16 +813,13 @@ case "$libdir" in
     if test "$exec_prefix" = "NONE"; then
       if test "$prefix" != / -a "$prefix" != /usr; then
         GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
-        GPGMEPP_PKGCONFIG_LIBS="-L\${libdir} $GPGMEPP_PKGCONFIG_LIBS"
       fi
     elif test "$exec_prefix" != / -a "$exec_prefix" != /usr; then
       GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
-      GPGMEPP_PKGCONFIG_LIBS="-L\${libdir} $GPGMEPP_PKGCONFIG_LIBS"
     fi
     ;;
   *)
     GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
-    GPGMEPP_PKGCONFIG_LIBS="-L\${libdir} $GPGMEPP_PKGCONFIG_LIBS"
     ;;
 esac
 
@@ -887,9 +828,6 @@ AC_SUBST(GPGME_CONFIG_LIBS)
 AC_SUBST(GPGME_CONFIG_CFLAGS)
 AC_SUBST(GPGME_CONFIG_HOST)
 AC_SUBST(GPGME_CONFIG_AVAIL_LANG)
-AC_SUBST(GPGMEPP_PKGCONFIG_LIBS)
-AC_SUBST(GPGMEPP_PKGCONFIG_CFLAGS)
-AC_SUBST(GPGMEPP_PKGCONFIG_HOST)
 
 # Frob'da Variables
 LTLIBOBJS=`echo "$LIB@&t@OBJS" |
@@ -956,13 +894,6 @@ AC_CONFIG_FILES(Makefile src/Makefile
                 src/gpgme-glib.pc
                 src/gpgme.h)
 AC_CONFIG_FILES(src/gpgme-config, chmod +x src/gpgme-config)
-AC_CONFIG_FILES(lang/cpp/Makefile lang/cpp/src/Makefile)
-AC_CONFIG_FILES(lang/cpp/tests/Makefile)
-AC_CONFIG_FILES(lang/cpp/src/gpgmepp.pc)
-AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig-w32.cmake.in)
-AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfig.cmake.in)
-AC_CONFIG_FILES(lang/cpp/src/GpgmeppConfigVersion.cmake)
-AC_CONFIG_FILES(lang/cpp/src/gpgmepp_version.h)
 AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
                  lang/js/BrowserTestExtension/Makefile

@@ -18,6 +18,6 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 SUBDIRS = $(ENABLED_LANGUAGES)
-DIST_SUBDIRS = cl cpp python js
+DIST_SUBDIRS = cl python js
 
 EXTRA_DIST = README

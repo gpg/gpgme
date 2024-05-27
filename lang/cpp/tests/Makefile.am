@@ -20,14 +20,13 @@
 
 AM_LDFLAGS = -no-install
 
-LDADD = ../../cpp/src/libgpgmepp.la \
-        ../../../src/libgpgme.la @GPG_ERROR_LIBS@ \
+LDADD = ../src/libgpgmepp.la \
+        @GPGME_LIBS@ @GPG_ERROR_LIBS@ \
         @LDADD_FOR_TESTS_KLUDGE@ -lstdc++
 
-AM_CPPFLAGS = -I$(top_srcdir)/lang/cpp/src -I$(top_builddir)/src \
+AM_CPPFLAGS = -I$(top_srcdir)/src @GPGME_CFLAGS@ \
               @GPG_ERROR_CFLAGS@ @GPG_ERROR_CFLAGS@ \
-              @LIBASSUAN_CFLAGS@ -DBUILDING_GPGMEPP \
-              -DTOP_SRCDIR="$(top_srcdir)"
+              -DBUILDING_GPGMEPP
 
 run_getkey_SOURCES = run-getkey.cpp
 run_keylist_SOURCES = run-keylist.cpp
