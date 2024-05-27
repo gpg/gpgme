@@ -19,8 +19,12 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = gpgmepp.pc
+
 EXTRA_DIST = GpgmeppConfig.cmake.in.in GpgmeppConfigVersion.cmake.in \
-             gpgmepp_version.h.in GpgmeppConfig-w32.cmake.in.in
+             gpgmepp_version.h.in GpgmeppConfig-w32.cmake.in.in \
+             gpgmepp.pc.in
 
 lib_LTLIBRARIES = libgpgmepp.la
 

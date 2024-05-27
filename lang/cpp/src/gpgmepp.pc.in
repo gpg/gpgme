@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
+host=@GPGMEPP_PKGCONFIG_HOST@
+
+Name: gpgmepp
+Description: GnuPG Made Easy (C++ binding)
+Requires.private: gpg-error, gpgme
+Version: @PACKAGE_VERSION@
+Cflags: @GPGMEPP_PKGCONFIG_CFLAGS@
+Libs: @GPGMEPP_PKGCONFIG_LIBS@
+URL: https://www.gnupg.org/software/gpgme/index.html
