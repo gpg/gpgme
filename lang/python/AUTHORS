@@ -1,0 +1,54 @@
+Package: gpg-py
+Homepage: https://gnupg.org/software/gpgme/
+Download: https://gnupg.org/ftp/gcrypt/gpgme/
+Repository: git://git.gnupg.org/gpgme.git
+Maintainer: Werner Koch <wk@gnupg.org>
+Bug reports: https://bugs.gnupg.org
+Security related bug reports: security@gnupg.org
+License (software): LGPL-2.1-or-later
+License (examples, tests): GPL-2.0-or-later
+
+
+GPGME is free software.  See the files COPYING.LESSER and COPYING for
+copying conditions.  License copyright years may be listed using range
+notation, e.g., 2000-2013, indicating that every year in the range,
+inclusive, is a copyrightable year that would otherwise be listed
+individually.
+
+
+List of Copyright holders
+=========================
+
+  Copyright (C) 1985, 1986, 1988, 1990-2022 Free Software Foundation, Inc.
+  Copyright (C) 2000 Werner Koch
+  Copyright (C) 2001-2022, 2024 g10 Code GmbH
+  Copyright (C) 2004-2008 Igor Belyi
+  Copyright (C) 2002 John Goerzen
+  Copyright (C) 2008 Bernhard Reiter
+  Copyright (C) 2014, 2015 Martin Albrecht
+  Copyright (C) 2015, 2018, 2019 Ben McGinnes
+  Copyright (C) 2016 Tobias Mueller
+
+
+Authors with a DCO
+==================
+
+Daniel Kahn Gillmor <dkg@fifthhorseman.net>
+2014-09-24:878ul9w4j8.fsf@alice.fifthhorseman.net:
+
+Tobias Mueller <muelli@cryptobitch.de>
+2016-11-23:1479937342.11180.3.camel@cryptobitch.de:
+
+Ben McGinnes <ben@adversary.org>
+2017-12-16:20171216002102.l6aejk5xdp6xhtfi@adversary.org:
+
+
+ Copyright 2001, 2002, 2012, 2013 g10 Code GmbH
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

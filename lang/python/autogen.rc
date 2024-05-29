@@ -1,0 +1,5 @@
+# autogen.sh configuration for Python bindings of GPGME     -*- sh -*-
+
+package_subdir="lang/python"
+
+final_info="mkdir build && cd build && ../configure --enable-maintainer-mode && make"

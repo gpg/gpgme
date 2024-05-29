@@ -1,0 +1,17 @@
+No ChangeLog file
+=================
+
+Do not modify the ChangeLog file of the Python bindings of GpgME.  We
+put change information only in the GIT commit log, and generate a
+top-level ChangeLog file from logs at "make dist" time.
+As such, there are strict requirements on the form of the commit log
+messages.  See doc/HACKING (of gpgme) for details.
+
+Change information before the Python bindings were added to gpgme
+can be found in doc/meta/old-commits.log.
+
+
+Local Variables:
+buffer-read-only: t
+mode: text
+End:

@@ -236,8 +236,8 @@ have_w32_system=no
 have_w64_system=no
 have_macos_system=no
 build_w32_glib=no
-available_languages="cl python"
-default_languages="cl python"
+available_languages="cl"
+default_languages="cl"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -324,7 +324,7 @@ fi
 AC_ARG_ENABLE([languages],
               AS_HELP_STRING([--enable-languages=languages],
                              [enable only specific language bindings:
-                              cl python]),
+                              cl]),
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]'`],
                              [enabled_languages="maybe"])
@@ -348,79 +348,6 @@ for language in $enabled_languages; do
        AC_MSG_ERROR([unsupported language binding specified])
     fi
 done
-
-# Python bindings.
-LIST_MEMBER("python", $enabled_languages)
-found_py=$found
-if test "$found_py" = "1"; then
-    AX_PKG_SWIG
-    if test -z "$SWIG"; then
-        if test "$explicit_languages" = "1"; then
-            AC_MSG_ERROR([[
-***
-*** You need SWIG to build the Python bindings.
-***]])
-        else
-            enabled_languages=$(echo $enabled_languages | sed 's/python//')
-        fi
-    else
-        # Reset the version collecting vars.
-	PYTHONS=
-	PYTHON_VERSIONS=
-
-	if test "$found_py" = "1" -o "$found_py3" = "1"; then
-	  # Reset everything, so that we can look for another Python.
-          m4_foreach([mym4pythonver],
-                     [[2.7],[3.6],[3.8],[3.9],[3.10],[3.11],[3.12],[all]],
-           [unset PYTHON
-	    unset PYTHON_VERSION
-	    unset PYTHON_CPPFLAGS
-	    unset PYTHON_LDFLAGS
-	    unset PYTHON_LIBS
-	    unset PYTHON_SITE_PKG
-	    unset PYTHON_EXTRA_LIBS
-	    unset PYTHON_EXTRA_LDFLAGS
-	    unset ac_cv_path_PYTHON
-	    unset am_cv_pathless_PYTHON
-	    unset am_cv_python_version
-	    unset am_cv_python_platform
-	    unset am_cv_python_pythondir
-	    unset am_cv_python_pyexecdir
-	    AM_PATH_PYTHON(mym4pythonver, [
-		AX_PYTHON_DEVEL([], [true])
-		if test "$PYTHON_VERSION"; then
-			PYTHONS="$(echo $PYTHONS $PYTHON)"
-			PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS $PYTHON_VERSION)"
-		fi
-	    ], :, m4_if([mym4pythonver],[all],[],[python]mym4pythonver))
-           ])
-	fi
-
-	# Recover some values lost in the second attempt to find Python.
-	PYTHON="$(echo $PYTHONS | cut -d ' ' -f 1)"
-	PYTHON_VERSION="$(echo $PYTHON_VERSIONS | cut -d ' ' -f 1)"
-
-	# Remove duplicates.
-	PYTHONS="$(echo $PYTHONS | tr '[[:space:]]' '\n' | sort | uniq | tr '\n' ' ' | sed -e 's/ $//')"
-	PYTHON_VERSIONS="$(echo $PYTHON_VERSIONS | tr '[[:space:]]' '\n' | sort | uniq | tr '\n' ' ' | sed -e 's/ $//')"
-
-	if test "$PYTHON_VERSIONS"; then
-	   enabled_languages_v=$(echo $enabled_languages | sed -Ee "s/python[[23]]?/python ($PYTHON_VERSIONS)/")
-	   enabled_languages=$(echo $enabled_languages | sed -Ee "s/python[[23]]?/python/")
-	else
-            if test "$explicit_languages" = "1"; then
-                AC_MSG_ERROR([[
-***
-*** Please install the python development packages.
-***]])
-	    else
-                enabled_languages=$(echo $enabled_languages | sed 's/python//')
-            fi
-	fi
-
-	AC_SUBST(PYTHONS, $PYTHONS)
-    fi
-fi
 
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
 
@@ -898,13 +825,6 @@ AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
                  lang/js/BrowserTestExtension/Makefile
                  lang/js/DemoExtension/Makefile])
-AC_CONFIG_FILES([lang/python/Makefile
-		 lang/python/version.py
-		 lang/python/tests/Makefile
-		 lang/python/src/Makefile
-		 lang/python/examples/Makefile
-		 lang/python/doc/Makefile])
-AC_CONFIG_FILES([lang/python/setup.py], [chmod a+x lang/python/setup.py])
 AC_OUTPUT
 
 echo "

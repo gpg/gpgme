@@ -68,7 +68,7 @@ no_such_key = "A" * 40
 
 
 def make_filename(name):
-    return os.path.join(os.environ['top_srcdir'], 'tests', 'gpg', name)
+    return os.path.join(os.environ['top_srcdir'], 'tests', name)
 
 
 def in_srcdir(name):

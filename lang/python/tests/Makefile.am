@@ -19,14 +19,11 @@
 GPG = gpg
 GPG_AGENT = gpg-agent
 
-test_srcdir = $(top_srcdir)/tests/gpg
-
 GNUPGHOME=$(abs_builddir)
 TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) \
 	LC_ALL=C GPG_AGENT_INFO= \
 	top_srcdir=$(top_srcdir) \
-	srcdir=$(srcdir) \
-	LD_LIBRARY_PATH="../../../src/.libs:$(LD_LIBRARY_PATH)"
+	srcdir=$(srcdir)
 
 py_tests ?= t-wrapper.py \
 	t-callbacks.py \
@@ -56,8 +53,20 @@ py_tests ?= t-wrapper.py \
 	t-quick-key-signing.py
 
 XTESTS = initial.py $(py_tests) final.py
+
+private_keys = \
+        13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
+        76F7E2B35832976B50A27A282D9B87E44577EB66 \
+        A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD \
+        13CBE3758AFE42B5E5E2AE4CED27AFA455E3F87F \
+        7A030357C0F253A5BBCD282FFC4E521B37558F5C
+
 EXTRA_DIST = support.py $(XTESTS) encrypt-only.asc sign-only.asc \
-             run-tests.py
+	pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
+	cipher-3.asc cipher-no-sig.asc \
+	pubkey-1.asc seckey-1.asc $(private_keys) \
+	start-stop-agent pinentry \
+	run-tests.py
 
 # XXX: Currently, one cannot override automake's 'check' target.  As a
 # workaround, we avoid defining 'TESTS', thus automake will not emit
@@ -79,34 +88,27 @@ CLEANFILES = secring.gpg pubring.gpg pubring.kbx trustdb.gpg dirmngr.conf \
 	random_seed .gpg-v21-migrated tofu.db \
         pubring-stamp gpg-sample.stamp
 
-private_keys = \
-        $(test_srcdir)/13CD0F3BDF24BE53FE192D62F18737256FF6E4FD \
-        $(test_srcdir)/76F7E2B35832976B50A27A282D9B87E44577EB66 \
-        $(test_srcdir)/A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD \
-        $(test_srcdir)/13CBE3758AFE42B5E5E2AE4CED27AFA455E3F87F \
-        $(test_srcdir)/7A030357C0F253A5BBCD282FFC4E521B37558F5C
-
 clean-local:
-	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
+	-$(TESTS_ENVIRONMENT) $(srcdir)/start-stop-agent --stop
 	-rm -fR -- private-keys-v1.d openpgp-revocs.d S.gpg-agent sshcontrol
 
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
 
-gpg-sample.stamp: $(private_keys)
+gpg-sample.stamp: $(srcdir)/$(private_keys)
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
-          cp $$k private-keys-v1.d/$${k#$(test_srcdir)/}.key; \
-        done
+	  cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \
+	done
 	echo x > ./gpg-sample.stamp
 
-pubring-stamp: $(test_srcdir)/pubdemo.asc gpg-sample.stamp
+pubring-stamp: $(srcdir)/pubdemo.asc gpg-sample.stamp
 	$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
-               --import $(test_srcdir)/pubdemo.asc
+		--import $(srcdir)/pubdemo.asc
 	-$(TESTS_ENVIRONMENT) $(GPG) --batch --no-permission-warning \
-		--import $(test_srcdir)/secdemo.asc
+		--import $(srcdir)/secdemo.asc
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all
 	echo x > ./pubring-stamp
 
@@ -117,7 +119,7 @@ gpg.conf:
 
 gpg-agent.conf:
 # This is required for gpg2, which does not support command fd.
-	echo pinentry-program $(abs_top_srcdir)/tests/gpg/pinentry >$@
+	echo pinentry-program $(abs_srcdir)/pinentry >$@
 	echo disable-scdaemon >> $@
 
 

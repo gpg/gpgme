@@ -37,22 +37,6 @@ import sys
 gpgme_h = ''
 include_dirs = [os.getcwd()]
 library_dirs = []
-in_tree = False
-extra_swig_opts = []
-extra_macros = dict()
-
-top_builddir = os.environ.get('top_builddir')
-if top_builddir:
-    # In-tree build.
-    in_tree = True
-    gpgme_h = os.path.join(top_builddir, 'src/gpgme.h')
-    library_dirs = [os.path.join(top_builddir,
-                                 'src/.libs')]  # XXX uses libtool internals
-    extra_macros.update(
-        HAVE_CONFIG_H=1,
-        HAVE_DATA_H=1,
-        IN_TREE_BUILD=1,
-    )
 
 if hasattr(subprocess, 'DEVNULL'):
     devnull = subprocess.DEVNULL
@@ -68,22 +52,14 @@ major, minor, patch = map(int, version.split('.'))
 if not (major > 1 or (major == 1 and minor >= 7)):
     sys.exit('Need at least GPGME version 1.7, found {}.'.format(version_raw))
 
-if not gpgme_h:
-    gpgme_h = os.path.join('@prefix@', 'include', 'gpgme.h')
-
 define_macros = []
-if '@GPGME_CONFIG_LIBS@':
-    libs = '@GPGME_CONFIG_LIBS@'.split(' ')
+if '@GPGME_LIBS@':
+    libs = '@GPGME_LIBS@'.split(' ')
 else:
     libs = []
 
-# Define extra_macros for both the SWIG and C code
-for k, v in extra_macros.items():
-    extra_swig_opts.append('-D{0}={1}'.format(k, v))
-    define_macros.append((k, str(v)))
-
-if '@GPGME_CONFIG_CFLAGS@':
-    for item in '@GPGME_CONFIG_CFLAGS@'.split(' '):
+if '@GPGME_CFLAGS@':
+    for item in '@GPGME_CFLAGS@'.split(' '):
         if item.startswith('-I'):
             include_dirs.append(item[2:])
         elif item.startswith('-D'):
@@ -119,6 +95,18 @@ if uname_s.startswith('MINGW32'):
                     item = item[1:]
                 library_dirs.append(os.path.join(tgt, item))
                 break
+
+if not gpgme_h:
+    if os.path.exists(os.path.join('@prefix@', 'include', 'gpgme.h')):
+        gpgme_h = os.path.join('@prefix@', 'include', 'gpgme.h')
+    else:
+        for include_dir in (include_dirs or ['/usr/include']):
+            if os.path.exists(os.path.join(include_dir, 'gpgme.h')):
+                gpgme_h = os.path.join(include_dir, 'gpgme.h')
+                break
+
+if not gpgme_h:
+    sys.exit('gpgme.h not found.')
 
 
 def in_srcdir(name):
@@ -230,7 +218,7 @@ class BuildExtFirstHack(build):
 
 
 swig_sources = []
-swig_opts = ['-threads'] + extra_swig_opts
+swig_opts = ['-threads']
 swige = Extension(
     'gpg._gpgme',
     sources=swig_sources,
