@@ -590,8 +590,7 @@ if test "$found_py" = "1"; then
 	if test "$found_py" = "1" -o "$found_py3" = "1"; then
 	  # Reset everything, so that we can look for another Python.
           m4_foreach([mym4pythonver],
-                     [[2.7],[3.4],[3.5],[3.6],[3.7],[3.8],[3.9],[3.10],
-                      [3.11],[3.12],[all]],
+                     [[2.7],[3.6],[3.8],[3.9],[3.10],[3.11],[3.12],[all]],
            [unset PYTHON
 	    unset PYTHON_VERSION
 	    unset PYTHON_CPPFLAGS
