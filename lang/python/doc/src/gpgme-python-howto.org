@@ -2945,7 +2945,7 @@ Save that into a file called =keycount.pyx= and then create a
 =setup.py= file which contains this:
 
 #+BEGIN_SRC python -i
-from distutils.core import setup
+from setuptools import setup
 from Cython.Build import cythonize
 
 setup(

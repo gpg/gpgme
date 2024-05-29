@@ -80,7 +80,7 @@ CLEANFILES = copystamp \
 # 'make distclean' clears the write bit, breaking rm -rf.  Fix the
 # permissions.
 clean-local:
-	rm -rf -- build
+	rm -rf -- build dist gpg.egg-info
 	for PYTHON in $(PYTHONS); do \
 	  find "$$(basename "$${PYTHON}")-gpg" -type d ! -perm -200 -exec chmod u+w {} ';' ; \
 	  rm -rf -- "$$(basename "$${PYTHON}")-gpg" ; \

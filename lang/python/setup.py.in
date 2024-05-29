@@ -18,8 +18,12 @@
 #    License along with this library; if not, write to the Free Software
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA
 
-from distutils.core import setup, Extension
-from distutils.command.build import build
+try:
+    from setuptools import setup, Extension
+    from setuptools.command.build import build
+except ImportError:
+    from distutils.core import setup, Extension
+    from distutils.command.build import build
 
 import glob
 import os
@@ -225,9 +229,8 @@ class BuildExtFirstHack(build):
         build.run(self)
 
 
-py3 = [] if sys.version_info.major < 3 else ['-py3']
 swig_sources = []
-swig_opts = ['-threads'] + py3 + extra_swig_opts
+swig_opts = ['-threads'] + extra_swig_opts
 swige = Extension(
     'gpg._gpgme',
     sources=swig_sources,
@@ -282,10 +285,12 @@ GPGME and these bindings is available here:
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
         'Topic :: Communications :: Email',
