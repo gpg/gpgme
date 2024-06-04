@@ -1,6 +1,6 @@
 # Makefile.am - Top level Makefile for GPGME.
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001, 2002, 2004, 2005, 2008, 2009 g10 Code GmbH
+# Copyright (C) 2001, 2002, 2004, 2005, 2008, 2009, 2024 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -69,8 +69,6 @@ distcheck-hook:
 	    echo "$${pref}sha2 $$(sha256sum <$$i|cut -d' ' -f1)" ;;\
 	  esac;\
 	done ) | tee $(distdir).swdb
-
-.PHONY: gen-ChangeLog release sign-release
 
 gen_start_date = 2011-12-01T00:00:00
 gen-ChangeLog:
@@ -142,3 +140,58 @@ sign-release:
 	  echo ' * All done; for checksums see dist/swdb.snippet' ;\
 	  echo ' */' ;\
          )
+
+languages = $(NESTED_LANGUAGES)
+
+dist_languages = $(languages:%=dist-%)
+$(dist_languages):
+	+(set -e;\
+	  lang=$$(echo "$@" | sed 's/.*-//');\
+	  cd "lang/$$lang";\
+	  $(MAKE) dist;\
+	)
+
+distcheck_languages = $(languages:%=distcheck-%)
+$(distcheck_languages):
+	+(set -e;\
+	  lang=$$(echo "$@" | sed 's/.*-//');\
+	  cd "lang/$$lang";\
+	  $(MAKE) distcheck;\
+	)
+
+release_languages = $(languages:%=release-%)
+$(release_languages):
+	+(set -e;\
+	  lang=$$(echo "$@" | sed 's/.*-//');\
+	  cd "lang/$$lang";\
+	  $(MAKE) release;\
+	)
+
+sign_release_languages = $(languages:%=sign-release-%)
+$(sign_release_languages):
+	+(set -e;\
+	  lang=$$(echo "$@" | sed 's/.*-//');\
+	  cd "lang/$$lang";\
+	  $(MAKE) sign-release;\
+	)
+
+distclean_languages = $(languages:%=distclean-%)
+$(distclean_languages):
+	+(set -e;\
+	  lang=$$(echo "$@" | sed 's/.*-//');\
+	  cd "lang/$$lang";\
+	  $(MAKE) distclean;\
+	)
+distclean-local: $(distclean_languages)
+
+dist-all: dist $(dist_languages)
+
+distcheck-all: distcheck $(distcheck_languages)
+
+release-all: release $(release_languages)
+
+sign-release-all: sign-release $(sign_release_languages)
+
+.PHONY: gen-ChangeLog release sign-release dist-all $(dist_languages) \
+	distcheck-all $(distcheck_languages) release-all $release_languages) \
+	sign-release-all $(sign_release_languages) $(distclean_languages)

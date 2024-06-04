@@ -354,8 +354,26 @@ AM_CONDITIONAL(USE_GPGRT_CONFIG, [test -n "$GPGRT_CONFIG" \
 
 # And for gpgme.
 have_gpgme=no
-AM_PATH_GPGME("$NEED_GPGME_VERSION",
-              have_gpgme=yes, have_gpgme=no)
+builddir=`pwd`
+# Check if gpgmepp is built as nested package of gpgme
+if test "${srcdir%/lang/cpp}/lang/cpp" == "$srcdir" -a \
+        "${builddir%/lang/cpp}/lang/cpp" == "$builddir"; then
+  AC_MSG_CHECKING(for GpgME - assuming nested build)
+  gpgme_build_dir=${builddir%/lang/cpp}
+  if test -f "$gpgme_build_dir/src/gpgme.h"; then
+    GPGME_CFLAGS="-I$gpgme_build_dir/src"
+    GPGME_LIBS="$gpgme_build_dir/src/libgpgme.la"
+    have_gpgme=yes
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+if test "$have_gpgme" = "no"; then
+  AM_PATH_GPGME("$NEED_GPGME_VERSION",
+                have_gpgme=yes, have_gpgme=no)
+fi
 
 
 # Substitution used for gpgmepp.pc

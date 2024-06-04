@@ -238,6 +238,11 @@ have_macos_system=no
 build_w32_glib=no
 available_languages="cl"
 default_languages="cl"
+for lang in cpp; do
+  if test -d $srcdir/lang/$lang; then
+    available_languages="$available_languages $lang"
+  fi
+done
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -323,8 +328,7 @@ fi
 #       lang/Makefile.am's DIST_SUBDIRS.
 AC_ARG_ENABLE([languages],
               AS_HELP_STRING([--enable-languages=languages],
-                             [enable only specific language bindings:
-                              cl]),
+                             [enable only specific language bindings]),
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]'`],
                              [enabled_languages="maybe"])
@@ -350,6 +354,14 @@ for language in $enabled_languages; do
 done
 
 AC_SUBST(ENABLED_LANGUAGES, $enabled_languages)
+
+nested_languages=
+LIST_MEMBER("cpp", $enabled_languages)
+if test "$found" = "1"; then
+  nested_languages="$nested_languages cpp"
+fi
+
+AC_SUBST(NESTED_LANGUAGES, $nested_languages)
 
 #
 # Provide information about the build.
@@ -825,6 +837,13 @@ AC_CONFIG_FILES([lang/Makefile lang/cl/Makefile lang/cl/gpgme.asd])
 AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
                  lang/js/BrowserTestExtension/Makefile
                  lang/js/DemoExtension/Makefile])
+
+# Call ./configure scripts of nested packages recursively.
+LIST_MEMBER("cpp", $enabled_languages)
+if test "$found" = "1"; then
+  AC_CONFIG_SUBDIRS([lang/cpp])
+fi
+
 AC_OUTPUT
 
 echo "
