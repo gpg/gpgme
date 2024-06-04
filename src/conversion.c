@@ -632,3 +632,13 @@ _gpgme_cipher_mode_name (int algo, gpgme_protocol_t protocol)
 
   return "Unknown";
 }
+
+
+/* Replace all backslashes with forward slashes.  */
+void
+_gpgme_replace_backslashes (char *string)
+{
+  for (; *string; string++)
+    if (*string == '\\')
+      *string = '/';
+}

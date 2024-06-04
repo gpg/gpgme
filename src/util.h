@@ -163,6 +163,9 @@ int _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol);
 const char *_gpgme_cipher_algo_name (int algo, gpgme_protocol_t protocol);
 const char *_gpgme_cipher_mode_name (int algo, gpgme_protocol_t protocol);
 
+/* Replace all backslashes in STRING with forward slashes.  */
+void _gpgme_replace_backslashes (char *string);
+
 
 /*-- b64dec.c --*/
 
