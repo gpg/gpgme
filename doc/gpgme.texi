@@ -4393,7 +4393,10 @@ Request generation of keys that do not expire.
 @item GPGME_CREATE_ADSK
 @since{1.24.0}
 
-Add an ADSK to the key.
+Add an ADSK to the key.  With this flag @var{algo} is expected to be
+the hexified fingerprint of the ADSK to be added; this must be a
+subkey.  If the string "default" is used for @var{algo} the engine
+will add all ADSK as it would do for new keys.
 
 @end table
 
