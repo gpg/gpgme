@@ -15,7 +15,7 @@
 
 prog=$(basename "$0")
 
-packages=". lang/cpp"
+packages=". lang/cpp lang/qt"
 
 fatal () {
     echo "${prog}:" "$*" >&2

@@ -469,16 +469,43 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
 AM_CONDITIONAL(USE_GPGRT_CONFIG, [test -n "$GPGRT_CONFIG" \
                                   -a "$ac_cv_path_GPG_ERROR_CONFIG" = no])
 
-# And for gpgme.
+# Check for gpgme and gpgmepp.
 have_gpgme=no
-AM_PATH_GPGME("$NEED_GPGME_VERSION",
-              have_gpgme=yes, have_gpgme=no)
-
-# And for gpgmepp.
 have_gpgmepp=no
-AM_PATH_GPGMEPP("$NEED_GPGMEPP_VERSION",
-                have_gpgmepp=yes, have_gpgmepp=no)
+# Check if qgpgme is built as nested package of gpgme
+builddir=`pwd`
+if test "${srcdir%/lang/qt}/lang/qt" == "$srcdir" -a \
+        "${builddir%/lang/qt}/lang/qt" == "$builddir"; then
+  AC_MSG_CHECKING(for GpgME - assuming nested build)
+  gpgme_build_dir=${builddir%/lang/qt}
+  if test -f "$gpgme_build_dir/src/gpgme.h"; then
+    GPGME_CFLAGS="-I$gpgme_build_dir/src"
+    GPGME_LIBS="$gpgme_build_dir/src/libgpgme.la"
+    have_gpgme=yes
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+  AC_MSG_CHECKING(for GpgME++ - assuming nested build)
+  gpgmepp_build_dir=${builddir%/lang/qt}/lang/cpp
+  if test -f "$gpgmepp_build_dir/src/gpgmepp_version.h"; then
+    GPGMEPP_CFLAGS="-I$gpgmepp_build_dir/src"
+    GPGMEPP_LIBS="$gpgmepp_build_dir/src/libgpgmepp.la"
+    have_gpgmepp=yes
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
 
+if test "$have_gpgme" = "no"; then
+  AM_PATH_GPGME("$NEED_GPGME_VERSION",
+                have_gpgme=yes, have_gpgme=no)
+fi
+if test "$have_gpgmepp" = "no"; then
+  AM_PATH_GPGMEPP("$NEED_GPGMEPP_VERSION",
+                  have_gpgmepp=yes, have_gpgmepp=no)
+fi
 
 # Last check.
 die=no

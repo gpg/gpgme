@@ -238,7 +238,7 @@ have_macos_system=no
 build_w32_glib=no
 available_languages="cl"
 default_languages="cl"
-for lang in cpp; do
+for lang in cpp qt; do
   if test -d $srcdir/lang/$lang; then
     available_languages="$available_languages $lang"
   fi
@@ -359,6 +359,10 @@ nested_languages=
 LIST_MEMBER("cpp", $enabled_languages)
 if test "$found" = "1"; then
   nested_languages="$nested_languages cpp"
+fi
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+  nested_languages="$nested_languages qt"
 fi
 
 AC_SUBST(NESTED_LANGUAGES, $nested_languages)
@@ -842,6 +846,10 @@ AC_CONFIG_FILES([lang/js/Makefile lang/js/src/Makefile
 LIST_MEMBER("cpp", $enabled_languages)
 if test "$found" = "1"; then
   AC_CONFIG_SUBDIRS([lang/cpp])
+fi
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+  AC_CONFIG_SUBDIRS([lang/qt])
 fi
 
 AC_OUTPUT
