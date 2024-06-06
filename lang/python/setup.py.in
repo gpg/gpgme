@@ -33,10 +33,6 @@ import shutil
 import subprocess
 import sys
 
-# Out-of-tree build of the gpg bindings.
-gpgme_h = ''
-include_dirs = [os.getcwd()]
-library_dirs = []
 
 if hasattr(subprocess, 'DEVNULL'):
     devnull = subprocess.DEVNULL
@@ -52,12 +48,17 @@ major, minor, patch = map(int, version.split('.'))
 if not (major > 1 or (major == 1 and minor >= 7)):
     sys.exit('Need at least GPGME version 1.7, found {}.'.format(version_raw))
 
-define_macros = []
+library_dirs = []
+libs = []
 if '@GPGME_LIBS@':
-    libs = '@GPGME_LIBS@'.split(' ')
-else:
-    libs = []
+    for item in '@GPGME_LIBS@'.split(' '):
+        if item.startswith('-L'):
+            library_dirs.append(item[2:])
+        else:
+            libs.append(item)
 
+include_dirs = [os.getcwd()]
+define_macros = []
 if '@GPGME_CFLAGS@':
     for item in '@GPGME_CFLAGS@'.split(' '):
         if item.startswith('-I'):
@@ -87,23 +88,23 @@ if uname_s.startswith('MINGW32'):
                 extra_dirs.append(os.path.join(tgt, item))
                 break
     include_dirs += extra_dirs
-    for item in [x[2:] for x in libs if x.startswith('-L')]:
+    extra_dirs = []
+    for item in library_dirs:
         for ln, mnt, tgt in tmplist:
             if item.startswith(mnt):
                 item = os.path.normpath(item[ln:])
                 while item[0] == os.path.sep:
                     item = item[1:]
-                library_dirs.append(os.path.join(tgt, item))
+                extra_dirs.append(os.path.join(tgt, item))
                 break
+    library_dirs += extra_dirs
 
-if not gpgme_h:
-    if os.path.exists(os.path.join('@prefix@', 'include', 'gpgme.h')):
-        gpgme_h = os.path.join('@prefix@', 'include', 'gpgme.h')
-    else:
-        for include_dir in (include_dirs or ['/usr/include']):
-            if os.path.exists(os.path.join(include_dir, 'gpgme.h')):
-                gpgme_h = os.path.join(include_dir, 'gpgme.h')
-                break
+gpgme_h = None
+for include_dir in (include_dirs +
+                    [os.path.join('@prefix@', 'include'), '/usr/include']):
+    if os.path.exists(os.path.join(include_dir, 'gpgme.h')):
+        gpgme_h = os.path.join(include_dir, 'gpgme.h')
+        break
 
 if not gpgme_h:
     sys.exit('gpgme.h not found.')

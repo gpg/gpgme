@@ -238,7 +238,7 @@ have_macos_system=no
 build_w32_glib=no
 available_languages="cl"
 default_languages="cl"
-for lang in cpp qt; do
+for lang in cpp qt python; do
   if test -d $srcdir/lang/$lang; then
     available_languages="$available_languages $lang"
   fi
@@ -363,6 +363,10 @@ fi
 LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
   nested_languages="$nested_languages qt"
+fi
+LIST_MEMBER("python", $enabled_languages)
+if test "$found" = "1"; then
+  nested_languages="$nested_languages python"
 fi
 
 AC_SUBST(NESTED_LANGUAGES, $nested_languages)
@@ -850,6 +854,10 @@ fi
 LIST_MEMBER("qt", $enabled_languages)
 if test "$found" = "1"; then
   AC_CONFIG_SUBDIRS([lang/qt])
+fi
+LIST_MEMBER("python", $enabled_languages)
+if test "$found" = "1"; then
+  AC_CONFIG_SUBDIRS([lang/python])
 fi
 
 AC_OUTPUT
