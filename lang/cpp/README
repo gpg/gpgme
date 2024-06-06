@@ -1,11 +1,11 @@
-GpgMEpp - C++ bindings/wrapper for GPGME
+GpgME++ - C++ bindings/wrapper for GPGME
 ----------------------------------------
 Based on KF5gpgmepp
 
 Overview
 --------
 
-GpgMEpp is a C++ wrapper (or C++ bindings) for the GnuPG project's
+GpgME++ is a C++ wrapper (or C++ bindings) for the GnuPG project's
 gpgme (GnuPG Made Easy) library, version 0.4.4 and later.
 
 It is fairly complete, with some minor things still missing (in
@@ -33,17 +33,17 @@ The design principles of this library are as follows:
 8. Abstraction of GnuPG's edit-key interface by prepared
    Editinteractor classes.
 
-GpgMEpp was originally developed as part of the KDEPIM community.
+GpgME++ was originally developed as part of the KDEPIM community.
 
 Usage
 -----
 
-The usage pattern of GpgMEpp closely follows GPGMEs core usage
+The usage pattern of GpgME++ closely follows GPGMEs core usage
 pattern so the documentation for GPGME itself provides a good
 way to start.
 
 The context structure in GPGME is mapped to a Context object in
-GpgMEpp. Additional convenience code provides Data objects and
+GpgME++. Additional convenience code provides Data objects and
 a Dataprovider interface that can be used to implement GPGME's
 data with any subclass by implementing the right callbacks.
 
@@ -71,26 +71,27 @@ Example to set the ownertrust of a key:
 Examples / Tests
 ----------------
 
-GpgMEpp is tested through the Qt API. You can refer to the
+GpgME++ is tested through the Qt API. You can refer to the
 tests in qt/tests for examples of usage or refer to
 the actual QGpgME*Job.cpp implementations which rely
-on GpgMEpp and should cover most use cases.
+on GpgME++ and should cover most use cases.
 
 Hacking
 -------
 
-GpgMEpp follows KDE Coding styles. See:
+GpgME++ follows KDE Coding styles. See:
 https://techbase.kde.org/Policies/Frameworks_Coding_Style
 for more info.
 
 License
 -------
-GPGMEpp is free software; you can redistribute it and/or
+
+GPGME++ is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
 
-GPGMEpp is distributed in the hope that it will be useful,
+GPGME++ is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Library General Public License for more details.

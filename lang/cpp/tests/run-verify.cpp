@@ -1,14 +1,14 @@
 /*
     run-keylist.cpp
 
-    This file is part of GpgMEpp's test suite.
+    This file is part of GPGME++'s test suite.
     Copyright (c) 2018 Intevation GmbH
 
-    QGpgME is free software; you can redistribute it and/or
+    GPGME++ is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License,
     version 2, as published by the Free Software Foundation.
 
-    QGpgME is distributed in the hope that it will be useful,
+    GPGME++ is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details.

@@ -1,7 +1,7 @@
 /*
     run-wkdlookup.cpp
 
-    This file is part of GpgMEpp's test suite.
+    This file is part of GPGME++'s test suite.
     Copyright (c) 2021 g10 Code GmbH
     Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 

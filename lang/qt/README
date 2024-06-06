@@ -8,11 +8,11 @@ document for more information.
 
 Overview
 --------
-QGpgme provides a very high level Qt API around GpgMEpp.
-As such it depends on GpgMEpp additionally to GpgME.
+QGpgME provides a very high level Qt API around GpgME++.
+As such it depends on GpgME++ additionally to GpgME.
 
 There are two general concepts in QGpgME. Data abstraction
-through GpgMEpp's Dataprovider interface and the Job pattern.
+through GpgME++'s Dataprovider interface and the Job pattern.
 
 Data can be provided with QByteArrayDataProvider or
 QIODeviceDataProvider which can be constructed from their
