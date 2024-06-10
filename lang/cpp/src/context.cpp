@@ -147,11 +147,7 @@ bool Error::isCanceled() const
 
 int Error::toErrno() const
 {
-//#ifdef HAVE_GPGME_GPG_ERROR_WRAPPERS
     return gpgme_err_code_to_errno(static_cast<gpgme_err_code_t>(code()));
-//#else
-//    return gpg_err_code_to_errno( static_cast<gpg_err_code_t>( code() ) );
-//#endif
 }
 
 // static
