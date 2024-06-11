@@ -32,7 +32,7 @@ To use QGpgME first you need to obtain a Protocol class
 either for CMS (S/MIME) or OpenPGP. This Protocol class
 can then be used to create a Job.
 
-Each Job can be started asynchronusly and emits a result
+Each Job can be started asynchronously and emits a result
 signal when done. The jobs are deleted automatically
 with QObject::deleteLater so they can be started without
 result handlers.
@@ -53,7 +53,7 @@ in the result signal.
 Jobs also provide progress signal whenever GnuPG emits
 a progress status line.
 
-Most jobs also provide a way synchronusly execute them.
+Most jobs also provide a way synchronously execute them.
 Please not that synchronous use does not cause the autodeletion
 to take place so you have to manually delete them.
 
