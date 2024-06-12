@@ -55,6 +55,18 @@ QString QGpgME::ImportJob::importFilter() const
     return d->m_importFilter;
 }
 
+void QGpgME::ImportJob::setImportOptions(const QString &options)
+{
+    const auto d = jobPrivate<ImportJobPrivate>(this);
+    d->m_importOptions = options;
+}
+
+QString QGpgME::ImportJob::importOptions() const
+{
+    const auto d = jobPrivate<ImportJobPrivate>(this);
+    return d->m_importOptions;
+}
+
 void ImportJob::setKeyOrigin(GpgME::Key::Origin origin, const QString &url)
 {
     const auto d = jobPrivate<ImportJobPrivate>(this);

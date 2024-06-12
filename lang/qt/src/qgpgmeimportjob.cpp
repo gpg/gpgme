@@ -106,10 +106,14 @@ static const char *originToString(Key::Origin origin)
 }
 
 static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData, const QString &importFilter,
-                                               Key::Origin keyOrigin, const QString &keyOriginUrl)
+                                               const QString &importOptions, Key::Origin keyOrigin,
+                                               const QString &keyOriginUrl)
 {
     if (!importFilter.isEmpty()) {
         ctx->setFlag("import-filter", importFilter.toStdString().c_str());
+    }
+    if (!importOptions.isEmpty()) {
+        ctx->setFlag("import-options", importOptions.toStdString().c_str());
     }
     if (keyOrigin != Key::OriginUnknown) {
         if (const auto origin = originToString(keyOrigin)) {
@@ -149,19 +153,19 @@ static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &c
 
 Error QGpgMEImportJob::start(const QByteArray &certData)
 {
-    run(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), keyOrigin(), keyOriginUrl()));
+    run(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), importOptions(), keyOrigin(), keyOriginUrl()));
     return Error();
 }
 
 GpgME::ImportResult QGpgME::QGpgMEImportJob::exec(const QByteArray &keyData)
 {
-    const result_type r = import_qba(context(), keyData, importFilter(), keyOrigin(), keyOriginUrl());
+    const result_type r = import_qba(context(), keyData, importFilter(), importOptions(), keyOrigin(), keyOriginUrl());
     return std::get<0>(r);
 }
 
 Error QGpgMEImportJob::startLater(const QByteArray &certData)
 {
-    setWorkerFunction(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), keyOrigin(), keyOriginUrl()));
+    setWorkerFunction(std::bind(&import_qba, std::placeholders::_1, certData, importFilter(), importOptions(), keyOrigin(), keyOriginUrl()));
     return {};
 }
 
