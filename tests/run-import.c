@@ -49,6 +49,7 @@ show_usage (int ex)
          "  --offline        use offline mode\n"
          "  --key-origin     use the specified key origin\n"
          "  --import-options use the specified import options\n"
+         "  --import-filter  use the specified import filter\n"
          "  --url            import from given URLs\n"
          "  -0               URLs are delimited by a nul\n"
          , stderr);
