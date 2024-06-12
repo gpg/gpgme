@@ -261,6 +261,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->cert_expire);
   free (ctx->key_origin);
   free (ctx->import_filter);
+  free (ctx->import_options);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -607,6 +608,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
       if (!ctx->import_filter)
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (name, "import-options"))
+    {
+      free (ctx->import_options);
+      ctx->import_options = strdup (value);
+      if (!ctx->import_options)
+        err = gpg_error_from_syserror ();
+    }
   else if (!strcmp (name, "no-auto-check-trustdb"))
     {
       ctx->no_auto_check_trustdb = abool;
@@ -691,6 +699,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "import-filter"))
     {
       return ctx->import_filter? ctx->import_filter : "";
+    }
+  else if (!strcmp (name, "import-options"))
+    {
+      return ctx->import_options? ctx->import_options : "";
     }
   else if (!strcmp (name, "no-auto-check-trustdb"))
     {

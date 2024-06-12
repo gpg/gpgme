@@ -186,6 +186,9 @@ struct gpgme_context
   /* The optional import filter.  */
   char *import_filter;
 
+  /* The optional import options.  */
+  char *import_options;
+
   /* The operation data hooked into the context.  */
   ctx_op_data_t op_data;
 

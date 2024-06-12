@@ -98,6 +98,7 @@ struct engine_ops
                            gpgme_key_t *keyarray,
                            const char *keyids[],
                            const char *import_filter,
+                           const char *import_options,
                            const char *key_origin);
   gpgme_error_t (*keylist) (void *engine, const char *pattern,
 			    int secret_only, gpgme_keylist_mode_t mode);

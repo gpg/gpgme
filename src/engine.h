@@ -144,6 +144,7 @@ gpgme_error_t _gpgme_engine_op_import (engine_t engine,
                                        gpgme_key_t *keyarray,
                                        const char *keyids[],
                                        const char *import_filter,
+                                       const char *import_options,
                                        const char *key_origin);
 gpgme_error_t _gpgme_engine_op_keylist (engine_t engine,
 					const char *pattern,

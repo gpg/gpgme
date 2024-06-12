@@ -368,7 +368,8 @@ _gpgme_op_import_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t keydata)
                                     ctx);
 
   return _gpgme_engine_op_import (ctx->engine, keydata, NULL, NULL,
-                                  ctx->import_filter, ctx->key_origin);
+                                  ctx->import_filter, ctx->import_options,
+                                  ctx->key_origin);
 }
 
 
@@ -448,7 +449,8 @@ _gpgme_op_import_keys_start (gpgme_ctx_t ctx, int synchronous,
                                     ctx);
 
   return _gpgme_engine_op_import (ctx->engine, NULL, keys, NULL,
-                                  ctx->import_filter, ctx->key_origin);
+                                  ctx->import_filter, ctx->import_options,
+                                  ctx->key_origin);
 }
 
 
@@ -541,7 +543,8 @@ _gpgme_op_receive_keys_start (gpgme_ctx_t ctx, int synchronous, const char *keyi
                                     ctx);
 
   return _gpgme_engine_op_import (ctx->engine, NULL, NULL, keyids,
-                                  ctx->import_filter, ctx->key_origin);
+                                  ctx->import_filter, ctx->import_options,
+                                  ctx->key_origin);
 }
 
 

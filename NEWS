@@ -9,6 +9,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
 
  * Add information about designated revocation keys.  [T7118]
 
+ * New context flag "import-options".  [#7152]
+
  * cpp: Provide information about designated revocation keys for a Key.
    [T7118]
 
@@ -24,6 +26,7 @@ Noteworthy changes in version 1.24.0 (unrelease)
  GPGME_SIG_MODE_FILE                     NEW.
  gpgme_key_t                             EXTENDED: New field 'revkeys'.
  gpgme_revocation_key_t                  NEW.
+ gpgme_set_ctx_flag                      EXTENDED: New flag 'import-options'.
  cpp: Context::EncryptFile               NEW.
  cpp: SignatureMode::SignFile            NEW.
  cpp: RevocationKey                      NEW.
