@@ -79,8 +79,8 @@ public:
     void setImportFilter(const QString &filter);
     QString importFilter() const;
 
-    void setImportOptions(const QString &options);
-    QString importOptions() const;
+    void setImportOptions(const QStringList &options);
+    QStringList importOptions() const;
 
     void setKeyOrigin(GpgME::Key::Origin origin, const QString &url = {});
     GpgME::Key::Origin keyOrigin() const;

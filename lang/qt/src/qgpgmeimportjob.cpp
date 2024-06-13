@@ -106,14 +106,14 @@ static const char *originToString(Key::Origin origin)
 }
 
 static QGpgMEImportJob::result_type import_qba(Context *ctx, const QByteArray &certData, const QString &importFilter,
-                                               const QString &importOptions, Key::Origin keyOrigin,
+                                               const QStringList &importOptions, Key::Origin keyOrigin,
                                                const QString &keyOriginUrl)
 {
     if (!importFilter.isEmpty()) {
         ctx->setFlag("import-filter", importFilter.toStdString().c_str());
     }
-    if (!importOptions.isEmpty()) {
-        ctx->setFlag("import-options", importOptions.toStdString().c_str());
+    if (!importOptions.empty()) {
+        ctx->setFlag("import-options", importOptions.join(QLatin1Char{','}).toStdString().c_str());
     }
     if (keyOrigin != Key::OriginUnknown) {
         if (const auto origin = originToString(keyOrigin)) {

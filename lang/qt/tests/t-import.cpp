@@ -143,7 +143,7 @@ private Q_SLOTS:
             "-----END PGP PUBLIC KEY BLOCK-----\n";
 
         auto *job = openpgp()->importJob();
-        job->setImportOptions(QLatin1String{"show-only"});
+        job->setImportOptions({QStringLiteral("show-only")});
         connect(job, &ImportJob::result, this,
                 [this](ImportResult result, QString, Error)
         {
