@@ -162,7 +162,7 @@ private:
         delete job;
 
         QVERIFY(!sigResult.error());
-        foreach (const auto uid, keys[0].userIDs()) {
+        for (const auto &uid : keys[0].userIDs()) {
             auto info = uid.tofuInfo();
             QVERIFY(info.signCount() == expected - 1);
         }
@@ -387,7 +387,7 @@ private Q_SLOTS:
                       << fi2.isReadable() << " size: " << fi2.size();
 
             result = job->exec(QStringList(), false, keys);
-            foreach (const auto key, keys) {
+            for (const auto &key : keys) {
                 qDebug() << "Key: " << key.userID(0).name() << " <"
                          << key.userID(0).email()
                          << ">\n fpr: " << key.primaryFingerprint();
