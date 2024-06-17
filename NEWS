@@ -14,6 +14,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
  * cpp: Provide information about designated revocation keys for a Key.
    [T7118]
 
+ * qt: Install headers for Qt 5 and Qt 6 in separate folders.  [T7161]
+
  * qt: Allow reading the data to decrypt/encrypt/sign/verify directly from
    files.  [T6550]
 
