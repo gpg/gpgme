@@ -95,4 +95,16 @@ GpgME::SignatureMode SignJob::signingFlags() const
     return d->m_signingFlags;
 }
 
+void SignJob::setAppendSignature(bool append)
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    d->m_appendSignature = append;
+}
+
+bool SignJob::appendSignatureEnabled() const
+{
+    auto d = jobPrivate<SignJobPrivate>(this);
+    return d->m_appendSignature;
+}
+
 #include "signjob.moc"

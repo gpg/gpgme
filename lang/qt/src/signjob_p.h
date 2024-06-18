@@ -48,6 +48,7 @@ struct SignJobPrivate : public JobPrivate
     QString m_inputFilePath;
     QString m_outputFilePath;
     GpgME::SignatureMode m_signingFlags = GpgME::SignFile;
+    bool m_appendSignature = false;
 };
 
 }

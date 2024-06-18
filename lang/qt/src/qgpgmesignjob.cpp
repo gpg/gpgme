@@ -170,7 +170,8 @@ static QGpgMESignJob::result_type sign_to_filename(Context *ctx,
                                                    const std::vector<Key> &signers,
                                                    const QString &inputFilePath,
                                                    const QString &outputFilePath,
-                                                   SignatureMode flags)
+                                                   SignatureMode flags,
+                                                   bool appendSignature)
 {
     Data indata;
 #ifdef Q_OS_WIN
@@ -206,13 +207,42 @@ static QGpgMESignJob::result_type sign_to_filename(Context *ctx,
     flags = static_cast<SignatureMode>(flags | SignFile);
     const auto signingResult = ctx->sign(indata, outdata, flags);
 
-    if (!signingResult.error().code()) {
-        // the operation succeeded -> save the result under the requested file name
-        partFileGuard.commit();
-    }
-
     Error ae;
     const QString log = _detail::audit_log_as_html(ctx, ae);
+
+    if (!signingResult.error().code()) {
+        // the operation succeeded
+        const bool appendSignatureToExistingFile = appendSignature && (flags & Detached) && QFile::exists(outputFilePath);
+        if (appendSignatureToExistingFile) {
+            // append the result to the existing file
+            QFile newSignatureFile{partFileGuard.tempFileName()};
+            if (!newSignatureFile.open(QIODevice::ReadOnly)) {
+                qCDebug(QGPGME_LOG) << "Failed to open detached signature file" << newSignatureFile.fileName() << "(" << newSignatureFile.errorString() << ")";
+                return std::make_tuple(SigningResult{Error::fromCode(GPG_ERR_GENERAL)}, QByteArray{}, log, ae);
+            }
+            const QByteArray newSigData = newSignatureFile.readAll();
+            if (newSigData.isEmpty()) {
+                qCDebug(QGPGME_LOG) << "Failed to read detached signature from file" << newSignatureFile.fileName() << "(" << newSignatureFile.errorString() << ")";
+                return std::make_tuple(SigningResult{Error::fromCode(GPG_ERR_GENERAL)}, QByteArray{}, log, ae);
+            }
+            newSignatureFile.close();
+
+            QFile existingSignatureFile{outputFilePath};
+            if (!existingSignatureFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+                qCDebug(QGPGME_LOG) << "Failed to open existing detached signature file for appending" << existingSignatureFile.fileName() << "(" << existingSignatureFile.errorString() << ")";
+                return std::make_tuple(SigningResult{Error::fromCode(GPG_ERR_GENERAL)}, QByteArray{}, log, ae);
+            }
+            const auto bytesWritten = existingSignatureFile.write(newSigData);
+            if (bytesWritten != newSigData.size()) {
+                qCDebug(QGPGME_LOG) << "Failed to write new signature to existing detached signature file" << existingSignatureFile.fileName() << "(" << existingSignatureFile.errorString() << ")";
+                return std::make_tuple(SigningResult{Error::fromCode(GPG_ERR_GENERAL)}, QByteArray{}, log, ae);
+            }
+        } else {
+            // save the result under the requested file name
+            partFileGuard.commit();
+        }
+    }
+
     return std::make_tuple(signingResult, QByteArray{}, log, ae);
 }
 
@@ -241,7 +271,7 @@ GpgME::Error QGpgMESignJobPrivate::startIt()
     }
 
     q->run([=](Context *ctx) {
-        return sign_to_filename(ctx, m_signers, m_inputFilePath, m_outputFilePath, m_signingFlags);
+        return sign_to_filename(ctx, m_signers, m_inputFilePath, m_outputFilePath, m_signingFlags, m_appendSignature);
     });
 
     return {};

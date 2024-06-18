@@ -113,7 +113,8 @@ public:
      *
      * \note If a file with this path exists, then the job will fail, i.e. you
      * need to delete an existing file that shall be overwritten before you
-     * start the job.
+     * start the job. If you create a detached signature then you can tell
+     * the job to append the new detached signature to an existing file.
      */
     void setOutputFile(const QString &path);
     QString outputFile() const;
@@ -128,6 +129,17 @@ public:
      */
     void setSigningFlags(GpgME::SignatureMode flags);
     GpgME::SignatureMode signingFlags() const;
+
+    /**
+     * If @c true then a new detached signature is appended to an already
+     * existing detached signature.
+     *
+     * Defaults to \c false.
+     *
+     * Used if the job is started with startIt().
+     */
+    void setAppendSignature(bool append);
+    bool appendSignatureEnabled() const;
 
     /**
        Starts the signing operation. \a signers is the list of keys to

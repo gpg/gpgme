@@ -56,7 +56,9 @@ std::ostream &operator<<(std::ostream &os, const QString &s)
 }
 
 struct CommandLineOptions {
-    bool armor;
+    GpgME::SignatureMode signingFlags = GpgME::NormalSignatureMode;
+    bool armor = false;
+    bool appendSignature = false;
     QString inputFile;
     QString outputFile;
     std::chrono::seconds cancelTimeout{0};
@@ -72,6 +74,8 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     parser.addOptions({
         {{"o", "output"}, "Write output to FILE.", "FILE"},
         {{"a", "armor"}, "Create ASCII armored output."},
+        {{"b", "detach-sign"}, "Create a detached signature."},
+        {"append", "Append new (detached) signature to existing file."},
         {"cancel-after", "Cancel the running job after SECONDS seconds.", "SECONDS"},
     });
     parser.addPositionalArgument("file", "File to sign", "FILE");
@@ -84,6 +88,10 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     }
 
     options.armor = parser.isSet("armor");
+    if (parser.isSet("detach-sign")) {
+        options.signingFlags = GpgME::Detached;
+        options.appendSignature = parser.isSet("append");
+    }
     options.inputFile = args.front();
     options.outputFile = parser.value("output");
     if (parser.isSet("cancel-after")) {
@@ -114,7 +122,7 @@ int main(int argc, char **argv)
         output.reset(new QFile);
         output->open(stdout, QIODevice::WriteOnly);
     } else {
-        if (QFile::exists(options.outputFile)) {
+        if (QFile::exists(options.outputFile) && !options.appendSignature) {
             qCritical() << "File" << options.outputFile << "exists. Bailing out.";
             return 1;
         }
@@ -146,6 +154,8 @@ int main(int argc, char **argv)
     } else {
         job->setInputFile(options.inputFile);
         job->setOutputFile(options.outputFile);
+        job->setSigningFlags(options.signingFlags);
+        job->setAppendSignature(options.appendSignature);
         err = job->startIt();
     }
     if (err) {
