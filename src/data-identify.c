@@ -283,18 +283,18 @@ pgp_binary_detection (const void *image_arg, size_t imagelen)
 static gpgme_data_type_t
 inspect_pgp_message (char *string)
 {
-  struct b64state state;
+  gpgrt_b64state_t state;
   size_t nbytes;
 
-  if (_gpgme_b64dec_start (&state, ""))
+  if (!(state = gpgrt_b64dec_start ("")))
     return GPGME_DATA_TYPE_INVALID; /* oops */
 
-  if (_gpgme_b64dec_proc (&state, string, strlen (string), &nbytes))
+  if (gpgrt_b64dec_proc (state, string, strlen (string), &nbytes))
     {
-      _gpgme_b64dec_finish (&state);
+      gpgrt_b64dec_finish (state);
       return GPGME_DATA_TYPE_UNKNOWN; /* bad encoding etc. */
     }
-  _gpgme_b64dec_finish (&state);
+  gpgrt_b64dec_finish (state);
   string[nbytes] = 0; /* Better append a Nul. */
 
   return pgp_binary_detection (string, nbytes);
