@@ -75,31 +75,31 @@ main (int argc, char **argv)
     Error err;
     auto ctx = std::unique_ptr<Context>{Context::createForEngine(AssuanEngine, &err)};
     if (!ctx) {
-        std::cerr << "Failed to get context (Error: " << err.asString() << ")\n";
+        std::cerr << "Failed to get context (Error: " << err.asStdString() << ")\n";
         return -1;
     }
 
     const std::string dirmngrSocket = GpgME::dirInfo("dirmngr-socket");
     if ((err = ctx->setEngineFileName(dirmngrSocket.c_str()))) {
-        std::cerr << "Failed to set engine file name (Error: " << err.asString() << ")\n";
+        std::cerr << "Failed to set engine file name (Error: " << err.asStdString() << ")\n";
         return -1;
     }
     if ((err = ctx->setEngineHomeDirectory(""))) {
-        std::cerr << "Failed to set engine home directory (Error: " << err.asString() << ")\n";
+        std::cerr << "Failed to set engine home directory (Error: " << err.asStdString() << ")\n";
         return -1;
     }
 
     // try to connect to dirmngr
     err = ctx->assuanTransact("GETINFO version");
     if (err && err.code() != GPG_ERR_ASS_CONNECT_FAILED) {
-        std::cerr << "Failed to start assuan transaction (Error: " << err.asString() << ")\n";
+        std::cerr << "Failed to start assuan transaction (Error: " << err.asStdString() << ")\n";
         return -1;
     }
     if (err.code() == GPG_ERR_ASS_CONNECT_FAILED) {
         std::cerr << "Starting dirmngr ...\n";
         auto spawnCtx = std::unique_ptr<Context>{Context::createForEngine(SpawnEngine, &err)};
         if (!spawnCtx) {
-            std::cerr << "Failed to get context for spawn engine (Error: " << err.asString() << ")\n";
+            std::cerr << "Failed to get context for spawn engine (Error: " << err.asStdString() << ")\n";
             return -1;
         }
 
@@ -120,7 +120,7 @@ main (int argc, char **argv)
                               ignoreIO, ignoreIO, ignoreIO,
                               Context::SpawnDetached);
         if (err) {
-            std::cerr << "Failed to start dirmngr (Error: " << err.asString() << ")\n";
+            std::cerr << "Failed to start dirmngr (Error: " << err.asStdString() << ")\n";
             return -1;
         }
 
@@ -137,7 +137,7 @@ main (int argc, char **argv)
     const auto cmd = std::string{"WKD_GET "} + email;
     err = ctx->assuanTransact(cmd.c_str());
     if (err && err.code() != GPG_ERR_NO_NAME && err.code() != GPG_ERR_NO_DATA) {
-        std::cerr << "Error: WKD_GET returned " << err.asString() << "\n";
+        std::cerr << "Error: WKD_GET returned " << err.asStdString() << "\n";
         return -1;
     }
 

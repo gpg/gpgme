@@ -138,7 +138,7 @@ public:
                         if (writeAll(fd, result, len) != len) {
                             err = Error::fromSystemError();
                             if (ei->debug) {
-                                std::fprintf(ei->debug, "EditInteractor: Could not write to fd %d (%s)\n", fd, err.asString());
+                                std::fprintf(ei->debug, "EditInteractor: Could not write to fd %d (%s)\n", fd, err.asStdString().c_str());
                             }
                             goto error;
                         }
@@ -147,7 +147,7 @@ public:
                     if (writeAll(fd, "\n", 1) != 1) {
                         err = Error::fromSystemError();
                         if (ei->debug) {
-                            std::fprintf(ei->debug, "EditInteractor: Could not write to fd %d (%s)\n", fd, err.asString());
+                            std::fprintf(ei->debug, "EditInteractor: Could not write to fd %d (%s)\n", fd, err.asStdString().c_str());
                         }
                         goto error;
                     }

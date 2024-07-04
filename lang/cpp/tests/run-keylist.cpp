@@ -153,7 +153,7 @@ main (int argc, char **argv)
     }
     Error err = ctx->startKeyListing (*argv, only_secret);
     if (err) {
-        std::cout << "Error: " << err.asString() << "\n";
+        std::cout << "Error: " << err.asStdString() << "\n";
         return -1;
     }
     GpgME::Key key;

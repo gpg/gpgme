@@ -47,7 +47,10 @@ public:
     explicit Error(unsigned int e) : mErr(e), mMessage() {}
 
     const char *source() const;
-    const char *asString() const;
+    /* This function is deprecated. Use asStdString() instead. asString() may
+     * return wrongly encoded (i.e. not UTF-8) results on Windows for the main
+     * thread if the function was first called from a secondary thread. */
+    GPGMEPP_DEPRECATED const char *asString() const;
     std::string asStdString() const;
 
     int code() const;

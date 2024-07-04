@@ -150,7 +150,7 @@ main (int argc, char **argv)
     const GpgME::Key key = ctx->key (*argv, err, only_secret);
     std::stringstream ss;
 
-    ss << "Key " << key << " Err: " << err.asString() << "\n";
+    ss << "Key " << key << " Err: " << err.asStdString() << "\n";
 
     std::cout << ss.str();
 

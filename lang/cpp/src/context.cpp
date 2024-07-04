@@ -195,7 +195,7 @@ Error Error::fromCode(unsigned int err, unsigned int src)
 
 std::ostream &operator<<(std::ostream &os, const Error &err)
 {
-    return os << "GpgME::Error(" << err.encodedError() << " (" << err.asString() << "))";
+    return os << "GpgME::Error(" << err.encodedError() << " (" << err.asStdString() << "))";
 }
 
 Context::KeyListModeSaver::KeyListModeSaver(Context *ctx)

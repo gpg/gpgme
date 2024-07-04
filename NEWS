@@ -43,6 +43,7 @@ Noteworthy changes in version 1.24.0 (unrelease)
  cpp: Key::numRevocationKeys             NEW.
  cpp: Key::revocationKeys                NEW.
  cpp: Error::asStdString                 NEW.
+ cpp: Error::asString                    DEPRECATED.
  qt: DecryptVerifyJob::setInputFile      NEW.
  qt: DecryptVerifyJob::inputFile         NEW.
  qt: DecryptVerifyJob::setOutputFile     NEW.
