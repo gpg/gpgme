@@ -44,9 +44,9 @@ QDebug operator<<(QDebug debug, const GpgME::Error &err)
 {
 #ifdef Q_OS_WIN
     // On Windows, we tell libgpg-error to return (translated) error messages as UTF-8
-    const auto errAsString = QString::fromUtf8(err.asString());
+    const auto errAsString = QString::fromStdString(err.asStdString());
 #else
-    const auto errAsString = QString::fromLocal8Bit(err.asString());
+    const auto errAsString = QString::fromLocal8Bit(err.asStdString().c_str());
 #endif
     const bool oldSetting = debug.autoInsertSpaces();
     debug.nospace() << errAsString << " (code: " << err.code() << ", source: " << err.source() << ")";

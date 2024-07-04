@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <protocol.h>
 #include <verifydetachedjob.h>
 
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
     job->setSignedFile(options.signedFile);
     err = job->startIt();
     if (err) {
-        std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
+        std::cerr << "Error: Starting the job failed: " << err << std::endl;
         return 1;
     }
 

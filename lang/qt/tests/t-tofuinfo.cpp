@@ -38,6 +38,7 @@
 #include <QTemporaryDir>
 #include <QSignalSpy>
 
+#include "debug.h"
 #include "protocol.h"
 #include <gpgme++/tofuinfo.h>
 #include "tofupolicyjob.h"
@@ -377,7 +378,7 @@ private Q_SLOTS:
 
         if (keys.empty()) {
             qDebug() << "bravo@example.net not found";
-            qDebug() << "Error: " << result.error().asString();
+            qDebug() << "Error: " << result.error();
             const auto homedir = QString::fromLocal8Bit(qgetenv("GNUPGHOME"));
             qDebug() << "Homedir is: " << homedir;
             QFileInfo fi(homedir + "/pubring.gpg");

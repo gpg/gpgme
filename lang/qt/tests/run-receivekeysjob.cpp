@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <gpgme++/importresult.h>
 #include <protocol.h>
 #include <receivekeysjob.h>
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
     auto job = QGpgME::openpgp()->receiveKeysJob();
     const auto result = job->exec(keyIds);
 
-    std::cout << "Result: " << result.error().asString() << std::endl;
+    std::cout << "Result: " << result.error() << std::endl;
     std::cout << "Details:\n" << result << std::endl;
 
     return 0;

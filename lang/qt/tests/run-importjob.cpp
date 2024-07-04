@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     const auto keyData = f.readAll();
     auto job = (protocol == GpgME::CMS ? QGpgME::smime() : QGpgME::openpgp())->importJob();
     const auto result = job->exec(keyData);
-    qDebug() << "Result error:" << result.error().asString();
+    qDebug() << "Result error:" << result.error();
     for (const auto &line : QString::fromStdString(QGpgME::toLogString(result)).split('\n')) {
         qDebug().noquote() << line;
     }

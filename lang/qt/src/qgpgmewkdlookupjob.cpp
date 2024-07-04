@@ -37,6 +37,7 @@
 
 #include "qgpgmewkdlookupjob.h"
 
+#include "debug.h"
 #include "qgpgme_debug.h"
 
 #include <gpgme++/context.h>
@@ -62,7 +63,7 @@ static GpgME::Error startDirmngr(Context *assuanCtx)
 
     auto spawnCtx = std::unique_ptr<Context>{Context::createForEngine(SpawnEngine, &err)};
     if (err) {
-        qCDebug(QGPGME_LOG) << "Error: Failed to get context for spawn engine (" << err.asString() << ")";
+        qCDebug(QGPGME_LOG) << "Error: Failed to get context for spawn engine (" << err << ")";
     }
     const auto gpgconfProgram = GpgME::dirInfo("gpgconf-name");
     // replace backslashes with forward slashes in homedir to work around bug T6833
@@ -132,11 +133,11 @@ static GpgME::Error run_wkd_get(Context *ctx, const std::string &email)
         // no key for email is available via WKD or that the domain doesn't
         // support WKD or that the domain doesn't exist (on subsequent requests
         // using dirmngr's internal cache)
-        qCDebug(QGPGME_LOG) << "WKD_GET returned" << err.asString() << "; ignoring...";
+        qCDebug(QGPGME_LOG) << "WKD_GET returned" << err << "; ignoring...";
         err = {};
     }
     if (err) {
-        qCDebug(QGPGME_LOG) << "WKD_GET failed with" << err.asString();
+        qCDebug(QGPGME_LOG) << "WKD_GET failed with" << err;
     }
 
     return err;

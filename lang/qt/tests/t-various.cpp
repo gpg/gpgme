@@ -40,6 +40,7 @@
 #include <QTemporaryDir>
 #include "keylistjob.h"
 #include "protocol.h"
+#include "util.h"
 #include <gpgme++/keylistresult.h>
 #include <gpgme++/context.h>
 #include <gpgme++/engineinfo.h>
@@ -265,9 +266,9 @@ private Q_SLOTS:
                     if (err2) {
                         if (err2.code() == GPG_ERR_GENERAL) {
                             QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.\n"
-                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(err2.asString())));
+                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(errorAsString(err2))));
                         } else {
-                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(err2.asString())));
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(errorAsString(err2))));
                         }
                     }
                 });
@@ -321,9 +322,9 @@ private Q_SLOTS:
                     if (err2) {
                         if (err2.code() == GPG_ERR_GENERAL) {
                             QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.\n"
-                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(err2.asString())));
+                                "Hint: Run with GPGMEPP_INTERACTOR_DEBUG=stderr to debug the edit interaction.").arg(errorAsString(err2))));
                         } else {
-                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(err2.asString())));
+                            QFAIL(qPrintable(QString("The SignKeyJob failed with '%1'.").arg(errorAsString(err2))));
                         }
                     }
                 });

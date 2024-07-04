@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <protocol.h>
 #include <verifyopaquejob.h>
 
@@ -152,7 +153,7 @@ int main(int argc, char **argv)
         err = job->startIt();
     }
     if (err) {
-        std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
+        std::cerr << "Error: Starting the job failed: " << err << std::endl;
         return 1;
     }
 

@@ -36,6 +36,8 @@
 
 #include <QStringList>
 
+#include <gpgme++/error.h>
+
 #include <gpgme.h>
 
 #include <string>
@@ -49,6 +51,15 @@ class Key;
 static inline gpgme_error_t make_error(gpgme_err_code_t code)
 {
     return gpgme_err_make((gpgme_err_source_t)22, code);
+}
+
+static inline QString errorAsString(const GpgME::Error &error)
+{
+#ifdef Q_OS_WIN
+    return QString::fromStdString(error.asStdString());
+#else
+    return QString::fromLocal8Bit(error.asStdString().c_str());
+#endif
 }
 
 std::vector<std::string> toStrings(const QStringList &l);

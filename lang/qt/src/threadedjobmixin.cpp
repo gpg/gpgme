@@ -39,6 +39,7 @@
 #include "threadedjobmixin.h"
 
 #include "dataprovider.h"
+#include "util.h"
 
 #include <gpgme++/data.h>
 
@@ -82,7 +83,7 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
 
     if (ctx->protocol() == OpenPGP) {
         if ((err = ctx->getAuditLog(data, OpenPGPAuditLogFlags))) {
-            return QString::fromLocal8Bit(err.asString());
+            return errorAsString(err);
         }
         const QByteArray ba = dp.data();
         return markupDiagnostics(stringFromGpgOutput(ba));
@@ -91,12 +92,12 @@ QString _detail::audit_log_as_html(Context *ctx, GpgME::Error &err)
     if (ctx->protocol() == CMS) {
         if ((err = ctx->lastError())) {
             if ((err = ctx->getAuditLog(data, Context::DiagnosticAuditLog))) {
-                return QString::fromLocal8Bit(err.asString());
+                return errorAsString(err);
             }
             const QByteArray ba = dp.data();
             return markupDiagnostics(stringFromGpgOutput(ba));
         } else if ((err = ctx->getAuditLog(data, CMSAuditLogFlags))) {
-            return QString::fromLocal8Bit(err.asString());
+            return errorAsString(err);
         }
         return QString::fromUtf8(dp.data());
     }

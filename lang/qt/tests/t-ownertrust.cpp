@@ -37,6 +37,7 @@
 #include <QDebug>
 #include <QTest>
 #include <QSignalSpy>
+#include "debug.h"
 #include "keylistjob.h"
 #include "protocol.h"
 #include <gpgme++/keylistresult.h>
@@ -69,7 +70,7 @@ private Q_SLOTS:
         connect(job2, &ChangeOwnerTrustJob::result, this, [this](Error e)
         {
             if (e) {
-                qDebug() <<  "Error in result: " << e.asString();
+                qDebug() <<  "Error in result: " << e;
             }
             QVERIFY(!e);
             Q_EMIT asyncDone();

@@ -35,6 +35,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <protocol.h>
 #include <wkdrefreshjob.h>
 
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
         return 1;
     }
     if (err) {
-        std::cerr << "Error while getting OpenPGP key: " << err.asString() << std::endl;
+        std::cerr << "Error while getting OpenPGP key: " << err << std::endl;
         return 1;
     }
     std::cout << "Refreshing OpenPGP key " << key.userID(0).id() << std::endl;
@@ -145,7 +146,7 @@ int main(int argc, char **argv)
         err = job->start({key});
     }
     if (err) {
-        std::cerr << "Error: " << err.asString() << std::endl;
+        std::cerr << "Error: " << err << std::endl;
         return 1;
     }
 

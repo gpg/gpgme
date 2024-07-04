@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <exportjob.h>
 #include <protocol.h>
 
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
     QObject::connect(job, &QGpgME::ExportJob::result,
                      &app, [&app] (const GpgME::Error &err, const QByteArray &keyData, const QString &, const GpgME::Error &) {
                          if (err) {
-                             cerr << "The ChangeExpiryJob failed with" << err.asString() << ".";
+                             cerr << "The ChangeExpiryJob failed with" << err << ".";
                              app.exit(1);
                              return;
                          }

@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <decryptverifyarchivejob.h>
 #include <protocol.h>
 
@@ -114,7 +115,7 @@ int main(int argc, char **argv)
 
     const auto err = job->startIt();
     if (err) {
-        std::cerr << "Error: Starting the job failed: " << err.asString() << std::endl;
+        std::cerr << "Error: Starting the job failed: " << err << std::endl;
         return 1;
     }
 

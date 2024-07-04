@@ -34,6 +34,7 @@
  #include "config.h"
 #endif
 
+#include <debug.h>
 #include <protocol.h>
 #include <refreshkeysjob.h>
 #include <receivekeysjob.h>
@@ -111,10 +112,10 @@ int main(int argc, char **argv)
         return 1;
     }
     if (openPGPKey.error) {
-        std::cerr << "Warning: Error while getting OpenPGP key: " << openPGPKey.error.asString() << std::endl;
+        std::cerr << "Warning: Error while getting OpenPGP key: " << openPGPKey.error << std::endl;
     }
     if (smimeKey.error) {
-        std::cerr << "Warning: Error while getting S/MIME key: " << openPGPKey.error.asString() << std::endl;
+        std::cerr << "Warning: Error while getting S/MIME key: " << openPGPKey.error << std::endl;
     }
     auto key = openPGPKey.key.isNull() ? smimeKey.key : openPGPKey.key;
     std::cout << "Refreshing " << displayName(key.protocol()) << " key " << key.userID(0).id() << std::endl;
@@ -131,7 +132,7 @@ int main(int argc, char **argv)
         });
         const auto err = job->start({QString::fromLatin1(key.primaryFingerprint())});
         if (err) {
-            std::cerr << "Error: " << err.asString() << std::endl;
+            std::cerr << "Error: " << err << std::endl;
             return 1;
         }
     } else {
@@ -141,12 +142,12 @@ int main(int argc, char **argv)
             return 1;
         }
         QObject::connect(job, &QGpgME::RefreshKeysJob::result, &app, [](const GpgME::Error &err) {
-            std::cout << "Result: " << err.asString() << std::endl;
+            std::cout << "Result: " << err << std::endl;
             qApp->quit();
         });
         const auto err = job->start({key});
         if (err) {
-            std::cerr << "Error: " << err.asString() << std::endl;
+            std::cerr << "Error: " << err << std::endl;
             return 1;
         }
     }
