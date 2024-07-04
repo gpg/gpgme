@@ -48,6 +48,7 @@ public:
 
     const char *source() const;
     const char *asString() const;
+    std::string asStdString() const;
 
     int code() const;
     int sourceID() const;

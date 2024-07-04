@@ -130,6 +130,13 @@ const char *Error::asString() const
     return mMessage.c_str();
 }
 
+std::string Error::asStdString() const
+{
+    std::string message;
+    format_error(static_cast<gpgme_error_t>(mErr), message);
+    return message;
+}
+
 int Error::code() const
 {
     return gpgme_err_code(mErr);
