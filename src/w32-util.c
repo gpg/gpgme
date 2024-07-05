@@ -297,7 +297,7 @@ void
 _gpgme_w32_cancel_synchronous_io (HANDLE thread)
 {
   static int initialized;
-  static BOOL (WINAPI * func)(DWORD);
+  static BOOL (WINAPI * func)(HANDLE);
   void *handle;
 
   if (!initialized)
@@ -318,7 +318,7 @@ _gpgme_w32_cancel_synchronous_io (HANDLE thread)
 
   if (func)
     {
-      if (!func ((DWORD)thread) && GetLastError() != ERROR_NOT_FOUND)
+      if (!func (thread) && GetLastError() != ERROR_NOT_FOUND)
         {
           TRACE (DEBUG_ENGINE, "gpgme:CancelSynchronousIo", NULL,
                  "called for thread %p: ec=%u",
