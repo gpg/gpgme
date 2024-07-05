@@ -164,7 +164,7 @@ static inline gpgme_off_t
 _trace_sysres_off_t (gpgme_off_t res, int lvl, const char *func, int line)
 {
   if (res >= 0)
-    _gpgme_debug (NULL, lvl, 3, func, NULL, NULL, "result=%ld", res);
+    _gpgme_debug (NULL, lvl, 3, func, NULL, NULL, "result=%zd", (size_t)res);
   else
     _gpgme_debug (NULL, lvl, -1, NULL, NULL, NULL,
                   "%s:%d: error: %s (%d)\n",

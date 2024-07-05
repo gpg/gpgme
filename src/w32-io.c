@@ -680,7 +680,7 @@ _gpgme_io_read (int fd, void *buffer, size_t count)
   int nread;
   struct reader_context_s *ctx;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_read", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zd", buffer, count);
 
   ctx = find_reader (fd);
   if (!ctx)
@@ -793,7 +793,7 @@ writer (void *arg)
         }
       UNLOCK (ctx->mutex);
 
-      TRACE_LOG  ("%s %d bytes", sock?"sending":"writing", ctx->nbytes);
+      TRACE_LOG  ("%s %zd bytes", sock?"sending":"writing", ctx->nbytes);
 
       /* Note that CTX->nbytes is not zero at this point, because
 	 _gpgme_io_write always writes at least 1 byte before waking
@@ -846,7 +846,7 @@ writer (void *arg)
   wait_for_single_object (ctx->close_ev, INFINITE);
 
   if (ctx->nbytes)
-    TRACE_LOG  ("still %d bytes in buffer at close time", ctx->nbytes);
+    TRACE_LOG  ("still %zd bytes in buffer at close time", ctx->nbytes);
 
   release_hddesc (ctx->hdd);
   close_handle (ctx->close_ev);
@@ -1013,7 +1013,7 @@ _gpgme_io_write (int fd, const void *buffer, size_t count)
 {
   struct writer_context_s *ctx;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_write", fd,
-	      "buffer=%p, count=%u", buffer, count);
+	      "buffer=%p, count=%zd", buffer, count);
   TRACE_LOGBUFX (buffer, count);
 
   if (count == 0)
