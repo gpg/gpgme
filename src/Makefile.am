@@ -55,7 +55,7 @@ if HAVE_DOSISH_SYSTEM
 system_components = w32-util.c
 system_components_not_extra = w32-io.c
 else
-system_components = ath.h posix-util.c posix-io.c
+system_components = posix-util.c posix-io.c
 system_components_not_extra =
 endif
 
@@ -94,8 +94,7 @@ main_sources =								\
 	engine-spawn.c 	                                                \
 	gpgconf.c queryswdb.c						\
 	sema.h priv-io.h $(system_components) sys-util.h dirinfo.c	\
-	debug.c debug.h gpgme.c version.c error.c \
-	ath.h ath.c
+	debug.c debug.h gpgme.c version.c error.c
 
 libgpgme_la_SOURCES = $(main_sources) $(system_components_not_extra)
 
