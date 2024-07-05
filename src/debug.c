@@ -43,8 +43,12 @@
 #endif
 #include <assert.h>
 
+#ifdef HAVE_W32_SYSTEM
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include "util.h"
-#include "ath.h"
 #include "sema.h"
 #include "sys-util.h"
 #include "debug.h"
@@ -138,20 +142,31 @@ safe_to_use_debug_file (void)
 }
 
 
+#if defined(HAVE_W32_SYSTEM) || defined(__linux)
 static int
 tid_log_callback (unsigned long *rvalue)
 {
   int len = sizeof (*rvalue);
   uintptr_t thread;
 
-  thread = ath_self ();
+#ifdef HAVE_W32_SYSTEM
+  thread = (uintptr_t)GetCurrentThreadId ();
+#elif defined(__linux)
+  thread = (uintptr_t)gettid ();
+#endif
   if (sizeof (thread) < len)
-    len = sizeof (thread);
+    {
+      int zerolen = len;
+
+      len = sizeof (thread);
+      zerolen -= len;
+      memset (rvalue + len, 0, zerolen);
+    }
   memcpy (rvalue, &thread, len);
 
   return 2; /* Use use hex representation.  */
 }
-
+#endif
 
 
 static void
@@ -217,7 +232,9 @@ debug_init (void)
                     | GPGRT_LOG_WITH_PID);
           gpgrt_log_set_prefix (*gpgrt_log_get_prefix (NULL)?NULL:"gpgme",
                                 flags);
+#if defined(HAVE_W32_SYSTEM) || defined(__linux)
           gpgrt_log_set_pid_suffix_cb (tid_log_callback);
+#endif
         }
     }
 

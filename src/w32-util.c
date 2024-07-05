@@ -60,7 +60,6 @@
 #include <shlobj.h>
 
 #include "util.h"
-#include "ath.h"
 #include "sema.h"
 #include "debug.h"
 #include "sys-util.h"
@@ -858,7 +857,7 @@ my_mkstemp (char *tmpl)
     random_time_bits = (((uint64_t)ft.dwHighDateTime << 32)
                         | (uint64_t)ft.dwLowDateTime);
   }
-  value += random_time_bits ^ ath_self ();
+  value += random_time_bits ^ ((uintptr_t)GetCurrentThreadId ());
 
   for (count = 0; count < attempts; value += 7777, ++count)
     {
