@@ -92,7 +92,7 @@ copied_headers = $(gpgmepp_headers:%=gpgme++/%) $(interface_headers:%=gpgme++/%)
 
 $(copied_headers): Makefile.am
 	mkdir -p $(builddir)/gpgme++/interfaces
-	echo -n "#include \"$(srcdir)" > "$@"
+	echo -n "#include \"$(abs_srcdir)" > "$@"
 	echo -n "$@" | sed "s/gpgme++//" >> "$@"
 	echo "\"" >> "$@"
 
