@@ -1440,7 +1440,7 @@ gt_set_keylist_mode (gpgme_tool_t gt, gpgme_keylist_mode_t keylist_mode)
 gpg_error_t
 gt_get_keylist_mode (gpgme_tool_t gt)
 {
-#define NR_KEYLIST_MODES 6
+#define NR_KEYLIST_MODES 11
   const char *modes[NR_KEYLIST_MODES + 1];
   int idx = 0;
   gpgme_keylist_mode_t mode = gpgme_get_keylist_mode (gt->ctx);
@@ -1455,16 +1455,23 @@ gt_get_keylist_mode (gpgme_tool_t gt)
     modes[idx++] = "sig_notations";
   if (mode & GPGME_KEYLIST_MODE_WITH_SECRET)
     modes[idx++] = "with_secret";
+  if (mode & GPGME_KEYLIST_MODE_WITH_TOFU)
+    modes[idx++] = "with_tofu";
+  if (mode & GPGME_KEYLIST_MODE_WITH_KEYGRIP)
+    modes[idx++] = "with_keygrip";
   if (mode & GPGME_KEYLIST_MODE_EPHEMERAL)
     modes[idx++] = "ephemeral";
   if (mode & GPGME_KEYLIST_MODE_VALIDATE)
     modes[idx++] = "validate";
   if (mode & GPGME_KEYLIST_MODE_FORCE_EXTERN)
     modes[idx++] = "force_extern";
+  if (mode & GPGME_KEYLIST_MODE_WITH_V5FPR)
+    modes[idx++] = "with_v5fpr";
   modes[idx++] = NULL;
 
   gt_write_status (gt, STATUS_KEYLIST_MODE, modes[0], modes[1], modes[2],
-		   modes[3], modes[4], modes[5], modes[6], NULL);
+                   modes[3], modes[4], modes[5], modes[6], modes[7], modes[8],
+                   modes[9], modes[10], NULL);
 
   return 0;
 }
@@ -2188,7 +2195,8 @@ cmd_include_certs (assuan_context_t ctx, char *line)
 
 static const char hlp_keylist_mode[] =
   "KEYLIST_MODE [local] [extern] [sigs] [sig_notations]\n"
-  "  [ephemeral] [validate]\n"
+  "  [with_secret] [with_tofu] [with_keygrip] [ephemeral]\n"
+  "  [validate] [force_extern] [with_v5fpr]\n"
   "\n"
   "Set the mode for the next KEYLIST command.";
 static gpg_error_t
@@ -2210,12 +2218,18 @@ cmd_keylist_mode (assuan_context_t ctx, char *line)
 	mode |= GPGME_KEYLIST_MODE_SIG_NOTATIONS;
       if (strstr (line, "with_secret"))
 	mode |= GPGME_KEYLIST_MODE_WITH_SECRET;
+      if (strstr (line, "with_tofu"))
+	mode |= GPGME_KEYLIST_MODE_WITH_TOFU;
+      if (strstr (line, "with_keygrip"))
+	mode |= GPGME_KEYLIST_MODE_WITH_KEYGRIP;
       if (strstr (line, "ephemeral"))
 	mode |= GPGME_KEYLIST_MODE_EPHEMERAL;
       if (strstr (line, "validate"))
 	mode |= GPGME_KEYLIST_MODE_VALIDATE;
       if (strstr (line, "force_extern"))
 	mode |= GPGME_KEYLIST_MODE_FORCE_EXTERN;
+      if (strstr (line, "with_v5fpr"))
+	mode |= GPGME_KEYLIST_MODE_WITH_V5FPR;
 
       return gt_set_keylist_mode (server->gt, mode);
     }
