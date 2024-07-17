@@ -320,16 +320,21 @@ qgpgme_moc_sources = \
     qgpgmegpgcardjob.moc
 
 if WANT_QT5
-includeprefix = qgpgme-qt5
+includeprefix5 = qgpgme-qt5
+qgpgme5includedir = $(includedir)/$(includeprefix5)/qgpgme
+qgpgme5include_HEADERS = $(qgpgme_headers)
+nodist_qgpgme5include_HEADERS = qgpgme_version.h
+camelcase5includedir = $(includedir)/$(includeprefix5)/QGpgME
+camelcase5include_HEADERS = $(camelcase_headers)
 endif
 if WANT_QT6
-includeprefix = qgpgme-qt6
+includeprefix6 = qgpgme-qt6
+qgpgme6includedir = $(includedir)/$(includeprefix6)/qgpgme
+qgpgme6include_HEADERS = $(qgpgme_headers)
+nodist_qgpgme6include_HEADERS = qgpgme_version.h
+camelcase6includedir = $(includedir)/$(includeprefix6)/QGpgME
+camelcase6include_HEADERS = $(camelcase_headers)
 endif
-qgpgmeincludedir = $(includedir)/$(includeprefix)/qgpgme
-qgpgmeinclude_HEADERS = $(qgpgme_headers)
-camelcaseincludedir = $(includedir)/$(includeprefix)/QGpgME
-camelcaseinclude_HEADERS = $(camelcase_headers)
-nodist_qgpgmeinclude_HEADERS = qgpgme_version.h
 
 if WANT_QT5
 AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
