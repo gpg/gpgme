@@ -397,35 +397,39 @@ $(camelcase_headers): Makefile.am
 	echo ".h\"" >> "$@"
 
 if WANT_QT5
-install-cmake-files: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
+install-cmake-files-qt5: QGpgmeConfig.cmake QGpgmeConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/QGpgme
 	$(INSTALL) -m 644 QGpgmeConfig.cmake \
 	$(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	$(INSTALL) -m 644 QGpgmeConfigVersion.cmake \
 	$(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
+install_cmake_files_qt5 = install-cmake-files-qt5
 
-uninstall-cmake-files:
+uninstall-cmake-files-qt5:
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfigVersion.cmake
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgme/
+uninstall_cmake_files_qt5 = uninstall-cmake-files-qt5
 endif
 if WANT_QT6
-install-cmake-files: QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
+install-cmake-files-qt6: QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
 	-$(INSTALL) -d $(DESTDIR)$(libdir)/cmake/QGpgmeQt6
 	$(INSTALL) -m 644 QGpgmeQt6Config.cmake \
 	$(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6Config.cmake
 	$(INSTALL) -m 644 QGpgmeQt6ConfigVersion.cmake \
 	$(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6ConfigVersion.cmake
+install_cmake_files_qt6 = install-cmake-files-qt6
 
-uninstall-cmake-files:
+uninstall-cmake-files-qt6:
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6ConfigVersion.cmake
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6Config.cmake
 	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/
+uninstall_cmake_files_qt6 = uninstall-cmake-files-qt6
 endif
 
-install-data-local: install-cmake-files
+install-data-local: $(install_cmake_files_qt5) $(install_cmake_files_qt6)
 
-uninstall-local: uninstall-cmake-files
+uninstall-local: $(uninstall_cmake_files_qt5) $(uninstall_cmake_files_qt6)
 
 BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
