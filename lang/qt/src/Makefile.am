@@ -336,13 +336,51 @@ camelcase6includedir = $(includedir)/$(includeprefix6)/QGpgME
 camelcase6include_HEADERS = $(camelcase_headers)
 endif
 
+# generate the moc files in two steps:
+# 1. generate Qt 5/6-specific moc files in builddir with extension .moc5/.moc6;
+#    this ensures correct dependencies on the source files
+# 2. generate forwarding headers in subfolders moc5/moc6 with extension .moc;
+#    this ensures that the "foo.moc" includes in the source files work and
+#    include the correct version of the generated moc files for Qt 5/6
+# GNU make's pattern rules would make this easier, but we don't want to use them
 if WANT_QT5
-AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
+moc5_dir = moc5
+qgpgme_moc5_sources = $(qgpgme_moc_sources:%.moc=%.moc5)
+qgpgme_moc5_forward_headers = $(qgpgme_moc_sources:%=$(moc5_dir)/%)
+
+.h.moc5:
+	$(MOC5) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+
+$(moc5_dir):
+	mkdir $(moc5_dir)
+
+$(qgpgme_moc5_forward_headers): Makefile.am | $(moc5_dir)
+	echo "#include \"../$(notdir $@)5\"" > "$@"
+endif
+if WANT_QT6
+moc6_dir = moc6
+qgpgme_moc6_sources = $(qgpgme_moc_sources:%.moc=%.moc6)
+qgpgme_moc6_forward_headers = $(qgpgme_moc_sources:%=$(moc6_dir)/%)
+
+.h.moc6:
+	$(MOC6) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+
+$(moc6_dir):
+	mkdir $(moc6_dir)
+
+$(qgpgme_moc6_forward_headers): Makefile.am | $(moc6_dir)
+	echo "#include \"../$(notdir $@)6\"" > "$@"
+endif
+
+if WANT_QT5
+AM_CPPFLAGS = -I./$(moc5_dir) -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
 libqgpgme_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
+
+nodist_libqgpgme_la_SOURCES = $(qgpgme_moc5_sources) $(qgpgme_moc5_forward_headers)
 
 libqgpgme_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
                       @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT5_LIBS@
@@ -350,12 +388,14 @@ libqgpgme_la_LDFLAGS = -no-undefined -version-info \
                        @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 endif
 if WANT_QT6
-AM_CPPFLAGS = -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
+AM_CPPFLAGS = -I./$(moc6_dir) -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
 
 libqgpgmeqt6_la_SOURCES = $(qgpgme_sources) $(qgpgme_headers) $(private_qgpgme_headers)
+
+nodist_libqgpgmeqt6_la_SOURCES = $(qgpgme_moc6_sources) $(qgpgme_moc6_forward_headers)
 
 libqgpgmeqt6_la_LIBADD = ../../cpp/src/libgpgmepp.la ../../../src/libgpgme.la \
                          @LIBASSUAN_LIBS@ @GPG_ERROR_LIBS@ @GPGME_QT6_LIBS@
@@ -449,20 +489,18 @@ install-data-local: $(install_cmake_files_qt5) $(install_cmake_files_qt6)
 uninstall-hook: $(uninstall_cmake_files_qt5) $(uninstall_cmake_files_qt6) \
 		$(uninstall_include_dirs_qt5) $(uninstall_include_dirs_qt6)
 
-BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
+BUILT_SOURCES = $(qgpgme_moc5_sources) $(qgpgme_moc5_forward_headers) \
+		$(qgpgme_moc6_sources) $(qgpgme_moc6_forward_headers) \
+		$(camelcase_headers)
 
-CLEANFILES = $(qgpgme_moc_sources) $(camelcase_headers) QGpgmeConfig.cmake \
+CLEANFILES = $(qgpgme_moc5_sources) $(qgpgme_moc5_forward_headers) \
+	     $(qgpgme_moc6_sources) $(qgpgme_moc6_forward_headers) \
+	     $(camelcase_headers) QGpgmeConfig.cmake \
              qgpgme_version.h QGpgmeConfig.cmake.in \
              QGpgmeConfig-w32.cmake.in QGpgmeConfigVersion.cmake \
              QGpgmeQt6Config.cmake.in QGpgmeQt6Config-w32.cmake.in \
              QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
 
-if WANT_QT5
-nodist_libqgpgme_la_SOURCES = $(qgpgme_moc_sources)
-endif
-if WANT_QT6
-nodist_libqgpgmeqt6_la_SOURCES = $(qgpgme_moc_sources)
-endif
-
-.h.moc:
-	$(MOC) `test -f '$<' || echo '$(srcdir)/'`$< -o $@
+clean-local:
+	-test -z "$(moc5_dir)" || rm -rf $(moc5_dir)
+	-test -z "$(moc6_dir)" || rm -rf $(moc6_dir)

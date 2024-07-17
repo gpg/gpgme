@@ -5,7 +5,7 @@ dnl This file is part of gpgme and is provided under the same license as gpgme
 
 dnl Autoconf macro to find Qt5
 dnl
-dnl sets GPGME_QT5_LIBS and GPGME_QT5_CFLAGS
+dnl sets GPGME_QT5_LIBS, GPGME_QT5_CFLAGS, and MOC5
 dnl
 dnl if QT5 was found have_qt5_libs is set to yes
 
@@ -29,9 +29,9 @@ AC_DEFUN([FIND_QT5],
     fi
   fi
   if test "$have_qt5_libs" = "yes"; then
-    AC_CHECK_TOOL(MOC, moc)
+    AC_CHECK_TOOL(MOC5, moc)
     AC_MSG_CHECKING([moc version])
-    mocversion=`$MOC -v 2>&1`
+    mocversion=`$MOC5 -v 2>&1`
     mocversiongrep=`echo $mocversion | grep -E "Qt 5|moc 5"`
     if test x"$mocversiongrep" != x"$mocversion"; then
       AC_MSG_RESULT([no])
@@ -48,11 +48,12 @@ AC_DEFUN([FIND_QT5],
           # no valid moc found
           have_qt5_libs="no";
         else
-          MOC=$qt5tooldir/moc
+          MOC5=$qt5tooldir/moc
         fi
       else
-        MOC=$MOC2
+        MOC5=$MOC2
       fi
+      unset MOC2
     fi
     AC_MSG_RESULT([$mocversion])
   fi

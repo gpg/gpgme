@@ -5,7 +5,7 @@ dnl This file is part of gpgme and is provided under the same license as gpgme
 
 dnl Autoconf macro to find Qt6
 dnl
-dnl sets GPGME_QT6_LIBS and GPGME_QT6_CFLAGS
+dnl sets GPGME_QT6_LIBS, GPGME_QT6_CFLAGS, and MOC6
 dnl
 dnl if QT6 was found have_qt6_libs is set to yes
 
@@ -26,8 +26,8 @@ AC_DEFUN([FIND_QT6],
   if test "$have_qt6_libs" = "yes"; then
     # Qt6 moved moc to libexec
     qt6libexecdir=$($PKG_CONFIG --variable=libexecdir 'Qt6Core >= 6.4.0')
-    AC_PATH_TOOL(MOC, moc, [], [$qt6libexecdir])
-    if test -z "$MOC"; then
+    AC_PATH_TOOL(MOC6, moc, [], [$qt6libexecdir])
+    if test -z "$MOC6"; then
       AC_MSG_WARN([moc not found - Qt 6 binding will not be built.])
       have_qt6_libs="no";
     fi
