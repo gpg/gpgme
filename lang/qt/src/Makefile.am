@@ -415,6 +415,12 @@ uninstall-cmake-files-qt5:
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgme/QGpgmeConfig.cmake
 	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgme/
 uninstall_cmake_files_qt5 = uninstall-cmake-files-qt5
+
+uninstall-include-dirs-qt5:
+	-rmdir $(DESTDIR)$(qgpgme5includedir)
+	-rmdir $(DESTDIR)$(camelcase5includedir)
+	-rmdir $(DESTDIR)$(includedir)/$(includeprefix5)
+uninstall_include_dirs_qt5 = uninstall-include-dirs-qt5
 endif
 if WANT_QT6
 install-cmake-files-qt6: QGpgmeQt6Config.cmake QGpgmeQt6ConfigVersion.cmake
@@ -430,11 +436,18 @@ uninstall-cmake-files-qt6:
 	-rm $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/QGpgmeQt6Config.cmake
 	-rmdir $(DESTDIR)$(libdir)/cmake/QGpgmeQt6/
 uninstall_cmake_files_qt6 = uninstall-cmake-files-qt6
+
+uninstall-include-dirs-qt6:
+	-rmdir $(DESTDIR)$(qgpgme6includedir)
+	-rmdir $(DESTDIR)$(camelcase6includedir)
+	-rmdir $(DESTDIR)$(includedir)/$(includeprefix6)
+uninstall_include_dirs_qt6 = uninstall-include-dirs-qt6
 endif
 
 install-data-local: $(install_cmake_files_qt5) $(install_cmake_files_qt6)
 
-uninstall-local: $(uninstall_cmake_files_qt5) $(uninstall_cmake_files_qt6)
+uninstall-hook: $(uninstall_cmake_files_qt5) $(uninstall_cmake_files_qt6) \
+		$(uninstall_include_dirs_qt5) $(uninstall_include_dirs_qt6)
 
 BUILT_SOURCES = $(qgpgme_moc_sources) $(camelcase_headers)
 
