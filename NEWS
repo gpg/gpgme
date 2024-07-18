@@ -17,6 +17,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
  * cpp: Add safer member function returning text describing an error.
    [T5960]
 
+ * qt: Build QGpgME for Qt 5 and Qt 6 simultaneously.  [T7205]
+
  * qt: Install headers for Qt 5 and Qt 6 in separate folders.  [T7161]
 
  * qt: Allow reading the data to decrypt/encrypt/sign/verify directly from

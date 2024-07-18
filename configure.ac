@@ -257,7 +257,7 @@ have_macos_system=no
 build_w32_glib=no
 build_w32_qt=no
 available_languages="cl cpp python qt qt5 qt6"
-default_languages="cl cpp python qt"
+default_languages="cl cpp python qt5 qt6"
 case "${host}" in
     x86_64-*mingw32*)
         have_w64_system=yes
@@ -375,8 +375,7 @@ AC_ARG_ENABLE([no-direct-extern-access],
 AC_ARG_ENABLE([languages],
               AS_HELP_STRING([--enable-languages=languages],
                              [enable only specific language bindings:
-                              cl cpp python qt qt5 qt6 (qt selects qt5 or qt6,
-                              and qt5 and qt6 exclude each other)]),
+                              cl cpp python qt5 qt6]),
                              [enabled_languages=`echo $enableval | \
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]' | \
                              sed 's/c++/cpp/'`],
@@ -402,76 +401,95 @@ for language in $enabled_languages; do
     fi
 done
 
-# Check whether Qt5 and/or Qt6 are enabled explicitly
-want_qt5="no";
+# Check whether qt5 and/or qt6 are enabled
+want_qt5="no"
 LIST_MEMBER("qt5", $enabled_languages)
 if test "$found" = "1"; then
-    want_qt5="yes";
+    if test "$explicit_languages" = "1"; then
+        want_qt5="yes"
+    else
+        want_qt5="maybe"
+    fi
     # Remove qt5; further down qt will be added
     enabled_languages=$(echo $enabled_languages | sed 's/qt5//')
 fi
-want_qt6="no";
+want_qt6="no"
 LIST_MEMBER("qt6", $enabled_languages)
 if test "$found" = "1"; then
-    want_qt6="yes";
+    if test "$explicit_languages" = "1"; then
+        want_qt6="yes"
+    else
+        want_qt6="maybe"
+    fi
     # Remove qt6; further down qt will be added
     enabled_languages=$(echo $enabled_languages | sed 's/qt6//')
 fi
-if test "$want_qt5" = "yes" -a "$want_qt6" = "yes"; then
-    AC_MSG_ERROR([[
+
+# Check whether qt is enabled; if yes then it has been enabled explicitly
+want_qt="no"
+LIST_MEMBER("qt", $enabled_languages)
+if test "$found" = "1"; then
+    # Ignore qt if specified together with qt5 or qt6
+    if test "$want_qt5" = "no" -a "$want_qt6" = "no"; then
+        want_qt="yes"
+    fi
+    # Remove qt
+    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+    AC_MSG_WARN([[
 ***
-*** The bindings for Qt5 and Qt6 cannot be built simultaneously.
+*** Language binding "qt" is deprecated and will be removed in a future version.
+*** Use "qt5" and/or "qt6" instead.
 ***]])
 fi
 
 # Ensure that pkg-config is available for all calls of FIND_QT5/FIND_QT6
 PKG_PROG_PKG_CONFIG
 
-# If the generic qt is enabled, then check for Qt5 or Qt6 (in this order)
-LIST_MEMBER("qt", $enabled_languages)
-if test "$found" = "1"; then
-    # Remove the generic qt (qt5 and qt6 have already been removed)
-    enabled_languages=$(echo $enabled_languages | sed 's/qt//')
+# Check for Qt 5 (if qt5 or qt is enabled)
+if test "$want_qt" = "yes"; then
+    want_qt5="maybe"
+fi
+if test "$want_qt5" != "no"; then
     FIND_QT5
     if test "$have_qt5_libs" = "yes"; then
-        want_qt5="yes";
-    else
-        FIND_QT6
-        if test "$have_qt6_libs" = "yes"; then
-            want_qt6="yes";
-        else
-            if test "$explicit_languages" = "1"; then
-                AC_MSG_ERROR([[
-***
-*** Qt5 (Qt5Core) or Qt6 (Qt6Core) is required for the Qt binding.
-***]])
-            else
-                AC_MSG_WARN([[
-***
-*** Qt5 (Qt5Core) and Qt6 (Qt6Core) not found. Qt Binding will be disabled.
-***]])
-            fi
-        fi
-    fi
-elif test "$want_qt5" = "yes"; then
-    FIND_QT5
-    if test "$have_qt5_libs" != "yes"; then
+        want_qt5="yes"
+    elif test "$want_qt5" = "yes"; then
         AC_MSG_ERROR([[
 ***
 *** Qt5 (Qt5Core) is required for the Qt 5 binding.
 ***]])
+    else
+        want_qt5="no"
     fi
-elif test "$want_qt6" = "yes"; then
+fi
+
+# Check for Qt 6 (if qt6 is enabled or if qt is enabled and Qt 5 wasn't found)
+if test "$want_qt" = "yes" -a "$have_qt5_libs" != "yes"; then
+    want_qt6="maybe"
+fi
+if test "$want_qt6" != "no"; then
     FIND_QT6
-    if test "$have_qt6_libs" != "yes"; then
+    if test "$have_qt6_libs" = "yes"; then
+        want_qt6="yes";
+    elif test "$want_qt6" = "yes"; then
         AC_MSG_ERROR([[
 ***
 *** Qt6 (Qt6Core) is required for the Qt 6 binding.
 ***]])
+    else
+        want_qt6="no"
     fi
 fi
 
-# Check that cpp is enabled if qt5 or qt6 is enabled
+# Check if any Qt was found (if qt is enabled)
+if test "$want_qt" = "yes" -a "$have_qt5_libs" != "yes" -a "$have_qt6_libs" != "yes"; then
+    AC_MSG_ERROR([[
+***
+*** Qt5 (Qt5Core) or Qt6 (Qt6Core) is required for the Qt bindings.
+***]])
+fi
+
+# Check that cpp is enabled if qt5 or qt6 is enabled and was found
 if test "$want_qt5" = "yes" -o "$want_qt6" = "yes"; then
     LIST_MEMBER("cpp", $enabled_languages)
     if test "$found" = "0"; then
@@ -522,7 +540,7 @@ if test "$found" = "1" -a "$HAVE_CXX17" != "1"; then
     fi
 fi
 
-# Now append qt to the list of language bindings
+# Now append qt to the list of language bindings (to enable the subdir in lang)
 if test "$want_qt5" = "yes" -o "$want_qt6" = "yes"; then
     enabled_languages=$(echo $enabled_languages qt)
 fi
@@ -1145,7 +1163,9 @@ AC_CONFIG_FILES([lang/python/Makefile
 AC_CONFIG_FILES([lang/python/setup.py], [chmod a+x lang/python/setup.py])
 AC_OUTPUT
 
-if test "$want_qt5" = "yes"; then
+if test "$want_qt5" = "yes" -a "$want_qt6" = "yes"; then
+    enabled_languages_v=$(echo ${enabled_languages_v:-$enabled_languages} | sed "s/qt/qt (Qt 5, Qt 6)/")
+elif test "$want_qt5" = "yes"; then
     enabled_languages_v=$(echo ${enabled_languages_v:-$enabled_languages} | sed "s/qt/qt (Qt 5)/")
 elif test "$want_qt6" = "yes"; then
     enabled_languages_v=$(echo ${enabled_languages_v:-$enabled_languages} | sed "s/qt/qt (Qt 6)/")

@@ -20,11 +20,12 @@
 # 02111-1307, USA
 
 if WANT_QT5
-lib_LTLIBRARIES = libqgpgme.la
+libqgpgme_la = libqgpgme.la
 endif
 if WANT_QT6
-lib_LTLIBRARIES = libqgpgmeqt6.la
+libqgpgmeqt6_la = libqgpgmeqt6.la
 endif
+lib_LTLIBRARIES = $(libqgpgme_la) $(libqgpgmeqt6_la)
 
 EXTRA_DIST = QGpgmeConfig.cmake.in.in QGpgmeConfigVersion.cmake.in \
              qgpgme_debug.h qgpgme_version.h.in \
@@ -373,7 +374,7 @@ $(qgpgme_moc6_forward_headers): Makefile.am | $(moc6_dir)
 endif
 
 if WANT_QT5
-AM_CPPFLAGS = -I./$(moc5_dir) -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
+libqgpgme_la_CPPFLAGS = -I./moc5 -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT5_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
@@ -388,7 +389,7 @@ libqgpgme_la_LDFLAGS = -no-undefined -version-info \
                        @LIBQGPGME_LT_CURRENT@:@LIBQGPGME_LT_REVISION@:@LIBQGPGME_LT_AGE@
 endif
 if WANT_QT6
-AM_CPPFLAGS = -I./$(moc6_dir) -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
+libqgpgmeqt6_la_CPPFLAGS = -I./moc6 -I$(top_builddir)/lang/cpp/src -I$(top_builddir)/src \
               @GPGME_QT6_CFLAGS@ @GPG_ERROR_CFLAGS@ @LIBASSUAN_CFLAGS@ \
               -DBUILDING_QGPGME -Wsuggest-override \
               -Wzero-as-null-pointer-constant
