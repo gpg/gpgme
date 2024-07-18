@@ -326,7 +326,7 @@ qgpgme5includedir = $(includedir)/$(includeprefix5)/qgpgme
 qgpgme5include_HEADERS = $(qgpgme_headers)
 nodist_qgpgme5include_HEADERS = qgpgme_version.h
 camelcase5includedir = $(includedir)/$(includeprefix5)/QGpgME
-camelcase5include_HEADERS = $(camelcase_headers)
+nodist_camelcase5include_HEADERS = $(camelcase_headers)
 endif
 if WANT_QT6
 includeprefix6 = qgpgme-qt6
@@ -334,7 +334,7 @@ qgpgme6includedir = $(includedir)/$(includeprefix6)/qgpgme
 qgpgme6include_HEADERS = $(qgpgme_headers)
 nodist_qgpgme6include_HEADERS = qgpgme_version.h
 camelcase6includedir = $(includedir)/$(includeprefix6)/QGpgME
-camelcase6include_HEADERS = $(camelcase_headers)
+nodist_camelcase6include_HEADERS = $(camelcase_headers)
 endif
 
 # generate the moc files in two steps:
