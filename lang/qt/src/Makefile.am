@@ -415,12 +415,12 @@ if HAVE_W32_SYSTEM
 QGpgmeConfig.cmake: QGpgmeConfig-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' | \
-	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix)|g' > $@
+	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix5)|g' > $@
 else
 QGpgmeConfig.cmake: QGpgmeConfig.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
 	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
-	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix)|g' > $@
+	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix5)|g' > $@
 endif
 endif
 if WANT_QT6
@@ -428,12 +428,12 @@ if HAVE_W32_SYSTEM
 QGpgmeQt6Config.cmake: QGpgmeQt6Config-w32.cmake.in
 	sed -e 's|[@]resolved_bindir@|$(bindir)|g' < "$<" | \
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' | \
-	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix)|g' > $@
+	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix6)|g' > $@
 else
 QGpgmeQt6Config.cmake: QGpgmeQt6Config.cmake.in
 	sed -e 's|[@]resolved_libdir@|$(libdir)|g' < "$<" | \
 	sed -e 's|[@]libsuffix@|$(libsuffix)|g' | \
-	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix)|g' > $@
+	sed -e 's|[@]resolved_includedir@|$(includedir)/$(includeprefix6)|g' > $@
 endif
 endif
 
