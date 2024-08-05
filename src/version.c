@@ -74,7 +74,11 @@ do_subsystem_inits (void)
   }
 
   /* We want gpgrt's gettext to always output UTF-8. */
+#if GPGRT_VERSION_NUMBER >= 0x013300 /* >= 1.51 */
+  gettext_use_utf8 (3);
+#else
   gettext_use_utf8 (1);
+#endif
 #endif
 
   _gpgme_debug_subsystem_init ();
