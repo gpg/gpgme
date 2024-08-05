@@ -40,6 +40,7 @@ c_tests = \
 	t-decrypt t-verify t-decrypt-verify t-sig-notation t-export	\
 	t-import t-edit t-keylist t-keylist-sig t-keylist-secret-sig t-wait \
 	t-encrypt-large t-file-name t-gpgconf t-encrypt-mixed t-edit-sign \
+	t-setownertrust							\
 	$(tests_unix)
 
 TESTS = initial.test $(c_tests) final.test
@@ -67,7 +68,7 @@ BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
            gpg-sample.stamp
 AM_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_CFLAGS@
 AM_LDFLAGS = -no-install
-LDADD = ../../src/libgpgme.la @LDADD_FOR_TESTS_KLUDGE@
+LDADD = ../../src/libgpgme.la @GPG_ERROR_LIBS@ @LDADD_FOR_TESTS_KLUDGE@
 
 WITH_THREAD_CPPFLAGS =  -I$(top_builddir)/src @GPG_ERROR_MT_CFLAGS@
 WITH_THREAD_LDADD = ../../src/libgpgme.la \

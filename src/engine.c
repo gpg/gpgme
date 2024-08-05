@@ -1161,3 +1161,16 @@ _gpgme_engine_op_setexpire (engine_t engine, gpgme_key_t key,
 
   return (*engine->ops->setexpire) (engine->engine, key, expires, subfprs, reserved);
 }
+
+gpgme_error_t
+_gpgme_engine_op_setownertrust (engine_t engine, gpgme_key_t key,
+                                const char *value)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->setownertrust)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->setownertrust) (engine->engine, key, value);
+}

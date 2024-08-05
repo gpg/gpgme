@@ -225,6 +225,8 @@ gpgme_error_t _gpgme_engine_op_setexpire (engine_t engine,
                                           unsigned long expires,
                                           const char *subfprs,
                                           unsigned int reserved);
-
+gpgme_error_t _gpgme_engine_op_setownertrust (engine_t engine,
+                                              gpgme_key_t key,
+                                              const char *value);
 
 #endif /* ENGINE_H */

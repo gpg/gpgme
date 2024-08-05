@@ -4277,6 +4277,53 @@ be completed by calling @code{gpgme_wait} on the context.
 
 @end deftypefun
 
+@c
+@c  gpgme_op_setownertrust
+@c
+@deftypefun gpgme_error_t gpgme_op_setownertrust @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{value}});
+
+@since{1.24.0}
+
+The function @code{gpgme_op_setownertrust} sets the owner trust of the
+key @var{key} or it sets the disable flag of the key @var{key}.
+This function only works for OpenPGP and requires at least version 2.4.6
+of GnuPG.
+
+@var{key} specifies the key to operate on.
+
+@var{value} specifies the owner trust value to set.  Valid values are
+"undefined", "never", "marginal", "full", "ultimate".  If @var{value} is
+the string "disable" then the key @var{key} is disabled.  If @var{value}
+is the string "enable" then the key @var{key} is re-enabled.
+
+The function returns the error code @code{GPG_ERR_NO_ERROR} if the
+operation was completed successfully, @code{GPG_ERR_NOT_SUPPORTED} if
+the engine does not support the command, and @code{GPG_ERR_INV_VALUE} if
+@var{key} is not a valid pointer or not a valid key or if @var{value} is
+not a valid pointer or the empty string.
+
+@end deftypefun
+
+
+@deftypefun gpgme_error_t gpgme_op_setownertrust_start @
+      (@w{gpgme_ctx_t @var{ctx}}, @
+       @w{gpgme_key_t @var{key}}, @
+       @w{const char *@var{value}});
+
+@since{1.24.0}
+
+The function @code{gpgme_op_setownertrust_start} initiates a
+@code{gpgme_op_setownertrust} operation; see there for details.  It must
+be completed by calling @code{gpgme_wait} on the context.
+@xref{Waiting For Completion}.
+
+The function returns the same error codes as @code{gpgme_op_setownertrust}.
+
+@end deftypefun
+
 
 @node Generating Keys
 @subsection Generating Keys

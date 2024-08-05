@@ -4017,6 +4017,38 @@ gpg_setexpire (void *engine, gpgme_key_t key, unsigned long expires,
 }
 
 
+static gpgme_error_t
+gpg_setownertrust (void *engine, gpgme_key_t key, const char *value)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+
+  if (!have_gpg_version (gpg, "2.4.6"))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  if (!key || !key->fpr)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!value || !*value)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = add_arg (gpg, "--quick-set-ownertrust");
+
+  if (!err)
+    err = add_arg (gpg, "--");
+
+  if (!err)
+    err = add_arg (gpg, key->fpr);
+
+  if (!err)
+    err = add_arg (gpg, value);
+
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
 
 struct engine_ops _gpgme_engine_ops_gpg =
   {
@@ -4056,6 +4088,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_verify,
     gpg_getauditlog,
     gpg_setexpire,
+    gpg_setownertrust,
     NULL,               /* opassuan_transact */
     NULL,		/* conf_load */
     NULL,		/* conf_save */

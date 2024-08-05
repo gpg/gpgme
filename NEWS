@@ -11,6 +11,10 @@ Noteworthy changes in version 1.24.0 (unrelease)
 
  * New context flag "import-options".  [T7152]
 
+ * New function gpgme_op_setownertrust to make changing the owner trust
+   easier and to allow enabling/disabling of keys (requires GnuPG 2.4.6).
+   [T7239]
+
  * cpp: Provide information about designated revocation keys for a Key.
    [T7118]
 
@@ -38,6 +42,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
  gpgme_key_t                             EXTENDED: New field 'revkeys'.
  gpgme_revocation_key_t                  NEW.
  gpgme_set_ctx_flag                      EXTENDED: New flag 'import-options'.
+ gpgme_op_setownertrust_start            NEW.
+ gpgme_op_setownertrust                  NEW.
  cpp: Context::EncryptFile               NEW.
  cpp: SignatureMode::SignFile            NEW.
  cpp: RevocationKey                      NEW.

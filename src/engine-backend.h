@@ -129,6 +129,8 @@ struct engine_ops
   gpgme_error_t (*setexpire) (void *engine, gpgme_key_t key,
                               unsigned long expires, const char *subfprs,
                               unsigned int reserved);
+  gpgme_error_t (*setownertrust) (void *engine, gpgme_key_t key,
+                                  const char *value);
   gpgme_error_t  (*opassuan_transact) (void *engine,
                                        const char *command,
                                        gpgme_assuan_data_cb_t data_cb,

@@ -1969,6 +1969,12 @@ gpgme_error_t gpgme_op_setexpire       (gpgme_ctx_t ctx,
                                         gpgme_key_t key, unsigned long expires,
                                         const char *subfprs, unsigned int reserved);
 
+/* Change the ownertrust of a key.  */
+gpgme_error_t gpgme_op_setownertrust_start (gpgme_ctx_t ctx,
+                                            gpgme_key_t key, const char *value);
+gpgme_error_t gpgme_op_setownertrust       (gpgme_ctx_t ctx,
+                                            gpgme_key_t key, const char *value);
+
 /* Retrieve a pointer to the result of a genkey, createkey, or
  * createsubkey operation.  */
 gpgme_genkey_result_t gpgme_op_genkey_result (gpgme_ctx_t ctx);

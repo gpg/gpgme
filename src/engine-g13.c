@@ -810,6 +810,7 @@ struct engine_ops _gpgme_engine_ops_g13 =
     NULL,               /* verify */
     NULL,               /* getauditlog */
     NULL,               /* setexpire */
+    NULL,               /* setownertrust */
     g13_transact,
     NULL,		/* conf_load */
     NULL,		/* conf_save */

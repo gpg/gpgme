@@ -19,18 +19,20 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
+#include <gpgme.h>
+#include <gpg-error.h>
+
 #include <unistd.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <limits.h>
 #include <ctype.h>
+#include <string.h>
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
-
-#include <gpgme.h>
 
 #ifndef PGM
 #define PGM "unknown program; define PGM before including t-support.h"
@@ -270,4 +272,22 @@ print_import_result (gpgme_import_result_t r)
           r->skipped_new_keys,
           r->not_imported,
           r->skipped_v3_keys);
+}
+
+
+/* Return true if the gpg engine's version is at least REQ_VERSION.  */
+int
+have_gpg_version (const char *req_version)
+{
+  gpgme_engine_info_t engine_info;
+  init_gpgme (GPGME_PROTOCOL_OpenPGP);
+
+  fail_if_err (gpgme_get_engine_info (&engine_info));
+  for (; engine_info; engine_info = engine_info->next)
+    if (engine_info->protocol == GPGME_PROTOCOL_OpenPGP)
+      break;
+
+  test (engine_info);
+
+  return gpgrt_cmp_version (engine_info->version, req_version, 3) >= 0;
 }

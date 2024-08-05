@@ -285,5 +285,8 @@ EXPORTS
 
     gpgme_op_verify_ext                   @211
     gpgme_op_verify_ext_start             @212
+
+    gpgme_op_setownertrust                @213
+    gpgme_op_setownertrust_start          @214
 ; END
 
