@@ -319,6 +319,28 @@ public:
                          const std::vector<Subkey> &subkeys = std::vector<Subkey>(),
                          const SetExpireFlags flags = SetExpireDefault);
 
+    /**
+     * Sets the owner trust of the key \a key to the value \a trust.
+     * Requires gpg 2.4.6.
+     */
+    Error setOwnerTrust(const Key &key, Key::OwnerTrust trust);
+    /**
+     * Starts the operation to set the owner trust of the key \a key to the value \a trust.
+     * Requires gpg 2.4.6.
+     */
+    Error startSetOwnerTrust(const Key &key, Key::OwnerTrust trust);
+
+    /**
+     * Enables or disables the key \a key.
+     * Requires gpg 2.4.6.
+     */
+    Error setKeyEnabled(const Key &key, bool enabled);
+    /**
+     * Starts the operation to enable or disable the key \a key.
+     * Requires gpg 2.4.6.
+     */
+    Error startSetKeyEnabled(const Key &key, bool enabled);
+
     Error revokeSignature(const Key &key, const Key &signingKey,
                           const std::vector<UserID> &userIds = std::vector<UserID>());
     Error startRevokeSignature(const Key &key, const Key &signingKey,

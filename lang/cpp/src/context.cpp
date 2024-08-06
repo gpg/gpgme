@@ -1767,6 +1767,51 @@ Error Context::startSetExpire(const Key &k, unsigned long expires,
                  k.impl(), expires, subfprs.c_str(), 0));
 }
 
+static const char *owner_trust_to_string(Key::OwnerTrust trust)
+{
+    static const char *const owner_trust_strings[] = {
+        "undefined", // --quick-set-ownertrust wants "undefined" for Unknown
+        "undefined", // Undefined is never used for key->owner_trust
+        "never",
+        "marginal",
+        "full",
+        "ultimate",
+    };
+
+    if (Key::OwnerTrust::Unknown <= trust && trust <= Key::OwnerTrust::Ultimate) {
+        return owner_trust_strings[trust];
+    }
+    return nullptr;
+}
+
+Error Context::setOwnerTrust(const Key &key, Key::OwnerTrust trust)
+{
+    d->lasterr = gpgme_op_setownertrust(d->ctx, key.impl(),
+                                        owner_trust_to_string(trust));
+    return Error(d->lasterr);
+}
+
+Error Context::startSetOwnerTrust(const Key &key, Key::OwnerTrust trust)
+{
+    d->lasterr = gpgme_op_setownertrust_start(d->ctx, key.impl(),
+                                              owner_trust_to_string(trust));
+    return Error(d->lasterr);
+}
+
+Error Context::setKeyEnabled(const Key &key, bool enabled)
+{
+    d->lasterr = gpgme_op_setownertrust(d->ctx, key.impl(),
+                                        enabled ? "enable" : "disable");
+    return Error(d->lasterr);
+}
+
+Error Context::startSetKeyEnabled(const Key &key, bool enabled)
+{
+    d->lasterr = gpgme_op_setownertrust_start(d->ctx, key.impl(),
+                                              enabled ? "enable" : "disable");
+    return Error(d->lasterr);
+}
+
 static std::string getLFSeparatedListOfUserIds(const std::vector<UserID> &userIds)
 {
     if (userIds.empty()) {

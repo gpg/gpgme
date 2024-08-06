@@ -21,6 +21,9 @@ Noteworthy changes in version 1.24.0 (unrelease)
  * cpp: Add safer member function returning text describing an error.
    [T5960]
 
+ * cpp: Add support for setting the owner trust of keys and for enabling
+   and disabling keys.  [T7239]
+
  * qt: Build QGpgME for Qt 5 and Qt 6 simultaneously.  [T7205]
 
  * qt: Install headers for Qt 5 and Qt 6 in separate folders.  [T7161]
@@ -45,6 +48,10 @@ Noteworthy changes in version 1.24.0 (unrelease)
  gpgme_op_setownertrust_start            NEW.
  gpgme_op_setownertrust                  NEW.
  cpp: Context::EncryptFile               NEW.
+ cpp: Context::setOwnerTrust             NEW.
+ cpp: Context::startSetOwnerTrust        NEW.
+ cpp: Context::setKeyEnabled             NEW.
+ cpp: Context::startSetKeyEnabled        NEW.
  cpp: SignatureMode::SignFile            NEW.
  cpp: RevocationKey                      NEW.
  cpp: Key::revocationKey                 NEW.
