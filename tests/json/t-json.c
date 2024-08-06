@@ -50,111 +50,6 @@ static const char*tests[] = { "t-config", "t-version",
 static int verbose = 0;
 
 
-/* Read the next number in the version string STR and return it in
-   *NUMBER.  Return a pointer to the tail of STR after parsing, or
-   *NULL if the version string was invalid.  */
-static const char *
-parse_version_number (const char *str, int *number)
-{
-#define MAXVAL ((INT_MAX - 10) / 10)
-  int val = 0;
-
-  /* Leading zeros are not allowed.  */
-  if (*str == '0' && isdigit(str[1]))
-    return NULL;
-
-  while (isdigit (*str) && val <= MAXVAL)
-    {
-      val *= 10;
-      val += *(str++) - '0';
-    }
-  *number = val;
-  return val > MAXVAL ? NULL : str;
-}
-
-
-/* Parse the version string STR in the format MAJOR.MINOR.MICRO (for
-   example, 9.3.2) and return the components in MAJOR, MINOR and MICRO
-   as integers.  The function returns the tail of the string that
-   follows the version number.  This might be the empty string if there
-   is nothing following the version number, or a patchlevel.  The
-   function returns NULL if the version string is not valid.  */
-static const char *
-parse_version_string (const char *str, int *major, int *minor, int *micro)
-{
-  str = parse_version_number (str, major);
-  if (!str || *str != '.')
-    return NULL;
-  str++;
-
-  str = parse_version_number (str, minor);
-  if (!str || *str != '.')
-    return NULL;
-  str++;
-
-  str = parse_version_number (str, micro);
-  if (!str)
-    return NULL;
-
-  /* A patchlevel might follow.  */
-  return str;
-}
-
-
-/* Return true if MY_VERSION is at least REQ_VERSION, and false
-   otherwise.  */
-static int
-compare_versions (const char *my_version,
-                  const char *rq_version)
-{
-  int my_major, my_minor, my_micro;
-  int rq_major, rq_minor, rq_micro;
-  const char *my_plvl, *rq_plvl;
-
-  if (!rq_version)
-    return 1;
-  if (!my_version)
-    return 0;
-
-  my_plvl = parse_version_string (my_version, &my_major, &my_minor, &my_micro);
-  if (!my_plvl)
-    return 0;
-
-  rq_plvl = parse_version_string (rq_version, &rq_major, &rq_minor, &rq_micro);
-  if (!rq_plvl)
-    return 0;
-
-  if (my_major > rq_major
-      || (my_major == rq_major && my_minor > rq_minor)
-      || (my_major == rq_major && my_minor == rq_minor
-	  && my_micro > rq_micro)
-      || (my_major == rq_major && my_minor == rq_minor
-	  && my_micro == rq_micro && strcmp (my_plvl, rq_plvl) >= 0))
-    return 1;
-
-  return 0;
-}
-
-/* Return true if we have the required gpg version.
-
-   This should probably go into gpgrt or gpgme proper.
-*/
-static int
-check_gpg_version (const char *req_version)
-{
-  gpgme_engine_info_t engine_info;
-  init_gpgme (GPGME_PROTOCOL_OpenPGP);
-
-  fail_if_err (gpgme_get_engine_info (&engine_info));
-  for (; engine_info; engine_info = engine_info->next)
-    if (engine_info->protocol == GPGME_PROTOCOL_OpenPGP)
-      break;
-
-  test (engine_info);
-
-  return compare_versions (engine_info->version, req_version);
-}
-
 static char *
 get_file (const char *fname)
 {
@@ -487,7 +382,7 @@ main (int argc, char *argv[])
         }
     }
 
-  if (!check_gpg_version ("2.1.18"))
+  if (!have_gpg_version ("2.1.18"))
     {
       /* Let us not break too much or have to test all combinations */
       printf ("Testsuite skipped. Minimum GnuPG version (2.1.18) "
