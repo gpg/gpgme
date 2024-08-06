@@ -89,6 +89,9 @@ private Q_SLOTS:
         ChangeOwnerTrustJob *job3 = openpgp()->changeOwnerTrustJob();
         connect(job3, &ChangeOwnerTrustJob::result, this, [this](Error e)
         {
+            if (e) {
+                qDebug() <<  "Error in result: " << e;
+            }
             QVERIFY(!e);
             Q_EMIT asyncDone();
         });

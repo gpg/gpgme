@@ -5,6 +5,8 @@
     Copyright (c) 2008 Klarälvdalens Datakonsult AB
     Copyright (c) 2016 by Bundesamt für Sicherheit in der Informationstechnik
     Software engineering by Intevation GmbH
+    Copyright (c) 2024 g10 Code GmbH
+    Software engineering by Ingo Klöcker <dev@ingo-kloecker.de>
 
     QGpgME is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -42,6 +44,7 @@
 
 #include <gpgme++/context.h>
 #include <gpgme++/data.h>
+#include <gpgme++/engineinfo.h>
 #include <gpgme++/gpgsetownertrusteditinteractor.h>
 #include <gpgme++/key.h>
 
@@ -59,6 +62,14 @@ QGpgMEChangeOwnerTrustJob::QGpgMEChangeOwnerTrustJob(Context *context)
 
 QGpgMEChangeOwnerTrustJob::~QGpgMEChangeOwnerTrustJob() {}
 
+static QGpgMEChangeOwnerTrustJob::result_type set_owner_trust(Context *ctx, const Key &key, Key::OwnerTrust trust)
+{
+    const Error err = ctx->setOwnerTrust(key, trust);
+    Error ae;
+    const QString log = _detail::audit_log_as_html(ctx, ae);
+    return std::make_tuple(err, log, ae);
+}
+
 static QGpgMEChangeOwnerTrustJob::result_type change_ownertrust(Context *ctx, const Key &key, Key::OwnerTrust trust)
 {
     EditInteractor *ei = new GpgSetOwnerTrustEditInteractor(trust);
@@ -75,7 +86,11 @@ static QGpgMEChangeOwnerTrustJob::result_type change_ownertrust(Context *ctx, co
 
 Error QGpgMEChangeOwnerTrustJob::start(const Key &key, Key::OwnerTrust trust)
 {
-    run(std::bind(&change_ownertrust, std::placeholders::_1, key, trust));
+    if (GpgME::engineInfo(GpgME::GpgEngine).engineVersion() < "2.4.6") {
+        run(std::bind(&change_ownertrust, std::placeholders::_1, key, trust));
+    } else {
+        run(std::bind(&set_owner_trust, std::placeholders::_1, key, trust));
+    }
     return Error();
 }
 #include "qgpgmechangeownertrustjob.moc"
