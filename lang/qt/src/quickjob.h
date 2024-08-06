@@ -84,6 +84,14 @@ public:
     /** Start --quick-add-adsk */
     virtual void startAddAdsk(const GpgME::Key &key, const char *adsk) = 0;
 
+    /**
+     * Starts the operation to enable or disable the OpenPGP key \a key.
+     * If \a enabled is \c true then the key is enabled. Otherwise, the key is disabled.
+     *
+     * \note Requires gpg 2.4.6.
+     */
+    GpgME::Error startSetKeyEnabled(const GpgME::Key &key, bool enabled);
+
 Q_SIGNALS:
     void result(const GpgME::Error &error,
                 const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());

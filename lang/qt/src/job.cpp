@@ -63,7 +63,6 @@
 #include "wkspublishjob.h"
 #include "tofupolicyjob.h"
 #include "threadedjobmixin.h"
-#include "quickjob.h"
 #include "gpgcardjob.h"
 #include "receivekeysjob.h"
 #include "revokekeyjob.h"
@@ -179,7 +178,6 @@ make_job_subclass(KeyForMailboxJob)
 make_job_subclass(WKDLookupJob)
 make_job_subclass(WKSPublishJob)
 make_job_subclass(TofuPolicyJob)
-make_job_subclass(QuickJob)
 make_job_subclass(GpgCardJob)
 make_job_subclass(RevokeKeyJob)
 make_job_subclass(SetPrimaryUserIDJob)
@@ -210,7 +208,6 @@ make_job_subclass(SetPrimaryUserIDJob)
 #include "wkdlookupjob.moc"
 #include "wkspublishjob.moc"
 #include "tofupolicyjob.moc"
-#include "quickjob.moc"
 #include "gpgcardjob.moc"
 #include "receivekeysjob.moc"
 #include "revokekeyjob.moc"

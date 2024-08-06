@@ -38,6 +38,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
 
  * qt: Allow appending a detached signature to an existing file.  [T6867]
 
+ * qt: Add support for enabling and disabling keys.  [T7239]
+
  * Interface changes relative to the 1.23.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_ENCRYPT_FILE                      NEW.
@@ -101,6 +103,7 @@ Noteworthy changes in version 1.24.0 (unrelease)
  qt: VerifyOpaqueJob::outputFile         NEW.
  qt: ImportJob::setImportOptions         NEW.
  qt: ImportJob::importOptions            NEW.
+ qt: QuickJob::startSetKeyEnabled        NEW.
 
 
 Noteworthy changes in version 1.23.2 (2023-11-28)

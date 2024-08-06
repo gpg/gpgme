@@ -64,6 +64,7 @@ qgpgme_sources = \
     qgpgmetofupolicyjob.cpp qgpgmequickjob.cpp \
     defaultkeygenerationjob.cpp qgpgmewkspublishjob.cpp \
     qgpgmegpgcardjob.cpp changeexpiryjob.cpp encryptjob.cpp importjob.cpp \
+    quickjob.cpp \
     signarchivejob.cpp \
     signencryptjob.cpp \
     signencryptarchivejob.cpp \
@@ -229,6 +230,7 @@ private_qgpgme_headers = \
     qgpgmetofupolicyjob.h \
     qgpgmegpgcardjob.h \
     qgpgmequickjob.h \
+    quickjob_p.h \
     signarchivejob_p.h \
     signencryptjob_p.h \
     signencryptarchivejob_p.h \
