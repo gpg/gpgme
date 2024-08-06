@@ -403,6 +403,11 @@ clean-local:
 	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
 	-rm -fR  private-keys-v1.d crls.d
 
+clean-keyring:
+	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
+	-rm -fR private-keys-v1.d crls.d pubring.gpg pubring.kbx secring.gpg \
+		trustdb.gpg pubring-stamp
+
 pubring-stamp: $(top_srcdir)/tests/gpg/pubdemo.asc \
 	             $(top_srcdir)/tests/gpg/secdemo.asc
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all
