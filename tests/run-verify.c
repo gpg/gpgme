@@ -241,6 +241,7 @@ show_usage (int ex)
          "  --directory DIR  extract the files into the directory DIR\n"
          "  --diagnostics    print diagnostics\n"
          "  --direct-file-io pass file names instead of streams with content of files to backend\n"
+         "  --proc-all-sigs  pass this option to gpg\n"
          , stderr);
   exit (ex);
 }
@@ -262,6 +263,7 @@ main (int argc, char **argv)
   gpgme_data_encoding_t encoding = GPGME_DATA_ENCODING_NONE;
   int diagnostics = 0;
   int direct_file_io = 0;
+  int proc_all_sigs = 0;
   int repeats = 1;
   int i;
 
@@ -360,6 +362,11 @@ main (int argc, char **argv)
           direct_file_io = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--proc-all-sigs"))
+        {
+          proc_all_sigs = 1;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -418,6 +425,9 @@ main (int argc, char **argv)
           gpgme_set_ctx_flag (ctx, "full-status", "1");
         }
       /* gpgme_set_ctx_flag (ctx, "raw-description", "1"); */
+
+      if (proc_all_sigs)
+        gpgme_set_ctx_flag (ctx, "proc-all-sigs", "1");
 
       if (auto_key_retrieve)
         {

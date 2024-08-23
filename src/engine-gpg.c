@@ -153,6 +153,7 @@ struct engine_gpg
     unsigned int include_key_block : 1;
     unsigned int auto_key_import : 1;
     unsigned int no_auto_check_trustdb : 1;
+    unsigned int proc_all_sigs : 1;
   } flags;
 
   /* NULL or the data object fed to --override_session_key-fd.  */
@@ -432,6 +433,26 @@ have_usable_gpgtar (engine_gpg_t gpg)
 {
   return have_gpg_version (gpg, "2.4.1")
          || (have_gpg_version (gpg, "2.2.42") && !have_gpg_version (gpg, "2.3.0"));
+}
+
+
+static int
+have_option_proc_all_sigs (engine_gpg_t gpg)
+{
+  static unsigned int flag;
+
+  if (flag)
+    ;
+  else if (have_gpg_version (gpg, "2.5.1"))
+    flag = 1|2;
+  else if (have_gpg_version (gpg, "2.4.6") && !have_gpg_version (gpg, "2.5.0"))
+    flag = 1|2;
+  else if (have_gpg_version (gpg, "2.2.45") && !have_gpg_version (gpg, "2.3.0"))
+    flag = 1|2;
+  else
+    flag = 1;
+
+  return !!(flag & 2);
 }
 
 
@@ -741,6 +762,7 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
     }
 
   gpg->flags.no_auto_check_trustdb = !!ctx->no_auto_check_trustdb;
+  gpg->flags.proc_all_sigs = !!ctx->proc_all_sigs;
 }
 
 
@@ -985,7 +1007,7 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
   if (gpg->pinentry_mode)
     argc += 1 + !!gpg->flags.use_gpgtar;
   if (!gpg->cmd.used)
-    argc++; /* --batch */
+    argc += 2; /* --batch and --proc-all-sigs */
 
   argv = calloc (argc + 1, sizeof *argv);
   allocated_argc = argc;
@@ -1220,6 +1242,16 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
           goto leave;
         }
       argc++;
+      if (gpg->flags.proc_all_sigs && have_option_proc_all_sigs (gpg))
+        {
+          argv[argc] = strdup ("--proc-all-sigs");
+          if (!argv[argc])
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          argc++;
+        }
     }
   for (a = gpg->arglist; a; a = a->next)
     {

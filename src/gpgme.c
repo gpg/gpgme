@@ -619,6 +619,10 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->no_auto_check_trustdb = abool;
     }
+  else if (!strcmp (name, "proc-all-sigs"))
+    {
+      ctx->proc_all_sigs = abool;
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -707,6 +711,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "no-auto-check-trustdb"))
     {
       return ctx->no_auto_check_trustdb? "1":"";
+    }
+  else if (!strcmp (name, "proc-all-sigs"))
+    {
+      return ctx->proc_all_sigs? "1":"";
     }
   else
     return NULL;

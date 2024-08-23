@@ -137,6 +137,9 @@ struct gpgme_context
   /* True if the option --no-auto-check-trustdb shall be passed to gpg.  */
   unsigned int no_auto_check_trustdb : 1;
 
+  /* True if the option --proc-all-sigs shall be passed to gpg.  */
+  unsigned int proc_all_sigs : 1;
+
   /* Pass --expert to gpg edit key. */
   unsigned int extended_edit : 1;
 

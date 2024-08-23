@@ -11,6 +11,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
 
  * New context flag "import-options".  [T7152]
 
+ * New context flag "proc-all-sigs".  [T7261]
+
  * New function gpgme_op_setownertrust to make changing the owner trust
    easier and to allow enabling/disabling of keys (requires GnuPG 2.4.6).
    [T7239]

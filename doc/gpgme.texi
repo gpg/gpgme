@@ -3290,6 +3290,14 @@ manual and the gpg man page under the option @option{--import-options}.
 Setting the @var{value} to "1" forces the GPG backend to disable the
 automatic check of the trust database.
 
+@item "proc-all-sigs"
+@since{1.24.0}
+Setting the @var{value} to "1" forces the GPG backend not to stop
+signature checking of data after a bad signatures.  This option is
+ignored if the backend itself does not support the --proc-all-sigs
+option.
+
+
 @end table
 
 This function returns @code{0} on success.
