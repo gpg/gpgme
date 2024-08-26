@@ -119,7 +119,8 @@ static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_io_device(
 
 static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_file_name(Context *ctx,
                                                                                 const QString &inputFile,
-                                                                                const QString &outputDirectory)
+                                                                                const QString &outputDirectory,
+                                                                                bool processAllSignatures)
 {
     Data indata;
 #ifdef Q_OS_WIN
@@ -128,6 +129,9 @@ static QGpgMEDecryptVerifyArchiveJob::result_type decrypt_verify_from_file_name(
     indata.setFileName(QFile::encodeName(inputFile).constData());
 #endif
 
+    if (processAllSignatures) {
+        ctx->setFlag("proc-all-sigs", "1");
+    }
     return decrypt_verify(ctx, indata, outputDirectory);
 }
 
@@ -137,6 +141,9 @@ GpgME::Error QGpgMEDecryptVerifyArchiveJob::start(const std::shared_ptr<QIODevic
         return Error::fromCode(GPG_ERR_INV_VALUE);
     }
 
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&decrypt_verify_from_io_device,
                   std::placeholders::_1,
                   std::placeholders::_2,
@@ -153,7 +160,7 @@ GpgME::Error QGpgMEDecryptVerifyArchiveJobPrivate::startIt()
     }
 
     q->run([=](Context *ctx) {
-        return decrypt_verify_from_file_name(ctx, m_inputFilePath, m_outputDirectory);
+        return decrypt_verify_from_file_name(ctx, m_inputFilePath, m_outputDirectory, m_processAllSignatures);
     });
 
     return {};

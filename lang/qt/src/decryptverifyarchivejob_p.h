@@ -43,6 +43,7 @@ struct DecryptVerifyArchiveJobPrivate : public JobPrivate
 {
     QString m_inputFilePath;
     QString m_outputDirectory;
+    bool m_processAllSignatures = false;
 };
 
 }

@@ -56,6 +56,7 @@ std::ostream &operator<<(std::ostream &os, const QString &s)
 }
 
 struct CommandLineOptions {
+    bool processAllSignatures = false;
     QString outputDirectory;
     QString archiveName;
 };
@@ -69,6 +70,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     parser.addHelpOption();
     parser.addOptions({
         {{"C", "directory"}, "Extract the files into the directory DIRECTORY.", "DIRECTORY"},
+        {"process-all-signatures", "Don't stop signature checking after bad signature."},
     });
     parser.addPositionalArgument("archive", "The archive to decrypt and extract");
 
@@ -79,6 +81,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
         parser.showHelp(1);
     }
 
+    options.processAllSignatures = parser.isSet("process-all-signatures");
     options.outputDirectory = parser.value("directory");
     options.archiveName = args.first();
 
@@ -104,6 +107,7 @@ int main(int argc, char **argv)
         std::cerr << "Error: Could not create job" << std::endl;
         return 1;
     }
+    job->setProcessAllSignatures(options.processAllSignatures);
     job->setInputFile(options.archiveName);
     job->setOutputDirectory(options.outputDirectory);
     QObject::connect(job, &QGpgME::DecryptVerifyArchiveJob::result, &app, [](const GpgME::DecryptionResult &decryptionResult, const GpgME::VerificationResult &verificationResult, const QString &auditLog, const GpgME::Error &) {

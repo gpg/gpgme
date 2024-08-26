@@ -47,6 +47,18 @@ VerifyDetachedJob::VerifyDetachedJob(QObject *parent)
 
 VerifyDetachedJob::~VerifyDetachedJob() = default;
 
+void VerifyDetachedJob::setProcessAllSignatures (bool processAll)
+{
+    auto d = jobPrivate<VerifyDetachedJobPrivate>(this);
+    d->m_processAllSignatures = processAll;
+}
+
+bool VerifyDetachedJob::processAllSignatures() const
+{
+    auto d = jobPrivate<VerifyDetachedJobPrivate>(this);
+    return d->m_processAllSignatures;
+}
+
 void VerifyDetachedJob::setSignatureFile(const QString &path)
 {
     auto d = jobPrivate<VerifyDetachedJobPrivate>(this);

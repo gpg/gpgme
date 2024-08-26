@@ -82,6 +82,20 @@ public:
     ~DecryptVerifyJob() override;
 
     /**
+     * Enables processing of all signatures if \a processAll is true.
+     *
+     * By default, gpg (in batch mode used by GpgME) stops the verification of
+     * data signatures when a bad signature is encountered. This can be changed
+     * by setting this flag. It's equivalent to setting the context flag
+     * "proc-all-sigs".
+     *
+     * This is only supported for OpenPGP and requires GnuPG 2.2.45, 2.4.6, or
+     * 2.5.1.
+     */
+    void setProcessAllSignatures(bool processAll);
+    bool processAllSignatures() const;
+
+    /**
      * Sets the path of the file to decrypt (and verify).
      *
      * Used if the job is started with startIt().

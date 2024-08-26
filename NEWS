@@ -42,6 +42,9 @@ Noteworthy changes in version 1.24.0 (unrelease)
 
  * qt: Add support for enabling and disabling keys.  [T7239]
 
+ * qt: Add support for new context flag "proc-all-sigs" to the jobs that
+   verify data signatures.
+
  * Interface changes relative to the 1.23.2 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_ENCRYPT_FILE                      NEW.
@@ -63,10 +66,14 @@ Noteworthy changes in version 1.24.0 (unrelease)
  cpp: Key::revocationKeys                NEW.
  cpp: Error::asStdString                 NEW.
  cpp: Error::asString                    DEPRECATED.
+ qt: DecryptVerifyArchiveJob::setProcessAllSignatures NEW.
+ qt: DecryptVerifyArchiveJob::processAllSignatures    NEW.
  qt: DecryptVerifyJob::setInputFile      NEW.
  qt: DecryptVerifyJob::inputFile         NEW.
  qt: DecryptVerifyJob::setOutputFile     NEW.
  qt: DecryptVerifyJob::outputFile        NEW.
+ qt: DecryptVerifyJob::setProcessAllSignatures NEW.
+ qt: DecryptVerifyJob::processAllSignatures    NEW.
  qt: EncryptJob::setRecipients           NEW.
  qt: EncryptJob::recipients              NEW.
  qt: EncryptJob::setInputFile            NEW.
@@ -99,10 +106,14 @@ Noteworthy changes in version 1.24.0 (unrelease)
  qt: VerifyDetachedJob::signatureFile    NEW.
  qt: VerifyDetachedJob::setSignedFile    NEW.
  qt: VerifyDetachedJob::signedFile       NEW.
+ qt: VerifyDetachedJob::setProcessAllSignatures NEW.
+ qt: VerifyDetachedJob::processAllSignatures    NEW.
  qt: VerifyOpaqueJob::setInputFile       NEW.
  qt: VerifyOpaqueJob::inputFile          NEW.
  qt: VerifyOpaqueJob::setOutputFile      NEW.
  qt: VerifyOpaqueJob::outputFile         NEW.
+ qt: VerifyOpaqueJob::setProcessAllSignatures NEW.
+ qt: VerifyOpaqueJob::processAllSignatures    NEW.
  qt: ImportJob::setImportOptions         NEW.
  qt: ImportJob::importOptions            NEW.
  qt: QuickJob::startSetKeyEnabled        NEW.

@@ -43,6 +43,7 @@ struct VerifyDetachedJobPrivate : public JobPrivate
 {
     QString m_signatureFilePath;
     QString m_signedFilePath;
+    bool m_processAllSignatures = false;
 };
 
 }

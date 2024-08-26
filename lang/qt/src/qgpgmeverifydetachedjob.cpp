@@ -131,7 +131,8 @@ static QGpgMEVerifyDetachedJob::result_type verify_detached_qba(Context *ctx, co
 
 static QGpgMEVerifyDetachedJob::result_type verify_from_filename(Context *ctx,
                                                                  const QString &signatureFilePath,
-                                                                 const QString &signedFilePath)
+                                                                 const QString &signedFilePath,
+                                                                 bool processAllSignatures)
 {
     Data signatureData;
 #ifdef Q_OS_WIN
@@ -147,6 +148,9 @@ static QGpgMEVerifyDetachedJob::result_type verify_from_filename(Context *ctx,
     signedData.setFileName(QFile::encodeName(signedFilePath).constData());
 #endif
 
+    if (processAllSignatures) {
+        ctx->setFlag("proc-all-sigs", "1");
+    }
     const auto verificationResult = ctx->verifyDetachedSignature(signatureData, signedData);
 
     Error ae;
@@ -156,18 +160,27 @@ static QGpgMEVerifyDetachedJob::result_type verify_from_filename(Context *ctx,
 
 Error QGpgMEVerifyDetachedJob::start(const QByteArray &signature, const QByteArray &signedData)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&verify_detached_qba, std::placeholders::_1, signature, signedData));
     return Error();
 }
 
 void QGpgMEVerifyDetachedJob::start(const std::shared_ptr<QIODevice> &signature, const std::shared_ptr<QIODevice> &signedData)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&verify_detached, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), signature, signedData);
 }
 
 GpgME::VerificationResult QGpgME::QGpgMEVerifyDetachedJob::exec(const QByteArray &signature,
         const QByteArray &signedData)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     const result_type r = verify_detached_qba(context(), signature, signedData);
     return std::get<0>(r);
 }
@@ -179,7 +192,7 @@ GpgME::Error QGpgMEVerifyDetachedJobPrivate::startIt()
     }
 
     q->run([=](Context *ctx) {
-        return verify_from_filename(ctx, m_signatureFilePath, m_signedFilePath);
+        return verify_from_filename(ctx, m_signatureFilePath, m_signedFilePath, m_processAllSignatures);
     });
 
     return {};

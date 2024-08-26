@@ -56,6 +56,7 @@ std::ostream &operator<<(std::ostream &os, const QString &s)
 }
 
 struct CommandLineOptions {
+    bool processAllSignatures = false;
     QString signatureFile;
     QString signedFile;
 };
@@ -67,6 +68,9 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     QCommandLineParser parser;
     parser.setApplicationDescription("Test program for VerifyDetachedJob");
     parser.addHelpOption();
+    parser.addOptions({
+        {"process-all-signatures", "Don't stop signature checking after bad signature."},
+    });
     parser.addPositionalArgument("signature", "Detached SIGNATURE to verify", "SIGNATURE");
     parser.addPositionalArgument("signed file", "FILE containing the signed data", "FILE");
 
@@ -77,6 +81,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
         parser.showHelp(1);
     }
 
+    options.processAllSignatures = parser.isSet("process-all-signatures");
     options.signatureFile = args[0];
     options.signedFile = args[1];
 
@@ -110,6 +115,7 @@ int main(int argc, char **argv)
 
     std::shared_ptr<QFile> input;
     GpgME::Error err;
+    job->setProcessAllSignatures(options.processAllSignatures);
     job->setSignatureFile(options.signatureFile);
     job->setSignedFile(options.signedFile);
     err = job->startIt();

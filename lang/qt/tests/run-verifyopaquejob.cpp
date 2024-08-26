@@ -57,6 +57,7 @@ std::ostream &operator<<(std::ostream &os, const QString &s)
 }
 
 struct CommandLineOptions {
+    bool processAllSignatures = false;
     QString inputFile;
     QString outputFile;
     std::chrono::seconds cancelTimeout{0};
@@ -72,6 +73,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
     parser.addOptions({
         {{"o", "output"}, "Write output to FILE.", "FILE"},
         {"cancel-after", "Cancel the running job after SECONDS seconds.", "SECONDS"},
+        {"process-all-signatures", "Don't stop signature checking after bad signature."},
     });
     parser.addPositionalArgument("file", "File to verify", "FILE");
 
@@ -82,6 +84,7 @@ CommandLineOptions parseCommandLine(const QStringList &arguments)
         parser.showHelp(1);
     }
 
+    options.processAllSignatures = parser.isSet("process-all-signatures");
     options.inputFile = args.front();
     options.outputFile = parser.value("output");
     if (parser.isSet("cancel-after")) {
@@ -143,6 +146,7 @@ int main(int argc, char **argv)
 
     std::shared_ptr<QFile> input;
     GpgME::Error err;
+    job->setProcessAllSignatures(options.processAllSignatures);
     if (output) {
         input.reset(new QFile{options.inputFile});
         input->open(QIODevice::ReadOnly);

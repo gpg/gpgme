@@ -145,7 +145,8 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify_qba(Context *ctx, cons
 
 static QGpgMEDecryptVerifyJob::result_type decrypt_verify_from_filename(Context *ctx,
                                                                         const QString &inputFilePath,
-                                                                        const QString &outputFilePath)
+                                                                        const QString &outputFilePath,
+                                                                        bool processAllSignatures)
 {
     Data indata;
 #ifdef Q_OS_WIN
@@ -166,6 +167,9 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify_from_filename(Context 
     outdata.setFileName(QFile::encodeName(partFileGuard.tempFileName()).constData());
 #endif
 
+    if (processAllSignatures) {
+        ctx->setFlag("proc-all-sigs", "1");
+    }
     const auto results = ctx->decryptAndVerify(indata, outdata);
     const auto &decryptionResult = results.first;
     const auto &verificationResult = results.second;
@@ -182,18 +186,27 @@ static QGpgMEDecryptVerifyJob::result_type decrypt_verify_from_filename(Context 
 
 Error QGpgMEDecryptVerifyJob::start(const QByteArray &cipherText)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&decrypt_verify_qba, std::placeholders::_1, cipherText));
     return Error();
 }
 
 void QGpgMEDecryptVerifyJob::start(const std::shared_ptr<QIODevice> &cipherText, const std::shared_ptr<QIODevice> &plainText)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&decrypt_verify, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), cipherText, plainText);
 }
 
 std::pair<GpgME::DecryptionResult, GpgME::VerificationResult>
 QGpgME::QGpgMEDecryptVerifyJob::exec(const QByteArray &cipherText, QByteArray &plainText)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     const result_type r = decrypt_verify_qba(context(), cipherText);
     plainText = std::get<2>(r);
     return std::make_pair(std::get<0>(r), std::get<1>(r));
@@ -206,7 +219,7 @@ GpgME::Error QGpgMEDecryptVerifyJobPrivate::startIt()
     }
 
     q->run([=](Context *ctx) {
-        return decrypt_verify_from_filename(ctx, m_inputFilePath, m_outputFilePath);
+        return decrypt_verify_from_filename(ctx, m_inputFilePath, m_outputFilePath, m_processAllSignatures);
     });
 
     return {};

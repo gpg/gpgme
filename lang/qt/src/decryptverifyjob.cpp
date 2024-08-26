@@ -47,6 +47,18 @@ DecryptVerifyJob::DecryptVerifyJob(QObject *parent)
 
 DecryptVerifyJob::~DecryptVerifyJob() = default;
 
+void DecryptVerifyJob::setProcessAllSignatures (bool processAll)
+{
+    auto d = jobPrivate<DecryptVerifyJobPrivate>(this);
+    d->m_processAllSignatures = processAll;
+}
+
+bool DecryptVerifyJob::processAllSignatures() const
+{
+    auto d = jobPrivate<DecryptVerifyJobPrivate>(this);
+    return d->m_processAllSignatures;
+}
+
 void DecryptVerifyJob::setInputFile(const QString &path)
 {
     auto d = jobPrivate<DecryptVerifyJobPrivate>(this);

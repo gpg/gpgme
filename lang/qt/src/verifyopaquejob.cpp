@@ -47,6 +47,18 @@ VerifyOpaqueJob::VerifyOpaqueJob(QObject *parent)
 
 VerifyOpaqueJob::~VerifyOpaqueJob() = default;
 
+void VerifyOpaqueJob::setProcessAllSignatures (bool processAll)
+{
+    auto d = jobPrivate<VerifyOpaqueJobPrivate>(this);
+    d->m_processAllSignatures = processAll;
+}
+
+bool VerifyOpaqueJob::processAllSignatures() const
+{
+    auto d = jobPrivate<VerifyOpaqueJobPrivate>(this);
+    return d->m_processAllSignatures;
+}
+
 void VerifyOpaqueJob::setInputFile(const QString &path)
 {
     auto d = jobPrivate<VerifyOpaqueJobPrivate>(this);

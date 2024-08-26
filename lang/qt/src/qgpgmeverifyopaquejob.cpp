@@ -136,7 +136,8 @@ static QGpgMEVerifyOpaqueJob::result_type verify_opaque_qba(Context *ctx, const 
 
 static QGpgMEVerifyOpaqueJob::result_type verify_from_filename(Context *ctx,
                                                                const QString &inputFilePath,
-                                                               const QString &outputFilePath)
+                                                               const QString &outputFilePath,
+                                                               bool processAllSignatures)
 {
     Data indata;
 #ifdef Q_OS_WIN
@@ -157,6 +158,9 @@ static QGpgMEVerifyOpaqueJob::result_type verify_from_filename(Context *ctx,
     outdata.setFileName(QFile::encodeName(partFileGuard.tempFileName()).constData());
 #endif
 
+    if (processAllSignatures) {
+        ctx->setFlag("proc-all-sigs", "1");
+    }
     const auto verificationResult = ctx->verifyOpaqueSignature(indata, outdata);
 
     if (!verificationResult.error().code()) {
@@ -171,17 +175,26 @@ static QGpgMEVerifyOpaqueJob::result_type verify_from_filename(Context *ctx,
 
 Error QGpgMEVerifyOpaqueJob::start(const QByteArray &signedData)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&verify_opaque_qba, std::placeholders::_1, signedData));
     return Error();
 }
 
 void QGpgMEVerifyOpaqueJob::start(const std::shared_ptr<QIODevice> &signedData, const std::shared_ptr<QIODevice> &plainText)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     run(std::bind(&verify_opaque, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), signedData, plainText);
 }
 
 GpgME::VerificationResult QGpgME::QGpgMEVerifyOpaqueJob::exec(const QByteArray &signedData, QByteArray &plainText)
 {
+    if (processAllSignatures()) {
+        context()->setFlag("proc-all-sigs", "1");
+    }
     const result_type r = verify_opaque_qba(context(), signedData);
     plainText = std::get<1>(r);
     return std::get<0>(r);
@@ -194,7 +207,7 @@ GpgME::Error QGpgMEVerifyOpaqueJobPrivate::startIt()
     }
 
     q->run([=](Context *ctx) {
-        return verify_from_filename(ctx, m_inputFilePath, m_outputFilePath);
+        return verify_from_filename(ctx, m_inputFilePath, m_outputFilePath, m_processAllSignatures);
     });
 
     return {};
