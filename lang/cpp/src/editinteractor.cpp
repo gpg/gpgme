@@ -167,6 +167,20 @@ public:
         }
 
     error:
+        if (err.code() == GPG_ERR_GENERAL) {
+            // gpg may have asked an unknown question; try to use the default answer
+            if (ei->debug) {
+                std::fprintf(ei->debug, "EditInteractor: action result \"%s\" (go with the default answer)\n", "");
+            }
+            if (writeAll(fd, "\n", 1) != 1) {
+                err = Error::fromSystemError();
+                if (ei->debug) {
+                    std::fprintf(ei->debug, "EditInteractor: Could not write to fd %d (%s)\n", fd, err.asStdString().c_str());
+                }
+            } else {
+                err = Error();
+            }
+        }
         if (err || err.isCanceled()) {
             ei->error = err;
             ei->state = EditInteractor::ErrorState;
