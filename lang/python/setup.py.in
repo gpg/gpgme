@@ -217,9 +217,9 @@ class BuildExtFirstHack(build):
     def run(self):
         self._generate()
 
-        swig_sources.extend((self._in_build_base('gpgme.i'),
-                             self._in_build_base('helpers.c')))
-        swig_opts.extend([
+        swige.sources.extend((self._in_build_base('gpgme.i'),
+                              self._in_build_base('helpers.c')))
+        swige.swig_opts.extend([
             '-I' + self.build_base, '-outdir',
             os.path.join(self.build_lib, 'gpg')
         ])
