@@ -237,12 +237,24 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
 
   uid->address = _gpgme_mailbox_from_userid (uid->uid);
   if ((!uid->email || !*uid->email) && uid->address && uid->name
-      && !strcmp (uid->name, uid->address))
+      && !strcasecmp (uid->name, uid->address))
     {
-      /* Name and address are the same. This is a mailbox only key.
-         Use address as email and remove name. */
-      *uid->name = '\0';
-      uid->email = uid->address;
+      /* Name and address are the same except that some letters may have
+         different case.  This is a mailbox only key. */
+      if (!strcmp (uid->name, uid->address))
+        {
+          /* Name and address are the identical.  Use address as email
+             and remove name. */
+          *uid->name = '\0';
+          uid->email = uid->address;
+        }
+      else
+        {
+          /* Name and address are the same except for different case of
+             some letters.  Use name as email and point name to EOS. */
+          uid->email = uid->name;
+          uid->name = (dst - 1);
+        }
     }
 
   if (!key->uids)
