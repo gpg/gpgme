@@ -456,6 +456,22 @@ have_option_proc_all_sigs (engine_gpg_t gpg)
 }
 
 
+static int
+have_cmd_modify_recipients (engine_gpg_t gpg)
+{
+  static unsigned int flag;
+
+  if (flag)
+    ;
+  else if (have_gpg_version (gpg, "2.5.1"))
+    flag = 1|2;
+  else
+    flag = 1;
+
+  return !!(flag & 2);
+}
+
+
 static void
 free_argv (char **argv)
 {
@@ -2403,11 +2419,32 @@ gpg_encrypt (void *engine, gpgme_key_t recp[], const char *recpstring,
   if (gpg->flags.use_gpgtar && (flags & GPGME_ENCRYPT_WRAP))
     return gpg_error (GPG_ERR_INV_VALUE);
 
+  if ((flags & (GPGME_ENCRYPT_ADD_RECP|GPGME_ENCRYPT_CHG_RECP))
+      && !have_cmd_modify_recipients (gpg))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
   if (recp || recpstring)
-    err = add_arg (gpg, "--encrypt");
+    {
+      if ((flags & GPGME_ENCRYPT_ADD_RECP))
+        err = add_arg (gpg, "--add-recipients");
+      else if ((flags & GPGME_ENCRYPT_CHG_RECP))
+        err = add_arg (gpg, "--change-recipients");
+      else
+        err = add_arg (gpg, "--encrypt");
+    }
 
   if (!err && ((flags & GPGME_ENCRYPT_SYMMETRIC) || (!recp && !recpstring)))
-    err = add_arg (gpg, "--symmetric");
+    {
+      if (!recp && !recpstring)
+        {
+          if ((flags & GPGME_ENCRYPT_ADD_RECP))
+            err = add_arg (gpg, "--add-recipients");
+          else if ((flags & GPGME_ENCRYPT_CHG_RECP))
+            err = add_arg (gpg, "--change-recipients");
+        }
+      if (!err)
+        err = add_arg (gpg, "--symmetric");
+    }
 
   if (!err && use_armor)
     err = add_gpg_arg (gpg, "--armor");

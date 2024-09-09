@@ -6760,6 +6760,17 @@ output should be additionally encrypted symmetrically even
 if recipients are provided. This feature is only supported
 for the OpenPGP crypto engine.
 
+@item GPGME_ENCRYPT_ADD_RECP
+@item GPGME_ENCRYPT_CHG_RECP
+@since{1.24.0}
+
+Instead of encrypting, decrypt the input and write an output which is
+additionally encrypted to the specified keys.  The CHG flag is similar
+but does not add encryption to the specified keys but existing
+encryption keys by the new ones.  This feature is only supported for
+the OpenPGP crypto engine and requires at least GnuPG version 2.5.1.
+
+
 @item GPGME_ENCRYPT_THROW_KEYIDS
 @since{1.8.0}
 

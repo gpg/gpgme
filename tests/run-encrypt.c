@@ -143,6 +143,8 @@ show_usage (int ex)
          "  --openpgp          use the OpenPGP protocol (default)\n"
          "  --cms              use the CMS protocol\n"
          "  --uiserver         use the UI server\n"
+         "  --add-recipients   use the re-encrypt feature\n"
+         "  --change-recipients  ditto, but clear existing keys\n"
          "  --loopback         use a loopback pinentry\n"
          "  --key NAME         encrypt to key NAME\n"
          "  --keystring NAMES  encrypt to ';' delimited NAMES\n"
@@ -238,6 +240,18 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--uiserver"))
         {
           protocol = GPGME_PROTOCOL_UISERVER;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--add-recipients"))
+        {
+          flags |= GPGME_ENCRYPT_ADD_RECP;
+          flags &= ~GPGME_ENCRYPT_CHG_RECP;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--change-recipients"))
+        {
+          flags |= GPGME_ENCRYPT_CHG_RECP;
+          flags &= ~GPGME_ENCRYPT_ADD_RECP;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--key"))

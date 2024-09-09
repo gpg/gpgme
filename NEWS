@@ -17,6 +17,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
    easier and to allow enabling/disabling of keys (requires GnuPG 2.4.6).
    [T7239]
 
+ * New flag to re-encrypt OpenPGP data (requires GnuPG 2.5.1).  [T1825]
+
  * cpp: Provide information about designated revocation keys for a Key.
    [T7118]
 
@@ -49,6 +51,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  GPGME_ENCRYPT_FILE                      NEW.
  GPGME_SIG_MODE_FILE                     NEW.
+ GPGME_ENCRYPT_ADD_RECP                  NEW.
+ GPGME_ENCRYPT_CHG_RECP                  NEW.
  gpgme_key_t                             EXTENDED: New field 'revkeys'.
  gpgme_revocation_key_t                  NEW.
  gpgme_set_ctx_flag                      EXTENDED: New flag 'import-options'.
