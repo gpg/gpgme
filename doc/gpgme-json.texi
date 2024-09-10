@@ -1,0 +1,70 @@
+\input texinfo                   @c -*- mode: texinfo; coding: utf-8; -*-
+@documentencoding UTF-8
+@setfilename gpgme-json.info
+@include defs.inc
+
+@manpage gpgme-json.1
+@ifset manverb
+.B gpgme-json
+\- Native messaging based GPGME operations
+@end ifset
+
+@mansect synopsis
+@ifset manverb
+.B  gpgme-json
+.RB [ \-\-interactive | \-i ]
+.RB [ \-\-single | \-s ]
+.RB [ \-\-identify
+.IR file ]
+.RB [ \-\-lib\-version ]
+.RB [ \-\-help | \-h ]
+@end ifset
+
+@mansect description
+@command{gpgme-json} is a JSON to GPGME bridge.
+This interface allows web-browser extensions to communicate with the
+GPGME library through the Native Messaging facility from web-browser.
+
+
+@mansect options
+@command{gpgme-json} accepts the following options on the command line:
+
+@item -i
+@itemx --interactive
+@opindex interactive
+Enable interactive mode.  Interactive mode also provides some online help.
+
+@item -s
+@itemx --single
+@opindex single
+Enable single request mode.
+
+@item --identify @var{file|-}
+@opindex identify
+Identify the type of the data found in @file{file} or standard input @var{-}.
+
+@item --debug
+@opindex single
+Enable debug mode. Logs are saved to to @file{~/.gnupg/S.gpgme-json.log}.
+
+Note that you can also turn debug mode on and specify a custom logfile using
+the environment variable @code{GPGME_JSON_DEBUG}.
+
+@item --lib-version
+@opindex version
+Print GPGME library version.
+
+@item -h
+@itemx --help
+@opindex help
+Print a usage message summarizing the most useful command-line options.
+
+@mansect bugs
+Please report bugs to <https://bugs.gnupg.org>.
+
+@mansect copyright
+@command{gpgme-json} is Copyright 2018-2024 g10 Code GmbH.
+LGPL version 2.1 or later <https://www.gnu.org/licenses/>
+
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

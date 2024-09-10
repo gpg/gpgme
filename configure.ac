@@ -104,6 +104,8 @@ AC_CANONICAL_HOST
 AM_SILENT_RULES
 AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
+AC_PATH_PROG(YAT2M, [yat2m], [:])
+
 # Enable GNU extensions on systems that have them.
 AC_USE_SYSTEM_EXTENSIONS
 

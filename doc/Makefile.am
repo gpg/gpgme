@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-DISTCLEANFILES = gpgme.tmp
+DISTCLEANFILES = gpgme.tmp yat2m-stamp.tmp yat2m-stamp $(myman_pages)
 CLEANFILES = mkdefsinc defs.inc
 
 EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011 \
@@ -28,15 +28,44 @@ EXTRA_DIST = module-overview.sk HACKING DCO ChangeLog-2011 \
 
 BUILT_SOURCES = defsincdate defs.inc
 
+YAT2M_OPTIONS = -I $(srcdir) --release "GPGME @PACKAGE_VERSION@"
+
+myman_sources = gpgme-json.texi
+myman_pages = gpgme-json.1
+
+man_MANS = $(myman_pages)
 
 info_TEXINFOS = gpgme.texi
-gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi
+gpgme_TEXINFOS = uiserver.texi lesser.texi gpl.texi gpgme-json.texi
 
 gpgme.texi : defs.inc
 
 mkdefsinc: mkdefsinc.c Makefile $(top_builddir)/conf/config.h
 	$(CC_FOR_BUILD) -I. -I$(top_builddir)/conf  -I$(srcdir) \
 	   $(AM_CPPFLAGS) -o $@ $(srcdir)/mkdefsinc.c
+
+yat2m-stamp: $(myman_sources) defs.inc
+	@rm -f yat2m-stamp.tmp
+	@touch yat2m-stamp.tmp
+	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
+	for file in $(myman_sources) ; do \
+              $(YAT2M) $(YAT2M_OPTIONS) --store \
+                  --date "`cat $$incd 2>/dev/null`" \
+	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
+	@mv -f yat2m-stamp.tmp $@
+
+$(myman_pages) : yat2m-stamp defs.inc
+	@if test -f $@; then :; else \
+            trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
+               if mkdir yat2m-lock 2>/dev/null; then \
+                 rm -f yat2m-stamp; \
+                 $(MAKE) $(AM_MAKEFLAGS) yat2m-stamp; \
+                 rmdir yat2m-lock; \
+               else \
+                 while test -d yat2m-lock; do sleep 1; done; \
+                 test -f yat2m-stamp; exit $$?; \
+               fi; \
+             fi
 
 dist-hook: defsincdate
 
