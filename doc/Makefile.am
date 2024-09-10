@@ -40,7 +40,7 @@ mkdefsinc: mkdefsinc.c Makefile $(top_builddir)/conf/config.h
 
 dist-hook: defsincdate
 
-defsincdate: $(gpgme_TEXINFOS)
+defsincdate: $(gpgme_TEXINFOS) $(info_TEXINFOS)
 	: >defsincdate ; \
 	if test -e $(top_srcdir)/.git; then \
 	  (cd $(srcdir) && git log -1 --format='%ct' -- \
