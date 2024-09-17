@@ -104,7 +104,7 @@ AC_CANONICAL_HOST
 AM_SILENT_RULES
 AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
-AC_PATH_PROG(YAT2M, [yat2m], [:])
+AC_PATH_PROG(YAT2M, [yat2m], [:], [$prefix/bin:$PATH])
 AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
 AM_CONDITIONAL(HAVE_YAT2M, test "$ac_cv_path_YAT2M" != ":")
 
