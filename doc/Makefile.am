@@ -31,7 +31,11 @@ BUILT_SOURCES = defsincdate defs.inc
 YAT2M_OPTIONS = -I $(srcdir) --release "GPGME @PACKAGE_VERSION@"
 
 myman_sources = gpgme-json.texi
+if HAVE_YAT2M
 myman_pages = gpgme-json.1
+else
+myman_pages =
+endif
 
 man_MANS = $(myman_pages)
 

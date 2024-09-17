@@ -105,6 +105,8 @@ AM_SILENT_RULES
 AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
 AC_PATH_PROG(YAT2M, [yat2m], [:])
+AC_ARG_VAR(YAT2M, [tool to convert texi to man pages])
+AM_CONDITIONAL(HAVE_YAT2M, test "$ac_cv_path_YAT2M" != ":")
 
 # Enable GNU extensions on systems that have them.
 AC_USE_SYSTEM_EXTENSIONS
