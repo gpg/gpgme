@@ -56,6 +56,8 @@ encrypt_sym_status_handler (void *priv, gpgme_status_code_t code, char *args)
     err = _gpgme_sign_status_handler (priv, code, args);
   if (!err)
     err = _gpgme_passphrase_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_encrypt_status_handler (priv, code, args);
   return err;
 }
 
@@ -82,11 +84,11 @@ encrypt_sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (recp && !*recp)
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  err = _gpgme_op_encrypt_init_result (ctx);
+  err = _gpgme_op_encrypt_init_result (ctx, flags & GPGME_ENCRYPT_ARCHIVE);
   if (err)
     return err;
 
-  err = _gpgme_op_sign_init_result (ctx);
+  err = _gpgme_op_sign_init_result (ctx, 0);
   if (err)
     return err;
 

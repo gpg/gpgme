@@ -60,6 +60,8 @@ typedef struct
   unsigned int ignore_inv_recp:1;
   unsigned int inv_sgnr_seen:1;
   unsigned int sig_created_seen:1;
+  /* Whether a SUCCESS status was seen.  Emitted by gpgtar.  */
+  unsigned int success_seen:1;
 } *op_data_t;
 
 
@@ -377,11 +379,17 @@ _gpgme_sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
       else if (!opd->sig_created_seen
                && ctx->protocol != GPGME_PROTOCOL_UISERVER)
 	err = opd->failure_code? opd->failure_code:gpg_error (GPG_ERR_GENERAL);
+      else if (!opd->success_seen)
+        err = opd->failure_code? opd->failure_code:gpg_error (GPG_ERR_EOF);
       break;
 
     case GPGME_STATUS_INQUIRE_MAXLEN:
       if (ctx->status_cb && !ctx->full_status)
         err = ctx->status_cb (ctx->status_cb_value, "INQUIRE_MAXLEN", args);
+      break;
+
+    case GPGME_STATUS_SUCCESS:
+      opd->success_seen = 1;
       break;
 
     default:
@@ -404,7 +412,7 @@ sign_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 static gpgme_error_t
-sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp)
+sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp, int success_required)
 {
   gpgme_error_t err;
   void *hook;
@@ -421,13 +429,14 @@ sign_init_result (gpgme_ctx_t ctx, int ignore_inv_recp)
   opd->ignore_inv_recp = !!ignore_inv_recp;
   opd->inv_sgnr_seen = 0;
   opd->sig_created_seen = 0;
+  opd->success_seen = !success_required;
   return 0;
 }
 
 gpgme_error_t
-_gpgme_op_sign_init_result (gpgme_ctx_t ctx)
+_gpgme_op_sign_init_result (gpgme_ctx_t ctx, int success_required)
 {
-  return sign_init_result (ctx, 0);
+  return sign_init_result (ctx, 0, success_required);
 }
 
 
@@ -444,7 +453,8 @@ sign_start (gpgme_ctx_t ctx, int synchronous, gpgme_data_t plain,
   /* If we are using the CMS protocol, we ignore the INV_RECP status
      code if a newer GPGSM is in use.  GPGMS does not support combined
      sign+encrypt and thus this can't harm.  */
-  err = sign_init_result (ctx, (ctx->protocol == GPGME_PROTOCOL_CMS));
+  err = sign_init_result (ctx, (ctx->protocol == GPGME_PROTOCOL_CMS),
+                          flags & GPGME_SIG_MODE_ARCHIVE);
   if (err)
     return err;
 

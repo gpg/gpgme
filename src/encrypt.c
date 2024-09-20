@@ -49,6 +49,9 @@ typedef struct
      the list.  This makes appending new invalid recipients painless
      while preserving the order.  */
   gpgme_invalid_key_t *lastp;
+
+  /* Whether a SUCCESS status was seen.  Emitted by gpgtar.  */
+  unsigned int success_seen:1;
 } *op_data_t;
 
 
@@ -136,6 +139,8 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
 	return gpg_error (GPG_ERR_UNUSABLE_PUBKEY);
       if (opd->failure_code)
         return opd->failure_code;
+      if (!opd->success_seen)
+        return gpg_error (GPG_ERR_EOF);
       break;
 
     case GPGME_STATUS_KEY_CONSIDERED:
@@ -164,6 +169,10 @@ _gpgme_encrypt_status_handler (void *priv, gpgme_status_code_t code,
       /* Should not happen, because we require at least one recipient.  */
       return gpg_error (GPG_ERR_GENERAL);
 
+    case GPGME_STATUS_SUCCESS:
+      opd->success_seen = 1;
+      break;
+
     default:
       break;
     }
@@ -179,6 +188,8 @@ encrypt_sym_status_handler (void *priv, gpgme_status_code_t code, char *args)
   err = _gpgme_progress_status_handler (priv, code, args);
   if (!err)
     err = _gpgme_passphrase_status_handler (priv, code, args);
+  if (!err)
+    err = _gpgme_encrypt_status_handler (priv, code, args);
   return err;
 }
 
@@ -197,7 +208,7 @@ encrypt_status_handler (void *priv, gpgme_status_code_t code, char *args)
 
 
 gpgme_error_t
-_gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
+_gpgme_op_encrypt_init_result (gpgme_ctx_t ctx, int success_required)
 {
   gpgme_error_t err;
   void *hook;
@@ -210,6 +221,7 @@ _gpgme_op_encrypt_init_result (gpgme_ctx_t ctx)
     return err;
 
   opd->lastp = &opd->result.invalid_recipients;
+  opd->success_seen = !success_required;
   return 0;
 }
 
@@ -227,7 +239,7 @@ encrypt_start (gpgme_ctx_t ctx, int synchronous, gpgme_key_t recp[],
   if (err)
     return err;
 
-  err = _gpgme_op_encrypt_init_result (ctx);
+  err = _gpgme_op_encrypt_init_result (ctx, flags & GPGME_ENCRYPT_ARCHIVE);
   if (err)
     return err;
 
