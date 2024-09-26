@@ -2970,7 +2970,12 @@ gpg_addadsk (engine_gpg_t gpg, gpgme_key_t key, const char *adskfpr)
   if (!adskfpr || !*adskfpr)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  if (!have_gpg_version (gpg, "2.4.1"))
+  if (have_gpg_version (gpg, "2.4.1"))
+    ;
+  else if (have_gpg_version (gpg, "2.2.45")
+           && !have_gpg_version (gpg, "2.3.0"))
+    ;
+  else
     return gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   err = add_arg (gpg, "--quick-add-adsk");
