@@ -1020,6 +1020,8 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
     argc += 1 + !!gpg->flags.use_gpgtar;
   if (gpg->flags.no_auto_check_trustdb)
     argc += 1 + !!gpg->flags.use_gpgtar;
+  if (gpg->flags.proc_all_sigs && have_option_proc_all_sigs (gpg))
+    argc += 1 + !!gpg->flags.use_gpgtar;
   if (gpg->pinentry_mode)
     argc += 1 + !!gpg->flags.use_gpgtar;
   if (!gpg->cmd.used)
@@ -1260,6 +1262,16 @@ build_argv (engine_gpg_t gpg, const char *pgmname)
       argc++;
       if (gpg->flags.proc_all_sigs && have_option_proc_all_sigs (gpg))
         {
+          if (gpg->flags.use_gpgtar)
+            {
+              argv[argc] = strdup ("--gpg-args");
+              if (!argv[argc])
+                {
+                  err = gpg_error_from_syserror ();
+                  goto leave;
+                }
+              argc++;
+            }
           argv[argc] = strdup ("--proc-all-sigs");
           if (!argv[argc])
             {
