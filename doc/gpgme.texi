@@ -3645,6 +3645,11 @@ information in Germany at the restricted level (VS-NfD).  This are
 currently RSA keys of at least 2048 bits or ECDH/ECDSA keys using a
 Brainpool curve.
 
+@item unsigned int beta_complinance : 1;
+@since{1.24.0}
+The compliance flags (e.g. is_de_vs) are set but the software has not
+yet been approved or is in a beta state.
+
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.  Note that it will be
 false if the key is actually a stub key; i.e., a secret key operation
@@ -5899,6 +5904,11 @@ The message claims that the content is a MIME object.
 @since{1.10.0}
 The message was encrypted in a VS-NfD compliant way.  This is a
 specification in Germany for a restricted communication level.
+
+@item unsigned int beta_complinance : 1;
+@since{1.24.0}
+The compliance flags (e.g. is_de_vs) are set but the software has not
+yet been approved or is in a beta state.
 
 @item gpgme_recipient_t recipients
 @since{1.1.0}

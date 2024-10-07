@@ -230,6 +230,7 @@ int _gpgme_assuan_log_cb (assuan_context_t ctx, void *hook,
       {									\
 	switch (comp_ul)						\
 	  {								\
+          case 2023: (result)->beta_compliance = 1; /*fallthru */       \
 	  case 23: (result)->is_de_vs = 1; break;			\
 	  }								\
       }									\

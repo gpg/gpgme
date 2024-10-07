@@ -325,7 +325,7 @@ main (int argc, char **argv)
               key->has_sign? "s":"",
               key->has_certify? "c":"",
               key->has_authenticate? "a":"");
-      printf ("flags   :%s%s%s%s%s%s%s%s\n",
+      printf ("flags   :%s%s%s%s%s%s%s%s%s\n",
               key->secret? " secret":"",
               key->revoked? " revoked":"",
               key->expired? " expired":"",
@@ -333,6 +333,8 @@ main (int argc, char **argv)
               key->invalid? " invalid":"",
               key->is_qualified? " qualified":"",
               key->subkeys && key->subkeys->is_de_vs? " de-vs":"",
+              key->subkeys && key->subkeys->is_de_vs
+              && key->subkeys->is_de_vs? "(beta)":"",
               key->subkeys && key->subkeys->is_cardkey? " cardkey":"");
       printf ("upd     : %lu (%u)\n", key->last_update, key->origin);
       if (key->chain_id)
@@ -360,7 +362,7 @@ main (int argc, char **argv)
                   subkey->can_authenticate? "a":"",
                   subkey->can_renc? "r":"",
                   subkey->can_timestamp? "t":"");
-          printf ("flags %2d:%s%s%s%s%s%s%s%s%s\n",
+          printf ("flags %2d:%s%s%s%s%s%s%s%s%s%s\n",
                   nsub,
                   subkey->secret? " secret":"",
                   subkey->revoked? " revoked":"",
@@ -370,6 +372,7 @@ main (int argc, char **argv)
                   subkey->is_group_owned? " group":"",
                   subkey->is_qualified? " qualified":"",
                   subkey->is_de_vs? " de-vs":"",
+                  subkey->is_de_vs && subkey->beta_compliance? "(beta)":"",
                   subkey->is_cardkey? " cardkey":"");
         }
       for (nuids=0, uid=key->uids; uid; uid = uid->next, nuids++)

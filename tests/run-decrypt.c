@@ -57,7 +57,8 @@ print_result (gpgme_decrypt_result_t result)
   printf ("Original file name .: %s\n", nonnull(result->file_name));
   printf ("Wrong key usage ....: %s\n", result->wrong_key_usage? "yes":"no");
   printf ("Legacy w/o MDC ... .: %s\n", result->legacy_cipher_nomdc?"yes":"no");
-  printf ("Compliance de-vs ...: %s\n", result->is_de_vs? "yes":"no");
+  printf ("Compliance de-vs ...: %s%s\n", result->is_de_vs? "yes":"no",
+          result->is_de_vs && result->beta_compliance? "(beta)":"");
   printf ("MIME flag ..........: %s\n", result->is_mime? "yes":"no");
   printf ("Unsupported algo ...: %s\n", nonnull(result->unsupported_algorithm));
   printf ("Session key ........: %s\n", nonnull (result->session_key));
