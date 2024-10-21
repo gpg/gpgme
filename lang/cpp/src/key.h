@@ -129,6 +129,7 @@ public:
     bool canAuthenticate() const;
     bool isQualified() const;
     bool isDeVs() const;
+    bool isBetaCompliance() const;
 
     /** Returns true, if the key has a certification subkey. */
     bool hasCertify() const;
@@ -289,6 +290,7 @@ public:
     bool isGroupOwned() const;
     bool isQualified() const;
     bool isDeVs() const;
+    bool isBetaCompliance() const;
     bool isCardKey() const;
 
     bool isSecret() const;

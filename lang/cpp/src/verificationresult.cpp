@@ -283,6 +283,11 @@ bool GpgME::Signature::isDeVs() const
     return !isNull() && d->sigs[idx]->is_de_vs;
 }
 
+bool GpgME::Signature::isBetaCompliance() const
+{
+    return !isNull() && d->sigs[idx]->beta_compliance;
+}
+
 GpgME::Signature::PKAStatus GpgME::Signature::pkaStatus() const
 {
     if (!isNull()) {
@@ -600,7 +605,8 @@ std::ostream &GpgME::operator<<(std::ostream &os, const Signature &sig)
            << "\n publicKeyAlgorithm:        " << protect(sig.publicKeyAlgorithmAsString())
            << "\n hashAlgorithm:             " << protect(sig.hashAlgorithmAsString())
            << "\n policyURL:                 " << protect(sig.policyURL())
-           << "\n isDeVs                     " << sig.isDeVs()
+           << "\n isDeVs:                    " << sig.isDeVs()
+           << "\n isBetaCompliance:          " << sig.isBetaCompliance()
            << "\n notations:\n";
         const std::vector<Notation> nota = sig.notations();
         std::copy(nota.begin(), nota.end(),

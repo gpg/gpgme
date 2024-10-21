@@ -122,6 +122,11 @@ bool GpgME::DecryptionResult::isDeVs() const
     return d && d->res.is_de_vs;
 }
 
+bool GpgME::DecryptionResult::isBetaCompliance() const
+{
+    return d && d->res.beta_compliance;
+}
+
 bool GpgME::DecryptionResult::isMime() const
 {
     return d && d->res.is_mime;
@@ -257,8 +262,9 @@ std::ostream &GpgME::operator<<(std::ostream &os, const DecryptionResult &result
            << "\n fileName:             " << protect(result.fileName())
            << "\n unsupportedAlgorithm: " << protect(result.unsupportedAlgorithm())
            << "\n isWrongKeyUsage:      " << result.isWrongKeyUsage()
-           << "\n isDeVs                " << result.isDeVs()
-           << "\n legacyCipherNoMDC     " << result.isLegacyCipherNoMDC()
+           << "\n isDeVs:               " << result.isDeVs()
+           << "\n isBetaCompliance:     " << result.isBetaCompliance()
+           << "\n legacyCipherNoMDC:    " << result.isLegacyCipherNoMDC()
            << "\n symkeyAlgo:           " << protect(result.symkeyAlgo())
            << "\n recipients:\n";
         const std::vector<DecryptionResult::Recipient> recipients = result.recipients();

@@ -264,14 +264,24 @@ bool Key::isQualified() const
 
 bool Key::isDeVs() const
 {
-    if (!key) {
-        return false;
-    }
-    if (!key->subkeys || !key->subkeys->is_de_vs) {
+    if (!key || !key->subkeys) {
         return false;
     }
     for (gpgme_sub_key_t subkey = key->subkeys ; subkey ; subkey = subkey->next) {
         if (!subkey->is_de_vs) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Key::isBetaCompliance() const
+{
+    if (!key || !key->subkeys) {
+        return false;
+    }
+    for (gpgme_sub_key_t subkey = key->subkeys ; subkey ; subkey = subkey->next) {
+        if (!subkey->beta_compliance) {
             return false;
         }
     }
@@ -584,6 +594,11 @@ bool Subkey::isQualified() const
 bool Subkey::isDeVs() const
 {
     return subkey && subkey->is_de_vs;
+}
+
+bool Subkey::isBetaCompliance() const
+{
+    return subkey && subkey->beta_compliance;
 }
 
 bool Subkey::isCardKey() const
@@ -1390,6 +1405,7 @@ std::ostream &operator<<(std::ostream &os, const Subkey &subkey)
            << "\n isGroupOwned:  " << subkey.isGroupOwned()
            << "\n isQualified:   " << subkey.isQualified()
            << "\n isDeVs:        " << subkey.isDeVs()
+           << "\n isBetaCompliance:" << subkey.isBetaCompliance()
            << "\n isCardKey:     " << subkey.isCardKey()
            << "\n cardSerialNumber:" << protect(subkey.cardSerialNumber());
     }
