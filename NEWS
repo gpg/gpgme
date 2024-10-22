@@ -68,8 +68,12 @@ Noteworthy changes in version 1.24.0 (unrelease)
  cpp: Key::revocationKey                 NEW.
  cpp: Key::numRevocationKeys             NEW.
  cpp: Key::revocationKeys                NEW.
+ cpp: Key::isBetaCompliance              NEW.
+ cpp: Subkey::isBetaCompliance           NEW.
  cpp: Error::asStdString                 NEW.
  cpp: Error::asString                    DEPRECATED.
+ cpp: DecryptionResult::isBetaCompliance NEW.
+ cpp: Signature::isBetaCompliance        NEW.
  qt: DecryptVerifyArchiveJob::setProcessAllSignatures NEW.
  qt: DecryptVerifyArchiveJob::processAllSignatures    NEW.
  qt: DecryptVerifyJob::setInputFile      NEW.
