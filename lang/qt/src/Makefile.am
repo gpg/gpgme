@@ -147,7 +147,7 @@ camelcase_headers= \
     EncryptJob \
     ExportJob \
     FileListDataProvider \
-    HierarchicalKeyKistJob \
+    HierarchicalKeyListJob \
     Job \
     MultiDeleteJob \
     Protocol \
