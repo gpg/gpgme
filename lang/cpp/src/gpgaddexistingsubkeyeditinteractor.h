@@ -27,6 +27,7 @@
 #include "editinteractor.h"
 
 #include <memory>
+#include <string>
 
 namespace GpgME
 {

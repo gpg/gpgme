@@ -29,12 +29,12 @@
 
 #include "gpgmefw.h"
 
-#include <memory>
-#include <sys/time.h>
-
-#include <vector>
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <vector>
+
+#include <ctime>
 
 namespace GpgME
 {

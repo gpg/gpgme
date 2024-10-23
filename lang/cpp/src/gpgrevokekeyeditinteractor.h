@@ -28,6 +28,7 @@
 #include "global.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace GpgME
