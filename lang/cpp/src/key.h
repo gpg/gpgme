@@ -475,7 +475,7 @@ private:
 class GPGMEPP_EXPORT UserID::Signature
 {
 public:
-    typedef GPGMEPP_DEPRECATED GpgME::Notation Notation;
+    GPGMEPP_DEPRECATED typedef GpgME::Notation Notation;
 
     Signature();
     Signature(const shared_gpgme_key_t &key, gpgme_user_id_t uid, gpgme_key_sig_t sig);
