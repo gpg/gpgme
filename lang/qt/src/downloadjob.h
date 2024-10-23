@@ -93,7 +93,7 @@ public:
        only empty strings or anything other than fingerprints, the
        result is undefined.
     */
-    virtual QGPGME_DEPRECATED_EXPORT GpgME::Error start(const QStringList &fingerprints) = 0;
+    QGPGME_DEPRECATED virtual GpgME::Error start(const QStringList &fingerprints) = 0;
 
 Q_SIGNALS:
     void result(const GpgME::Error &result, const QByteArray &keyData, const QString &auditLogAsHtml = QString(), const GpgME::Error &auditLogError = GpgME::Error());
