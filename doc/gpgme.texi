@@ -3297,6 +3297,11 @@ signature checking of data after a bad signatures.  This option is
 ignored if the backend itself does not support the --proc-all-sigs
 option.
 
+@item "known-notations"
+@since{1.24.0}
+The @var{value} is a space or comma delimited list of notation names
+which will be used to create @option{--known-notation} options for gpg.
+
 
 @end table
 

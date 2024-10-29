@@ -144,6 +144,7 @@ struct engine_gpg
   char request_origin[10];
   char *auto_key_locate;
   char *trust_model;
+  char **known_notations;
 
   struct {
     unsigned int use_gpgtar : 1;
@@ -577,6 +578,7 @@ gpg_release (void *engine)
     free (gpg->cmd.keyword);
   free (gpg->auto_key_locate);
   free (gpg->trust_model);
+  free (gpg->known_notations);
 
   gpgme_data_release (gpg->override_session_key);
   gpgme_data_release (gpg->diagnostics);
@@ -762,6 +764,18 @@ gpg_set_engine_flags (void *engine, const gpgme_ctx_t ctx)
       gpg->trust_model = _gpgme_strconcat ("--trust-model=",
                                            ctx->trust_model, NULL);
     }
+
+  if (ctx->known_notations)
+    {
+      free (gpg->known_notations);
+      gpg->known_notations = _gpgme_strtokenize (ctx->known_notations,
+                                                 " \t,", 1);
+      /* Fixme: We have no way to return an error.  However in this
+       * case one would just get the usual verification error as if
+       * that option has not been used.  I think this is acceptable
+       * for now. */
+    }
+
 
   gpg->flags.no_symkey_cache = (ctx->no_symkey_cache
                                 && have_gpg_version (gpg, "2.2.7"));
@@ -1892,6 +1906,24 @@ add_input_size_hint (engine_gpg_t gpg, gpgme_data_t data)
 }
 
 
+/* Add the --known_notations option if requested.  */
+static gpgme_error_t
+add_known_notations (engine_gpg_t gpg)
+{
+  gpg_error_t err = 0;
+  int i;
+  const char *s;
+
+  if (gpg->known_notations)
+    {
+      for (i=0; !err && (s=gpg->known_notations[i]); i++)
+        if (*s)
+          err = add_gpg_arg_with_value (gpg, "--known-notation=", s, 0);
+    }
+  return err;
+}
+
+
 static gpgme_error_t
 gpg_decrypt (void *engine,
              gpgme_decrypt_flags_t flags,
@@ -1928,6 +1960,9 @@ gpg_decrypt (void *engine,
 
   if (!err && gpg->flags.auto_key_import)
     err = add_gpg_arg (gpg, "--auto-key-import");
+
+  if (!err)
+    err = add_known_notations (gpg);
 
   if (!err && override_session_key && *override_session_key)
     {
@@ -3926,6 +3961,9 @@ gpg_verify (void *engine, gpgme_verify_flags_t flags, gpgme_data_t sig,
     err = add_gpg_arg (gpg, "--auto-key-import");
   if (!err && ctx->auto_key_retrieve)
     err = add_gpg_arg (gpg, "--auto-key-retrieve");
+
+  if (!err)
+    err = add_known_notations (gpg);
 
   if (err)
     ;

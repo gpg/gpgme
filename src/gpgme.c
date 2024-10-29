@@ -262,6 +262,7 @@ gpgme_release (gpgme_ctx_t ctx)
   free (ctx->key_origin);
   free (ctx->import_filter);
   free (ctx->import_options);
+  free (ctx->known_notations);
   _gpgme_engine_info_release (ctx->engine_info);
   ctx->engine_info = NULL;
   DESTROY_LOCK (ctx->lock);
@@ -623,6 +624,13 @@ gpgme_set_ctx_flag (gpgme_ctx_t ctx, const char *name, const char *value)
     {
       ctx->proc_all_sigs = abool;
     }
+  else if (!strcmp (name, "known-notations"))
+    {
+      free (ctx->known_notations);
+      ctx->known_notations = strdup (value);
+      if (!ctx->known_notations)
+        err = gpg_error_from_syserror ();
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_NAME);
 
@@ -715,6 +723,10 @@ gpgme_get_ctx_flag (gpgme_ctx_t ctx, const char *name)
   else if (!strcmp (name, "proc-all-sigs"))
     {
       return ctx->proc_all_sigs? "1":"";
+    }
+  else if (!strcmp (name, "known-notations"))
+    {
+      return ctx->known_notations? ctx->known_notations: "";
     }
   else
     return NULL;

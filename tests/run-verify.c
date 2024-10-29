@@ -242,6 +242,7 @@ show_usage (int ex)
          "  --diagnostics    print diagnostics\n"
          "  --direct-file-io pass file names instead of streams with content of files to backend\n"
          "  --proc-all-sigs  pass this option to gpg\n"
+         "  --known-notations STRING  Parse STRING and pass to gpg\n"
          , stderr);
   exit (ex);
 }
@@ -258,6 +259,7 @@ main (int argc, char **argv)
   const char *sender = NULL;
   const char *output = NULL;
   const char *directory = NULL;
+  const char *known_notations = NULL;
   int auto_key_retrieve = 0;
   int auto_key_import = 0;
   gpgme_data_encoding_t encoding = GPGME_DATA_ENCODING_NONE;
@@ -367,6 +369,14 @@ main (int argc, char **argv)
           proc_all_sigs = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--known-notations"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          known_notations = *argv;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -439,6 +449,12 @@ main (int argc, char **argv)
                        "auto-key-retrieve");
               exit (1);
             }
+        }
+
+      if (known_notations)
+        {
+          err = gpgme_set_ctx_flag (ctx, "known-notations", known_notations);
+          fail_if_err (err);
         }
 
       if (auto_key_import)

@@ -192,6 +192,10 @@ struct gpgme_context
   /* The optional import options.  */
   char *import_options;
 
+  /* A comma or space delimited list to create gpg --known-notations
+   * options.  */
+  char *known_notations;
+
   /* The operation data hooked into the context.  */
   ctx_op_data_t op_data;
 
