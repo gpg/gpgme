@@ -140,6 +140,11 @@ gpgme_error_t _gpgme_encode_percent_string (const char *src, char **destp,
  * modifies STRING.  The number of parsed fields is returned.  */
 int _gpgme_split_fields (char *string, char **array, int arraysize);
 
+/* Tokenize STRING using the set of delimiters in DELIM into a NULL
+ * delimited array.  Leading spaces and tabs are removed from all
+ * tokens if TRIM is set.  The caller must free the result.  */
+char **_gpgme_strtokenize (const char *string, const char *delim, int trim);
+
 /* Convert the field STRING into an unsigned long value.  Check for
  * trailing garbage.  */
 gpgme_error_t _gpgme_strtoul_field (const char *string, unsigned long *result);

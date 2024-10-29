@@ -32,6 +32,7 @@
 #include <time.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include "gpgme.h"
 #include "util.h"
@@ -40,6 +41,7 @@
 #define atoi_1(p)   (*(p) - '0' )
 #define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
 #define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
 
 
@@ -413,6 +415,79 @@ _gpgme_split_fields (char *string, char **array, int arraysize)
 
   return n;
 }
+
+
+/* Tokenize STRING using the set of delimiters in DELIM into a NULL
+ * delimited array.  Leading spaces and tabs are removed from all
+ * tokens if TRIM is set.  The caller must free the result.
+ *
+ * Returns: A malloced and NULL delimited array with the tokens.  On
+ *          memory error NULL is returned and ERRNO is set.
+ */
+char **
+_gpgme_strtokenize (const char *string, const char *delim, int trim)
+{
+  const char *s;
+  size_t fields;
+  size_t bytes, n;
+  char *buffer;
+  char *p, *px, *pend;
+  char **result;
+
+  /* Count the number of fields.  */
+  for (fields = 1, s = strpbrk (string, delim); s; s = strpbrk (s + 1, delim))
+    fields++;
+  fields++; /* Add one for the terminating NULL.  */
+
+  /* Allocate an array for all fields, a terminating NULL, and space
+     for a copy of the string.  */
+  bytes = fields * sizeof *result;
+  if (bytes / sizeof *result != fields)
+    {
+      gpg_err_set_errno (ENOMEM);
+      return NULL;
+    }
+  n = strlen (string) + 1;
+  bytes += n;
+  if (bytes < n)
+    {
+      gpg_err_set_errno (ENOMEM);
+      return NULL;
+    }
+  result = malloc (bytes);
+  if (!result)
+    return NULL;
+  buffer = (char*)(result + fields);
+
+  /* Copy and parse the string.  */
+  strcpy (buffer, string);
+  for (n = 0, p = buffer; (pend = strpbrk (p, delim)); p = pend + 1)
+    {
+      *pend = 0;
+      if (trim)
+        {
+          while (spacep (p))
+            p++;
+          for (px = pend - 1; px >= p && spacep (px); px--)
+            *px = 0;
+        }
+      result[n++] = p;
+    }
+  if (trim)
+    {
+      while (spacep (p))
+        p++;
+      for (px = p + strlen (p) - 1; px >= p && spacep (px); px--)
+        *px = 0;
+    }
+  result[n++] = p;
+  result[n] = NULL;
+
+  assert ((char*)(result + n + 1) == buffer);
+
+  return result;
+}
+
 
 /* Convert the field STRING into an unsigned long value.  Check for
  * trailing garbage.  */
