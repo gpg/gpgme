@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2023-03-15
+# Version: 2024-07-04
 
 configure_ac="configure.ac"
 
@@ -140,6 +140,7 @@ w32_extraoptions=
 w64_toolprefixes=
 w64_extraoptions=
 amd64_toolprefixes=
+disable_gettext_checks=
 # End list of optional variables sourced from ~/.gnupg-autogen.rc
 # What follows are variables which are sourced but default to
 # environment variables or lacking them hardcoded values.
@@ -264,17 +265,19 @@ if [ "$myhost" = "find-version" ]; then
           fi
       fi
       [ -n "$tmp" ] && beta=yes
+      cid=$(git rev-parse --verify HEAD | tr -d '\n\r')
       rev=$(git rev-parse --short HEAD | tr -d '\n\r')
       rvd=$((0x$(echo ${rev} | dd bs=1 count=4 2>/dev/null)))
     else
       ingit=no
       beta=yes
       tmp="-unknown"
+      cid="0000000"
       rev="0000000"
       rvd="0"
     fi
 
-    echo "$package-$vers$tmp:$beta:$ingit:$vers$tmp:$vers:$tmp:$rev:$rvd:"
+    echo "$package-$vers$tmp:$beta:$ingit:$vers$tmp:$vers:$tmp:$rev:$rvd:$cid:"
     exit 0
 fi
 # **** end FIND VERSION ****
@@ -410,17 +413,16 @@ q
 }' ${configure_ac}`
 automake_vers_num=`echo "$automake_vers" | cvtver`
 
+gettext_vers="n/a"
 if [ -d "${tsdir}/po" ]; then
   gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ {
 s/^.*\[\(.*\)])/\1/p
 q
 }' ${configure_ac}`
   gettext_vers_num=`echo "$gettext_vers" | cvtver`
-else
-  gettext_vers="n/a"
 fi
 
-if [ -z "$autoconf_vers" -o -z "$automake_vers" -o -z "$gettext_vers" ]
+if [ -z "$autoconf_vers" -o -z "$automake_vers" ]
 then
   echo "**Error**: version information not found in "\`${configure_ac}\'"." >&2
   exit 1
@@ -498,12 +500,21 @@ fi
 if [ -n "${ACLOCAL_FLAGS}" ]; then
   aclocal_flags="${aclocal_flags} ${ACLOCAL_FLAGS}"
 fi
+
+automake_flags="--gnu"
+if [ -n "${extra_automake_flags}" ]; then
+  automake_flags="${automake_flags} ${extra_automake_flags}"
+fi
+if [ -n "${AUTOMAKE_FLAGS}" ]; then
+  automake_flags="${automake_flags} ${AUTOMAKE_FLAGS}"
+fi
+
 info "Running $ACLOCAL ${aclocal_flags} ..."
 $ACLOCAL ${aclocal_flags}
 info "Running autoheader..."
 $AUTOHEADER
-info "Running automake --gnu ..."
-$AUTOMAKE --gnu;
+info "Running $AUTOMAKE ${automake_flags} ..."
+$AUTOMAKE ${automake_flags};
 info "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 

@@ -98,7 +98,7 @@ cright_blurb (void)
     "This is GPGME " PACKAGE_VERSION " - The GnuPG Made Easy library\n"
     CRIGHTBLURB
     "\n"
-    "(" BUILD_REVISION " " BUILD_TIMESTAMP ")\n"
+    "("  BUILD_COMMITID " " BUILD_TIMESTAMP ")\n"
     "\n\n";
   return blurb;
 }
