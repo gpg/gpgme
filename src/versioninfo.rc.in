@@ -39,7 +39,7 @@ BEGIN
             VALUE "FileDescription", "GPGME - GnuPG Made Easy\0"
             VALUE "FileVersion", "@LIBGPGME_LT_CURRENT@.@LIBGPGME_LT_AGE@.@LIBGPGME_LT_REVISION@.@BUILD_REVISION@\0"
             VALUE "InternalName", "gpgme\0"
-            VALUE "LegalCopyright", "Copyright © 2001-2023 g10 Code GmbH\0"
+            VALUE "LegalCopyright", "Copyright © 2001-2024 g10 Code GmbH\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "gpgme.dll\0"
             VALUE "PrivateBuild", "\0"

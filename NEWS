@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.24.0 (unrelease)
+Noteworthy changes in version 1.24.0 (2024-11-06)
 -------------------------------------------------
 
  * Extended gpgme_op_decrypt* and gpgme_op_verify* to allow writing the
@@ -14,6 +14,8 @@ Noteworthy changes in version 1.24.0 (unrelease)
  * New context flag "proc-all-sigs".  [T7261]
 
  * New context flag "known-notations".  [T4060]
+
+ * New info flags "beta_compliance".  [rM1a7bc88ee7]
 
  * New function gpgme_op_setownertrust to make changing the owner trust
    easier and to allow enabling/disabling of keys (requires GnuPG 2.4.6).
@@ -55,11 +57,16 @@ Noteworthy changes in version 1.24.0 (unrelease)
  GPGME_SIG_MODE_FILE                     NEW.
  GPGME_ENCRYPT_ADD_RECP                  NEW.
  GPGME_ENCRYPT_CHG_RECP                  NEW.
- gpgme_key_t                             EXTENDED: New field 'revkeys'.
+ gpgme_key_t                             EXT: New field 'revkeys'.
  gpgme_revocation_key_t                  NEW.
- gpgme_set_ctx_flag                      EXTENDED: New flag 'import-options'.
+ gpgme_set_ctx_flag                      EXT: New flag 'import-options'.
+ gpgme_set_ctx_flag                      EXT: New flag 'proc-all-sigs'.
+ gpgme_set_ctx_flag                      EXT: New flag 'known-notation'.
  gpgme_op_setownertrust_start            NEW.
  gpgme_op_setownertrust                  NEW.
+ gpgme_subkey_t                          EXT: New field 'beta_compliance'.
+ gpgme_signature_t                       EXT: New field 'beta_compliance'.
+ gpgme_decrypt_result_t                  EXT: New field 'beta_compliance'.
  cpp: Context::EncryptFile               NEW.
  cpp: Context::setOwnerTrust             NEW.
  cpp: Context::startSetOwnerTrust        NEW.
@@ -127,6 +134,10 @@ Noteworthy changes in version 1.24.0 (unrelease)
  qt: ImportJob::setImportOptions         NEW.
  qt: ImportJob::importOptions            NEW.
  qt: QuickJob::startSetKeyEnabled        NEW.
+
+ [c=C44/A33/R0 cpp=C27/A21/R0 qt=C21/A6/R0]
+
+ Release-info: https://dev.gnupg.org/T7376
 
 
 Noteworthy changes in version 1.23.2 (2023-11-28)
