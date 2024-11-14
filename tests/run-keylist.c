@@ -347,13 +347,17 @@ main (int argc, char **argv)
       subkey = key->subkeys;
       for (nsub=0; subkey; subkey = subkey->next, nsub++)
         {
+          char *algostr;
+
           printf ("fpr   %2d: %s\n", nsub, nonnull (subkey->fpr));
           if (subkey->v5fpr)
             printf ("v5fpr %2d: %s\n", nsub, nonnull (subkey->v5fpr));
           if (subkey->keygrip)
             printf ("grip  %2d: %s\n", nsub, subkey->keygrip);
-          if (subkey->curve)
-            printf ("curve %2d: %s\n", nsub, subkey->curve);
+          algostr = gpgme_pubkey_algo_string (subkey);
+          printf   ("algo  %2d: %s (%s)\n", nsub, algostr,
+                    gpgme_pubkey_algo_name (subkey->pubkey_algo));
+          gpgme_free (algostr);
           printf ("caps  %2d: %s%s%s%s%s%s\n",
                   nsub,
                   subkey->can_encrypt? "e":"",

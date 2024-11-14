@@ -650,7 +650,7 @@ _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol)
     {
       switch (algo)
         {
-        case 1: case 2: case 3: case 16: case 17: break;
+        case 1: case 2: case 3: case 8: case 16: case 17: break;
         case 18: algo = GPGME_PK_ECDH; break;
         case 19: algo = GPGME_PK_ECDSA; break;
         case 20: break;

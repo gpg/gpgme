@@ -270,6 +270,7 @@ typedef enum
     GPGME_PK_RSA   = 1,
     GPGME_PK_RSA_E = 2,
     GPGME_PK_RSA_S = 3,
+    GPGME_PK_KYBER = 8,
     GPGME_PK_ELG_E = 16,
     GPGME_PK_DSA   = 17,
     GPGME_PK_ECC   = 18,
@@ -616,7 +617,8 @@ struct _gpgme_subkey
   /* The serial number of a smart card holding this key or NULL.  */
   char *card_number;
 
-  /* The name of the curve for ECC algorithms or NULL.  */
+  /* The name of the curve for ECC algorithms, or the entire algorithm
+   * string for composite algorithms, or NULL.  */
   char *curve;
 
   /* The keygrip of the subkey in hex digit form or NULL if not available.  */
