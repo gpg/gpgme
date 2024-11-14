@@ -301,6 +301,7 @@ public:
         AlgoRSA     = 1,
         AlgoRSA_E   = 2,
         AlgoRSA_S   = 3,
+        AlgoKyber   = 8,
         AlgoELG_E   = 16,
         AlgoDSA     = 17,
         AlgoECC     = 18,
