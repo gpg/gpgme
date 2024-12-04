@@ -105,7 +105,7 @@ uninstall-local:
 	GV=$$(echo $(VERSION) | tr - _); \
 	normalizedGV=$$(echo $$GV | sed s/_beta/b/); \
 	for PYTHON in $(PYTHONS); do \
-	  PLATLIB="$(prefix)/$$("$${PYTHON}" -c 'import sysconfig, os; print(os.path.relpath(sysconfig.get_path("platlib", scheme="posix_prefix"), sysconfig.get_config_var("prefix")))')" ; \
+	  PLATLIB="$(prefix)/$$("$${PYTHON}" -c 'import sysconfig, os; print(os.path.relpath(sysconfig.get_path("platlib", scheme="posix_prefix"), sysconfig.get_path("data", scheme="posix_prefix")))')" ; \
 	  rm -rf -- "$(DESTDIR)$${PLATLIB}/gpg" \
 		"$(DESTDIR)$${PLATLIB}"/gpg-$$GV-py*.egg-info \
 		"$(DESTDIR)$${PLATLIB}"/gpg-$$normalizedGV-py*.egg ; \
