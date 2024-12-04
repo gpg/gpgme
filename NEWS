@@ -1,5 +1,17 @@
-Noteworthy changes in version 1.24.1 (unreleased)
+Noteworthy changes in version 1.24.1 (2024-12-04)
 -------------------------------------------------
+
+ * Support the Kyber algorithm in key listings.
+
+ * Allow building on some older Linux platforms.  [rM4a62318422]
+
+ * Interface changes relative to the 1.24.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_PK_KYBER                          NEW enum value.
+
+ [c=C44/A33/R1 cpp=C27/A21/R1 qt=C21/A6/R1]
+
+ Release-info: https://dev.gnupg.org/T7440
 
 
 Noteworthy changes in version 1.24.0 (2024-11-06)
