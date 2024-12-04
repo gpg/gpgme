@@ -29,6 +29,9 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if defined(__linux) && defined(HAVE_SYS_GETTID)
+# include <syscall.h>
+#endif
 #include <ctype.h>
 #include <errno.h>
 #include <time.h>
@@ -147,12 +150,16 @@ static int
 tid_log_callback (unsigned long *rvalue)
 {
   int len = sizeof (*rvalue);
-  uintptr_t thread;
+  uintptr_t thread = 0;
 
 #ifdef HAVE_W32_SYSTEM
   thread = (uintptr_t)GetCurrentThreadId ();
 #elif defined(__linux)
-  thread = (uintptr_t)gettid ();
+#  ifdef HAVE_GETTID
+     thread = (uintptr_t)gettid ();
+#  elif defined(HAVE_SYS_GETTID)
+     thread = (uintptr_t)syscall(SYS_gettid);
+#  endif
 #endif
   if (sizeof (thread) < len)
     {

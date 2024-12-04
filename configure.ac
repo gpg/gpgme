@@ -919,6 +919,25 @@ fi
 # Check for getgid etc
 AC_CHECK_FUNCS(getgid getegid closefrom nanosleep)
 
+# Check for gettid - test taken from strongswan git
+AC_CHECK_FUNC(gettid,
+       [AC_DEFINE(HAVE_GETTID, 1, [Defined if gettid is available.])],
+       [AC_MSG_CHECKING([for SYS_gettid])
+        AC_COMPILE_IFELSE(
+               [AC_LANG_PROGRAM(
+                       [[#define _GNU_SOURCE
+                         #include <unistd.h>
+                         #include <sys/syscall.h>
+                       ]],
+                       [[int main() {
+                         return syscall(SYS_gettid);}]])],
+               [AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_SYS_GETTID,1,
+                         [Defined is the system call gettid is available])],
+               [AC_MSG_RESULT([no])]
+       )]
+)
+
 
 # Replacement functions.
 AC_REPLACE_FUNCS(stpcpy)
