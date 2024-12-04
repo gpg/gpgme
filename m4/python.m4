@@ -36,12 +36,12 @@
 # numbers and dots only.
 AC_DEFUN([AM_PATH_PYTHON],
  [
-  dnl Find a Python interpreter.  Python versions prior to 3.8 are
+  dnl Find a Python interpreter.  Python versions prior to 3.9 are
   dnl end-of-life and not supported, with the exception of 2.7 and 3.6.
   m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
 [python2 python2.7 dnl
  python dnl
- python3 python3.12 python3.11 python3.10 python3.9 python3.8 python3.6
+ python3 python3.13 python3.12 python3.11 python3.10 python3.9 python3.6
  ])
 
   AC_ARG_VAR([PYTHON], [the Python interpreter])
