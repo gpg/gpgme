@@ -12,7 +12,7 @@
             "secret": false,
             "is_qualified": false,
             "protocol": "OpenPGP",
-            "fingerprint": "C95C864B775F71D02F52CEF6BD07B828B2F75071",
+            "fingerprint": "9A9586EBCF3DFEF3FBF12BD88B221651721CDE51",
             "owner_trust": "unknown",
             "origin": 0,
             "last_update": 0,
@@ -32,12 +32,12 @@
                     "is_de_vs": false,
                     "pubkey_algo_name": "EdDSA",
                     "pubkey_algo_string": "ed25519",
-                    "keyid": "BD07B828B2F75071",
+                    "keyid": "8B221651721CDE51",
                     "curve": "ed25519",
                     "pubkey_algo": 303,
                     "length": 255,
                     "timestamp": 1715782979,
-                    "expires": 1810390979
+                    "expires": 0
                 },
                 {
                     "revoked": false,
@@ -54,7 +54,7 @@
                     "is_de_vs": false,
                     "pubkey_algo_name": "ECDH",
                     "pubkey_algo_string": "cv25519",
-                    "keyid": "94C2E4C722CADAF9",
+                    "keyid": "E201FFED82819B33",
                     "curve": "cv25519",
                     "pubkey_algo": 302,
                     "length": 255,
