@@ -1039,9 +1039,6 @@ AH_BOTTOM([
 /* Under Windows we use the gettext code from gpgrt.  */
 #define GPG_ERR_ENABLE_GETTEXT_MACROS 1
 
-/* Under WindowsCE we need gpg-error's strerror macro.  */
-#define GPG_ERR_ENABLE_ERRNO_MACROS 1
-
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
                     "Copyright (C) 2001--2021 g10 Code GmbH\n"
 ])
