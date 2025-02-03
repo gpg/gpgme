@@ -335,8 +335,10 @@ integrate strong cryptography in his application.  Once support for
 for other crypto protocols once @acronym{GPGME} backends provide them.
 
 @item it's language friendly
-@acronym{GPGME} comes with languages bindings for several common
-programming languages: Common Lisp, C++, Python 2, and Python 3.
+@acronym{GPGME} comes with language bindings for several common
+programming languages: Common Lisp, C++, and Python 3.  The C++
+bindings and the Python bindings are available in separate
+repositories.
 @end table
 
 @node Overview
