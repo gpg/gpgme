@@ -480,7 +480,7 @@ gcc -o foo foo.c `pkg-config --cflags --libs gpgme`
 @c or test for the availability using
 @c
 @c @example
-@c gpgme-config --have-lang=python && echo 'Bindings for Pythons available'
+@c gpgme-config --have-lang=cl && echo 'Bindings for Common Lisp available'
 @c @end example
 @c
 

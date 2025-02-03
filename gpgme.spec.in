@@ -38,12 +38,10 @@ make distclean
 %post
 /sbin/ldconfig
 /sbin/install-info %{_infodir}/gpgme.info.gz %{_infodir}/dir
-/sbin/install-info %{_infodir}/gpgme-python-howto.info.gz %{_infodir}/dir
 
 %preun
 if [ "$1" = 0 ]; then
  /sbin/install-info --delete %{_infodir}/gpgme.info.gz %{_infodir}/dir
- /sbin/install-info --delete %{_infodir}/gpgme-python-howto.info.gz %{_infodir}/dir
 fi
 
 %postun
@@ -59,7 +57,6 @@ fi
 %{_includedir}/gpgme.h
 %{_datadir}/aclocal/gpgme.m4
 %{_infodir}/gpgme.info*
-%{_infodir}/gpgme-python-howto.info*
 
 %changelog
 * Sat Aug 30 2003 Robert Schiele <rschiele@uni-mannheim.de>
