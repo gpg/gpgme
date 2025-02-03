@@ -1307,8 +1307,8 @@ gpgme_pubkey_algo_string (gpgme_subkey_t subkey)
     {
     case GPGME_PK_RSA:
     case GPGME_PK_RSA_E:
-    case GPGME_PK_KYBER: composite = 1; break;
     case GPGME_PK_RSA_S: prefix = "rsa"; break;
+    case GPGME_PK_KYBER: composite = 1; break;
     case GPGME_PK_ELG_E: prefix = "elg"; break;
     case GPGME_PK_DSA:	 prefix = "dsa"; break;
     case GPGME_PK_ELG:   prefix = "xxx"; break;
