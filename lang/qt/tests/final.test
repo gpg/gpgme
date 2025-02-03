@@ -1,6 +1,0 @@
-#!/bin/sh
-
-# stop the dirmngr that may have been started
-gpgconf --kill dirmngr
-
-exit 0

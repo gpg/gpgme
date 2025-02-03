@@ -1,4 +1,0 @@
-Tests for the C++ bindings.
-
-Most autotests for the C++ bindings use the QTest framework
-and live in lang/qt/tests.

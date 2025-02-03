@@ -22,8 +22,9 @@ to public key crypto engines like GnuPG or GpgSM easier for
 applications.  GPGME provides a high-level crypto API for encryption,
 decryption, signing, signature verification and key management.
 
-GPGME comes with language bindings for Common Lisp, C++, QT, Python2,
-and Python 3.
+GPGME comes with language bindings for Common Lisp, Python2, and
+Python 3. Language bindings for C++ and Qt are available in separate
+repositories.
 
 GPGME uses GnuPG as its backend to support OpenPGP and the
 Cryptographic Message Syntax (CMS).

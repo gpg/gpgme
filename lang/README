@@ -10,7 +10,12 @@ sub-directory.
 Directory	Language
 
 cl		Common Lisp
-cpp		C++
-qt		Qt-Framework API
 python		Python 2 and 3 (module name: gpg)
 js              Native messaging client for the gpgme-json server.
+
+More language bindings are available in separate repositories.
+
+Repository      Language
+
+gpgmepp         C++
+gpgmeqt         Qt-Framework API
