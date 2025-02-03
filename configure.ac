@@ -1,6 +1,6 @@
 # configure.ac for GPGME
 # Copyright (C) 2000 Werner Koch (dd9jn)
-# Copyright (C) 2001-2021 g10 Code GmbH
+# Copyright (C) 2001-2025 g10 Code GmbH
 #
 # This file is part of GPGME.
 #
@@ -1040,7 +1040,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_GETTEXT_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2021 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2025 g10 Code GmbH\n"
 ])
 
 

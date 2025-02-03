@@ -1,6 +1,14 @@
 Noteworthy changes in version 1.24.2 (unreleased)
 -------------------------------------------------
 
+  Take care: This version is from a legacy branch of gpgme created
+  just before we split out the C++, Qt, and Python bindings to
+  separate repositories and bumped the version number up to 2.0.
+
+ * Fix regression for RSA in gpgme_pubkey_algo_string.  [T7508]
+
+ * Prevent failing tests after 2027-05-15.  [T7471]
+
 
 Noteworthy changes in version 1.24.1 (2024-12-04)
 -------------------------------------------------

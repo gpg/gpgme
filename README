@@ -1,7 +1,7 @@
                        GPGME - GnuPG Made Easy
                      ---------------------------
 
-Copyright 2001-2024 g10 Code GmbH
+Copyright 2001-2025 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -11,6 +11,12 @@ This file is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
+
+
+  Take care: This version is from a legacy branch of gpgme created
+  just before we split out the C++, Qt, and Python bindings to
+  separate repositories and bumped the version number up to 2.0.
+
 
 
 Introduction
