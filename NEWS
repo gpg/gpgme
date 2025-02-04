@@ -17,6 +17,9 @@ Noteworthy changes in version 1.24.1 (2024-12-04)
 
  Release-info: https://dev.gnupg.org/T7440
 
+ Note that big fix releases for the 1.24 branch may exist.  The firs
+ bug fix release will be 1.24.2.
+
 
 Noteworthy changes in version 1.24.0 (2024-11-06)
 -------------------------------------------------
