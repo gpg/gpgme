@@ -1,4 +1,4 @@
-Noteworthy changes in version 1.24.2 (unreleased)
+Noteworthy changes in version 1.24.2 (2025-02-10)
 -------------------------------------------------
 
   Take care: This version is from a legacy branch of gpgme created
@@ -8,6 +8,10 @@ Noteworthy changes in version 1.24.2 (unreleased)
  * Fix regression for RSA in gpgme_pubkey_algo_string.  [T7508]
 
  * Prevent failing tests after 2027-05-15.  [T7471]
+
+ [c=C44/A33/R2 cpp=C27/A21/R2 qt=C21/A6/R2]
+
+ Release-info: https://dev.gnupg.org/T7524
 
 
 Noteworthy changes in version 1.24.1 (2024-12-04)
