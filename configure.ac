@@ -55,9 +55,9 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 #   (Interfaces added:			AGE++)
 #   (Interfaces removed:		AGE=0)
 #
-LIBGPGME_LT_CURRENT=44
-LIBGPGME_LT_AGE=33
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_CURRENT=45
+LIBGPGME_LT_AGE=0
+LIBGPGME_LT_REVISION=0
 ################################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
