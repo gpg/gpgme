@@ -1,6 +1,24 @@
 Noteworthy changes in version 2.0.0 (unreleased)
 ------------------------------------------------
 
+ * Removed types and functions deprecated since 2003 or which had only
+   experimental use.
+
+
+ * Interface changes relative to the 1.24 branch:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_attr_t                            REMOVED.
+ gpgme_get_sig_ulong_attr                REMOVED.
+ gpgme_get_sig_string_attr               REMOVED.
+ gpgme_key_get_string_attr               REMOVED.
+ gpgme_key_get_ulong_attr                REMOVED.
+ gpgme_key_sig_get_string_attr           REMOVED.
+ gpgme_key_sig_get_ulong_attr            REMOVED.
+ gpgme_trust_item_get_string_attr        REMOVED.
+ gpgme_trust_item_get_int_attr           REMOVED.
+ GPGME_EXPORT_MODE_NOUID                 REMOVED.
+
+
 
 Noteworthy changes in version 1.24.1 (2024-12-04)
 -------------------------------------------------

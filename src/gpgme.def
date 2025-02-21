@@ -127,16 +127,8 @@ EXPORTS
     gpgme_data_new_with_read_cb           @98
     gpgme_data_rewind                     @99
     gpgme_get_sig_status                  @100
-    gpgme_get_sig_string_attr             @101
-    gpgme_get_sig_ulong_attr              @102
     gpgme_get_sig_key                     @103
-    gpgme_key_get_string_attr             @104
-    gpgme_key_get_ulong_attr              @105
-    gpgme_key_sig_get_string_attr         @106
-    gpgme_key_sig_get_ulong_attr          @107
     gpgme_op_import_ext                   @108
-    gpgme_trust_item_get_int_attr         @109
-    gpgme_trust_item_get_string_attr      @110
     gpgme_trust_item_release              @111
 
     gpgme_set_engine_info                 @112
@@ -289,4 +281,3 @@ EXPORTS
     gpgme_op_setownertrust                @213
     gpgme_op_setownertrust_start          @214
 ; END
-

@@ -258,16 +258,8 @@ GPGME_1.0 {
     gpgme_data_new_with_read_cb;
     gpgme_data_rewind;
     gpgme_get_sig_status;
-    gpgme_get_sig_string_attr;
-    gpgme_get_sig_ulong_attr;
     gpgme_get_sig_key;
-    gpgme_key_get_string_attr;
-    gpgme_key_get_ulong_attr;
-    gpgme_key_sig_get_string_attr;
-    gpgme_key_sig_get_ulong_attr;
     gpgme_op_import_ext;
-    gpgme_trust_item_get_int_attr;
-    gpgme_trust_item_get_string_attr;
     gpgme_trust_item_release;
 
     gpgme_err_code_from_syserror;

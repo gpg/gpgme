@@ -2576,10 +2576,6 @@ char *gpgme_addrspec_from_uid (const char *uid);
  * Deprecated types, constants and functions.
  */
 
-/* This is a former experimental only features.  The constant is
- * provided to not break existing code in the compiler phase.  */
-#define GPGME_EXPORT_MODE_NOUID               128  /* Do not use! */
-
 
 /* The possible stati for gpgme_op_edit.  The use of that function and
  * these status codes are deprecated in favor of gpgme_op_interact. */
@@ -2737,45 +2733,6 @@ typedef enum
 _gpgme_sig_stat_t;
 typedef _gpgme_sig_stat_t gpgme_sig_stat_t _GPGME_DEPRECATED(0,4);
 
-/* The available key and signature attributes.  Deprecated, use the
- * individual result structures instead.  */
-typedef enum
-  {
-    GPGME_ATTR_KEYID        = 1,
-    GPGME_ATTR_FPR          = 2,
-    GPGME_ATTR_ALGO         = 3,
-    GPGME_ATTR_LEN          = 4,
-    GPGME_ATTR_CREATED      = 5,
-    GPGME_ATTR_EXPIRE       = 6,
-    GPGME_ATTR_OTRUST       = 7,
-    GPGME_ATTR_USERID       = 8,
-    GPGME_ATTR_NAME         = 9,
-    GPGME_ATTR_EMAIL        = 10,
-    GPGME_ATTR_COMMENT      = 11,
-    GPGME_ATTR_VALIDITY     = 12,
-    GPGME_ATTR_LEVEL        = 13,
-    GPGME_ATTR_TYPE         = 14,
-    GPGME_ATTR_IS_SECRET    = 15,
-    GPGME_ATTR_KEY_REVOKED  = 16,
-    GPGME_ATTR_KEY_INVALID  = 17,
-    GPGME_ATTR_UID_REVOKED  = 18,
-    GPGME_ATTR_UID_INVALID  = 19,
-    GPGME_ATTR_KEY_CAPS     = 20,
-    GPGME_ATTR_CAN_ENCRYPT  = 21,
-    GPGME_ATTR_CAN_SIGN     = 22,
-    GPGME_ATTR_CAN_CERTIFY  = 23,
-    GPGME_ATTR_KEY_EXPIRED  = 24,
-    GPGME_ATTR_KEY_DISABLED = 25,
-    GPGME_ATTR_SERIAL       = 26,
-    GPGME_ATTR_ISSUER       = 27,
-    GPGME_ATTR_CHAINID      = 28,
-    GPGME_ATTR_SIG_STATUS   = 29,
-    GPGME_ATTR_ERRTOK       = 30,
-    GPGME_ATTR_SIG_SUMMARY  = 31,
-    GPGME_ATTR_SIG_CLASS    = 32
-  }
-_gpgme_attr_t;
-typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED(0,4);
 
 /* Retrieve the signature status of signature IDX in CTX after a
  * successful verify operation in R_STAT (if non-null).  The creation
@@ -2785,17 +2742,6 @@ typedef _gpgme_attr_t gpgme_attr_t _GPGME_DEPRECATED(0,4);
 const char *gpgme_get_sig_status (gpgme_ctx_t ctx, int idx,
                                   _gpgme_sig_stat_t *r_stat,
 				  time_t *r_created) _GPGME_DEPRECATED(0,4);
-
-/* Retrieve certain attributes of a signature.  IDX is the index
- * number of the signature after a successful verify operation.  WHAT
- * is an attribute where GPGME_ATTR_EXPIRE is probably the most useful
- * one.  WHATIDX is to be passed as 0 for most attributes . */
-unsigned long gpgme_get_sig_ulong_attr (gpgme_ctx_t c, int idx,
-                                        _gpgme_attr_t what, int whatidx)
-     _GPGME_DEPRECATED(0,4);
-const char *gpgme_get_sig_string_attr (gpgme_ctx_t c, int idx,
-				       _gpgme_attr_t what, int whatidx)
-     _GPGME_DEPRECATED(0,4);
 
 
 /* Get the key used to create signature IDX in CTX and return it in
@@ -2812,40 +2758,6 @@ gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
 					   void *read_cb_value)
      _GPGME_DEPRECATED(0,4);
 
-/* Return the value of the attribute WHAT of KEY, which has to be
- * representable by a string.  IDX specifies the sub key or user ID
- * for attributes related to sub keys or user IDs.  Deprecated, use
- * key structure directly instead. */
-const char *gpgme_key_get_string_attr (gpgme_key_t key, _gpgme_attr_t what,
-				       const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
-
-/* Return the value of the attribute WHAT of KEY, which has to be
- * representable by an unsigned integer.  IDX specifies the sub key or
- * user ID for attributes related to sub keys or user IDs.
- * Deprecated, use key structure directly instead.  */
-unsigned long gpgme_key_get_ulong_attr (gpgme_key_t key, _gpgme_attr_t what,
-					const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
-
-/* Return the value of the attribute WHAT of a signature on user ID
- * UID_IDX in KEY, which has to be representable by a string.  IDX
- * specifies the signature.  Deprecated, use key structure directly
- * instead.  */
-const char *gpgme_key_sig_get_string_attr (gpgme_key_t key, int uid_idx,
-					   _gpgme_attr_t what,
-					   const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
-
-/* Return the value of the attribute WHAT of a signature on user ID
- * UID_IDX in KEY, which has to be representable by an unsigned
- * integer string.  IDX specifies the signature.  Deprecated, use key
- * structure directly instead.  */
-unsigned long gpgme_key_sig_get_ulong_attr (gpgme_key_t key, int uid_idx,
-					    _gpgme_attr_t what,
-					    const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
-
 
 gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED(0,4);
@@ -2853,16 +2765,6 @@ gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 /* DO NOT USE.  */
 void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED(0,4);
 
-/* DO NOT USE.  */
-const char *gpgme_trust_item_get_string_attr (gpgme_trust_item_t item,
-					      _gpgme_attr_t what,
-					      const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
-
-/* DO NOT USE.  */
-int gpgme_trust_item_get_int_attr (gpgme_trust_item_t item, _gpgme_attr_t what,
-				   const void *reserved, int idx)
-     _GPGME_DEPRECATED(0,4);
 
 /* Compat.
  * This structure shall be considered read-only and an application
@@ -2900,7 +2802,6 @@ typedef gpgme_pubkey_algo_t GpgmePubKeyAlgo _GPGME_DEPRECATED(0,4);
 typedef gpgme_hash_algo_t GpgmeHashAlgo _GPGME_DEPRECATED(0,4);
 typedef gpgme_sig_stat_t GpgmeSigStat _GPGME_DEPRECATED(0,4);
 typedef gpgme_sig_mode_t GpgmeSigMode _GPGME_DEPRECATED(0,4);
-typedef gpgme_attr_t GpgmeAttr _GPGME_DEPRECATED(0,4);
 typedef gpgme_validity_t GpgmeValidity _GPGME_DEPRECATED(0,4);
 typedef gpgme_protocol_t GpgmeProtocol _GPGME_DEPRECATED(0,4);
 typedef gpgme_engine_info_t GpgmeEngineInfo _GPGME_DEPRECATED(0,4);
