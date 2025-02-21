@@ -77,9 +77,6 @@ EXPORTS
     gpgme_key_unref                       @51
     gpgme_key_release                     @52
 
-    gpgme_trust_item_ref                  @53
-    gpgme_trust_item_unref                @54
-
     gpgme_cancel                          @55
     gpgme_op_card_edit                    @56
     gpgme_op_card_edit_start              @57
@@ -129,7 +126,6 @@ EXPORTS
     gpgme_get_sig_status                  @100
     gpgme_get_sig_key                     @103
     gpgme_op_import_ext                   @108
-    gpgme_trust_item_release              @111
 
     gpgme_set_engine_info                 @112
 

@@ -61,10 +61,6 @@ _gpgme_wait_private_event_cb (void *data, gpgme_event_io_t type,
     case GPGME_EVENT_NEXT_KEY:
       _gpgme_op_keylist_event_cb (data, type, type_data);
       break;
-
-    case GPGME_EVENT_NEXT_TRUSTITEM:
-      _gpgme_op_trustlist_event_cb (data, type, type_data);
-      break;
     }
 }
 

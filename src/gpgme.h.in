@@ -1,6 +1,6 @@
 /* gpgme.h - Public interface to GnuPG Made Easy.                   -*- c -*-
  * Copyright (C) 2000 Werner Koch (dd9jn)
- * Copyright (C) 2001-2018 g10 Code GmbH
+ * Copyright (C) 2001-2025 g10 Code GmbH
  *
  * This file is part of GPGME.
  *
@@ -1125,8 +1125,7 @@ typedef enum
   {
     GPGME_EVENT_START,
     GPGME_EVENT_DONE,
-    GPGME_EVENT_NEXT_KEY,
-    GPGME_EVENT_NEXT_TRUSTITEM  /* NOT USED.  */
+    GPGME_EVENT_NEXT_KEY
   }
 gpgme_event_io_t;
 
@@ -2137,37 +2136,6 @@ gpgme_error_t gpgme_op_passwd (gpgme_ctx_t ctx, gpgme_key_t key,
 
 
 /*
- * Trust items and operations.  DO NOT USE.
- * Note: This does not work because the experimental support in the
- * GnuPG engine has been removed a very long time; for API and ABI
- * compatibilty we keep the functions but let them return an error.
- * See https://dev.gnupg.org/T4834
- */
-struct _gpgme_trust_item
-{
-  unsigned int _refs;
-  char *keyid;
-  char _keyid[16 + 1];
-  int type;
-  int level;
-  char *owner_trust;
-  char _owner_trust[2];
-  char *validity;
-  char _validity[2];
-  char *name;
-};
-typedef struct _gpgme_trust_item *gpgme_trust_item_t;
-gpgme_error_t gpgme_op_trustlist_start (gpgme_ctx_t ctx,
-					const char *pattern, int max_level);
-gpgme_error_t gpgme_op_trustlist_next (gpgme_ctx_t ctx,
-				       gpgme_trust_item_t *r_item);
-gpgme_error_t gpgme_op_trustlist_end (gpgme_ctx_t ctx);
-void gpgme_trust_item_ref (gpgme_trust_item_t item);
-void gpgme_trust_item_unref (gpgme_trust_item_t item);
-
-
-
-/*
  * Audit log
  */
 
@@ -2762,9 +2730,6 @@ gpgme_error_t gpgme_data_new_with_read_cb (gpgme_data_t *r_dh,
 gpgme_error_t gpgme_op_import_ext (gpgme_ctx_t ctx, gpgme_data_t keydata,
 				   int *nr) _GPGME_DEPRECATED(0,4);
 
-/* DO NOT USE.  */
-void gpgme_trust_item_release (gpgme_trust_item_t item) _GPGME_DEPRECATED(0,4);
-
 
 /* Compat.
  * This structure shall be considered read-only and an application
@@ -2829,7 +2794,6 @@ typedef gpgme_verify_result_t GpgmeVerifyResult _GPGME_DEPRECATED(0,4);
 typedef gpgme_import_status_t GpgmeImportStatus _GPGME_DEPRECATED(0,4);
 typedef gpgme_import_result_t GpgmeImportResult _GPGME_DEPRECATED(0,4);
 typedef gpgme_genkey_result_t GpgmeGenKeyResult _GPGME_DEPRECATED(0,4);
-typedef	gpgme_trust_item_t GpgmeTrustItem _GPGME_DEPRECATED(0,4);
 typedef gpgme_status_code_t GpgmeStatusCode _GPGME_DEPRECATED(0,4);
 
 #ifdef __cplusplus

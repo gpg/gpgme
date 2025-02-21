@@ -200,9 +200,6 @@ GPGME_1.0 {
     gpgme_key_unref;
     gpgme_key_release;
 
-    gpgme_trust_item_ref;
-    gpgme_trust_item_unref;
-
     gpgme_cancel;
     gpgme_op_card_edit;
     gpgme_op_card_edit_start;
@@ -260,7 +257,6 @@ GPGME_1.0 {
     gpgme_get_sig_status;
     gpgme_get_sig_key;
     gpgme_op_import_ext;
-    gpgme_trust_item_release;
 
     gpgme_err_code_from_syserror;
     gpgme_err_set_errno;

@@ -156,17 +156,6 @@ void _gpgme_op_keylist_event_cb (void *data, gpgme_event_io_t type,
 				 void *type_data);
 
 
-/* From trust-item.c.  */
-
-/* Create a new trust item.  */
-gpgme_error_t _gpgme_trust_item_new (gpgme_trust_item_t *r_item);
-
-
-/* From trustlist.c.  */
-void _gpgme_op_trustlist_event_cb (void *data, gpgme_event_io_t type,
-				   void *type_data);
-
-
 /* From version.c.  */
 
 /* Return true if MY_VERSION is at least REQ_VERSION, and false

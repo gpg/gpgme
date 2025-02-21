@@ -82,7 +82,7 @@ main_sources =								\
 	op-support.c							\
 	encrypt.c encrypt-sign.c decrypt.c decrypt-verify.c verify.c	\
 	sign.c passphrase.c progress.c					\
-	key.c keylist.c keysign.c trust-item.c trustlist.c tofupolicy.c	\
+	key.c keylist.c keysign.c tofupolicy.c	                        \
 	revsig.c							\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
 	setexpire.c setownertrust.c					\

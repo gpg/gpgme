@@ -1,9 +1,14 @@
 Noteworthy changes in version 2.0.0 (unreleased)
 ------------------------------------------------
 
- * Removed types and functions deprecated since 2003 or which had only
-   experimental use.
+ * Removed the gpgme_attr_t enums and their functions which were
+   deprecated since 2003.  [rMd54d6eaa64]
 
+ * Removed the never implemented or announced GPGME_EXPORT_MODE_NOUID
+   flags.  [rMd54d6eaa64]
+
+ * Removed the entire trustlist feature which worked anyway only for a
+   short period in 2003.  [T4834]
 
  * Interface changes relative to the 1.24 branch:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -17,7 +22,15 @@ Noteworthy changes in version 2.0.0 (unreleased)
  gpgme_trust_item_get_string_attr        REMOVED.
  gpgme_trust_item_get_int_attr           REMOVED.
  GPGME_EXPORT_MODE_NOUID                 REMOVED.
-
+ GPGME_EVENT_NEXT_TRUSTITEM              REMOVED.
+ gpgme_trust_item_t                      REMOVED.
+ GpgmeTrustItem                          REMOVED.
+ gpgme_op_trustlist_start                REMOVED.
+ gpgme_op_trustlist_next                 REMOVED.
+ gpgme_op_trustlist_end                  REMOVED.
+ gpgme_trust_item_ref                    REMOVED.
+ gpgme_trust_item_unref                  REMOVED.
+ gpgme_trust_item_release                REMOVED.
 
 
 Noteworthy changes in version 1.24.1 (2024-12-04)
