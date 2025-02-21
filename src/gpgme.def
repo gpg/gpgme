@@ -113,9 +113,7 @@ EXPORTS
     gpgme_op_sign                         @88
     gpgme_op_sign_result                  @89
     gpgme_op_sign_start                   @90
-    gpgme_op_trustlist_end                @91
-    gpgme_op_trustlist_next               @92
-    gpgme_op_trustlist_start              @93
+
     gpgme_op_verify                       @94
     gpgme_op_verify_result                @95
     gpgme_op_verify_start                 @96

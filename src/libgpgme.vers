@@ -244,9 +244,6 @@ GPGME_1.0 {
     gpgme_op_sign;
     gpgme_op_sign_result;
     gpgme_op_sign_start;
-    gpgme_op_trustlist_end;
-    gpgme_op_trustlist_next;
-    gpgme_op_trustlist_start;
     gpgme_op_verify;
     gpgme_op_verify_result;
     gpgme_op_verify_start;
