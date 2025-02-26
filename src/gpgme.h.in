@@ -2473,6 +2473,18 @@ gpgme_error_t gpgme_op_query_swdb (gpgme_ctx_t ctx,
 gpgme_query_swdb_result_t gpgme_op_query_swdb_result (gpgme_ctx_t ctx);
 
 
+/* Mode values for gpgme_op_get_random_bytes.  */
+typedef enum
+  {
+    GPGME_RANDOM_MODE_NORMAL = 0,
+    GPGME_RANDOM_MODE_ZBASE32 = 1
+  }
+gpgme_random_mode_t;
+
+/* Fill BUFFER with BUFSIZE random bytes from gpg.  */
+gpgme_error_t gpgme_op_random_bytes (gpgme_ctx_t ctx, gpgme_random_mode_t mode,
+                                     char *buffer, size_t bufsize);
+
 
 
 /*

@@ -274,4 +274,6 @@ EXPORTS
 
     gpgme_op_setownertrust                @213
     gpgme_op_setownertrust_start          @214
+
+    gpgme_op_random_bytes                 @215
 ; END

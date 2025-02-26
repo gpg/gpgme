@@ -42,7 +42,7 @@ noinst_HEADERS = run-support.h
 noinst_PROGRAMS = $(TESTS) run-keylist run-export run-import run-sign \
 		  run-verify run-encrypt run-identify run-decrypt run-genkey \
 		  run-keysign run-tofu run-swdb run-threaded \
-		  run-receive-keys run-setownertrust
+		  run-receive-keys run-setownertrust run-genrandom
 
 run_threaded_CPPFLAGS = -I$(top_builddir)/src @GPG_ERROR_MT_CFLAGS@
 run_threaded_LDADD = ../src/libgpgme.la \

@@ -841,6 +841,7 @@ struct engine_ops _gpgme_engine_ops_assuan =
     NULL,               /* setexpire */
     NULL,               /* setownertrust */
     llass_transact,     /* opassuan_transact */
+    NULL,               /* getdirect */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     NULL,		/* conf_dir */

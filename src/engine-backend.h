@@ -140,6 +140,9 @@ struct engine_ops
                                        gpgme_assuan_status_cb_t status_cb,
                                        void *status_cb_value);
 
+  gpgme_error_t (*getdirect) (void *engine, const char *argv[],
+                              gpgme_data_t dataout, unsigned int flags);
+
   gpgme_error_t  (*conf_load) (void *engine, gpgme_conf_comp_t *conf_p);
   gpgme_error_t  (*conf_save) (void *engine, gpgme_conf_comp_t conf);
   gpgme_error_t  (*conf_dir) (void *engine, const char *what, char **result);

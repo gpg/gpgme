@@ -85,7 +85,7 @@ main_sources =								\
 	key.c keylist.c keysign.c tofupolicy.c	                        \
 	revsig.c							\
 	import.c export.c genkey.c delete.c edit.c getauditlog.c        \
-	setexpire.c setownertrust.c					\
+	setexpire.c setownertrust.c genrandom.c				\
 	opassuan.c passwd.c spawn.c assuan-support.c                    \
 	engine.h engine-backend.h engine.c engine-gpg.c status-table.c	\
 	engine-gpgsm.c engine-assuan.c engine-gpgconf.c                 \

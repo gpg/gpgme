@@ -223,6 +223,7 @@ Crypto Operations
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
+* Random::                        Getting strong random bytes.
 
 Sign
 
@@ -5747,6 +5748,7 @@ An error code describing the reason why the key was found invalid.
 * Decrypt and Verify::            Decrypting a signed ciphertext.
 * Sign::                          Creating a signature.
 * Encrypt::                       Encrypting a plaintext.
+* Random::                        Getting strong random bytes.
 @end menu
 
 
@@ -7091,6 +7093,60 @@ to first create the key objects.  The keys are passed verbatim to the
 backend engine.
 
 @end deftypefun
+
+@node Random
+@subsection Random
+@cindex random bytes
+@cindex cryptographic operation, random
+
+GPGME provides a simple interface to get cryptographic strong random
+numbers from Libgcrypt via the GPG engine.
+
+@menu
+* Getting Random::        How to get random bytes.
+@end menu
+
+
+@node Getting Random
+@subsubsection How to get random bytes
+
+@deftp {Data type} {enum gpgme_random_mode_t}
+@tindex gpgme_random_mode_t
+
+This enum ist used to select special modes of the random generator.
+
+@table @code
+@item GPGME_RANDOM_MODE_NORMAL
+This is the standard mode, you may also use 0 instead of this enum
+value.
+
+@item GPGME_RANDOM_MODE_ZBASE32
+This mode is used to tell the random function to return a 30 character
+string with random characters from the zBase32 set of characters.  The
+returned string will be terminated by a Nul.
+@end table
+@end deftp
+
+
+@deftypefun {gpgme_error_t} gpgme_op_random_bytes ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_random_mode_t @var{mode}}, @
+            @w{char *@var{buffer}}, @
+            @w{size_t @var{bufsize}})
+
+@since{2.0.0}
+
+The function @code{gpgme_op_random_bytes} returns random bytes.
+@var{buffer} must be provided by the caller with a size of
+@var{BUFSIZE} and will on return be filled with random bytes retrieved
+from gpg.  However, if @var{mode} is @code{GPGME_RANDOM_MODE_ZBASE32}
+@var{bufsize} needs to be at least 31 and will be filled with a string
+of 30 ASCII characters followed by a Nul; the remainder of the buffer
+is not changed.  This function has a limit of 1024 bytes to avoid
+accidental overuse of the random generator
+
+@end deftypefun
+
 
 
 @node Miscellaneous

@@ -273,6 +273,8 @@ GPGME_1.0 {
     gpgme_op_setownertrust;
     gpgme_op_setownertrust_start;
 
+    gpgme_op_random_bytes;
+
   local:
     *;
 

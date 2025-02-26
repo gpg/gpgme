@@ -472,6 +472,7 @@ struct engine_ops _gpgme_engine_ops_spawn =
     NULL,               /* setexpire */
     NULL,               /* setownertrust */
     NULL,               /* opassuan_transact */
+    NULL,               /* getdirect */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     NULL,		/* conf_dir */

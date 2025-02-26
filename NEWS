@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.0.0 (unreleased)
 ------------------------------------------------
 
+ * New function gpgme_op_random_bytes to get cryptographically strng
+   random bytes from gpg.
+
  * Removed the gpgme_attr_t enums and their functions which were
    deprecated since 2003.  [rMd54d6eaa64]
 
@@ -12,6 +15,9 @@ Noteworthy changes in version 2.0.0 (unreleased)
 
  * Interface changes relative to the 1.24 branch:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ gpgme_op_random_bytes                   NEW.
+ GPGME_RANDOM_MODE_NORMAL                NEW.
+ GPGME_RANDOM_MODE_ZBASE32               NEW.
  gpgme_attr_t                            REMOVED.
  gpgme_get_sig_ulong_attr                REMOVED.
  gpgme_get_sig_string_attr               REMOVED.

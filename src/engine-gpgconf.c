@@ -1312,6 +1312,7 @@ struct engine_ops _gpgme_engine_ops_gpgconf =
     NULL,               /* setexpire */
     NULL,               /* setownertrust */
     NULL,               /* opassuan_transact */
+    NULL,               /* getdirect */
     gpgconf_conf_load,
     gpgconf_conf_save,
     gpgconf_conf_dir,

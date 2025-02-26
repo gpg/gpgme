@@ -185,6 +185,10 @@ gpgme_error_t _gpgme_engine_op_assuan_transact
                  gpgme_assuan_status_cb_t status_cb,
                  void *status_cb_value);
 
+gpgme_error_t _gpgme_engine_op_getdirect (engine_t engine, const char *argv[],
+                                          gpgme_data_t dataout,
+                                          unsigned int flags);
+
 gpgme_error_t _gpgme_engine_op_conf_load (engine_t engine,
 					  gpgme_conf_comp_t *conf_p);
 gpgme_error_t _gpgme_engine_op_conf_save (engine_t engine,

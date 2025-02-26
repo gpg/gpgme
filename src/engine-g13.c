@@ -812,6 +812,7 @@ struct engine_ops _gpgme_engine_ops_g13 =
     NULL,               /* setexpire */
     NULL,               /* setownertrust */
     g13_transact,
+    NULL,               /* getdirect */
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     NULL,		/* conf_dir */

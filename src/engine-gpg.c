@@ -4173,6 +4173,29 @@ gpg_setownertrust (void *engine, gpgme_key_t key, const char *value)
 }
 
 
+static gpgme_error_t
+gpg_getdirect (void *engine, const char *argv[],
+               gpgme_data_t dataout, unsigned int flags)
+{
+  engine_gpg_t gpg = engine;
+  gpgme_error_t err;
+  int i;
+
+  if (!engine || !argv || !dataout || flags)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  for (i=0; !err && argv[i]; i++)
+    if ((err = add_arg (gpg, argv[i])))
+      return err;
+
+  err = add_data (gpg, dataout, 1, 1);
+  if (!err)
+    err = start (gpg);
+
+  return err;
+}
+
+
 
 struct engine_ops _gpgme_engine_ops_gpg =
   {
@@ -4214,6 +4237,7 @@ struct engine_ops _gpgme_engine_ops_gpg =
     gpg_setexpire,
     gpg_setownertrust,
     NULL,               /* opassuan_transact */
+    gpg_getdirect,
     NULL,		/* conf_load */
     NULL,		/* conf_save */
     NULL,		/* conf_dir */

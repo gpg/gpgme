@@ -987,6 +987,26 @@ _gpgme_engine_op_assuan_transact (engine_t engine,
 }
 
 
+/* Direct invocation of the engine's tool.
+ *
+ * For example with argv[0] = "--gen-random" and argv[1] = "30" the
+ * gpg engine puts 30 bytes zbase32 encoded random into DATAOUT.
+ * FLAGS must be passed as 0 for now.
+ */
+gpgme_error_t
+_gpgme_engine_op_getdirect (engine_t engine, const char *argv[],
+                            gpgme_data_t dataout, unsigned int flags)
+{
+  if (!engine)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!engine->ops->getdirect)
+    return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  return (*engine->ops->getdirect) (engine->engine, argv, dataout, flags);
+}
+
+
 gpgme_error_t
 _gpgme_engine_op_conf_load (engine_t engine, gpgme_conf_comp_t *conf_p)
 {
