@@ -2481,9 +2481,14 @@ typedef enum
   }
 gpgme_random_mode_t;
 
-/* Fill BUFFER with BUFSIZE random bytes from gpg.  */
+/* Fill BUFFER with BUFSIZE random bytes from gpg or return an error.  */
 gpgme_error_t gpgme_op_random_bytes (gpgme_ctx_t ctx, gpgme_random_mode_t mode,
                                      char *buffer, size_t bufsize);
+
+/* Store an unbiased random value in the range [0,LIMIT) at RETVAL or
+ * return an error.  */
+gpgme_error_t gpgme_op_random_value (gpgme_ctx_t ctx, size_t limit,
+                                     size_t *retval);
 
 
 

@@ -58,6 +58,46 @@ do_genrandom (gpgme_ctx_t ctx, gpgme_data_t dataout, size_t length, int zbase)
 }
 
 
+/* Store a random value into RETVAL or return an error.  */
+static gpgme_error_t
+getrandom_size_t (gpgme_ctx_t ctx, size_t *retval)
+{
+  gpgme_error_t err = 0;
+  gpgme_data_t data = NULL;
+  char *datap = NULL;
+  size_t datalen;
+
+  err = gpgme_data_new (&data);
+  if (err)
+    goto leave;
+
+  err = do_genrandom (ctx, data, sizeof (size_t), 0);
+  if (!err)
+    err = _gpgme_wait_one (ctx);
+  if (err)
+    goto leave;
+
+  datap = gpgme_data_release_and_get_mem (data, &datalen);
+  data = NULL;
+  if (!datap)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (datalen != sizeof (size_t))
+    {
+      err = gpg_error (GPG_ERR_INTERNAL);
+      goto leave;
+    }
+  memcpy (retval, datap, datalen);
+
+ leave:
+  free (datap);
+  gpgme_data_release (data);
+  return err;
+}
+
+
 /* Fill BUFFER of size BUFSIZE with random bytes retrieved from gpg.
  * If GPGME_RANDOM_MODE_ZBASE32 is used BUFSIZE needs to be at least
  * 31 and will be filled with a string of 30 ascii characters followed
@@ -145,5 +185,48 @@ gpgme_op_random_bytes (gpgme_ctx_t ctx, gpgme_random_mode_t mode,
  leave:
   free (datap);
   gpgme_data_release (data);
+  return TRACE_ERR (err);
+}
+
+
+
+/* On success the function stores an unbiased random value in the
+ * range [0,limit) at RETVAL.  On error the function returns an error
+ * code and the value at RETVAL is undefined.  A context must be
+ * provided so that the function can get raw random bytes from the gpg
+ * enine (i.e. from Libgcrypt). */
+gpgme_error_t
+gpgme_op_random_value (gpgme_ctx_t ctx, size_t limit, size_t *retval)
+{
+  gpgme_error_t err;
+  size_t t, x;
+
+  TRACE_BEG  (DEBUG_CTX, "gpgme_op_random_value", ctx, "limit=%zu", limit);
+
+  if (!ctx || limit < 2 || !retval)
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  /* This is the OpenBSD algorithm as used by arc4random_uniform and
+   * described in "Fast Random Integer Generation in an Interval" by
+   * Daniel Lemire (arXiv:1805.10941v4, 2018).  */
+  t = (-limit) % limit;
+  x = 0;  /* Avoid (false) compiler warning.  */
+  do
+    {
+      err = getrandom_size_t (ctx, &x);
+      if (err)
+        goto leave;
+      /* fprintf (stderr, "getrandom returned %zu (limit=%zu, t=%zu)\n", */
+      /*          x, limit, t); */
+    }
+  while (x < t);
+  x %= limit;
+
+  *retval = x;
+
+ leave:
   return TRACE_ERR (err);
 }

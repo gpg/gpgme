@@ -7142,9 +7142,24 @@ The function @code{gpgme_op_random_bytes} returns random bytes.
 from gpg.  However, if @var{mode} is @code{GPGME_RANDOM_MODE_ZBASE32}
 @var{bufsize} needs to be at least 31 and will be filled with a string
 of 30 ASCII characters followed by a Nul; the remainder of the buffer
-is not changed.  This function has a limit of 1024 bytes to avoid
-accidental overuse of the random generator
+is not changed.  The caller must provide a context @var{ctx}
+initialized for GPGME_PROTOCOL_OPENPGP.  This function has a limit of
+1024 bytes to avoid accidental overuse of the random generator
 
+@end deftypefun
+
+@deftypefun {gpgme_error_t} gpgme_op_random_values ( @
+            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{size_t @var{limit}}, @
+            @w{size_t *@var{retval}})
+
+@since{2.0.0}
+
+The function @code{gpgme_op_random_value} returns an unbiased random
+value in the range 0 <= value < @var{limit}.  The value is returned at
+@var{retval} if and only if the function returns with success.  The
+caller must also provide a context @var{ctx} initialized for
+GPGME_PROTOCOL_OPENPGP.
 @end deftypefun
 
 
