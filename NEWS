@@ -7,6 +7,9 @@ Noteworthy changes in version 2.0.0 (unreleased)
  * New function gpgme_op_random_value to get a cryptographically
    strong unsigned integer random value.   [T6694]
 
+ * New decrypt flag to skip the actual decryption so that information
+   about the recipients can be retrieved.
+
  * Removed the gpgme_attr_t enums and their functions which were
    deprecated since 2003.  [rMd54d6eaa64]
 
@@ -22,6 +25,7 @@ Noteworthy changes in version 2.0.0 (unreleased)
  gpgme_op_random_value                   NEW.
  GPGME_RANDOM_MODE_NORMAL                NEW.
  GPGME_RANDOM_MODE_ZBASE32               NEW.
+ GPGME_DECRYPT_LISTONLY                  NEW.
  gpgme_attr_t                            REMOVED.
  gpgme_get_sig_ulong_attr                REMOVED.
  gpgme_get_sig_string_attr               REMOVED.

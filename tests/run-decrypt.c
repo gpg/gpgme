@@ -90,6 +90,7 @@ show_usage (int ex)
          "  --no-symkey-cache               disable the use of that cache\n"
          "  --ignore-mdc-error              allow decryption of legacy data\n"
          "  --unwrap         remove only the encryption layer\n"
+         "  --list-only      no actual decryption\n"
          "  --large-buffers  use large I/O buffer\n"
          "  --sensitive      mark data objects as sensitive\n"
          "  --output FILE    write output to FILE instead of stdout\n"
@@ -213,6 +214,11 @@ main (int argc, char **argv)
         {
           flags |= GPGME_DECRYPT_UNWRAP;
           raw_output = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--list-only"))
+        {
+          flags |= GPGME_DECRYPT_LISTONLY;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--output"))
@@ -445,7 +451,7 @@ main (int argc, char **argv)
     {
       if (!raw_output)
         print_result (result);
-      if (!output)
+      if (!output && !(flags & GPGME_DECRYPT_LISTONLY))
         {
           if (!raw_output)
             fputs ("Begin Output:\n", stdout);

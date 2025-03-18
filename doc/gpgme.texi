@@ -5830,6 +5830,15 @@ be an OpenPGP message with only the encryption layer removed.  This
 requires GnuPG 2.1.12 and works only for OpenPGP.  This is the
 counterpart to @code{GPGME_ENCRYPT_WRAP}.
 
+@item GPGME_DECRYPT_LIST
+@since{2.0.0}
+
+The @code{GPGME_DECRYPT_LIST} symbol specifies that the actual
+decryption step of an OpenPGP message shall be skipped.  This can be
+used to information on the keyids of the recipients of some encrypted
+data.  Note that most other result items have no or no useful
+information in this case.
+
 @end table
 
 The function returns the error codes as described for

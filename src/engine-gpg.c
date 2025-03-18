@@ -1952,6 +1952,9 @@ gpg_decrypt (void *engine,
         err = add_arg (gpg, "--unwrap");
     }
 
+  if (!err && (flags & GPGME_DECRYPT_LISTONLY))
+    err = add_arg (gpg, "--list-only");
+
   if (!err && export_session_key)
     err = add_gpg_arg (gpg, "--show-session-key");
 
