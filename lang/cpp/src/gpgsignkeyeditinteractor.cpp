@@ -239,6 +239,10 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(ERROR, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(QUIT, GET_BOOL, "keyedit.save.okay", SAVE);
 #undef addEntry
+    // validate the transition map; there must not be a transition without state change
+    for (auto it = tab.cbegin(); it != tab.cend(); ++it) {
+        assert(std::get<0>(it->first) != it->second);
+    }
     return tab;
 }
 
