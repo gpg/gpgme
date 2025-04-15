@@ -217,8 +217,6 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(DUPE_OK2, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM, GET_BOOL, "sign_uid.okay", CONFIRM2);
     addEntry(CONFIRM2, GET_BOOL, "sign_uid.okay", CONFIRM);
-    addEntry(CONFIRM, GET_LINE, "keyedit.prompt", COMMAND);
-    addEntry(CONFIRM2, GET_LINE, "keyedit.prompt", COMMAND);
     addEntry(CONFIRM, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM2, GET_LINE, "trustsig_prompt.trust_value", SET_TRUST_VALUE);
     addEntry(CONFIRM, GET_LINE, "sign_uid.expire", SET_EXPIRE);
@@ -234,7 +232,9 @@ static GpgSignKeyEditInteractor_Private::TransitionMap makeTable()
     addEntry(UIDS_LIST_SEPARATELY_DONE, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(DUPE_OK, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK2);
     addEntry(DUPE_OK2, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
+    addEntry(CONFIRM, GET_BOOL, "sign_uid.dupe_okay", DUPE_OK);
     addEntry(CONFIRM, GET_LINE, "keyedit.prompt", QUIT);
+    addEntry(CONFIRM2, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(REJECT_SIGN_EXPIRED, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(ERROR, GET_LINE, "keyedit.prompt", QUIT);
     addEntry(QUIT, GET_BOOL, "keyedit.save.okay", SAVE);
