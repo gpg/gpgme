@@ -3658,6 +3658,11 @@ Brainpool curve.
 The compliance flags (e.g. is_de_vs) are set but the software has not
 yet been approved or is in a beta state.
 
+@item unsigned int subkey_match : 1;
+@since{2.0.0}
+This flag is set iff the key has been looked up using a
+fingerprint with a '!' suffix.
+
 @item unsigned int secret : 1
 This is true if the subkey is a secret key.  Note that it will be
 false if the key is actually a stub key; i.e., a secret key operation
@@ -6476,7 +6481,9 @@ Every context starts with an empty list.
 
 @deftypefun gpgme_error_t gpgme_signers_add (@w{gpgme_ctx_t @var{ctx}}, @w{const gpgme_key_t @var{key}})
 The function @code{gpgme_signers_add} adds the key @var{key} to the
-list of signers in the context @var{ctx}.
+list of signers in the context @var{ctx}.  If the key has the
+subkey_match flag set (i.e. it was found via a fingerprint with '!'
+suffix) that specific subkey is used for signing.
 
 Calling this function acquires an additional reference for the key.
 @end deftypefun

@@ -2103,17 +2103,39 @@ append_args_from_signers (engine_gpg_t gpg, gpgme_ctx_t ctx /* FIXME */)
   gpgme_error_t err = 0;
   int i;
   gpgme_key_t key;
+  gpgme_subkey_t subkey;
+  const char *s;
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
-      const char *s = key->subkeys ? key->subkeys->keyid : NULL;
-      if (s)
-	{
-	  if (!err)
-	    err = add_arg (gpg, "-u");
-	  if (!err)
-	    err = add_arg (gpg, s);
-	}
+      if (key->subkeys)
+        {
+          /* First check whether any subkey has the subkey_match set
+           * and use that one.  If that is not the case we use the
+           * fingerprint of the primary key or if that does not exist
+           * the keyid.  */
+          for (subkey = key->subkeys; subkey; subkey = subkey->next)
+            if (subkey->subkey_match)
+              break;
+          if (subkey && subkey->fpr)
+            {
+              if (!err)
+                err = add_arg (gpg, "-u");
+              if (!err)
+                err = add_arg_pfx (gpg, subkey->fpr, "!");
+            }
+          else
+            {
+              subkey = key->subkeys;  /* Reset to the primary key.  */
+              if ((s=subkey->fpr) || (s=subkey->keyid))
+                {
+                  if (!err)
+                    err = add_arg (gpg, "-u");
+                  if (!err)
+                    err = add_arg (gpg, s);
+                }
+            }
+        }
       gpgme_key_unref (key);
       if (err)
         break;

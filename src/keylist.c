@@ -1359,7 +1359,7 @@ gpgme_op_keylist_ext_start (gpgme_ctx_t ctx, const char *pattern[],
           err = maybe_setup_for_requested_subkey (opd, pattern[i]);
           if (err)
             return TRACE_ERR (err);
-          /* We can only handle one exact subnkey request.  Thus we
+          /* We can only handle one exact subkey request.  Thus we
            * stop after the first seen.  */
           if (opd->requested_subkey)
             break;

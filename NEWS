@@ -10,6 +10,11 @@ Noteworthy changes in version 2.0.0 (unreleased)
  * New decrypt flag to skip the actual decryption so that information
    about the recipients can be retrieved.
 
+ * If the key passed to gpgme_signers_add was retrieved with an exact
+   pattern (fingerprint with '!' suffix), the requested subkey is used
+   for signing.  This reflects the behaviour of gpg but is a minor
+   semantic change.  [T3325]
+
  * Removed the gpgme_attr_t enums and their functions which were
    deprecated since 2003.  [rMd54d6eaa64]
 
