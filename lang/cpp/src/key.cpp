@@ -633,7 +633,7 @@ time_t Subkey::creationTime() const
 
 time_t Subkey::expirationTime() const
 {
-    return static_cast<time_t>(subkey ? subkey->expires : 0);
+    return static_cast<time_t>(static_cast<unsigned long int>(subkey ? subkey->expires : 0));
 }
 
 bool Subkey::neverExpires() const
