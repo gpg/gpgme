@@ -15,6 +15,11 @@ Noteworthy changes in version 2.0.0 (unreleased)
    for signing.  This reflects the behaviour of gpg but is a minor
    semantic change.  [T3325]
 
+ * The timestamp and expires fields in gpgme_subkey_t, gpgme_key_sig,
+   and gpgme_new_signature_t are changed from signed long to unsigned
+   long to better cope with 32bit time_t implementations.  These
+   fields should in reality never see an error value (-1).
+
  * Removed the gpgme_attr_t enums and their functions which were
    deprecated since 2003.  [rMd54d6eaa64]
 

@@ -612,10 +612,10 @@ struct _gpgme_subkey
   char *fpr;
 
   /* The creation timestamp, -1 if invalid, 0 if not available.  */
-  long int timestamp;
+  unsigned long int timestamp;
 
   /* The expiration timestamp, 0 if the subkey does not expire.  */
-  long int expires;
+  unsigned long int expires;
 
   /* The serial number of a smart card holding this key or NULL.  */
   char *card_number;
@@ -671,10 +671,10 @@ struct _gpgme_key_sig
   char _keyid[16 + 1];
 
   /* The creation timestamp, -1 if invalid, 0 if not available.  */
-  long int timestamp;
+  unsigned long int timestamp;
 
   /* The expiration timestamp, 0 if the subkey does not expire.  */
-  long int expires;
+  unsigned long int expires;
 
   /* Same as in gpgme_signature_t.  */
   gpgme_error_t status;
@@ -1554,7 +1554,7 @@ struct _gpgme_new_signature
   unsigned long _obsolete_class;
 
   /* Signature creation time.  */
-  long int timestamp;
+  unsigned long int timestamp;
 
   /* The fingerprint of the signature.  */
   char *fpr;

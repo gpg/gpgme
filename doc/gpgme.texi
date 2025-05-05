@@ -3693,11 +3693,12 @@ hexadecimal digits, if available.
 The keygrip of the subkey in hex digit form or @code{NULL} if not
 available.
 
-@item long int timestamp
-This is the creation timestamp of the subkey.  This is -1 if the
-timestamp is invalid, and 0 if it is not available.
+@item unsigned long int timestamp
+This is the creation timestamp of the subkey.  This is @code{(unsigned
+long)(-1)} if the timestamp is invalid, and 0 if it is not available.
+Note that an invalid timestamp indicates a bug in the engine.
 
-@item long int expires
+@item unsigned long int expires
 This is the expiration timestamp of the subkey, or 0 if the subkey
 does not expire.
 
@@ -3906,11 +3907,12 @@ This is the public key algorithm used to create the signature.
 This is the key ID of the key (in hexadecimal digits) used to create
 the signature.
 
-@item long int timestamp
-This is the creation timestamp of the key signature.  This is -1 if
-the timestamp is invalid, and 0 if it is not available.
+@item unsigned long int timestamp
+This is the creation timestamp of the key signature.  This is
+@code{(unsigned long)(-1)} if the timestamp is invalid, and 0 if it is
+not available.
 
-@item long int expires
+@item unsigned long int expires
 This is the expiration timestamp of the key signature, or 0 if the key
 signature does not expire.
 
@@ -4271,8 +4273,8 @@ The common case is to use 0 to not set an expiration time.
 Note that this parameter takes an unsigned long value and not
 a @code{time_t} to avoid problems on systems which use a signed
 32 bit @code{time_t}.  Note further that the OpenPGP protocol
-uses 32 bit values for timestamps and thus can
-only encode dates up to the year 2106.
+uses 32 bit values for timestamps and thus can only encode dates
+up to the year 2106.
 
 @var{subfprs} selects the subkey(s) for which the expiration time
 should be set.  If @var{subfprs} is set to @code{NULL}, then the
@@ -6616,7 +6618,7 @@ The hash algorithm used to create this signature.
 The signature class of this signature.  Note that only the values 0,
 1, and 2 are well-defined.
 
-@item long int timestamp
+@item unsigned long int timestamp
 The creation timestamp of this signature.
 
 @item char *fpr
