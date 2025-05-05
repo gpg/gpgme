@@ -590,8 +590,11 @@ struct _gpgme_subkey
   /* The compliance mode (is_de_vs) has not yet been approved.  */
   unsigned int beta_compliance : 1;
 
+  /* The key was found by an exact fingerprint match on this subkey.  */
+  unsigned int subkey_match : 1;
+
   /* Internal to GPGME, do not use.  */
-  unsigned int _unused : 16;
+  unsigned int _unused : 15;
 
   /* Public key algorithm supported by this subkey.  */
   gpgme_pubkey_algo_t pubkey_algo;

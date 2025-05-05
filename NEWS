@@ -26,6 +26,7 @@ Noteworthy changes in version 2.0.0 (unreleased)
  GPGME_RANDOM_MODE_NORMAL                NEW.
  GPGME_RANDOM_MODE_ZBASE32               NEW.
  GPGME_DECRYPT_LISTONLY                  NEW.
+ gpgme_subkey_t                          EXT: New field 'subkey_match'.
  gpgme_attr_t                            REMOVED.
  gpgme_get_sig_ulong_attr                REMOVED.
  gpgme_get_sig_string_attr               REMOVED.
