@@ -10,6 +10,8 @@ Noteworthy changes in version 2.0.0 (unreleased)
  * New decrypt flag to skip the actual decryption so that information
    about the recipients can be retrieved.
 
+ * New flag for key generate to mark a (sub)key as group owned.
+
  * If the key passed to gpgme_signers_add was retrieved with an exact
    pattern (fingerprint with '!' suffix), the requested subkey is used
    for signing.  This reflects the behaviour of gpg but is a minor
@@ -37,6 +39,7 @@ Noteworthy changes in version 2.0.0 (unreleased)
  GPGME_RANDOM_MODE_ZBASE32               NEW.
  GPGME_DECRYPT_LISTONLY                  NEW.
  gpgme_subkey_t                          EXT: New field 'subkey_match'.
+ GPGME_CREATE_GROUP                      NEW.
  gpgme_attr_t                            REMOVED.
  gpgme_get_sig_ulong_attr                REMOVED.
  gpgme_get_sig_string_attr               REMOVED.

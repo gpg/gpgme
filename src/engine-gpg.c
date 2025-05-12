@@ -458,6 +458,27 @@ have_option_proc_all_sigs (engine_gpg_t gpg)
 
 
 static int
+have_option_gen_group_key (engine_gpg_t gpg)
+{
+  static unsigned int flag;
+
+  if (flag)
+    ;
+  else if (have_gpg_version (gpg, "2.5.7"))
+    flag = 1|2;
+  else if (have_gpg_version (gpg, "2.4.8") && !have_gpg_version (gpg, "2.5.0"))
+    flag = 1|2;
+  else if (have_gpg_version (gpg, "2.2.48") && !have_gpg_version (gpg, "2.3.0"))
+    flag = 1|2;
+  else
+    flag = 1;
+
+  return !!(flag & 2);
+}
+
+
+
+static int
 have_cmd_modify_recipients (engine_gpg_t gpg)
 {
   static unsigned int flag;
@@ -2873,12 +2894,14 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
       err = add_arg (gpg, algo? algo : "default");
       if (!err)
         {
-          char tmpbuf[5*4+1];
-          snprintf (tmpbuf, sizeof tmpbuf, "%s%s%s%s",
+          char tmpbuf[6*5+1];
+          snprintf (tmpbuf, sizeof tmpbuf, "%s%s%s%s%s",
                     (flags & GPGME_CREATE_SIGN)? " sign":"",
                     (flags & GPGME_CREATE_ENCR)? " encr":"",
                     (flags & GPGME_CREATE_CERT)? " cert":"",
-                    (flags & GPGME_CREATE_AUTH)? " auth":"");
+                    (flags & GPGME_CREATE_AUTH)? " auth":"",
+                    ((flags & GPGME_CREATE_GROUP)
+                     && have_option_gen_group_key (gpg))? " group":"");
           err = add_arg (gpg, *tmpbuf? tmpbuf : "default");
         }
       if (!err)

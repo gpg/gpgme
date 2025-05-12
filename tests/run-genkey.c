@@ -190,6 +190,8 @@ parse_usage_string (const char *string)
         flags |= GPGME_CREATE_CERT;
       else if (!strcmp (s, "auth"))
         flags |= GPGME_CREATE_AUTH;
+      else if (!strcmp (s, "group"))
+        flags |= GPGME_CREATE_GROUP;
       else
         {
           free (tokens);

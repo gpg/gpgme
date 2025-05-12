@@ -1883,6 +1883,7 @@ gpgme_error_t gpgme_op_export_keys (gpgme_ctx_t ctx,
 #define GPGME_CREATE_FORCE      (1 << 12) /* Force creation.           */
 #define GPGME_CREATE_NOEXPIRE   (1 << 13) /* Create w/o expiration.    */
 #define GPGME_CREATE_ADSK       (1 << 14) /* Add an ADSK               */
+#define GPGME_CREATE_GROUP      (1 << 15) /* Flag as group key.        */
 
 
 /* An object to return result from a key generation.

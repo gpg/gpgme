@@ -3645,6 +3645,10 @@ This is true if the subkey can be used for authentication.
 This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
+@item unsigned int is_cardkey : 1
+
+This is true if the secret key or subkey is stored on a smart card.
+
 @item unsigned int is_de_vs : 1
 @since{1.8.0}
 
@@ -3652,6 +3656,23 @@ This is true if the subkey complies with the rules for classified
 information in Germany at the restricted level (VS-NfD).  This are
 currently RSA keys of at least 3072 bits or ECDH/ECDSA keys using a
 Brainpool curve.
+
+@item unsigned int can_renc : 1;
+@since {1.20.0}
+
+This is true if the key can be used for restricted encryption (ADSK).
+
+@item unsigned int can_timestamp : 1;
+@since {1.20.0}
+
+This is true if the key can be used for timestamping.
+
+@item unsigned int is_group_owned : 1;
+@since {1.20.0}
+
+This is true if the private key or subkey is possessed by more than
+one person.  Such a key is often called a ``team key''.
+
 
 @item unsigned int beta_compliance : 1;
 @since{1.24.0}
@@ -4478,6 +4499,11 @@ Add an ADSK to the key.  With this flag @var{algo} is expected to be
 the hexified fingerprint of the ADSK to be added; this must be a
 subkey.  If the string "default" is used for @var{algo} the engine
 will add all ADSK as it would do for new keys.
+
+@item GPGME_CREATE_GROUP
+@since{2.0.0}
+
+Set the ``group owned'' flag for the new generated key or subkey.
 
 @end table
 
