@@ -2888,7 +2888,7 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
   if (algo
       || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
                    | GPGME_CREATE_CERT | GPGME_CREATE_AUTH
-                   | GPGME_CREATE_NOEXPIRE))
+                   | GPGME_CREATE_GROUP | GPGME_CREATE_NOEXPIRE))
       || expires)
     {
       err = add_arg (gpg, algo? algo : "default");
