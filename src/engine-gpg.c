@@ -2885,13 +2885,13 @@ gpg_add_algo_usage_expire (engine_gpg_t gpg,
   gpg_error_t err;
 
   /* This condition is only required to allow the use of gpg < 2.1.16 */
-  if (algo
+  if ((algo && *algo)
       || (flags & (GPGME_CREATE_SIGN | GPGME_CREATE_ENCR
                    | GPGME_CREATE_CERT | GPGME_CREATE_AUTH
                    | GPGME_CREATE_GROUP | GPGME_CREATE_NOEXPIRE))
       || expires)
     {
-      err = add_arg (gpg, algo? algo : "default");
+      err = add_arg (gpg, (algo && *algo)? algo : "default");
       if (!err)
         {
           char tmpbuf[6*5+1];
