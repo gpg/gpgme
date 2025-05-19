@@ -1,3 +1,7 @@
+Noteworthy changes in version 1.24.4 (unreleased)
+-------------------------------------------------
+
+
 Noteworthy changes in version 1.24.3 (2025-05-19)
 -------------------------------------------------
 
@@ -13,7 +17,7 @@ Noteworthy changes in version 1.24.3 (2025-05-19)
 
  [c=C44/A33/R2 cpp=C27/A21/R3 qt=C21/A6/R2]
 
- Release-info: https://dev.gnupg.org/T7524
+ Release-info: https://dev.gnupg.org/T7659
 
 
 Noteworthy changes in version 1.24.2 (2025-02-10)
