@@ -3136,7 +3136,8 @@ json_core_process_request (ctrl_t ctrl, const char *request)
       err_obj = error_object (NULL, "Printing JSON data failed");
       if (ctrl->interactive)
         res = cJSON_Print (err_obj);
-      res = cJSON_PrintUnformatted (err_obj);
+      else
+        res = cJSON_PrintUnformatted (err_obj);
       cJSON_Delete (err_obj);
     }
 
