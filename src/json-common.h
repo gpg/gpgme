@@ -19,7 +19,7 @@
  */
 
 #ifndef GPGME_JSON_COMMON_H
-#define GNUPG_JSON_COMMON_H
+#define GPGME_JSON_COMMON_H
 
 
 #ifndef BUILD_COMMITID
@@ -141,4 +141,4 @@ char *json_core_process_request (ctrl_t ctrl, const char *request);
 
 
 
-#endif /*GNUPG_JSON_COMMON_H*/
+#endif /*GPGME_JSON_COMMON_H*/
