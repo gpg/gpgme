@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.0 (unreleased)
+Noteworthy changes in version 2.0.0 (2025-06-03)   [c=C45/A0/R0]
 ------------------------------------------------
 
  * New function gpgme_op_random_bytes to get cryptographically
@@ -59,6 +59,8 @@ Noteworthy changes in version 2.0.0 (unreleased)
  gpgme_trust_item_ref                    REMOVED.
  gpgme_trust_item_unref                  REMOVED.
  gpgme_trust_item_release                REMOVED.
+
+ Release-info: https://dev.gnupg.org/T7673
 
 
 Noteworthy changes in version 1.24.1 (2024-12-04)
