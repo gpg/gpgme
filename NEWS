@@ -1,4 +1,8 @@
-Noteworthy changes in version 2.0.0 (2025-06-03)   [c=C45/A0/R0]
+Noteworthy changes in version 2.0.1 (unreleased)   [C45/A0/R_]
+------------------------------------------------
+
+
+Noteworthy changes in version 2.0.0 (2025-06-03)   [C45/A0/R0]
 ------------------------------------------------
 
  * New function gpgme_op_random_bytes to get cryptographically
