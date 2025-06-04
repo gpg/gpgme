@@ -5,6 +5,9 @@ Noteworthy changes in version 2.0.1 (unreleased)   [C45/A0/R_]
 Noteworthy changes in version 2.0.0 (2025-06-03)   [C45/A0/R0]
 ------------------------------------------------
 
+ * The C++ bindings, the Qt bindings, and the Python bindings were
+   split off of gpgme. They are now released separately.  [T7262]
+
  * New function gpgme_op_random_bytes to get cryptographically
    strong random bytes from gpg.  [T6694]
 
