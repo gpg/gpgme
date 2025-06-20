@@ -354,7 +354,7 @@ _gpgme_io_set_nonblocking (int fd)
 }
 
 
-static long int
+static int
 get_max_fds (void)
 {
   const char *source = NULL;
@@ -373,9 +373,11 @@ get_max_fds (void)
 #ifdef USE_LINUX_GETDENTS
   {
     int dir_fd;
-    char dir_buf[DIR_BUF_SIZE];
+    struct linux_dirent64 buf[(DIR_BUF_SIZE+sizeof (struct linux_dirent64)-1)
+                              /sizeof (struct linux_dirent64)];
+    char *dir_buf = (char *)buf; /* BUF aligned for struct linux_dirent64 */
     struct linux_dirent64 *dir_entry;
-    int r, pos;
+    long r, pos;
     const char *s;
     int x;
 
@@ -384,7 +386,7 @@ get_max_fds (void)
       {
         for (;;)
           {
-            r = syscall(SYS_getdents64, dir_fd, dir_buf, DIR_BUF_SIZE);
+            r = syscall(SYS_getdents64, dir_fd, dir_buf, sizeof (buf));
             if (r == -1)
               {
                 /* Fall back to other methods.  */
@@ -442,18 +444,6 @@ get_max_fds (void)
 	}
     }
 #endif
-#ifdef _SC_OPEN_MAX
-  if (fds == -1)
-    {
-      long int scres;
-      scres = sysconf (_SC_OPEN_MAX);
-      if (scres >= 0)
-	{
-	  source = "_SC_OPEN_MAX";
-	  return scres;
-	}
-    }
-#endif
 #ifdef OPEN_MAX
   if (fds == -1)
     {
@@ -463,7 +453,7 @@ get_max_fds (void)
 #endif
 
 #if !defined(RLIMIT_NOFILE) && !defined(RLIMIT_OFILE) \
-  && !defined(_SC_OPEN_MAX) && !defined(OPEN_MAX)
+    && !defined(OPEN_MAX)
 #warning "No known way to get the maximum number of file descriptors."
 #endif
   if (fds == -1)
@@ -483,7 +473,11 @@ get_max_fds (void)
     }
 #endif
 
+#if 0 /* This may result hang in multi-thread application.  */
   TRACE (DEBUG_SYSIO, "gpgme:max_fds", NULL, "max fds=%ld (%s)", fds, source);
+#else
+  (void)source;
+#endif
   return fds;
 }
 
