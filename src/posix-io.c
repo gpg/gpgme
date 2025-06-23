@@ -134,6 +134,10 @@ _gpgme_is_fd_valid (int fd)
 #endif /*0*/
 
 
+/* Fallback value for max_fds for some systems.  It can be used later
+   in get_max_fds function.  */
+static int max_fds_fallback;
+
 void
 _gpgme_io_subsystem_init (void)
 {
@@ -147,6 +151,23 @@ _gpgme_io_subsystem_init (void)
       act.sa_flags = 0;
       sigaction (SIGPIPE, &act, NULL);
     }
+
+  max_fds_fallback = -1;
+
+#ifdef _SC_OPEN_MAX
+  if (max_fds_fallback == -1)
+    {
+      /* For multithread application, sysconf cannot be used in the
+       * forked child process (in get_max_fds function), since it is
+       * not async-signal-safe function.  Here, we can assume it's
+       * only a single thread.
+       */
+      long scres = sysconf (_SC_OPEN_MAX);
+
+      if (scres >= 0)
+        max_fds_fallback = scres;
+    }
+#endif
 }
 
 
@@ -444,6 +465,13 @@ get_max_fds (void)
 	}
     }
 #endif
+
+  if (fds == -1 && max_fds_fallback >= 0)
+    {
+      source = "fallback";
+      return max_fds_fallback;
+    }
+
 #ifdef OPEN_MAX
   if (fds == -1)
     {
@@ -453,7 +481,7 @@ get_max_fds (void)
 #endif
 
 #if !defined(RLIMIT_NOFILE) && !defined(RLIMIT_OFILE) \
-    && !defined(OPEN_MAX)
+  && !defined(_SC_OPEN_MAX) && !defined(OPEN_MAX)
 #warning "No known way to get the maximum number of file descriptors."
 #endif
   if (fds == -1)
