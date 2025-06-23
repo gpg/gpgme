@@ -771,9 +771,10 @@ _gpgme_io_select_poll (struct io_select_fd_s *fds, size_t nfds, int nonblock)
           if (fds[i].fd == -1)
             continue;
 	  if ((poll_fds[poll_nfds].revents & (POLLIN|POLLHUP)))
-	    TRACE_ADD1 (dbg_help, "r=%d ", i);
+	    TRACE_ADD2 (dbg_help, "r=%d (%x) ", fds[i].fd,
+                        (int)poll_fds[poll_nfds].revents);
 	  if ((poll_fds[poll_nfds].revents & POLLOUT))
-	    TRACE_ADD1 (dbg_help, "w=%d ", i);
+	    TRACE_ADD1 (dbg_help, "w=%d ", fds[i].fd);
           poll_nfds++;
         }
       TRACE_END (dbg_help, "]");
