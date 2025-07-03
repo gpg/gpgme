@@ -454,7 +454,7 @@ parse_sec_field15 (gpgme_key_t key, gpgme_subkey_t subkey, char *field)
       subkey->secret = 0;
       key->secret = 1;
     }
-  else if (strchr ("01234567890ABCDEFabcdef", *field))
+  else if (strchr ("0123456789ABCDEFabcdef", *field))
     {
       /* Fields starts with a hex digit; thus it is a serial number.  */
       key->secret = 1;
