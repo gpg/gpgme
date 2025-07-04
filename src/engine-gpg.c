@@ -4226,7 +4226,7 @@ gpg_getdirect (void *engine, const char *argv[],
                gpgme_data_t dataout, unsigned int flags)
 {
   engine_gpg_t gpg = engine;
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
   int i;
 
   if (!engine || !argv || !dataout || flags)
