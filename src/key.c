@@ -268,7 +268,7 @@ _gpgme_key_append_name (gpgme_key_t key, const char *src, int convert)
 
 
 gpgme_key_sig_t
-_gpgme_key_add_sig (gpgme_key_t key, char *src)
+_gpgme_key_add_uid_sig (gpgme_key_t key, char *src)
 {
   int src_len = src ? strlen (src) : 0;
   gpgme_user_id_t uid;

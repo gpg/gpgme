@@ -1005,7 +1005,7 @@ keylist_colon_handler (void *priv, char *line)
 
       /* Start a new (revoked) signature.  */
       assert (opd->tmp_uid == key->_last_uid);
-      keysig = _gpgme_key_add_sig (key, (fields >= 10) ? field[9] : NULL);
+      keysig = _gpgme_key_add_uid_sig (key, (fields >= 10) ? field[9] : NULL);
       if (!keysig)
 	return gpg_error (GPG_ERR_ENOMEM);	/* FIXME */
 
