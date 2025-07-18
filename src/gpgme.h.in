@@ -431,12 +431,60 @@ typedef unsigned int gpgme_export_mode_t;
 
 typedef unsigned int gpgme_sig_notation_flags_t;
 
+/*
+ * Some forward declarations.
+ */
+
+/* The main key object.  */
+struct _gpgme_key;
+typedef struct _gpgme_key *gpgme_key_t;
+
+/* A key has one or more subkeys.  The first subkey is the OpenPGP
+ * primary key. */
+struct _gpgme_subkey;
+typedef struct _gpgme_subkey *gpgme_subkey_t;
+
+/* A key has one or more user-ids.  */
+struct _gpgme_user_id;
+typedef struct _gpgme_user_id *gpgme_user_id_t;
+
+/* Each user-id and each subkey has at least one key signature.  */
+struct _gpgme_key_sig;
+typedef struct _gpgme_key_sig *gpgme_key_sig_t;
+
+/* An object to hold information about notation data.  */
+struct _gpgme_sig_notation;
+typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
+
+/* An object to hold TOFU information. */
+struct _gpgme_tofu_info;
+typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
+
+/* An object for a designated revocation key.  */
+struct _gpgme_revocation_key;
+typedef struct _gpgme_revocation_key *gpgme_revocation_key_t;
+
+/* A result object for an invalid key.  */
+struct _gpgme_invalid_key;
+typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
+
+/* Object describing properties of an engine.  */
+struct _gpgme_engine_info;
+typedef struct _gpgme_engine_info *gpgme_engine_info_t;
+
+
+
+/*
+ * Public structure definitions.
+ */
+
+
 /* An object to hold information about notation data.  This structure
  * shall be considered read-only and an application must not allocate
  * such a structure on its own.  */
 struct _gpgme_sig_notation
 {
-  struct _gpgme_sig_notation *next;
+  gpgme_sig_notation_t next;
 
   /* If NAME is a null pointer, then VALUE contains a policy URL
    * rather than a notation.  */
@@ -463,20 +511,14 @@ struct _gpgme_sig_notation
   /* Internal to GPGME, do not use.  */
   int _unused : 30;
 };
-typedef struct _gpgme_sig_notation *gpgme_sig_notation_t;
 
-
-
-/*
- * Public structures.
- */
 
 /* The engine information structure.
  * This structure shall be considered read-only and an application
  * must not allocate such a structure on its own.  */
 struct _gpgme_engine_info
 {
-  struct _gpgme_engine_info *next;
+  gpgme_engine_info_t next;
 
   /* The protocol ID.  */
   gpgme_protocol_t protocol;
@@ -493,7 +535,6 @@ struct _gpgme_engine_info
   /* The home directory used, or NULL if default.  */
   char *home_dir;
 };
-typedef struct _gpgme_engine_info *gpgme_engine_info_t;
 
 
 /* An object with TOFU information.
@@ -501,7 +542,7 @@ typedef struct _gpgme_engine_info *gpgme_engine_info_t;
  * must not allocate such a structure on its own.  */
 struct _gpgme_tofu_info
 {
-  struct _gpgme_tofu_info *next;
+  gpgme_tofu_info_t next;
 
   /* The TOFU validity:
    *  0 := conflict
@@ -532,7 +573,6 @@ struct _gpgme_tofu_info
   /* If non-NULL a human readable string summarizing the TOFU data. */
   char *description;
 };
-typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
 
 
 /* A subkey from a key.
@@ -540,7 +580,7 @@ typedef struct _gpgme_tofu_info *gpgme_tofu_info_t;
  * must not allocate such a structure on its own.  */
 struct _gpgme_subkey
 {
-  struct _gpgme_subkey *next;
+  gpgme_subkey_t next;
 
   /* True if subkey is revoked.  */
   unsigned int revoked : 1;
@@ -630,7 +670,6 @@ struct _gpgme_subkey
   /* For OpenPGP the v5 fpr of a v4 key. For X.509 the SHA256 fingerprint.  */
   char *v5fpr;
 };
-typedef struct _gpgme_subkey *gpgme_subkey_t;
 
 
 /* A signature on a user ID.
@@ -638,7 +677,7 @@ typedef struct _gpgme_subkey *gpgme_subkey_t;
  * must not allocate such a structure on its own.  */
 struct _gpgme_key_sig
 {
-  struct _gpgme_key_sig *next;
+  gpgme_key_sig_t next;
 
   /* True if the signature is a revocation signature.  */
   unsigned int revoked : 1;
@@ -710,7 +749,6 @@ struct _gpgme_key_sig
   /* The scope of a trust signature.  Might be NULL.  */
   char *trust_scope;
 };
-typedef struct _gpgme_key_sig *gpgme_key_sig_t;
 
 
 /* An user ID from a key.
@@ -718,7 +756,7 @@ typedef struct _gpgme_key_sig *gpgme_key_sig_t;
  * must not allocate such a structure on its own.  */
 struct _gpgme_user_id
 {
-  struct _gpgme_user_id *next;
+  gpgme_user_id_t next;
 
   /* True if the user ID is revoked.  */
   unsigned int revoked : 1;
@@ -768,7 +806,6 @@ struct _gpgme_user_id
   /* The string to exactly identify a userid.  Might be NULL.  */
   char *uidhash;
 };
-typedef struct _gpgme_user_id *gpgme_user_id_t;
 
 
 /* A designated revocation key for a key.
@@ -776,7 +813,7 @@ typedef struct _gpgme_user_id *gpgme_user_id_t;
  * must not allocate such a structure on its own.  */
 struct _gpgme_revocation_key
 {
-  struct _gpgme_revocation_key *next;
+  gpgme_revocation_key_t next;
 
   /* The public key algorithm of the revocation key.  */
   gpgme_pubkey_algo_t pubkey_algo;
@@ -790,7 +827,6 @@ struct _gpgme_revocation_key
   /* True if the revocation key should not be exported.  */
   unsigned int sensitive : 1;
 };
-typedef struct _gpgme_revocation_key *gpgme_revocation_key_t;
 
 
 /* A key from the keyring.
@@ -897,7 +933,6 @@ struct _gpgme_key
   /* Internal to GPGME, do not use.  */
   gpgme_revocation_key_t _last_revkey;
 };
-typedef struct _gpgme_key *gpgme_key_t;
 
 
 /* An invalid key object.
@@ -914,7 +949,6 @@ struct _gpgme_invalid_key
   /* The error code.  */
   gpgme_error_t reason;
 };
-typedef struct _gpgme_invalid_key *gpgme_invalid_key_t;
 
 
 
