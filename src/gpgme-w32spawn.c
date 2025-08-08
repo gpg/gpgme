@@ -469,7 +469,12 @@ wmain (int argc, const wchar_t * const *argv)
     }
 
 #ifdef DEBUG_TO_FILE
-  mystderr = fopen ("h:/gpgme-w32spawn.log", "w");
+  {
+    FILE *tmpfp = fopen ("h:/gpgme-w32spawn.log", "a");
+    if (tmpfp)
+      mystderr = tmpfp;
+    fputs (PGM": started\n", mystderr);
+  }
 #endif
 
   argv_spawn = translate_handles (argv[1], &argv[2], fd_list, &flags);
