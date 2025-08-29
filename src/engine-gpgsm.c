@@ -691,6 +691,23 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
   gpg_error_t err, cb_err;
   char *line;
   size_t linelen;
+  struct io_select_fd_s fds[2];
+  struct io_cb_data iocb_data;
+  int nfds = 0;
+
+  iocb_data.handler_value = gpgsm->diag_cb.data;
+  iocb_data.op_err = 0;
+
+  memset (fds, 0, sizeof (struct io_select_fd_s)*2);
+  fds[nfds].fd = gpgsm->status_cb.fd;
+  fds[nfds].for_read = 1;
+  nfds++;
+  if (gpgsm->diag_cb.fd != -1)
+    {
+      fds[nfds].fd = gpgsm->diag_cb.fd;
+      fds[nfds].for_read = 1;
+      nfds++;
+    }
 
   err = assuan_write_line (ctx, cmd);
   if (err)
@@ -699,6 +716,24 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
   cb_err = 0;
   do
     {
+      fds[0].signaled = fds[1].signaled = 0;
+      if (gpgsm->status_cb.fd != -1
+	  && _gpgme_io_select (fds, nfds, 0) < 0)
+	{
+          err = gpg_error_from_syserror ();
+	  break;
+	}
+
+      if (gpgsm->diag_cb.fd != -1 && fds[1].signaled)
+	{
+	  err = _gpgme_data_inbound_handler (&iocb_data, gpgsm->diag_cb.fd);
+	  if (err)
+	    break;
+	}
+
+      if (gpgsm->status_cb.fd != -1 && !fds[0].signaled)
+	continue;
+
       err = assuan_read_line (ctx, &line, &linelen);
       if (err)
 	break;
