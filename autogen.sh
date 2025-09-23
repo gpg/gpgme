@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2025-03-10
+# Version: 2025-09-23
 
 configure_ac="configure.ac"
 
@@ -482,7 +482,8 @@ if [ -d .git ]; then
   if cp --version >/dev/null 2>/dev/null; then
     [ -z "${SILENT}" ] && CP="$CP -v"
   fi
-  if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
+  if [ -f .git/hooks/pre-commit.sample ] \
+      && [ ! -f .git/hooks/pre-commit ]; then
     [ -z "${SILENT}" ] && cat <<EOF
 *** Activating trailing whitespace git pre-commit hook. ***
     For more information see this thread:
@@ -504,7 +505,8 @@ EOF
         "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
     fi
   fi
-  if [ -f build-aux/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
+  if [ -f build-aux/git-hooks/commit-msg ] \
+     && [ ! -f .git/hooks/commit-msg ]; then
       [ -z "${SILENT}" ] && cat <<EOF
 *** Activating commit log message check hook. ***
 EOF
