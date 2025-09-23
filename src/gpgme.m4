@@ -123,7 +123,7 @@ AC_REQUIRE([_AM_PATH_GPGRT_CONFIG])dnl
   fi
 
   use_gpgrt_config=""
-  if test x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+  if test x"$GPGRT_CONFIG" != x && test "$GPGRT_CONFIG" != "no"; then
     if $GPGRT_CONFIG gpgme --exists; then
       GPGME_CONFIG="$GPGRT_CONFIG gpgme"
       AC_MSG_NOTICE([Use gpgrt-config as gpgme-config])

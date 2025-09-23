@@ -589,7 +589,7 @@ AC_DEFINE(GPG_ERR_SOURCE_DEFAULT, GPG_ERR_SOURCE_GPGME,
           [The default error source for GPGME.])
 
 AM_CONDITIONAL(USE_GPGRT_CONFIG, [test -n "$GPGRT_CONFIG" \
-                                  -a "$ac_cv_path_GPG_ERROR_CONFIG" = no])
+                                  && test "$ac_cv_path_GPG_ERROR_CONFIG" = no])
 
 # And for libassuan.
 have_libassuan=no
@@ -742,7 +742,7 @@ GPGME_CONFIG_AVAIL_LANG="$enabled_languages"
 case "$includedir" in
   /usr/include|/include) ;;
   '${prefix}/include')
-    if test "$prefix" != / -a "$prefix" != /usr; then
+    if test "$prefix" != / && test "$prefix" != /usr; then
       if test -z "$GPGME_CONFIG_CFLAGS"; then
         GPGME_CONFIG_CFLAGS="-I\${includedir}"
       else
@@ -762,10 +762,10 @@ case "$libdir" in
   /usr/lib|/usr/lib64|/lib|/lib64) ;;
   '${exec_prefix}/lib'|'${exec_prefix}/lib64')
     if test "$exec_prefix" = "NONE"; then
-      if test "$prefix" != / -a "$prefix" != /usr; then
+      if test "$prefix" != / && test "$prefix" != /usr; then
         GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
       fi
-    elif test "$exec_prefix" != / -a "$exec_prefix" != /usr; then
+    elif test "$exec_prefix" != / && test "$exec_prefix" != /usr; then
       GPGME_CONFIG_LIBS="-L\${libdir} $GPGME_CONFIG_LIBS"
     fi
     ;;
