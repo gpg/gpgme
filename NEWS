@@ -1,9 +1,21 @@
-Noteworthy changes in version 2.0.1 (unreleased)   [C45/A0/R_]
+Noteworthy changes in version 2.0.1 (2025-09-23)   [C45/A0/R1]
 ------------------------------------------------
 
  * gnupg-manage-keys: New tool as a framework for adding features
    which would normally be implemented by a script.  Right now it
    supports the commands "identify" and "delete-expired-keys".
+
+ * Extend the internal gpgsm_assuan_simple_command to consume diag
+   output.  This fixes a possible lockup.  [T7759]
+
+ * Clean up get_max_fds implementation.  [T7694]
+
+ * Adjust for changes to the posix test(1) command.  [T7807]
+
+ * Make it easier to maintain gpgme.h by using forward declarations.
+   [rM6a1f72b470]
+
+ Release-info: https://dev.gnupg.org/T7817
 
 
 Noteworthy changes in version 2.0.0 (2025-06-03)   [C45/A0/R0]
