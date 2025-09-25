@@ -334,7 +334,7 @@ AC_ARG_ENABLE([languages],
                              tr ',:' '  ' | tr '[A-Z]' '[a-z]'`],
                              [enabled_languages="maybe"])
 if test "x$enabled_languages" = "x" \
-   -o "$enabled_languages" = "no"; then
+   || test "$enabled_languages" = "no"; then
    enabled_languages=
 fi
 
@@ -553,7 +553,7 @@ fi
 # Try to find a thread-safe version of getenv().
 have_thread_safe_getenv=no
 jm_GLIBC21
-if test $GLIBC21 = yes -o $have_w32_system = yes; then
+if test $GLIBC21 = yes || test $have_w32_system = yes; then
   have_thread_safe_getenv=yes
 fi
 if test $have_thread_safe_getenv = yes; then
