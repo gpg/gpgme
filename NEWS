@@ -5,7 +5,7 @@ Noteworthy changes in version 2.0.2 (unreleased)   [C45/A0/R)]
 Noteworthy changes in version 2.0.1 (2025-09-23)   [C45/A0/R1]
 ------------------------------------------------
 
- * gnupg-manage-keys: New tool as a framework for adding features
+ * gnupg-key-manage: New tool as a framework for adding features
    which would normally be implemented by a script.  Right now it
    supports the commands "identify" and "delete-expired-keys".
 

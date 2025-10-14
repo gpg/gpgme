@@ -199,7 +199,8 @@ _gpgme_run_io_cb (struct io_select_fd_s *an_fds, int checked,
 
       TRACE (DEBUG_CTX, "_gpgme_run_io_cb", item, "need to check");
       fds = *an_fds;
-      fds.signaled = 0;
+      fds.signaled = 0;  /* Clear the signal because we already know
+                          * about it and are running the callback.  */
       /* Just give it a quick poll.  */
       nr = _gpgme_io_select (&fds, 1, 1);
       assert (nr <= 1);

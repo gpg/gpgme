@@ -1650,7 +1650,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 #if 0
  restart:
 #endif
-  TRACE_SEQ (dbg_help, "select on [ ");
+  TRACE_SEQ (dbg_help, "selecting [ ");
   any = 0;
   nwait = 0;
   count = 0;

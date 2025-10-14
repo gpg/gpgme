@@ -854,7 +854,7 @@ _gpgme_io_select_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   if (nonblock)
     timeout.tv_sec = 0;
 
-  TRACE_SEQ (dbg_help, "select on [ ");
+  TRACE_SEQ (dbg_help, "selecting [ ");
 
   any = 0;
   for (i = 0; i < nfds; i++)
