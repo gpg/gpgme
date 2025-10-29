@@ -3711,8 +3711,9 @@ hexadecimal digits, if available.
 @item char *keygrip
 @since{1.7.0}
 
-The keygrip of the subkey in hex digit form or @code{NULL} if not
-available.
+The keygrip(s) of the subkey in hex digit form or @code{NULL} if not
+available. For combined algorithms the keygrips are delimited
+by comma.
 
 @item unsigned long int timestamp
 This is the creation timestamp of the subkey.  This is @code{(unsigned

@@ -664,7 +664,8 @@ struct _gpgme_subkey
    * string for composite algorithms, or NULL.  */
   char *curve;
 
-  /* The keygrip of the subkey in hex digit form or NULL if not available.  */
+  /* The keygrip(s) of the subkey in hex digit form or NULL if not available.
+   * For combined algorithms the keygrips are delimited by comma. */
   char *keygrip;
 
   /* For OpenPGP the v5 fpr of a v4 key. For X.509 the SHA256 fingerprint.  */
