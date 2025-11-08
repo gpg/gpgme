@@ -1534,13 +1534,18 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
   if (err)
     return TRACE_ERR (err);
   {
+    const char *ctx_flag;
     gpgme_protocol_t proto;
     gpgme_engine_info_t info;
 
     /* Clone the relevant state.  */
     proto = gpgme_get_protocol (ctx);
     gpgme_set_protocol (listctx, proto);
+    gpgme_set_offline (listctx, gpgme_get_offline (ctx));
     gpgme_set_keylist_mode (listctx, gpgme_get_keylist_mode (ctx));
+    ctx_flag = gpgme_get_ctx_flag (ctx, "auto-key-locate");
+    if (ctx_flag != NULL)
+      gpgme_set_ctx_flag (listctx, "auto-key-locate", ctx_flag);
     info = gpgme_ctx_get_engine_info (ctx);
     while (info && info->protocol != proto)
       info = info->next;
