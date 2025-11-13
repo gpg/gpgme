@@ -3646,6 +3646,7 @@ This is true if the subkey can be used for qualified signatures
 according to local government regulations.
 
 @item unsigned int is_cardkey : 1
+@since{1.2.0}
 
 This is true if the secret key or subkey is stored on a smart card.
 
@@ -3723,11 +3724,6 @@ Note that an invalid timestamp indicates a bug in the engine.
 @item unsigned long int expires
 This is the expiration timestamp of the subkey, or 0 if the subkey
 does not expire.
-
-@item unsigned int is_cardkey : 1
-@since{1.2.0}
-
-True if the secret key is stored on a smart card.
 
 @item char *card_number
 @since{1.2.0}
