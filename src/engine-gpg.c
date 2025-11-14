@@ -697,7 +697,7 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
   rc = _gpgme_getenv ("DISPLAY", &dft_display);
   if (rc)
     goto leave;
-  if (dft_display)
+  if (dft_display && *dft_display)
     {
       rc = add_gpg_arg_with_value (gpg, "--display=", dft_display, 0);
 
@@ -705,6 +705,8 @@ gpg_new (void **engine, const char *file_name, const char *home_dir,
       if (rc)
 	goto leave;
     }
+  else
+    free (dft_display);
 
   rc = _gpgme_getenv ("GPG_TTY", &env_tty);
   if (isatty (1) || env_tty || rc)

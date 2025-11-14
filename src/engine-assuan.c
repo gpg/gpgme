@@ -265,7 +265,7 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
       err = _gpgme_getenv ("DISPLAY", &dft_display);
       if (err)
         goto leave;
-      if (dft_display)
+      if (dft_display && *dft_display)
         {
           if (gpgrt_asprintf (&optstr, "OPTION display=%s", dft_display) < 0)
             {
@@ -281,7 +281,10 @@ llass_new (void **engine, const char *file_name, const char *home_dir,
           if (err)
             goto leave;
         }
+      else
+        free (dft_display);
     }
+
 
   if (llass->opt.gpg_agent)
     err = _gpgme_getenv ("GPG_TTY", &env_tty);
