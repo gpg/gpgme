@@ -1752,7 +1752,6 @@ start (engine_gpg_t gpg)
   int i, n;
   int status;
   struct spawn_fd_item_s *fd_list;
-  pid_t pid;
   const char *pgmname;
 
   if (!gpg)
@@ -1849,7 +1848,7 @@ start (engine_gpg_t gpg)
 
   status = _gpgme_io_spawn (pgmname, gpg->argv,
                             (IOSPAWN_FLAG_DETACHED |IOSPAWN_FLAG_ALLOW_SET_FG),
-                            fd_list, NULL, NULL, &pid);
+                            fd_list, NULL, NULL, NULL);
   {
     int saved_err = gpg_error_from_syserror ();
     free (fd_list);

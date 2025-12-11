@@ -181,7 +181,7 @@ my_sendmsg (assuan_context_t ctx, assuan_fd_t fd, const assuan_msghdr_t msg,
    to reflect the value of the FD in the peer process (on
    Windows).  */
 static int
-my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
+my_spawn (assuan_context_t ctx, assuan_pid_t *r_pid, const char *name,
 	  const char **argv,
 	  assuan_fd_t fd_in, assuan_fd_t fd_out,
 	  assuan_fd_t *fd_child_list,
@@ -309,8 +309,8 @@ my_spawn (assuan_context_t ctx, pid_t *r_pid, const char *name,
 
 
 /* If action is 0, like waitpid.  If action is 1, just release the PID?  */
-static pid_t
-my_waitpid (assuan_context_t ctx, pid_t pid,
+static assuan_pid_t
+my_waitpid (assuan_context_t ctx, assuan_pid_t pid,
 	    int nowait, int *status, int options)
 {
   (void)ctx;
@@ -351,20 +351,20 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 }
 
 
-static int
+static assuan_fd_t
 my_socket (assuan_context_t ctx, int namespace, int style, int protocol)
 {
   (void)ctx;
-  return _gpgme_io_socket (namespace, style, protocol);
+  return (assuan_fd_t)_gpgme_io_socket (namespace, style, protocol);
 }
 
 
 static int
-my_connect (assuan_context_t ctx, int sock, struct sockaddr *addr,
+my_connect (assuan_context_t ctx, assuan_fd_t sock, struct sockaddr *addr,
 	    socklen_t length)
 {
   (void)ctx;
-  return _gpgme_io_connect (sock, addr, length);
+  return _gpgme_io_connect ((int)sock, addr, length);
 }
 
 

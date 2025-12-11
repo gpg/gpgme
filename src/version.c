@@ -31,6 +31,7 @@
 #endif
 
 #include "gpgme.h"
+#include "util.h"
 #include "priv-io.h"
 #include "debug.h"
 #include "context.h"

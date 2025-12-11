@@ -459,7 +459,7 @@ gpgme_error_t
 gpgme_key_from_uid (gpgme_key_t *r_key, const char *name)
 {
   gpgme_error_t err;
-  gpgme_key_t key;
+  gpgme_key_t key = NULL;
 
   *r_key = NULL;
   err = _gpgme_key_new (&key);

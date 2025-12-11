@@ -24,6 +24,7 @@
 #endif
 #include <assert.h>
 
+#include "util.h"
 #include "gpgme.h"
 #include "context.h"
 #include "priv-io.h"

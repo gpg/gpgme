@@ -230,7 +230,6 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
   int i, n;
   int status;
   struct spawn_fd_item_s *fd_list;
-  pid_t pid;
   unsigned int spflags;
   const char *save_argv0 = NULL;
 
@@ -273,7 +272,7 @@ engspawn_start (engine_spawn_t esp, const char *file, const char *argv[],
       argv[0] = _gpgme_get_basename (file);
     }
   status = _gpgme_io_spawn (file, (char * const *)argv, spflags,
-                            fd_list, NULL, NULL, &pid);
+                            fd_list, NULL, NULL, NULL);
   if (save_argv0)
     argv[0] = save_argv0;
   free (fd_list);

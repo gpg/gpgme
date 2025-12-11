@@ -38,6 +38,7 @@
 #include <stdint.h>
 #include <process.h>
 
+#include "util.h"
 #include "priv-io.h"
 
 /* #define DEBUG_TO_FILE 1 */

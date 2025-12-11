@@ -90,7 +90,7 @@ int _gpgme_io_set_nonblocking (int fd);
 int _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		     struct spawn_fd_item_s *fd_list,
 		     void (*atfork) (void *opaque, int reserved),
-		     void *atforkvalue, pid_t *r_pid);
+		     void *atforkvalue, assuan_pid_t *r_pid);
 
 int _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock);
 

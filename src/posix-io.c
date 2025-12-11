@@ -544,7 +544,7 @@ int
 _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 		 struct spawn_fd_item_s *fd_list,
 		 void (*atfork) (void *opaque, int reserved),
-		 void *atforkvalue, pid_t *r_pid)
+		 void *atforkvalue, assuan_pid_t *r_pid)
 {
   pid_t pid;
   int i;
