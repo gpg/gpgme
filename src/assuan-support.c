@@ -126,7 +126,7 @@ my_close (assuan_context_t ctx, assuan_fd_t fd)
 }
 
 
-static gpgme_ssize_t
+static ssize_t
 my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 {
   (void)ctx;
@@ -134,7 +134,7 @@ my_read (assuan_context_t ctx, assuan_fd_t fd, void *buffer, size_t size)
 }
 
 
-static gpgme_ssize_t
+static ssize_t
 my_write (assuan_context_t ctx, assuan_fd_t fd, const void *buffer, size_t size)
 {
   (void)ctx;
@@ -351,6 +351,7 @@ my_socketpair (assuan_context_t ctx, int namespace, int style,
 }
 
 
+#if ASSUAN_VERSION_NUMBER >= 0x030000
 static assuan_fd_t
 my_socket (assuan_context_t ctx, int namespace, int style, int protocol)
 {
@@ -366,6 +367,23 @@ my_connect (assuan_context_t ctx, assuan_fd_t sock, struct sockaddr *addr,
   (void)ctx;
   return _gpgme_io_connect ((int)sock, addr, length);
 }
+#else
+static int
+my_socket (assuan_context_t ctx, int namespace, int style, int protocol)
+{
+  (void)ctx;
+  return _gpgme_io_socket (namespace, style, protocol);
+}
+
+
+static int
+my_connect (assuan_context_t ctx, int sock, struct sockaddr *addr,
+	    socklen_t length)
+{
+  (void)ctx;
+  return _gpgme_io_connect (sock, addr, length);
+}
+#endif
 
 
 /* Note for Windows: Ignore the incompatible pointer type warning for

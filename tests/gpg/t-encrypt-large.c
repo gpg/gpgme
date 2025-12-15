@@ -42,7 +42,7 @@ struct cb_parms
 
 
 /* The read callback used by GPGME to read data. */
-static ssize_t
+static gpgme_ssize_t
 read_cb (void *handle, void *buffer, size_t size)
 {
   struct cb_parms *parms = handle;
@@ -55,7 +55,7 @@ read_cb (void *handle, void *buffer, size_t size)
 }
 
 /* The write callback used by GPGME to write data. */
-static ssize_t
+static gpgme_ssize_t
 write_cb (void *handle, const void *buffer, size_t size)
 {
   struct cb_parms *parms = handle;
