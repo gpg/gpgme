@@ -213,6 +213,10 @@ const char *_gpgme_get_w32spawn_path (void);
 
 
 #include <assuan.h>
+#if ASSUAN_VERSION_NUMBER < 0x030000
+typedef pid_t assuan_pid_t;
+#endif
+
 /* System hooks for assuan integration.  */
 extern struct assuan_system_hooks _gpgme_assuan_system_hooks;
 extern struct assuan_malloc_hooks _gpgme_assuan_malloc_hooks;
