@@ -1544,7 +1544,7 @@ gpgme_get_key (gpgme_ctx_t ctx, const char *fpr, gpgme_key_t *r_key,
     gpgme_set_offline (listctx, gpgme_get_offline (ctx));
     gpgme_set_keylist_mode (listctx, gpgme_get_keylist_mode (ctx));
     ctx_flag = gpgme_get_ctx_flag (ctx, "auto-key-locate");
-    if (ctx_flag != NULL)
+    if (ctx_flag != NULL && *ctx_flag)
       gpgme_set_ctx_flag (listctx, "auto-key-locate", ctx_flag);
     info = gpgme_ctx_get_engine_info (ctx);
     while (info && info->protocol != proto)
