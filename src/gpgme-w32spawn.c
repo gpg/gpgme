@@ -159,21 +159,21 @@ my_spawn (wchar_t **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
       /* The handle already is inheritable.  */
       if (fd_list[i].dup_to == 0)
 	{
-	  si.hStdInput = (HANDLE) fd_list[i].peer_name;
+	  si.hStdInput = fd_list[i].peer_name;
 	  duped_stdin = 1;
-	  fprintf (mystderr, PGM": dup 0x%x to stdin\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM": dup %p to stdin\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 1)
 	{
-	  si.hStdOutput = (HANDLE) fd_list[i].peer_name;
+	  si.hStdOutput = fd_list[i].peer_name;
 	  duped_stdout = 1;
-	  fprintf (mystderr, PGM": dup 0x%x to stdout\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM": dup %p to stdout\n", fd_list[i].peer_name);
         }
       else if (fd_list[i].dup_to == 2)
 	{
-	  si.hStdError = (HANDLE) fd_list[i].peer_name;
+	  si.hStdError = fd_list[i].peer_name;
 	  duped_stderr = 1;
-	  fprintf (mystderr, PGM":dup 0x%x to stderr\n", fd_list[i].peer_name);
+	  fprintf (mystderr, PGM":dup %p to stderr\n", fd_list[i].peer_name);
         }
     }
 
@@ -233,9 +233,6 @@ my_spawn (wchar_t **argv, struct spawn_fd_item_s *fd_list, unsigned int flags)
   /* Close the /dev/nul handle if used.  */
   if (hnul != INVALID_HANDLE_VALUE)
     CloseHandle (hnul);
-
-  for (i = 0; fd_list[i].fd != -1; i++)
-    CloseHandle ((HANDLE) fd_list[i].fd);
 
   if (flags & IOSPAWN_FLAG_ALLOW_SET_FG)
     {
@@ -317,7 +314,7 @@ translate_get_from_file (const wchar_t *trans_file,
     {
       unsigned long from;
       long dup_to;
-      unsigned long to;
+      HANDLE to;
       unsigned long loc;
       char *tail;
 
@@ -359,7 +356,11 @@ translate_get_from_file (const wchar_t *trans_file,
 	linep++;
       if (*linep == '\0')
 	break;
-      to = strtoul (linep, &tail, 0);
+#if HAVE_W64_SYSTEM
+      to = (HANDLE)strtoull (linep, &tail, 0);
+#else
+      to = (HANDLE)strtoul (linep, &tail, 0);
+#endif
       if (tail == NULL || ! (*tail == '\0' || isspace (*tail)))
 	break;
       linep = tail;
@@ -380,7 +381,7 @@ translate_get_from_file (const wchar_t *trans_file,
     }
   fd_list[idx].fd = -1;
   fd_list[idx].dup_to = -1;
-  fd_list[idx].peer_name = -1;
+  fd_list[idx].peer_name = ASSUAN_INVALID_FD;
   fd_list[idx].arg_loc = 0;
   return 0;
 }

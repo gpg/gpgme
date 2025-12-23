@@ -221,7 +221,8 @@ read_gpgconf_dirs (const char *pgmname, int components)
   int linelen = 0;
   char * argv[3];
   int rp[2];
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */,
+                                      ASSUAN_INVALID_FD, 0},
 				   {-1, -1} };
   int status;
   int nread;

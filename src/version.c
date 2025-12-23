@@ -315,7 +315,8 @@ _gpgme_get_program_version (const char *const file_name)
   int rp[2];
   int nread;
   char *argv[] = {NULL /* file_name */, (char*)"--version", 0};
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */,
+                                      ASSUAN_INVALID_FD, 0},
 				   {-1, -1} };
   int status;
 

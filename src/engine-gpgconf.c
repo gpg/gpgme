@@ -230,7 +230,8 @@ gpgconf_read (void *engine, const char *arg1, char *arg2,
   char *argv[6];
   int argc = 0;
   int rp[2];
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */,
+                                      ASSUAN_INVALID_FD, 0},
 				   {-1, -1} };
   int status;
   int nread;
@@ -717,7 +718,8 @@ gpgconf_write (void *engine, const char *arg1, char *arg2, gpgme_data_t conf)
   int rp[2] = { -1, -1 };
   int errp[2] = { -1, -1 };
   struct spawn_fd_item_s cfd[] = { {-1, 0 /* STDIN_FILENO */},
-                                   {-1, 2 /* STDERR_FILENO */, -1},
+                                   {-1, 2 /* STDERR_FILENO */,
+                                    ASSUAN_INVALID_FD},
                                    {-1, -1} };
   int status;
   int nwrite;
@@ -1135,7 +1137,8 @@ gpgconf_query_swdb (void *engine,
   char *argv[7];
   int argc = 0;
   int rp[2];
-  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */, -1, 0},
+  struct spawn_fd_item_s cfd[] = { {-1, 1 /* STDOUT_FILENO */,
+                                      ASSUAN_INVALID_FD, 0},
 				   {-1, -1} };
   int status;
   int nread;

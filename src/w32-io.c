@@ -47,8 +47,6 @@
  * lower value and dynamically resize the table.  */
 #define MAX_SLAFD 512
 
-#define handle_to_fd(a)  ((int)(a))
-
 #define READBUF_SIZE 4096
 #define WRITEBUF_SIZE 4096
 #define PIPEBUF_SIZE  4096
@@ -1541,7 +1539,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  return TRACE_SYSRES (-1);
         }
       /* Return the child name of this handle.  */
-      fd_list[i].peer_name = handle_to_fd (hd);
+      fd_list[i].peer_name = hd;
     }
 
   /* Write the handle translation information to the temporary
@@ -1567,7 +1565,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	len = strlen (line) - 1;
 
 	/* Format is: Local name, stdin/stdout/stderr, peer name, argv idx.  */
-	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d 0x%x %d  \n",
+	snprintf (&line[len], BUFFER_MAX - len, "0x%x %d %p %d  \n",
 		  fd_list[i].fd, fd_list[i].dup_to,
 		  fd_list[i].peer_name, fd_list[i].arg_loc);
 	/* Rather safe than sorry.  */
@@ -1620,10 +1618,10 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   for (i = 0; fd_list[i].fd != -1; i++)
     if (fd_list[i].dup_to == -1)
-      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x", i, fd_list[i].fd,
+      TRACE_LOG  ("fd[%i] = 0x%x -> %p", i, fd_list[i].fd,
 		  fd_list[i].peer_name);
     else
-      TRACE_LOG  ("fd[%i] = 0x%x -> 0x%x (std%s)", i, fd_list[i].fd,
+      TRACE_LOG  ("fd[%i] = 0x%x -> %p (std%s)", i, fd_list[i].fd,
 		  fd_list[i].peer_name, (fd_list[i].dup_to == 0) ? "in" :
 		  ((fd_list[i].dup_to == 1) ? "out" : "err"));
 

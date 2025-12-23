@@ -47,7 +47,11 @@ struct spawn_fd_item_s
 {
   int fd;
   int dup_to;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE peer_name;
+#else
   int peer_name;
+#endif
   int arg_loc;
 };
 
