@@ -231,15 +231,15 @@ release_hddesc (hddesc_t hdd)
       /* Holds a valid handle or was never initialized (in which case
        * REFCOUNT would be -1 here).  */
       TRACE_BEG  (DEBUG_SYSIO, "gpgme:release_hddesc", hdd,
-                  "hd=%p, sock=%d, refcount=%d",
-                  hdd->hd, hdd->sock, hdd->refcount);
+                  "hd=%p, sock=%p, refcount=%d",
+                  hdd->hd, (void *)hdd->sock, hdd->refcount);
 
       if (hdd->hd != INVALID_HANDLE_VALUE)
         close_handle (hdd->hd);
 
       if (hdd->sock != INVALID_SOCKET)
         {
-          TRACE_LOG  ("closing socket %d", hdd->sock);
+          TRACE_LOG  ("closing socket %p", (void *)hdd->sock);
           if (closesocket (hdd->sock))
             {
               TRACE_LOG  ("closesocket failed: ec=%d", (int)WSAGetLastError ());
@@ -353,8 +353,9 @@ reader (void *arg)
   int sock;
 
   TRACE_BEG  (DEBUG_SYSIO, "gpgme:reader", ctx->hdd,
-	      "hd=%p, sock=%d, thread=%p, refcount=%d",
-              ctx->hdd->hd, ctx->hdd->sock, ctx->thread_hd, ctx->refcount);
+	      "hd=%p, sock=%p, thread=%p, refcount=%d",
+              ctx->hdd->hd, (void *)ctx->hdd->sock, ctx->thread_hd,
+              ctx->refcount);
 
   if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
     sock = 0;
@@ -512,8 +513,8 @@ create_reader (hddesc_t hdd)
   DWORD tid;
 
   TRACE_BEG  (DEBUG_SYSIO, "gpgme:create_reader", hdd,
-              "handle=%p sock=%d refhdd=%d",
-              hdd->hd, hdd->sock, hdd->refcount);
+              "hd=%p sock=%p refcount=%d",
+              hdd->hd, (void *)hdd->sock, hdd->refcount);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -620,8 +621,8 @@ destroy_reader (struct reader_context_s *ctx)
     {
       if (shutdown (ctx->hdd->sock, 2))
         TRACE (DEBUG_SYSIO, "gpgme:destroy_reader", ctx,
-                "shutdown socket %d failed: ec=%d",
-                ctx->hdd->sock, (int) WSAGetLastError ());
+                "shutdown socket %p failed: ec=%d",
+                (void *)ctx->hdd->sock, (int) WSAGetLastError ());
     }
 
   /* After setting this event CTX is void. */
@@ -756,8 +757,9 @@ writer (void *arg)
   DWORD nwritten;
   int sock;
   TRACE_BEG  (DEBUG_SYSIO, "gpgme:writer", ctx->hdd,
-	      "hd=%p, sock=%d, thread=%p, refcount=%d",
-              ctx->hdd->hd, ctx->hdd->sock, ctx->thread_hd, ctx->refcount);
+	      "hd=%p, sock=%p, thread=%p, refcount=%d",
+              ctx->hdd->hd, (void *)ctx->hdd->sock, ctx->thread_hd,
+              ctx->refcount);
 
   if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
     sock = 0;
@@ -868,8 +870,8 @@ create_writer (hddesc_t hdd)
 
 
 TRACE_BEG  (DEBUG_SYSIO, "gpgme:create_writer", hdd,
-             "handle=%p sock=%d refhdd=%d",
-             hdd->hd, hdd->sock, hdd->refcount);
+             "hd=%p sock=%p refcount=%d",
+             hdd->hd, (void *)hdd->sock, hdd->refcount);
 
   memset (&sec_attr, 0, sizeof sec_attr);
   sec_attr.nLength = sizeof sec_attr;
@@ -991,8 +993,8 @@ find_writer (int fd)
     }
 
   /* Create a new writer thread.  */
-  TRACE_LOG  ("fd=%d -> handle=%p socket=%d dupfrom=%d creating writer",
-              fd, fd_table[fd].hdd->hd, fd_table[fd].hdd->sock,
+  TRACE_LOG  ("fd=%d -> hd=%p sock=%p dupfrom=%d creating writer",
+              fd, fd_table[fd].hdd->hd, (void *)fd_table[fd].hdd->sock,
               fd_table[fd].dup_from);
   wt = create_writer (fd_table[fd].hdd);
   if (!wt)
@@ -1643,7 +1645,7 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   int count;
   void *dbg_help = NULL;
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
-	      "nfds=%u, nonblock=%u", nfds, nonblock);
+	      "nfds=%zd, nonblock=%u", nfds, nonblock);
 
 #if 0
  restart:
@@ -1945,7 +1947,7 @@ _gpgme_io_socket (int domain, int type, int proto)
   fd_table[fd].want_reader = 1;
   fd_table[fd].want_writer = 1;
 
-  TRACE_SUC ("hdd=%p, socket=0x%x (0x%x)", hdd, fd, hdd->sock);
+  TRACE_SUC ("hdd=%p, fd=%d, sock=%p", hdd, fd, (void *)hdd->sock);
 
   return fd;
 }
