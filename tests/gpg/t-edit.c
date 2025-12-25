@@ -132,7 +132,10 @@ main (int argc, char **argv)
 
   agent_info = getenv("GPG_AGENT_INFO");
   if (!(agent_info && strchr (agent_info, ':')))
-    gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
+    {
+      gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
+    }
 
   err = gpgme_op_keylist_start (ctx, pattern, 0);
   fail_if_err (err);

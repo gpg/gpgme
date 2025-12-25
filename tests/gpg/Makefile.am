@@ -118,10 +118,8 @@ gpg.conf: $(srcdir)/gpg.conf.in
 	cp $(srcdir)/gpg.conf.in gpg.conf
 
 gpg-agent.conf:
-# This is required for gpg2, which does not support command fd for the
-# passphrase.  disable-scdaemon is required so that we don't try using
-# a key from a smartcard reader (error might be: Unusable secret key)
-	echo pinentry-program $(abs_srcdir)/pinentry > ./gpg-agent.conf
+# disable-scdaemon is required so that we don't try using a key from a
+# smartcard reader (error might be: Unusable secret key)
 	echo disable-scdaemon >> ./gpg-agent.conf
 
 

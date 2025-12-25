@@ -172,7 +172,10 @@ sign_key (const char *key_fpr, const char *signer_fpr)
 
   agent_info = getenv("GPG_AGENT_INFO");
   if (!(agent_info && strchr (agent_info, ':')))
-    gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
+    {
+      gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, 0);
+    }
 
   err = gpgme_get_key (ctx, signer_fpr, &signing_key, 1);
   fail_if_err (err);

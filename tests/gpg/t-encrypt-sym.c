@@ -55,7 +55,10 @@ main (int argc, char *argv[])
 
   p = getenv("GPG_AGENT_INFO");
   if (!(p && strchr (p, ':')))
-    gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+    {
+      gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+      gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
+    }
 
   err = gpgme_data_new_from_mem (&plain, text, strlen (text), 0);
   fail_if_err (err);

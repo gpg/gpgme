@@ -60,6 +60,7 @@ main (void)
   err = gpgme_data_new (&out);
   fail_if_err (err);
 
+  gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
   gpgme_set_passphrase_cb (ctx, passphrase_cb, NULL);
 
   /* A recipient for which we don't have a secret key */
