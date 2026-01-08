@@ -1598,10 +1598,6 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	      pi.hProcess, pi.hThread,
 	      (int) pi.dwProcessId, (int) pi.dwThreadId);
 
-  if (r_pid)
-    *r_pid = (pid_t)pi.dwProcessId;
-
-
   if (ResumeThread (pi.hThread) == (DWORD)(-1))
     TRACE_LOG  ("ResumeThread failed: ec=%d", (int) GetLastError ());
 
@@ -1609,8 +1605,19 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 
   TRACE_LOG  ("process=%p", pi.hProcess);
 
+#if ASSUAN_VERSION_NUMBER < 0x030000
+  if (r_pid)
+    *r_pid = (pid_t)pi.dwProcessId;
+
   /* We don't need to wait for the process.  */
   close_handle (pi.hProcess);
+#else
+  if (r_pid)
+    *r_pid = (assuan_pid_t)pi.hProcess;
+  else
+    /* We don't need to wait for the process.  */
+    close_handle (pi.hProcess);
+#endif
 
   if (! (flags & IOSPAWN_FLAG_NOCLOSE))
     {

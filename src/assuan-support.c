@@ -313,13 +313,18 @@ static assuan_pid_t
 my_waitpid (assuan_context_t ctx, assuan_pid_t pid,
 	    int nowait, int *status, int options)
 {
-  (void)ctx;
 #ifdef HAVE_W32_SYSTEM
+# if ASSUAN_VERSION_NUMBER < 0x030000
+  (void)ctx;
   (void)nowait;
   (void)status;
   (void)options;
   (void)pid;  /* Just a number without a kernel object.  */
+# else
+  return __assuan_waitpid (ctx, pid, nowait, status, options);
+# endif
 #else
+  (void)ctx;
   /* We can't just release the PID, a waitpid is mandatory.  But
      NOWAIT in POSIX systems just means the caller already did the
      waitpid for this child.  */
