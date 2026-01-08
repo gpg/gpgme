@@ -1131,7 +1131,7 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   /* Create a pipe.  */
   memset (&sec_attr, 0, sizeof (sec_attr));
   sec_attr.nLength = sizeof (sec_attr);
-  sec_attr.bInheritHandle = FALSE;
+  sec_attr.bInheritHandle = TRUE;
 
   if (!CreatePipe (&rh, &wh, &sec_attr, PIPEBUF_SIZE))
     {
@@ -1147,45 +1147,19 @@ _gpgme_io_pipe (int filedes[2], int inherit_idx)
   /* Make one end inheritable.  */
   if (inherit_idx == 0)
     {
-      HANDLE hd;
-      if (!DuplicateHandle (GetCurrentProcess(), rh,
-			    GetCurrentProcess(), &hd, 0,
-			    TRUE, DUPLICATE_SAME_ACCESS))
-	{
-	  TRACE_LOG  ("DuplicateHandle failed: ec=%d",
-		      (int) GetLastError ());
-	  release_fd (rfd);
-	  release_fd (wfd);
-	  close_handle (rh);
-	  close_handle (wh);
-          release_hddesc (rhdesc);
-          release_hddesc (whdesc);
-	  gpg_err_set_errno (EIO);
-	  return TRACE_SYSRES (-1);
+      if (!SetHandleInformation (wh, HANDLE_FLAG_INHERIT, 0))
+        {
+          gpg_err_set_errno (EIO);
+          return TRACE_SYSRES (-1);
         }
-      close_handle (rh);
-      rh = hd;
     }
   else if (inherit_idx == 1)
     {
-      HANDLE hd;
-      if (!DuplicateHandle( GetCurrentProcess(), wh,
-			    GetCurrentProcess(), &hd, 0,
-			    TRUE, DUPLICATE_SAME_ACCESS))
-	{
-	  TRACE_LOG  ("DuplicateHandle failed: ec=%d",
-		      (int) GetLastError ());
-	  release_fd (rfd);
-	  release_fd (wfd);
-	  close_handle (rh);
-	  close_handle (wh);
-          release_hddesc (rhdesc);
-          release_hddesc (whdesc);
-	  gpg_err_set_errno (EIO);
-	  return TRACE_SYSRES (-1);
+      if (!SetHandleInformation (rh, HANDLE_FLAG_INHERIT, 0))
+        {
+          gpg_err_set_errno (EIO);
+          return TRACE_SYSRES (-1);
         }
-      close_handle (wh);
-      wh = hd;
     }
 
   /* Put the HANDLEs of the new pipe into the file descriptor table.
