@@ -63,7 +63,6 @@ pubring-stamp: $(srcdir)/cert_g10code_test1.der gpg-sample.stamp
 gpgsm.conf:
 	echo disable-crl-checks > ./gpgsm.conf
 	echo faked-system-time 1008241200 >> ./gpgsm.conf
-	echo "agent-program `which $(GPG_AGENT)`|--debug-quick-random" >> ./gpgsm.conf
 
 gpg-sample.stamp: $(srcdir)/$(key_id)
 	-$(TESTS_ENVIRONMENT) gpgconf --kill all

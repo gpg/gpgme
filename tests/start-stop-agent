@@ -30,19 +30,6 @@ if [ "$1" = "--stop" ]; then
   exit 0
 fi
 
-# Update 'agent-program' in the configuration files to make sure we
-# will always start exactly this agent again if we ever need to.
-for F in gpg.conf gpgsm.conf
-do
-  if test -f "$GNUPGHOME/$F"
-  then
-      cat "$GNUPGHOME/$F" > "$GNUPGHOME/$F~"
-      sed -e "s#^agent-program.*#agent-program ${GPG_AGENT}|--debug-quick-random#" \
-          >"$GNUPGHOME/$F" <"$GNUPGHOME/$F~"
-      rm -f "$GNUPGHOME/$F~"
-  fi
-done
-
 if [ "$(gpg-connect-agent --no-autostart getval\ $token /bye 2>/dev/null | head -1)" \
       = "D set" ]; then
   echo "gpg-agent already running" >&2
