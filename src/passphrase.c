@@ -37,10 +37,11 @@
 
 typedef struct
 {
+  int bad_passphrase;
+  int canceled;
   int no_passphrase;
   char *uid_hint;
   char *passphrase_info;
-  int bad_passphrase;
   char *maxlen;
 } *op_data_t;
 
@@ -89,11 +90,13 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
 
     case GPGME_STATUS_BAD_PASSPHRASE:
       opd->bad_passphrase++;
+      opd->canceled = 0;
       opd->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_GOOD_PASSPHRASE:
       opd->bad_passphrase = 0;
+      opd->canceled = 0;
       opd->no_passphrase = 0;
       break;
 
@@ -112,16 +115,21 @@ _gpgme_passphrase_status_handler (void *priv, gpgme_status_code_t code,
       break;
 
     case GPGME_STATUS_CANCELED_BY_USER:
-      return gpg_error (GPG_ERR_CANCELED);
+      opd->canceled = 1;
+      break;
 
     case GPGME_STATUS_PINENTRY_LAUNCHED:
       /* Another pinentry is invoked, reset the passphrase status.  */
-      opd->no_passphrase = opd->bad_passphrase = 0;
+      opd->bad_passphrase = 0;
+      opd->canceled = 0;
+      opd->no_passphrase = 0;
       break;
 
     case GPGME_STATUS_EOF:
       if (opd->no_passphrase || opd->bad_passphrase)
 	return gpg_error (GPG_ERR_BAD_PASSPHRASE);
+      else if (opd->canceled)
+        return gpg_error (GPG_ERR_CANCELED);
       break;
 
     case GPGME_STATUS_ERROR:
