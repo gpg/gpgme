@@ -696,6 +696,7 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
   struct io_select_fd_s fds[2];
   struct io_cb_data iocb_data;
   int nfds = 0;
+  int done = 0;
 
   iocb_data.handler_value = gpgsm->diag_cb.data;
   iocb_data.op_err = 0;
@@ -738,88 +739,93 @@ gpgsm_assuan_simple_command (engine_gpgsm_t gpgsm, const char *cmd,
       if (gpgsm->status_cb.fd != -1 && !fds[0].signaled)
 	continue;
 
-      err = assuan_read_line (ctx, &line, &linelen);
-      if (err)
+      do
         {
-          TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-		  "error from assuan (%d) getting line: %s",
-                  err, gpg_strerror (err));
-          break;
-        }
-
-      if (*line == '#' || !linelen)
-	continue;
-
-      if (linelen >= 2
-	  && line[0] == 'O' && line[1] == 'K'
-	  && (line[2] == '\0' || line[2] == ' '))
-        {
-          TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-                 "OK line seen");
-          break;
-        }
-      else if (linelen >= 4
-	  && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
-	  && line[3] == ' ')
-        {
-          err = atoi (&line[4]);
-          TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-                 "ERR line seen: err=%s, cb_err=%s",
-                 gpg_strerror (err), cb_err? gpg_strerror (cb_err):"none");
-          /* We prefer a callback generated error because that one is
-             more related to gpgme and thus probably more important
-             than the error returned by the engine.  */
-          if (cb_err)
+          err = assuan_read_line (ctx, &line, &linelen);
+          if (err)
             {
-              err = cb_err;
+              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+		  "error from assuan (%d) getting line: %s",
+                      err, gpg_strerror (err));
+              break;
+            }
+
+          if (*line == '#' || !linelen)
+	    continue;
+
+          if (linelen >= 2
+	      && line[0] == 'O' && line[1] == 'K'
+	      && (line[2] == '\0' || line[2] == ' '))
+            {
+              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+                     "OK line seen");
+              done = 1;
+              break;
+            }
+          else if (linelen >= 4
+	      && line[0] == 'E' && line[1] == 'R' && line[2] == 'R'
+	      && line[3] == ' ')
+            {
+              err = atoi (&line[4]);
+              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+                     "ERR line seen: err=%s, cb_err=%s",
+                     gpg_strerror (err), cb_err? gpg_strerror (cb_err):"none");
+              /* We prefer a callback generated error because that one is
+                 more related to gpgme and thus probably more important
+                 than the error returned by the engine.  */
+              if (cb_err)
+                {
+                  err = cb_err;
+                  cb_err = 0;
+                }
+            }
+          else if (linelen >= 2
+	           && line[0] == 'S' && line[1] == ' ')
+	    {
+              /* After an error from a status callback we skip all further
+                 status lines.  */
+              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+                     "S line seen: line='%s'", line);
+              if (!cb_err)
+                {
+                  char *rest;
+                  gpgme_status_code_t r;
+
+                  rest = strchr (line + 2, ' ');
+                  if (!rest)
+                    rest = line + linelen; /* set to an empty string */
+                  else
+                    *(rest++) = 0;
+
+                  r = _gpgme_parse_status (line + 2);
+                  if (gpgsm->status.mon_cb && r != GPGME_STATUS_PROGRESS)
+                    {
+                      /* Note that we call the monitor even if we do
+                       * not know the status code (r < 0).  */
+                      cb_err = gpgsm->status.mon_cb (gpgsm->status.mon_cb_value,
+                                                     line + 2, rest);
+                    }
+
+                  if (r >= 0 && status_fnc && !cb_err)
+                    cb_err = status_fnc (status_fnc_value, r, rest);
+                  TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+                         "S line yields cb_err=%s", gpg_strerror (cb_err));
+                }
+	    }
+          else
+            {
+              /* Invalid line or INQUIRY.  We can't do anything else than
+                 to stop.  As with ERR we prefer a status callback
+                 generated error code, though.  */
+              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
+                     "Invalid line seen: %s", line);
+              err = cb_err ? cb_err : gpg_error (GPG_ERR_GENERAL);
               cb_err = 0;
             }
         }
-      else if (linelen >= 2
-	       && line[0] == 'S' && line[1] == ' ')
-	{
-          /* After an error from a status callback we skip all further
-             status lines.  */
-          TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-                 "S line seen: line='%s'", line);
-          if (!cb_err)
-            {
-              char *rest;
-              gpgme_status_code_t r;
-
-              rest = strchr (line + 2, ' ');
-              if (!rest)
-                rest = line + linelen; /* set to an empty string */
-              else
-                *(rest++) = 0;
-
-              r = _gpgme_parse_status (line + 2);
-              if (gpgsm->status.mon_cb && r != GPGME_STATUS_PROGRESS)
-                {
-                  /* Note that we call the monitor even if we do
-                   * not know the status code (r < 0).  */
-                  cb_err = gpgsm->status.mon_cb (gpgsm->status.mon_cb_value,
-                                                 line + 2, rest);
-                }
-
-              if (r >= 0 && status_fnc && !cb_err)
-                cb_err = status_fnc (status_fnc_value, r, rest);
-              TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-                     "S line yields cb_err=%s", gpg_strerror (cb_err));
-            }
-	}
-      else
-        {
-          /* Invalid line or INQUIRY.  We can't do anything else than
-             to stop.  As with ERR we prefer a status callback
-             generated error code, though.  */
-          TRACE (DEBUG_CTX, "gpgsm_assuan_simple_command", gpgsm,
-                 "Invalid line seen: %s", line);
-          err = cb_err ? cb_err : gpg_error (GPG_ERR_GENERAL);
-          cb_err = 0;
-        }
+      while (!err && assuan_pending_line (ctx));
     }
-  while (!err);
+  while (!err && !done);
 
   /* We only want the first error from the status handler, thus we
    * take the one saved in CB_ERR. */
