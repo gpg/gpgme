@@ -3,6 +3,10 @@ Noteworthy changes in version 2.0.2 (unreleased)   [C45/A0/R)]
 
  * New context flag "export-filter".  [T8033]
 
+ * Extend the internal gpgsm_assuan_simple_command to consume all
+   received lines.  This fixes a possible lockup introduced by the
+   fix for T7759.  [T8187]
+
  * Interface changes relative to the 2.0.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_ctx_flag                    EXTENDED: New flag 'export-filter'.
