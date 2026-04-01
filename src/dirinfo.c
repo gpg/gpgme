@@ -296,13 +296,13 @@ get_gpgconf_item (int what)
       if (pgmname && _gpgme_access (pgmname, F_OK))
         {
           _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                        "gpgme-dinfo: gpgconf='%s' [not installed]", pgmname);
+                        "gpgme-dinfo:   gpgconf='%s' [not installed]", pgmname);
           free (pgmname);
           pgmname = NULL; /* Not available.  */
         }
       else
         _gpgme_debug (NULL, DEBUG_INIT, -1, NULL, NULL, NULL,
-                      "gpgme-dinfo: gpgconf='%s'",
+                      "gpgme-dinfo:   gpgconf='%s'",
                       pgmname? pgmname : "[null]");
       if (!pgmname)
         {
