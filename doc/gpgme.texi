@@ -2604,7 +2604,7 @@ addresses is not supported.
 
 @deftypefun gpgme_error_t gpgme_set_sender @
       (@w{gpgme_ctx_t @var{ctx}}, @
-       @w{int @var{address}})
+       @w{const char * @var{address}})
 
 @since{1.8.0}
 
