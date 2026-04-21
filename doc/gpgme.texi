@@ -7065,6 +7065,16 @@ members:
 @item gpgme_invalid_key_t invalid_recipients
 A linked list with information about all invalid keys for which
 the data could not be encrypted.
+
+@item unsigned int is_de_vs : 1;
+@since{2.1.0}
+The message was encrypted in a VS-NfD compliant way.  This is a
+specification in Germany for a restricted communication level.
+
+@item unsigned int beta_compliance : 1;
+@since{2.1.0}
+The compliance flags (e.g. is_de_vs) are set but the software has not
+yet been approved or is in a beta state.
 @end table
 @end deftp
 

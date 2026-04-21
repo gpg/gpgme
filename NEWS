@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.0.2 (unreleased)   [C45/A0/R)]
 ------------------------------------------------
 
+ * New flags "is_de_vs" and "beta_compliance" for encryption results.
+   [T6702]
+
  * New context flag "export-filter".  [T8033]
 
  * Extend the internal gpgsm_assuan_simple_command to consume all
@@ -9,7 +12,8 @@ Noteworthy changes in version 2.0.2 (unreleased)   [C45/A0/R)]
 
  * Interface changes relative to the 2.0.1 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- gpgme_set_ctx_flag                    EXTENDED: New flag 'export-filter'.
+ gpgme_set_ctx_flag                    EXT: New flag 'export-filter'.
+ gpgme_decrypt_result_t        EXT: New fields is_de_vs and beta_compliance.
 
 Noteworthy changes in version 2.0.1 (2025-09-23)   [C45/A0/R1]
 ------------------------------------------------

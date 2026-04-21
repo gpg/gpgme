@@ -99,6 +99,8 @@ print_encrypt_result (gpgme_encrypt_result_t result)
   gpgme_invalid_key_t invkey;
 
   printf ("\nEncryption results\n");
+  printf ("Compliance de-vs ...: %s%s\n", result->is_de_vs? "yes":"no",
+          result->is_de_vs && result->beta_compliance? "(beta)":"");
   for (invkey = result->invalid_recipients; invkey; invkey = invkey->next)
     printf ("Encryption key `%s' not used: %s <%s>\n",
             nonnull (invkey->fpr),

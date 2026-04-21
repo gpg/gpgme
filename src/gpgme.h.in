@@ -1379,6 +1379,16 @@ struct _gpgme_op_encrypt_result
 {
   /* The list of invalid recipients.  */
   gpgme_invalid_key_t invalid_recipients;
+
+  /* True if the message was encrypted in compliance to the de-vs
+   * mode.  */
+  unsigned int is_de_vs : 1;
+
+  /* The compliance mode (is_de_vs) has not yet been approved.  */
+  unsigned int beta_compliance : 1;
+
+  /* Internal to GPGME, do not use.  */
+  int _unused : 30;
 };
 typedef struct _gpgme_op_encrypt_result *gpgme_encrypt_result_t;
 
@@ -2716,7 +2726,8 @@ typedef enum
     GPGME_STATUS_NOTATION_FLAGS = 98,
     GPGME_STATUS_DECRYPTION_COMPLIANCE_MODE = 99,
     GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE = 100,
-    GPGME_STATUS_CANCELED_BY_USER = 101
+    GPGME_STATUS_CANCELED_BY_USER = 101,
+    GPGME_STATUS_ENCRYPTION_COMPLIANCE_MODE = 102
   }
 gpgme_status_code_t;
 
