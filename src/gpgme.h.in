@@ -1526,6 +1526,10 @@ struct _gpgme_op_decrypt_result
   /* A string with the symmetric encryption algorithm and mode using
    * the format "<algo>.<mode>".  */
   char *symkey_algo;
+
+  /* A string with the hash of the session key or NULL if the hash was
+   * not emitted by the backend.  */
+  char *session_hash;
 };
 typedef struct _gpgme_op_decrypt_result *gpgme_decrypt_result_t;
 
@@ -1540,6 +1544,7 @@ typedef enum
     GPGME_DECRYPT_VERIFY = 1,
     GPGME_DECRYPT_ARCHIVE = 2,
     GPGME_DECRYPT_LISTONLY = 16,
+    GPGME_DECRYPT_SESSION_HASH = 32,
     GPGME_DECRYPT_UNWRAP = 128
   }
 gpgme_decrypt_flags_t;
@@ -2727,7 +2732,8 @@ typedef enum
     GPGME_STATUS_DECRYPTION_COMPLIANCE_MODE = 99,
     GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE = 100,
     GPGME_STATUS_CANCELED_BY_USER = 101,
-    GPGME_STATUS_ENCRYPTION_COMPLIANCE_MODE = 102
+    GPGME_STATUS_ENCRYPTION_COMPLIANCE_MODE = 102,
+    GPGME_STATUS_SESSION_HASH = 103
   }
 gpgme_status_code_t;
 

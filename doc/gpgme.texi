@@ -5875,6 +5875,15 @@ used to information on the keyids of the recipients of some encrypted
 data.  Note that most other result items have no or no useful
 information in this case.
 
+@item GPGME_DECRYPT_SESSION_HASH
+@since{2.1.0}
+
+If supported by gpg (>= 2.5.19) pass the option
+@option{--show-session-hash} to gpg so that the decryption result
+field @code{session_key} will receive the hash of the session key.  If
+@code{GPGME_DECRYPT_LIST} is also set the gpg option
+@option{--show-only-session-key} is used instead.
+
 @end table
 
 The function returns the error codes as described for
@@ -5882,7 +5891,7 @@ The function returns the error codes as described for
 @end deftypefun
 
 @deftypefun gpgme_error_t gpgme_op_decrypt_ext_start ( @
-            @w{gpgme_ctx_t @var{ctx}}, @
+            @w{gpgme_ctx_tng @var{ctx}}, @
             @w{gpgme_decrypt_flags_t @var{flags}}, @
             @w{gpgme_data_t @var{cipher}}, @
             @w{gpgme_data_t @var{plain}})
@@ -5993,6 +6002,15 @@ or @code{gpgme_get_ctx_flag (ctx, "export-session-key")} returns true
 A string with the symmetric encryption algorithm and mode using the
 format "<algo>.<mode>".  Note that the deprecated non-MDC encryption mode of
 OpenPGP is given as "PGPCFB".
+
+@item char *session_hash
+@since{2.1.0}
+
+A textual representation (nul-terminated string) of the SHA-256 hash
+of the session key used in symmetric encryption of the message.  It
+will receive the value @code{NULL} if the feature is not supported by
+the backend or the @code{GPGME_DECRYPT_SESSION_HASH} bit was not set
+in flags argument of the decryption function.
 
 @end table
 @end deftp

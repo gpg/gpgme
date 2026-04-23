@@ -89,6 +89,7 @@ release_op_data (void *hook)
   free (opd->result.unsupported_algorithm);
   free (opd->result.file_name);
   free (opd->result.session_key);
+  free (opd->result.session_hash);
   free (opd->result.symkey_algo);
 
   while (recipient)
@@ -478,6 +479,12 @@ _gpgme_decrypt_status_handler (void *priv, gpgme_status_code_t code,
       if (opd->result.session_key)
         free (opd->result.session_key);
       opd->result.session_key = strdup(args);
+      break;
+
+    case GPGME_STATUS_SESSION_HASH:
+      if (opd->result.session_hash)
+        free (opd->result.session_hash);
+      opd->result.session_hash = strdup (args);
       break;
 
     case GPGME_STATUS_NO_SECKEY:

@@ -1974,8 +1974,16 @@ gpg_decrypt (void *engine,
         err = add_arg (gpg, "--unwrap");
     }
 
-  if (!err && (flags & GPGME_DECRYPT_LISTONLY))
+  if (!err && (flags & GPGME_DECRYPT_LISTONLY)
+           && !(flags & GPGME_DECRYPT_SESSION_HASH))
     err = add_arg (gpg, "--list-only");
+
+  if (!err && (flags & GPGME_DECRYPT_SESSION_HASH)
+           && have_gpg_version (gpg, "2.5.19"))
+    err = add_arg (gpg,
+                   (flags & GPGME_DECRYPT_LISTONLY)? "--show-only-session-hash"
+                   /* */                           : "--show-session-hash");
+
 
   if (!err && export_session_key)
     err = add_gpg_arg (gpg, "--show-session-key");

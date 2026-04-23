@@ -62,6 +62,7 @@ print_result (gpgme_decrypt_result_t result)
   printf ("MIME flag ..........: %s\n", result->is_mime? "yes":"no");
   printf ("Unsupported algo ...: %s\n", nonnull(result->unsupported_algorithm));
   printf ("Session key ........: %s\n", nonnull (result->session_key));
+  printf ("Session hash .......: %s\n", nonnull (result->session_hash));
   printf ("Symmetric algorithm : %s\n", result->symkey_algo);
 
   for (recp = result->recipients; recp && recp->next; recp = recp->next)
@@ -84,6 +85,7 @@ show_usage (int ex)
          "  --status         print status lines from the backend\n"
          "  --openpgp        use the OpenPGP protocol (default)\n"
          "  --cms            use the CMS protocol\n"
+         "  --show-session-hash             show the session key hash\n"
          "  --export-session-key            show the session key\n"
          "  --override-session-key STRING   use STRING as session key\n"
          "  --request-origin STRING         use STRING as request origin\n"
@@ -162,6 +164,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--cms"))
         {
           protocol = GPGME_PROTOCOL_CMS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--show-session-hash"))
+        {
+          flags |= GPGME_DECRYPT_SESSION_HASH;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--export-session-key"))
