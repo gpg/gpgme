@@ -438,6 +438,15 @@ have_usable_gpgtar (engine_gpg_t gpg)
 
 
 static int
+have_usable_session_hash (engine_gpg_t gpg)
+{
+  return have_gpg_version (gpg, "2.5.19")
+         || (have_gpg_version (gpg, "2.2.55")
+             && !have_gpg_version (gpg, "2.3.0"));
+}
+
+
+static int
 have_option_proc_all_sigs (engine_gpg_t gpg)
 {
   static unsigned int flag;
@@ -1979,7 +1988,7 @@ gpg_decrypt (void *engine,
     err = add_arg (gpg, "--list-only");
 
   if (!err && (flags & GPGME_DECRYPT_SESSION_HASH)
-           && have_gpg_version (gpg, "2.5.19"))
+      && have_usable_session_hash (gpg))
     err = add_arg (gpg,
                    (flags & GPGME_DECRYPT_LISTONLY)? "--show-only-session-hash"
                    /* */                           : "--show-session-hash");
