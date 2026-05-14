@@ -8,30 +8,30 @@
 # WARRANTY, to the extent permitted by law; without even the implied
 # warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if [ -z "$(command -v gpg-connect-agent)" ]; then
+if [ -z "$(command -v gpg-connect-agent$EXEEXT)" ]; then
    echo "gpg-agent not installed and thus not started" >&2
    exit 0;
 fi
 
 GPG_AGENT_INFO=
 export GPG_AGENT_INFO
-GPG_AGENT=$(which gpg-agent)
+GPG_AGENT=$(which gpg-agent$EXEEXT)
 
 token=$(echo "gpgme-$(pwd)" | tr ' ' '_')
 
 if [ "$1" = "--stop" ]; then
-  if [ "$(gpg-connect-agent --no-autostart getval\ $token /bye 2>/dev/null | head -1)" \
-        != "D set" ]; then
+  RES=$(gpg-connect-agent$EXEEXT --no-autostart "getval $token" /bye 2>/dev/null | tr -d '\r' | head -1)
+  if [ "$RES" != "D set" ]; then
     echo "gpg-agent not running" >&2
     exit 0
   fi
   echo "stopping gpg-agent " >&2
-  gpg-connect-agent KILLAGENT /bye >/dev/null 2>&1
+  gpg-connect-agent$EXEEXT KILLAGENT /bye >/dev/null 2>&1
   exit 0
 fi
 
-if [ "$(gpg-connect-agent --no-autostart getval\ $token /bye 2>/dev/null | head -1)" \
-      = "D set" ]; then
+RES=$(gpg-connect-agent$EXEEXT --no-autostart "getval $token" /bye 2>/dev/null | tr -d '\r' | head -1)
+if [ "$RES" = "D set" ]; then
   echo "gpg-agent already running" >&2
   exit 0
 fi
@@ -47,9 +47,13 @@ if "$GPG_AGENT" --gpgconf-test --allow-loopback-pinentry &&
     echo allow-loopback-pinentry >> "$GNUPGHOME/gpg-agent.conf"
 fi
 
-gpg-connect-agent --agent-program="${GPG_AGENT}|--debug-quick-random" putval\ $token\ set /bye
-if [ $? -ne 0 -o "$(gpg-connect-agent getval\ $token /bye 2>/dev/null | head -1)" \
-      != "D set" ]; then
+gpg-connect-agent$EXEEXT --agent-program="${GPG_AGENT}|--debug-quick-random" "putval $token set" /bye
+if [ $? -ne 0 ]; then
+  echo "error starting gpg-agent" >&2
+  exit 1
+fi
+RES=$(gpg-connect-agent$EXEEXT "getval $token" /bye 2>/dev/null | tr -d '\r' | head -1)
+if [ "$RES" != "D set" ]; then
   echo "error starting gpg-agent" >&2
   exit 1
 fi

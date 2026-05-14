@@ -19,11 +19,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-GPG = gpg
-GPG_AGENT = gpg-agent
+GPG = gpg$(EXEEXT)
+GPG_AGENT = gpg-agent$(EXEEXT)
 
 GNUPGHOME=$(abs_builddir)
-TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
+TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
                     top_srcdir=$(top_srcdir)
 
 # The keylist tests must come after the import and the edit test.
@@ -97,7 +97,7 @@ clean-local:
 	-rm -fR private-keys-v1.d
 
 gpg-sample.stamp: $(srcdir)/$(private_keys)
-	-$(TESTS_ENVIRONMENT) gpgconf --kill all
+	-$(TESTS_ENVIRONMENT) gpgconf$(EXEEXT) --kill all
 	$(MKDIR_P) ./private-keys-v1.d
 	for k in $(private_keys); do \
 	  cp $(srcdir)/$$k private-keys-v1.d/$$k.key; \

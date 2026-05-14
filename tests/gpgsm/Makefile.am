@@ -19,11 +19,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-GPGSM = gpgsm
-GPG_AGENT = gpg-agent
+GPGSM = gpgsm$(EXEEXT)
+GPG_AGENT = gpg-agent$(EXEEXT)
 
 GNUPGHOME=$(abs_builddir)
-TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
+TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
                     top_srcdir=$(top_srcdir)
 
 noinst_HEADERS = t-support.h

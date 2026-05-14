@@ -19,11 +19,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-GPGME_JSON=$(abs_builddir)/../../src/gpgme-json
-GPG = gpg
+GPGME_JSON=$(abs_builddir)/../../src/gpgme-json$(EXEEXT)
+GPG = gpg$(EXEEXT)
 
 GNUPGHOME=$(abs_builddir)
-TESTS_ENVIRONMENT = GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
+TESTS_ENVIRONMENT = EXEEXT=$(EXEEXT) GNUPGHOME=$(GNUPGHOME) LC_ALL=C GPG_AGENT_INFO= \
                     top_srcdir=$(top_srcdir) gpgme_json=$(GPGME_JSON)
 
 c_tests = t-json
