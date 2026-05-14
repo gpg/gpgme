@@ -672,7 +672,7 @@ start (engine_g13_t g13, const char *command)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   /* For now... */
   for (i = 0; i < nfds; i++)
-    fdlist[i] = (int) afdlist[i];
+    fdlist[i] = (int)(intptr_t)afdlist[i];
 
   /* We "duplicate" the file descriptor, so we can close it here (we
      can't close fdlist[0], as that is closed by libassuan, and

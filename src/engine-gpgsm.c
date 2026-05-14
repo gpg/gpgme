@@ -435,14 +435,14 @@ gpgsm_new (void **engine, const char *file_name, const char *home_dir,
 
     /* For now... */
     for (i = 0; i < nchild_fds; i++)
-      achild_fds[i] = (assuan_fd_t) child_fds[i];
+      achild_fds[i] = (assuan_fd_t)(intptr_t) child_fds[i];
 
     err = assuan_pipe_connect (gpgsm->assuan_ctx, pgmname, argv,
                                achild_fds, NULL, NULL, connect_flags);
 
     /* FIXME: Check whether our Windows code still updates the list.*/
     for (i = 0; i < nchild_fds; i++)
-      child_fds[i] = (int) achild_fds[i];
+      child_fds[i] = (int)(intptr_t) achild_fds[i];
   }
 
 
@@ -1251,7 +1251,7 @@ prepare (engine_gpgsm_t gpgsm)
     return gpg_error (GPG_ERR_GENERAL);	/* FIXME */
   /* For now... */
   for (i = 0; i < nfds; i++)
-    fdlist[i] = (int) afdlist[i];
+    fdlist[i] = (int)(intptr_t) afdlist[i];
 
   /* We "duplicate" the file descriptor, so we can close it here (we
      can't close fdlist[0], as that is closed by libassuan, and
