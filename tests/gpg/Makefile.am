@@ -61,7 +61,7 @@ private_keys = \
 EXTRA_DIST = initial.test final.test \
         pubdemo.asc secdemo.asc cipher-1.asc cipher-2.asc \
 	cipher-3.asc cipher-no-sig.asc \
-	geheim.txt pubkey-1.asc seckey-1.asc pinentry $(private_keys) \
+	geheim.txt pubkey-1.asc seckey-1.asc $(private_keys) \
 	gpg.conf.in ownertrust.txt
 
 BUILT_SOURCES = gpg.conf gpg-agent.conf pubring-stamp \
@@ -91,6 +91,7 @@ endif
 
 noinst_PROGRAMS = $(c_tests) $(tests_skipped)
 
+noinst_PROGRAMS += pinentry$(EXEEXT)
 
 clean-local:
 	-$(TESTS_ENVIRONMENT) $(top_srcdir)/tests/start-stop-agent --stop
@@ -122,5 +123,10 @@ gpg-agent.conf:
 # smartcard reader (error might be: Unusable secret key)
 	echo disable-scdaemon >> ./gpg-agent.conf
 
+pinentry.o: $(srcdir)/pinentry.c
+	$(CC) $(CFLAGS) -c $(srcdir)/pinentry.c
+
+pinentry$(EXEEXT): pinentry.o
+	$(CC) -o $@ pinentry.o
 
 # end-of-file
