@@ -265,7 +265,7 @@ gpgconf_read (void *engine, const char *arg1, char *arg2,
       return gpg_error_from_syserror ();
     }
 
-  linebufsize = 1024; /* Usually enough for conf lines.  */
+  linebufsize = 2048; /* Usually enough for conf lines.  */
   linebuf = malloc (linebufsize);
   if (!linebuf)
     {
