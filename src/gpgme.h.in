@@ -428,6 +428,7 @@ typedef unsigned int gpgme_export_mode_t;
 /* The available signature notation flags.  */
 #define GPGME_SIG_NOTATION_HUMAN_READABLE	1
 #define GPGME_SIG_NOTATION_CRITICAL		2
+#define GPGME_SIG_NOTATION_UNPROTECTED          4
 
 typedef unsigned int gpgme_sig_notation_flags_t;
 
@@ -508,8 +509,11 @@ struct _gpgme_sig_notation
   /* Notation data is critical.  */
   unsigned int critical : 1;
 
+  /* Notaion data is unprotected (unsigned).  */
+  unsigned int unprotected : 1;
+
   /* Internal to GPGME, do not use.  */
-  int _unused : 30;
+  int _unused : 29;
 };
 
 

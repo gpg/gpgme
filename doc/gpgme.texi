@@ -6175,6 +6175,13 @@ notation data is in human readable form
 The @code{GPGME_SIG_NOTATION_CRITICAL} symbol specifies that the
 notation data is critical.
 
+@item GPGME_SIG_NOTATION_UNPROTECTED
+@since{2.1.0}
+
+The @code{GPGME_SIG_NOTATION_UNPROTECTED} symbol is used with CMS
+signatures to indicate that an attribute is unsigned or shall be
+created as unsigned.
+
 @end table
 
 @item unsigned int human_readable : 1
@@ -6185,6 +6192,10 @@ not for policy URLs.
 @item unsigned int critical : 1
 This is true if the @code{GPGME_SIG_NOTATION_CRITICAL} flag is set and
 false otherwise.  This flag is valid for notation data and policy URLs.
+
+@item unsigned int unprotected : 1
+This is true if the @code{GPGME_SIG_NOTATION_UNPROTECTED} flag is set and
+false otherwise.  This flag is currently only used for CMS attributes.
 
 @end table
 @end deftp
@@ -6711,7 +6722,8 @@ context.
 
 Using the following functions, you can attach arbitrary notation data
 to a signature.  This information is then available to the user when
-the signature is verified.
+the signature is verified.  The functions may also be used for CMS to
+add signed or unsigned attributes to data signatures.
 
 @deftypefun void gpgme_sig_notation_clear (@w{gpgme_ctx_t @var{ctx}})
 @since{1.1.0}
@@ -6741,6 +6753,15 @@ strings in human-readable form.  The flag
 strings must be in UTF-8 encoding.
 
 If @var{name} is @code{NULL}, then @var{value} should be a policy URL.
+
+If this function is used with a GPGME_PROTOCOL_CMS, @var{name} gives
+the OID in decimal-dotted format or it may be one of the system
+attributes denoted by a symbol name prefixed with an underscore
+(e.g. @code{_signingCertificateV2}).  @var{value} needs to be the
+DER value for the attribute encoded in hexified format; for
+a system attribute it may be @code{NULL}.  The flag
+@code{GPGME_SIG_NOTATION_UNPROTECTED} can be used to create an
+unsigned attribute.
 
 The function @code{gpgme_sig_notation_add} returns the error code
 @code{GPG_ERR_NO_ERROR} if the notation data could be added

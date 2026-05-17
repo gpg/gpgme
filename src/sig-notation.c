@@ -58,6 +58,7 @@ sig_notation_set_flags (gpgme_sig_notation_t notation,
      accessible individually for the user.  */
   notation->human_readable = flags & GPGME_SIG_NOTATION_HUMAN_READABLE ? 1 : 0;
   notation->critical = flags & GPGME_SIG_NOTATION_CRITICAL ? 1 : 0;
+  notation->unprotected = flags & GPGME_SIG_NOTATION_UNPROTECTED ? 1 : 0;
 
   notation->flags = flags;
 }

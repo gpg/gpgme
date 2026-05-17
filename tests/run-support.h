@@ -59,6 +59,10 @@
     }								\
   while (0)
 
+#define atoi_1(p)   (*(p) - '0' )
+#define atoi_2(p)   ((atoi_1(p) * 10) + atoi_1((p)+1))
+#define atoi_4(p)   ((atoi_2(p) * 100) + atoi_2((p)+2))
+#define spacep(p)   (*(p) == ' ' || *(p) == '\t')
 
 static const char *
 nonnull (const char *s)

@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include <gpgme.h>
 
@@ -36,6 +37,98 @@
 
 
 static int verbose;
+
+
+struct mystringlist_s
+{
+  struct mystringlist_s *next;
+  char d[1];
+};
+typedef struct mystringlist_s *mystringlist_t;
+
+
+static void *
+xmalloc (size_t n)
+{
+  char *p = malloc (n);
+  if (!p)
+    {
+      fprintf (stderr, "malloc failed\n");
+      exit (2);
+    }
+  return p;
+}
+
+
+/* Tokenize STRING using the set of delimiters in DELIM into a NULL
+ * delimited array.  Leading spaces and tabs are removed from all
+ * tokens if TRIM is set.  The caller must free the result.
+ *
+ * Returns: A malloced and NULL delimited array with the tokens.  On
+ *          memory error the process is terminated.
+ */
+static char **
+xstrtokenize (const char *string, const char *delim, int trim)
+{
+  const char *s;
+  size_t fields;
+  size_t bytes, n;
+  char *buffer;
+  char *p, *px, *pend;
+  char **result;
+
+  /* Count the number of fields.  */
+  for (fields = 1, s = strpbrk (string, delim); s; s = strpbrk (s + 1, delim))
+    fields++;
+  fields++; /* Add one for the terminating NULL.  */
+
+  /* Allocate an array for all fields, a terminating NULL, and space
+     for a copy of the string.  */
+  bytes = fields * sizeof *result;
+  if (bytes / sizeof *result != fields)
+    {
+      fprintf (stderr, "malloc would overflow\n");
+      exit (2);
+    }
+  n = strlen (string) + 1;
+  bytes += n;
+  if (bytes < n)
+    {
+      fprintf (stderr, "malloc would overflow\n");
+      exit (2);
+    }
+  result = xmalloc (bytes);
+  buffer = (char*)(result + fields);
+
+  /* Copy and parse the string.  */
+  strcpy (buffer, string);
+  for (n = 0, p = buffer; (pend = strpbrk (p, delim)); p = pend + 1)
+    {
+      *pend = 0;
+      if (trim)
+        {
+          while (spacep (p))
+            p++;
+          for (px = pend - 1; px >= p && spacep (px); px--)
+            *px = 0;
+        }
+      result[n++] = p;
+    }
+  if (trim)
+    {
+      while (spacep (p))
+        p++;
+      for (px = p + strlen (p) - 1; px >= p && spacep (px); px--)
+        *px = 0;
+    }
+  result[n++] = p;
+  result[n] = NULL;
+
+  assert ((char*)(result + n + 1) == buffer);
+
+  return result;
+}
+
 
 static gpg_error_t
 status_cb (void *opaque, const char *keyword, const char *value)
@@ -47,7 +140,7 @@ status_cb (void *opaque, const char *keyword, const char *value)
 
 
 static void
-print_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
+print_result (FILE *fp, gpgme_sign_result_t result, gpgme_sig_mode_t type)
 {
   gpgme_invalid_key_t invkey;
   gpgme_new_signature_t sig;
@@ -55,18 +148,18 @@ print_result (gpgme_sign_result_t result, gpgme_sig_mode_t type)
   (void)type;
 
   for (invkey = result->invalid_signers; invkey; invkey = invkey->next)
-    printf ("Signing key `%s' not used: %s <%s>\n",
-            nonnull (invkey->fpr),
-            gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
+    fprintf (fp, "Signing key `%s' not used: %s <%s>\n",
+             nonnull (invkey->fpr),
+             gpg_strerror (invkey->reason), gpg_strsource (invkey->reason));
 
   for (sig = result->signatures; sig; sig = sig->next)
     {
-      printf ("Key fingerprint: %s\n", nonnull (sig->fpr));
-      printf ("Signature type : %d\n", sig->type);
-      printf ("Public key algo: %d\n", sig->pubkey_algo);
-      printf ("Hash algo .....: %d\n", sig->hash_algo);
-      printf ("Creation time .: %ld\n", sig->timestamp);
-      printf ("Sig class .....: 0x%u\n", sig->sig_class);
+      fprintf (fp, "Key fingerprint: %s\n", nonnull (sig->fpr));
+      fprintf (fp, "Signature type : %d\n", sig->type);
+      fprintf (fp, "Public key algo: %d\n", sig->pubkey_algo);
+      fprintf (fp, "Hash algo .....: %d\n", sig->hash_algo);
+      fprintf (fp, "Creation time .: %ld\n", sig->timestamp);
+      fprintf (fp, "Sig class .....: 0x%u\n", sig->sig_class);
     }
 }
 
@@ -92,7 +185,9 @@ show_usage (int ex)
          "  --archive        create a signed archive with the given file or directory\n"
          "  --directory DIR  switch to directory DIR before creating the archive\n"
          "  --output FILE    write output to FILE instead of stdout\n"
+         "  --binary         output in binary format\n"
          "  --diagnostics    print diagnostics\n"
+         "  --notation STRG  Use notation/attribute specified by STRG\n"
          , stderr);
   exit (ex);
 }
@@ -116,8 +211,11 @@ main (int argc, char **argv)
   int include_key_block = 0;
   int diagnostics = 0;
   int direct_file_io = 0;
+  int use_binary = 0;
   const char *sender = NULL;
   const char *s;
+  mystringlist_t notations = NULL;
+  mystringlist_t sl;
 
   if (argc)
     { argc--; argv++; }
@@ -224,6 +322,22 @@ main (int argc, char **argv)
           diagnostics = 1;
           argc--; argv++;
         }
+      else if (!strcmp (*argv, "--binary"))
+        {
+          use_binary = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--notation"))
+        {
+          argc--; argv++;
+          if (!argc)
+            show_usage (1);
+          sl = xmalloc (sizeof *sl + strlen (*argv));
+          strcpy (sl->d, *argv);
+          sl->next = notations;
+          notations = sl;
+          argc--; argv++;
+        }
       else if (!strncmp (*argv, "--", 2))
         show_usage (1);
 
@@ -243,11 +357,52 @@ main (int argc, char **argv)
   err = gpgme_new (&ctx);
   fail_if_err (err);
   gpgme_set_protocol (ctx, protocol);
-  gpgme_set_armor (ctx, 1);
+  gpgme_set_armor (ctx, !use_binary);
   if (print_status)
     gpgme_set_status_cb (ctx, status_cb, NULL);
   if (use_loopback)
     gpgme_set_pinentry_mode (ctx, GPGME_PINENTRY_MODE_LOOPBACK);
+
+  /* Parse and set notations.  */
+  for (sl = notations; sl; sl = sl->next)
+    {
+      char **fields = xstrtokenize (sl->d, ":", 1);
+
+      if (fields[0] && fields[0][0] == '_')
+        {
+          if (fields[1])
+            {
+              fprintf (stderr, PGM ": notation '%s': syntax error\n", sl->d);
+              exit (1);
+            }
+          err = gpgme_sig_notation_add (ctx, fields[0], NULL, 0);
+        }
+      else
+        {
+          if (!fields[0] || !fields[1] || !fields[2] || fields[3])
+            {
+              fprintf (stderr, PGM ": notation '%s': syntax error\n", sl->d);
+              exit (1);
+            }
+          if (protocol == GPGME_PROTOCOL_CMS
+              && !(!strcmp (fields[1], "u") || !strcmp (fields[1], "s")))
+            {
+              fprintf (stderr, PGM ": notation '%s':"
+                       " second field must be 'u' or 's'\n", sl->d);
+              exit (1);
+            }
+          err = gpgme_sig_notation_add (ctx, fields[0], fields[2],
+                                        !strcmp (fields[1], "u")?
+                                        GPGME_SIG_NOTATION_UNPROTECTED : 0);
+        }
+      if (err)
+        {
+          fprintf (stderr, PGM ": error setting notation '%s': %s\n",
+                   sl->d, gpg_strerror (err));
+          exit (1);
+        }
+      free (fields);
+    }
 
   if (key_string)
     {
@@ -345,7 +500,7 @@ main (int argc, char **argv)
     }
 
   if (result)
-    print_result (result, sigmode);
+    print_result (use_binary? stderr: stdout, result, sigmode);
   if (err)
     {
       fprintf (stderr, PGM ": signing failed: %s\n", gpg_strerror (err));
@@ -357,9 +512,11 @@ main (int argc, char **argv)
 
   if (!output)
     {
-      fputs ("Begin Output:\n", stdout);
+      if (!use_binary)
+        fputs ("Begin Output:\n", stdout);
       print_data (out);
-      fputs ("End Output.\n", stdout);
+      if (!use_binary)
+        fputs ("End Output.\n", stdout);
     }
   gpgme_data_release (out);
 

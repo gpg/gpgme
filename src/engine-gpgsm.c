@@ -2243,6 +2243,8 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
   char *assuan_cmd;
   int i;
   gpgme_key_t key;
+  gpgme_sig_notation_t notation;
+  int any_notations;
 
   (void)use_textmode;
 
@@ -2274,6 +2276,47 @@ gpgsm_sign (void *engine, gpgme_data_t in, gpgme_data_t out,
       if (err)
 	return err;
     }
+
+  /* Setup attributes.  */
+  any_notations = 0;
+  for (notation = gpgme_sig_notation_get (ctx);
+       notation; notation = notation->next)
+    {
+      if (!notation->name || !*notation->name)
+        continue;  /* We always require a name.  */
+      if (*notation->name == '_')
+        {
+          /* System attribute - use verbatim.  */
+          assuan_cmd = _gpgme_strconcat
+            (!any_notations? "SETATTR --clear ": "SETATTR ",
+             notation->name, NULL);
+          if (!assuan_cmd)
+            return gpg_error_from_syserror ();
+        }
+      else if (!notation->value || !*notation->value)
+        {
+          /* Note that a regular attribute requires a value.  */
+          return gpg_error (GPG_ERR_INV_VALUE);
+        }
+      else
+        {
+          /* FIXME: Handle long attribute values.  */
+          assuan_cmd = _gpgme_strconcat
+            (!any_notations? "SETATTR --clear ": "SETATTR ",
+             notation->name,
+             notation->flags & GPGME_SIG_NOTATION_UNPROTECTED? ":u:":":s:",
+             notation->value, NULL);
+          if (!assuan_cmd)
+            return gpg_error_from_syserror ();
+        }
+      err = gpgsm_assuan_simple_command (gpgsm, assuan_cmd, NULL, NULL);
+      free (assuan_cmd);
+      assuan_cmd = NULL;
+      if (err)
+        return err;
+      any_notations = 1; /* Do not use --clear the next round.  */
+    }
+
 
   for (i = 0; (key = gpgme_signers_enum (ctx, i)); i++)
     {
