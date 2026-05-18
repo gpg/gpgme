@@ -1484,13 +1484,6 @@ _gpgme_io_spawn_sans_helper (const char *path, char *const spawn_argv[],
           std_hd++;
         }
 
-      idx = fd_list[i].arg_loc;
-      if (idx == 0)
-        continue;
-      if (idx >= argc)
-        /* something goes wrong, ignore.  */
-        continue;
-
       if (!std_hd)
         {
           if (inherit_hd < DIM (handles) - 1)
@@ -1504,6 +1497,13 @@ _gpgme_io_spawn_sans_helper (const char *path, char *const spawn_argv[],
               return TRACE_SYSRES (-1);
             }
         }
+
+      idx = fd_list[i].arg_loc;
+      if (idx == 0)
+        continue;
+      if (idx >= argc)
+        /* something goes wrong, ignore.  */
+        continue;
 
       /* Fix the arg at ARG_LOC.  */
       if (spawn_argv[idx][0] == '-' && spawn_argv[idx][1] == '&')
