@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.1.0 (unreleased)   [C45/A0/R)]
+Noteworthy changes in version 2.1.0 (2026-05-18)   [C46/A1/R0]
 ------------------------------------------------
 
  * New flags "is_de_vs" and "beta_compliance" for encryption results.
@@ -8,18 +8,35 @@ Noteworthy changes in version 2.1.0 (unreleased)   [C45/A0/R)]
    session_hash in gpgme_decrypt_result_t.  For details see the gpg
    option --show-session-key.  [rM63f18298d3]
 
+ * Setting of attributes for CMS signatures is now supported via
+   gpgme_sig_notation_add.  [rM8081d34e5f]
+
  * New context flag "export-filter".  [T8033]
 
  * Extend the internal gpgsm_assuan_simple_command to consume all
    received lines.  This fixes a possible lockup introduced by the
    fix for T7759.  [T8187]
 
+ * Fix passphrase cancel handling.  [T8172]
+
+ * Fix a regression wrt the auto-key-locate option.  [rMd242561dae]
+
+ * Handle the case when pinentry is invoked multiple times.  [T7339]
+
+ * Don't cap ISO dates beyond year 2037 on Windows.  [T8088]
+
+ * Treat empty DISPLAY envvar as unset.  [T7919]
+
  * Interface changes relative to the 2.0.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  gpgme_set_ctx_flag            EXT: New flag "export-filter".
- gpgme_decrypt_result_t        EXT: New fields is_de_vs,
-                                    beta_compliance, and session_hash.
- GPGME_DECRYPT_SESSION_HASH    NEW.
+ gpgme_decrypt_result_t        EXT: New fields "is_de_vs",
+
+                                    "beta_compliance", "session_hash".
+ gpgme_sig_notation_t          EXT: New field "unprotected".
+ GPGME_DECRYPT_SESSION_HASH     NEW.
+ GPGME_SIG_NOTATION_UNPROTECTED NEW.
+
 
  Release-info: https://dev.gnupg.org/T8237
 
