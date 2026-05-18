@@ -352,9 +352,10 @@ reader (void *arg)
   DWORD nread;
   int sock;
 
-  TRACE_BEG  (DEBUG_SYSIO, "gpgme:reader", ctx->hdd,
-	      "hd=%p, sock=%p, thread=%p, refcount=%d",
-              ctx->hdd->hd, (void *)ctx->hdd->sock, ctx->thread_hd,
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:reader", ctx->hdd, "hd=%p", ctx->hdd->hd);
+  LOCK (ctx->mutex);
+  TRACE_LOG ("sock=%p, thread=%p, refcount=%d",
+              (void *)ctx->hdd->sock, ctx->thread_hd,
               ctx->refcount);
 
   if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
@@ -364,7 +365,8 @@ reader (void *arg)
 
   for (;;)
     {
-      LOCK (ctx->mutex);
+      char buffer[READBUF_SIZE];
+
       /* Leave a 1 byte gap so that we can see whether it is empty or
 	 full.  */
       if ((ctx->writepos + 1) % READBUF_SIZE == ctx->readpos)
@@ -374,22 +376,20 @@ reader (void *arg)
             {
               TRACE_LOG  ("ResetEvent failed: ec=%d", (int) GetLastError ());
             }
-	  UNLOCK (ctx->mutex);
 	  TRACE_LOG  ("waiting for space (refcnt=%d)", ctx->refcount);
+	  UNLOCK (ctx->mutex);
 	  wait_for_single_object (ctx->have_space_ev, INFINITE);
 	  TRACE_LOG ("got space");
 	  LOCK (ctx->mutex);
        	}
       if (ctx->stop_me)
 	{
-	  UNLOCK (ctx->mutex);
 	  break;
         }
       nbytes = (ctx->readpos + READBUF_SIZE
 		- ctx->writepos - 1) % READBUF_SIZE;
       if (nbytes > READBUF_SIZE - ctx->writepos)
 	nbytes = READBUF_SIZE - ctx->writepos;
-      UNLOCK (ctx->mutex);
 
       TRACE_LOG  ("%s %d bytes", sock? "receiving":"reading", nbytes);
 
@@ -397,7 +397,9 @@ reader (void *arg)
         {
           int n;
 
-          n = recv (ctx->hdd->sock, ctx->buffer + ctx->writepos, nbytes, 0);
+	  UNLOCK (ctx->mutex);
+          n = recv (ctx->hdd->sock, buffer, nbytes, 0);
+	  LOCK (ctx->mutex);
           if (n < 0)
             {
               ctx->error_code = (int) WSAGetLastError ();
@@ -413,14 +415,11 @@ reader (void *arg)
                   if ( ctx->error_code == WSAECONNABORTED
                        || ctx->error_code == WSAECONNRESET)
                     {
-                      LOCK (ctx->mutex);
                       if (ctx->stop_me)
                         {
-                          UNLOCK (ctx->mutex);
                           TRACE_LOG ("got shutdown");
                           break;
                         }
-                      UNLOCK (ctx->mutex);
                     }
 
                   ctx->error = 1;
@@ -428,12 +427,17 @@ reader (void *arg)
                 }
               break;
             }
+          memcpy (ctx->buffer + ctx->writepos, buffer, n);
           nread = n;
         }
       else
         {
-          if (!ReadFile (ctx->hdd->hd,
-                         ctx->buffer + ctx->writepos, nbytes, &nread, NULL))
+          BOOL res;
+
+          UNLOCK (ctx->mutex);
+          res = ReadFile (ctx->hdd->hd, buffer, nbytes, &nread, NULL);
+          LOCK (ctx->mutex);
+          if (!res)
             {
               ctx->error_code = (int) GetLastError ();
               if (ctx->error_code == ERROR_BROKEN_PIPE)
@@ -453,18 +457,16 @@ reader (void *arg)
                 }
               break;
             }
+          memcpy (ctx->buffer + ctx->writepos, buffer, nread);
         }
-      LOCK (ctx->mutex);
       if (ctx->stop_me)
 	{
-	  UNLOCK (ctx->mutex);
 	  break;
         }
       if (!nread)
 	{
 	  ctx->eof = 1;
 	  TRACE_LOG ("got eof");
-	  UNLOCK (ctx->mutex);
 	  break;
         }
 
@@ -476,7 +478,6 @@ reader (void *arg)
           TRACE_LOG  ("SetEvent (%p) failed: ec=%d", ctx->have_data_ev,
                       (int) GetLastError ());
         }
-      UNLOCK (ctx->mutex);
     }
   /* Indicate that we have an error or EOF.  */
   if (!SetEvent (ctx->have_data_ev))
@@ -484,6 +485,8 @@ reader (void *arg)
       TRACE_LOG ("SetEvent (%p) failed: ec=%d", ctx->have_data_ev,
                 (int) GetLastError ());
     }
+
+  UNLOCK (ctx->mutex);
 
   TRACE_LOG ("waiting for close");
   wait_for_single_object (ctx->close_ev, INFINITE);
@@ -756,10 +759,10 @@ writer (void *arg)
   struct writer_context_s *ctx = arg;
   DWORD nwritten;
   int sock;
-  TRACE_BEG  (DEBUG_SYSIO, "gpgme:writer", ctx->hdd,
-	      "hd=%p, sock=%p, thread=%p, refcount=%d",
-              ctx->hdd->hd, (void *)ctx->hdd->sock, ctx->thread_hd,
-              ctx->refcount);
+  TRACE_BEG (DEBUG_SYSIO, "gpgme:writer", ctx->hdd, "hd=%p", ctx->hdd->hd);
+  LOCK (ctx->mutex);
+  TRACE_LOG ("sock=%p, thread=%p, refcount=%d",
+             (void *)ctx->hdd->sock, ctx->thread_hd, ctx->refcount);
 
   if (ctx->hdd->hd != INVALID_HANDLE_VALUE)
     sock = 0;
@@ -768,10 +771,10 @@ writer (void *arg)
 
   for (;;)
     {
-      LOCK (ctx->mutex);
+      char buffer[READBUF_SIZE];
+
       if (ctx->stop_me && !ctx->nbytes)
 	{
-	  UNLOCK (ctx->mutex);
 	  break;
         }
       if (!ctx->nbytes)
@@ -788,10 +791,8 @@ writer (void *arg)
        	}
       if (ctx->stop_me && !ctx->nbytes)
 	{
-	  UNLOCK (ctx->mutex);
 	  break;
         }
-      UNLOCK (ctx->mutex);
 
       TRACE_LOG  ("%s %zd bytes", sock?"sending":"writing", ctx->nbytes);
 
@@ -804,7 +805,11 @@ writer (void *arg)
              be used with WriteFile.  */
           int n;
 
-          n = send (ctx->hdd->sock, ctx->buffer, ctx->nbytes, 0);
+          n = ctx->nbytes;
+          memcpy (buffer, ctx->buffer, n);
+	  UNLOCK (ctx->mutex);
+          n = send (ctx->hdd->sock, buffer, n, 0);
+	  LOCK (ctx->mutex);
           if (n < 0)
             {
               ctx->error_code = (int) WSAGetLastError ();
@@ -816,8 +821,14 @@ writer (void *arg)
         }
       else
         {
-          if (!WriteFile (ctx->hdd->hd, ctx->buffer,
-                          ctx->nbytes, &nwritten, NULL))
+          BOOL res;
+          int n = ctx->nbytes;
+
+          memcpy (buffer, ctx->buffer, n);
+	  UNLOCK (ctx->mutex);
+          res = WriteFile (ctx->hdd->hd, buffer, n, &nwritten, NULL);
+	  LOCK (ctx->mutex);
+          if (!res)
             {
 	      if (GetLastError () == ERROR_BUSY)
 		{
@@ -834,14 +845,13 @@ writer (void *arg)
         }
       TRACE_LOG  ("wrote %d bytes", (int) nwritten);
 
-      LOCK (ctx->mutex);
       ctx->nbytes -= nwritten;
-      UNLOCK (ctx->mutex);
     }
   /* Indicate that we have an error.  */
   if (!SetEvent (ctx->is_empty))
     TRACE_LOG  ("SetEvent failed: ec=%d", (int) GetLastError ());
 
+  UNLOCK (ctx->mutex);
   TRACE_LOG ("waiting for close");
   wait_for_single_object (ctx->close_ev, INFINITE);
 
