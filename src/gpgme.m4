@@ -330,8 +330,9 @@ dnl AM_PATH_GPGME_GLIB([MINIMUM-VERSION,
 dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
 dnl Test for libgpgme-glib and define GPGME_GLIB_CFLAGS and GPGME_GLIB_LIBS.
 dnl
-AC_DEFUN([AM_PATH_GPGME_GLIB],
-[ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
+AC_DEFUN([AM_PATH_GPGME_GLIB],[
+  AC_OBSOLETE([$0], [; use AM_PATH_GPGME instead to use GPGME_CFLAGS and GPGME_LIBS])dnl
+  AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
   tmp=ifelse([$1], ,1:0.4.2,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
      req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
