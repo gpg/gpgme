@@ -1195,6 +1195,9 @@ make_data_object (cjson_t result, gpgme_data_t data,
   char *buffer;
   const char *s;
   size_t buflen, n;
+#ifdef HAVE_W32_SYSTEM
+  int armor_enabled = 0;
+#endif
 
   if (!base64 || base64 == -1) /* Make sure that we really have a string.  */
     gpgme_data_write (data, "", 1);
@@ -1225,6 +1228,10 @@ make_data_object (cjson_t result, gpgme_data_t data,
             break;
           }
     }
+#ifdef HAVE_W32_SYSTEM
+  else
+    armor_enabled = !base64;
+#endif
 
   xjson_AddStringToObject (result, "type", type);
   xjson_AddBoolToObject (result, "base64", base64);
@@ -1232,7 +1239,52 @@ make_data_object (cjson_t result, gpgme_data_t data,
   if (base64)
     err = add_base64_to_object (result, "data", buffer, buflen);
   else
-    err = cjson_AddStringToObject (result, "data", buffer);
+    {
+#ifdef HAVE_W32_SYSTEM
+      /*
+       * In armored output on Windows, newline is CRLF.  We need to
+       * convert CRLF into LF so that the JSON representation is
+       * always same.
+       */
+      if (armor_enabled)
+        {
+          char *p, *p_write;
+          const char *p_end = buffer + buflen;
+
+          p = p_write = buffer;
+
+          while (1)
+            {
+              char c0, c1;
+
+              c0 = *p++;
+              if (p >= p_end)
+                {
+                  *p_write++ = c0;
+                  break;
+                }
+
+              if (c0 != '\r')
+                {
+                  *p_write++ = c0;
+                  continue;
+                }
+
+              c1 = *p++;
+              if (c1 == '\n')
+                *p_write++ = c1;
+              else
+                {
+                  *p_write++ = c0;
+                  *p_write++ = c1;
+                }
+              if (p >= p_end)
+                break;
+            }
+        }
+#endif
+      err = cjson_AddStringToObject (result, "data", buffer);
+    }
 
  leave:
   gpgme_free (buffer);
