@@ -256,7 +256,22 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
 
   err = export_start (ctx, 1, pattern, mode, keydata);
   if (!err)
-    err = _gpgme_wait_one (ctx);
+    {
+      err = _gpgme_wait_one (ctx);
+      if (!err)
+        {
+          /* For this synchronous operation we check for operational
+           * errors and return them.  */
+          void *hook;
+          op_data_t opd;
+
+          err = _gpgme_op_data_lookup (ctx, OPDATA_EXPORT, &hook, -1, NULL);
+          opd = hook;
+          if (!err)
+            err = opd->err ? opd->err : opd->failure_code;
+        }
+    }
+
   return err;
 }
 
