@@ -272,7 +272,7 @@ gpgme_op_export (gpgme_ctx_t ctx, const char *pattern,
         }
     }
 
-  return err;
+  return TRACE_ERR (err);
 }
 
 
