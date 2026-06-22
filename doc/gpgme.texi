@@ -7209,7 +7209,7 @@ numbers from Libgcrypt via the GPG engine.
 @deftp {Data type} {enum gpgme_random_mode_t}
 @tindex gpgme_random_mode_t
 
-This enum ist used to select special modes of the random generator.
+This enum is used to select special modes of the random generator.
 
 @table @code
 @item GPGME_RANDOM_MODE_NORMAL
