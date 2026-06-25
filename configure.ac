@@ -57,7 +57,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 #
 LIBGPGME_LT_CURRENT=46
 LIBGPGME_LT_AGE=1
-LIBGPGME_LT_REVISION=0
+LIBGPGME_LT_REVISION=1
 ################################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
@@ -729,7 +729,7 @@ AH_BOTTOM([
 #define GPG_ERR_ENABLE_GETTEXT_MACROS 1
 
 #define CRIGHTBLURB "Copyright (C) 2000 Werner Koch\n" \
-                    "Copyright (C) 2001--2025 g10 Code GmbH\n"
+                    "Copyright (C) 2001--2026 g10 Code GmbH\n"
 ])
 
 

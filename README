@@ -1,7 +1,7 @@
                        GPGME - GnuPG Made Easy
                      ---------------------------
 
-Copyright 2001-2025 g10 Code GmbH
+Copyright 2001-2026 g10 Code GmbH
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
@@ -65,30 +65,14 @@ a) If you have a trusted Version of GnuPG installed, you can simply check
 	$ gpg --verify gpgme-x.y.z.tar.gz.sig gpgme-x.y.z.tar.gz
 
    This checks that the detached signature gpgme-x.y.z.tar.gz.sig is
-   indeed a a signature of gpgme-x.y.z.tar.gz.  The key used to create
-   this signature is at least one of:
+   indeed a a signature of gpgme-x.y.z.tar.gz.
 
-     rsa2048 2011-01-12 [expires: 2019-12-31]
-     Key fingerprint = D869 2123 C406 5DEA 5E0F  3AB5 249B 39D2 4F25 E3B6
-     Werner Koch (dist sig)
-
-     rsa2048 2014-10-29 [expires: 2019-12-31]
-     Key fingerprint = 46CC 7308 65BB 5C78 EBAB  ADCF 0437 6F3E E085 6959
-     David Shaw (GnuPG Release Signing Key) <dshaw 'at' jabberwocky.com>
-
-     rsa2048 2014-10-29 [expires: 2020-10-30]
-     Key fingerprint = 031E C253 6E58 0D8E A286  A9F2 2071 B08A 33BD 3F06
-     NIIBE Yutaka (GnuPG Release Key) <gniibe 'at' fsij.org>
-
-     rsa3072 2017-03-17 [expires: 2027-03-15]
-     Key fingerprint = 5B80 C575 4298 F0CB 55D8  ED6A BCEF 7E29 4B09 2E28
-     Andre Heinecke (Release Signing Key)
-
-   The keys are available at <https://gnupg.org/signature_key.html>
-   and in released GnuPG tarballs in the file g10/distsigkey.gpg .
-   You have to make sure that these are really the desired keys and
-   not faked one.  You should do this by comparing the fingerprints
-   with the fingerprints published elsewhere.
+   The keys used to create a signature are available at
+   <https://gnupg.org/signature_key.html> and in released GnuPG
+   tarballs in the file g10/distsigkey.gpg .  You have to make sure
+   that these are really the desired keys and not faked one.  You
+   should do this by comparing the fingerprints with the fingerprints
+   published for example with all GnuPG related release announcements.
 
 b) If you don't have any of the above programs, you have to verify
    the SHA1 checksum:

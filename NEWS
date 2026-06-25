@@ -1,5 +1,15 @@
-Noteworthy changes in version 2.1.1 (unreleased)   [C46/A1/R_]
+Noteworthy changes in version 2.1.1 (2026-06-25)   [C46/A1/R1]
 ------------------------------------------------
+
+ * gpgme_op_export now also returns operational errors.  [T8287]
+
+ * w32: Improve debug output in spawn and selection functions.
+   [rMf5ad431a1c]
+
+ * w32: Improve serialization between reader and writer threads.
+   [T8264]
+
+ * w32: Add CRLF handling for armored output in gpgme-json.  [T8263]
 
  Release-info: https://dev.gnupg.org/T8269
 
