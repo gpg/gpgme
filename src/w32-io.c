@@ -1684,9 +1684,11 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       close (tmp_fd);
       DeleteFileA (tmp_name);
       free (tmp_name);
-
-      /* FIXME: Should translate the error code.  */
+#if GPGRT_VERSION_NUMBER >= 0x013e00  /* gpgrt >= 1.62 */
+      gpgrt_w32_set_errno (lasterr);
+#else
       gpg_err_set_errno (EIO);
+#endif
       return TRACE_SYSRES (-1);
     }
 
@@ -1709,7 +1711,8 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
       if (!DuplicateHandle (GetCurrentProcess(), ohd,
 			    pi.hProcess, &hd, 0, TRUE, DUPLICATE_SAME_ACCESS))
 	{
-	  TRACE_LOG  ("DuplicateHandle failed: ec=%d", (int) GetLastError ());
+          int lasterr = (int) GetLastError ();
+	  TRACE_LOG  ("DuplicateHandle failed: ec=%d", lasterr);
 	  TerminateProcess (pi.hProcess, 0);
 	  /* Just in case TerminateProcess didn't work, let the
 	     process fail on its own.  */
@@ -1721,8 +1724,11 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
 	  DeleteFileA (tmp_name);
           free (tmp_name);
 
-	  /* FIXME: Should translate the error code.  */
+#if GPGRT_VERSION_NUMBER >= 0x013e00  /* gpgrt >= 1.62 */
+          gpgrt_w32_set_errno (lasterr);
+#else
 	  gpg_err_set_errno (EIO);
+#else
           UNLOCK (fd_table_lock);
 	  return TRACE_SYSRES (-1);
         }
@@ -1836,7 +1842,9 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
   int i;
   int any;
   int count;
+  int errnoset = 0;
   void *dbg_help = NULL;
+
   TRACE_BEG  (DEBUG_SYSIO, "_gpgme_io_select", fds,
 	      "nfds=%zd, nonblock=%u", nfds, nonblock);
 
@@ -1869,7 +1877,6 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 		    {
 		      TRACE_END (dbg_help, "oops ]");
 		      TRACE_LOG ("Too many objects for WFMO!");
-		      /* FIXME: Should translate the error code.  */
 		      gpg_err_set_errno (EIO);
 		      return TRACE_SYSRES (-1);
                     }
@@ -1892,7 +1899,6 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
 		    {
 		      TRACE_END (dbg_help, "oops ]");
 		      TRACE_LOG ("Too many objects for WFMO!");
-		      /* FIXME: Should translate the error code.  */
 		      gpg_err_set_errno (EIO);
 		      return TRACE_SYSRES (-1);
                     }
@@ -1959,6 +1965,10 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
         }
 #endif
       TRACE_LOG  ("WFMO failed: %d", le);
+#if GPGRT_VERSION_NUMBER >= 0x013e00  /* gpgrt >= 1.62 */
+      gpgrt_w32_set_errno (le);
+      errnoset = 1;
+#endif
       count = -1;
     }
   else
@@ -1981,11 +1991,8 @@ _gpgme_io_select (struct io_select_fd_s *fds, size_t nfds, int nonblock)
       TRACE_END (dbg_help, "]");
     }
 
-  if (count < 0)
-    {
-      /* FIXME: Should determine a proper error code.  */
+  if (count < 0 && !errnoset)
       gpg_err_set_errno (EIO);
-    }
 
   return TRACE_SYSRES (count);
 }
