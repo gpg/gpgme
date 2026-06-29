@@ -1728,7 +1728,7 @@ _gpgme_io_spawn (const char *path, char *const argv[], unsigned int flags,
           gpgrt_w32_set_errno (lasterr);
 #else
 	  gpg_err_set_errno (EIO);
-#else
+#endif
           UNLOCK (fd_table_lock);
 	  return TRACE_SYSRES (-1);
         }
