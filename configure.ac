@@ -57,7 +57,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 #
 LIBGPGME_LT_CURRENT=46
 LIBGPGME_LT_AGE=1
-LIBGPGME_LT_REVISION=1
+LIBGPGME_LT_REVISION=2
 ################################################
 
 AC_SUBST(LIBGPGME_LT_CURRENT)
