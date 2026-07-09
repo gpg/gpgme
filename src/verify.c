@@ -996,9 +996,14 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_TRUST_MARGINAL:
     case GPGME_STATUS_TRUST_FULLY:
     case GPGME_STATUS_TRUST_ULTIMATE:
+      /* In de-vs compliance mode TRUST_ status is emitted during
+       * decryption if validation of the encryption certificate
+       * fails.  Silently, ignore such a status line if no NEWSIG
+       * was seen.  */
+      if (!sig)
+        break;
       opd->only_newsig_seen = 0;
-      return sig ? parse_trust (sig, code, args)
-	: trace_gpg_error (GPG_ERR_INV_ENGINE);
+      return parse_trust (sig, code, args);
 
     case GPGME_STATUS_PKA_TRUST_BAD:
     case GPGME_STATUS_PKA_TRUST_GOOD:
