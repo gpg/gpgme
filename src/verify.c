@@ -487,6 +487,24 @@ parse_valid_sig (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
 
 
 static gpgme_error_t
+parse_sig_info (gpgme_signature_t sig, char *args)
+{
+  char *end = args;
+  char *tail;
+
+  if (!*args)
+    /* We require at least the creation time.  */
+    return gpg_error (GPG_ERR_GENERAL);
+
+  sig->timestamp = _gpgme_parse_timestamp (end, &tail);
+  if (sig->timestamp == -1 || end == tail || (*tail && *tail != ' '))
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  return 0;
+}
+
+
+static gpgme_error_t
 parse_notation (gpgme_signature_t sig, gpgme_status_code_t code, char *args)
 {
   gpgme_error_t err;
@@ -967,6 +985,11 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_VALIDSIG:
       opd->only_newsig_seen = 0;
       return sig ? parse_valid_sig (sig, args, ctx->protocol)
+	: trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+    case GPGME_STATUS_SIGINFO:
+      opd->only_newsig_seen = 0;
+      return sig ? parse_sig_info (sig, args)
 	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     case GPGME_STATUS_NODATA:
