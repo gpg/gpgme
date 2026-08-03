@@ -1731,6 +1731,14 @@ struct _gpgme_signature
   /* If non-NULL, a possible incomplete key object with the data
    * available for the signature.  */
   gpgme_key_t key;
+
+  /* If protocol is GPGME_PROTOCOL_CMS, this string may contain the
+     issuer serial.  */
+  char *issuer_serial;
+
+  /* If protocol is GPGME_PROTOCOL_CMS, this string may contain the
+     issuer name.  */
+  char *issuer_name;
 };
 typedef struct _gpgme_signature *gpgme_signature_t;
 

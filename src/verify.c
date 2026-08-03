@@ -75,6 +75,10 @@ release_op_data (void *hook)
 	free (sig->pka_address);
       if (sig->key)
         gpgme_key_unref (sig->key);
+      if (sig->issuer_serial)
+	free (sig->issuer_serial);
+      if (sig->issuer_name)
+	free (sig->issuer_name);
       free (sig);
       sig = next;
     }
@@ -944,6 +948,49 @@ parse_error (gpgme_signature_t sig, char *args, int set_status)
 }
 
 
+static gpgme_error_t
+parse_no_pubkey (gpgme_signature_t sig, char *args, gpgme_protocol_t protocol)
+{
+  gpgme_error_t err;
+  char *end;
+  char *name;
+
+  if (protocol != GPGME_PROTOCOL_CMS)
+    return 0;
+
+  /* Check that we only get one of these status codes per
+     signature; if not the crypto backend misbehaves.  */
+  if (sig->issuer_serial || sig->issuer_name)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  /* Parse #serialno/issuer */
+  end = strchr (args, ' ');
+  if (end)
+    *end = '\0';
+
+  if (*args != '#')
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+  args++;
+
+  name = strchr (args, '/');
+  if (name)
+    {
+      *name = '\0';
+      name++;
+    }
+  if (!name || !*args || !*name)
+    return trace_gpg_error (GPG_ERR_INV_ENGINE);
+
+  err = _gpgme_decode_percent_plus_string (args, &sig->issuer_serial, 0, 0);
+  if (err)
+    return err;
+
+  err = _gpgme_decode_percent_plus_string (name, &sig->issuer_name, 0, 0);
+
+  return err;
+}
+
+
 gpgme_error_t
 _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
 {
@@ -1133,6 +1180,11 @@ _gpgme_verify_status_handler (void *priv, gpgme_status_code_t code, char *args)
     case GPGME_STATUS_VERIFICATION_COMPLIANCE_MODE:
       PARSE_COMPLIANCE_FLAGS (args, opd->current_sig);
       break;
+
+    case GPGME_STATUS_NO_PUBKEY:
+      opd->only_newsig_seen = 0;
+      return sig ? parse_no_pubkey (sig, args, ctx->protocol)
+	: trace_gpg_error (GPG_ERR_INV_ENGINE);
 
     default:
       break;

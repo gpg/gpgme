@@ -145,6 +145,8 @@ print_result (gpgme_verify_result_t result)
       printf ("  status ....: %s\n", gpgme_strerror (sig->status));
       printf ("  summary ...:"); print_summary (sig->summary); putchar ('\n');
       printf ("  fingerprint: %s\n", nonnull (sig->fpr));
+      printf ("  s/n .......: %s\n", nonnull (sig->issuer_serial));
+      printf ("  issuer ....: %s\n", nonnull (sig->issuer_name));
       printf ("  created ...: %lu\n", sig->timestamp);
       printf ("  expires ...: %lu\n", sig->exp_timestamp);
       printf ("  validity ..: ");
