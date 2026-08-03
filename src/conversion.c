@@ -242,16 +242,17 @@ _gpgme_decode_c_string (const char *src, char **destp, size_t len)
 }
 
 
-/* Decode the percent escaped string SRC and store the result in the
-   buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
-   large enough buffer is allocated with malloc and *DESTP is set to
-   the result.  Currently, LEN is only used to specify if allocation
+/* Do the percent and plus/space decoding of string SRC and store the
+   result in the buffer *DESTP which is LEN bytes long.  If LEN is zero,
+   then a large enough buffer is allocated with malloc and *DESTP is set
+   to the result.  Currently, LEN is only used to specify if allocation
    is desired or not, the caller is expected to make sure that *DESTP
    is large enough if LEN is not zero.  If BINARY is 1, then '\0'
-   characters are allowed in the output.  */
-gpgme_error_t
-_gpgme_decode_percent_string (const char *src, char **destp, size_t len,
-			      int binary)
+   characters are allowed in the output.  Plus decoding is only done
+   if WITHPLUS is 1.  */
+static gpgme_error_t
+do_decode_percent_or_percent_plus (const char *src, char **destp, size_t len,
+			           int binary, int withplus)
 {
   char *dest;
 
@@ -277,7 +278,12 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
   /* Convert the string.  */
   while (*src)
     {
-      if (*src != '%')
+      if (*src == '+' && withplus)
+        {
+          *(dest++) = ' ';
+          src++;
+        }
+      else if (*src != '%')
 	{
 	  *(dest++) = *(src++);
 	  continue;
@@ -313,6 +319,36 @@ _gpgme_decode_percent_string (const char *src, char **destp, size_t len,
   *(dest++) = 0;
 
   return 0;
+}
+
+
+/* Decode the percent escaped string SRC and store the result in the
+   buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
+   large enough buffer is allocated with malloc and *DESTP is set to
+   the result.  Currently, LEN is only used to specify if allocation
+   is desired or not, the caller is expected to make sure that *DESTP
+   is large enough if LEN is not zero.  If BINARY is 1, then '\0'
+   characters are allowed in the output.  */
+gpgme_error_t
+_gpgme_decode_percent_string (const char *src, char **destp, size_t len,
+			      int binary)
+{
+  return do_decode_percent_or_percent_plus (src, destp, len, binary, 0);
+}
+
+
+/* Decode the percent-plus escaped string SRC and store the result in the
+   buffer *DESTP which is LEN bytes long.  If LEN is zero, then a
+   large enough buffer is allocated with malloc and *DESTP is set to
+   the result.  Currently, LEN is only used to specify if allocation
+   is desired or not, the caller is expected to make sure that *DESTP
+   is large enough if LEN is not zero.  If BINARY is 1, then '\0'
+   characters are allowed in the output.  */
+gpgme_error_t
+_gpgme_decode_percent_plus_string (const char *src, char **destp, size_t len,
+			           int binary)
+{
+  return do_decode_percent_or_percent_plus (src, destp, len, binary, 1);
 }
 
 
