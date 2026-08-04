@@ -6394,6 +6394,17 @@ object may be incomplete in that it only conveys information
 availabale directly with a signature.  It may also be @code{NULL} if
 such information is not readily available.
 
+@item char *issuer_serial
+@since{2.2.0}
+For S/MIME signatures this is the issuer serial number of the signing
+certificate if the signing certificate isn't available. Requires
+GnuPG 2.5.22.
+
+@item char *issuer_name
+@since{2.2.0}
+For S/MIME signatures this is the issuer name of the signing certificate
+if the signing certificate isn't available. Requires GnuPG 2.5.22.
+
 @end table
 @end deftp
 
