@@ -34,13 +34,6 @@
 
 #include "t-support.h"
 
-static const char *
-nonnull (const char *s)
-{
-  return s? s :"[none]";
-}
-
-
 int
 main (int argc, char **argv)
 {

@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
 
 #include <gpgme.h>
 
@@ -43,6 +44,49 @@
         }							\
     }								\
   while (0)
+
+
+#ifdef GPGRT_HAVE_MACRO_FUNCTION
+void GPGRT_ATTR_NORETURN
+_test (const char *expr, const char *file, int line,
+       const char *func)
+{
+  fprintf (stderr, "Test \"%s\" in %s failed (%s:%d)\n",
+           expr, func, file, line);
+  exit (1);
+}
+# define test(expr)                                             \
+  ((expr)                                                       \
+   ? (void) 0                                                   \
+   : _test (#expr, __FILE__, __LINE__, __FUNCTION__))
+#else /*!GPGRT_HAVE_MACRO_FUNCTION*/
+void
+_test (const char *expr, const char *file, int line)
+{
+  fprintf (stderr, "Test \"%s\" failed (%s:%d)\n",
+           expr, file, line);
+  exit (1);
+}
+# define test(expr)                                             \
+  ((expr)                                                       \
+   ? (void) 0                                                   \
+   : _test (#expr, __FILE__, __LINE__))
+#endif /*!GPGRT_HAVE_MACRO_FUNCTION*/
+
+
+int
+safe_strcmp (const char *s1, const char *s2)
+{
+  return s1 ? (s2 ? strcmp (s1, s2) : 1)
+            : (s2 ? -1 : 0);
+}
+
+
+const char *
+nonnull (const char *s)
+{
+  return s? s :"[none]";
+}
 
 
 void
@@ -120,4 +164,22 @@ init_gpgme (gpgme_protocol_t proto)
 
   err = gpgme_engine_check_version (proto);
   fail_if_err (err);
+}
+
+
+/* Return true if the gpg engine's version is at least REQ_VERSION.  */
+int
+have_gpgsm_version (const char *req_version)
+{
+  gpgme_engine_info_t engine_info;
+  init_gpgme (GPGME_PROTOCOL_CMS);
+
+  fail_if_err (gpgme_get_engine_info (&engine_info));
+  for (; engine_info; engine_info = engine_info->next)
+    if (engine_info->protocol == GPGME_PROTOCOL_CMS)
+      break;
+
+  test (engine_info);
+
+  return gpgrt_cmp_version (engine_info->version, req_version, 3) >= 0;
 }
