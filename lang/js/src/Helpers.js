@@ -156,7 +156,7 @@ export function atobArray (base64) {
     if (typeof (base64) !== 'string'){
         throw gpgme_error('DECODE_FAIL');
     }
-    const raw = window.atob(base64);
+    const raw = atob(base64);
     const rawLength = raw.length;
     let array = new Uint8Array(new ArrayBuffer(rawLength));
     for (let i = 0; i < rawLength; i++) {
