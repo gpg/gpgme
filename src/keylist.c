@@ -791,7 +791,7 @@ keylist_colon_handler (void *priv, char *line)
             return err;
         }
 
-      /* Field 17 has the curve name for ECC.  */
+      /* Field 17 has the curve name for ECC or the composite algo string.  */
       if (fields >= 17 && *field[16])
         {
           subkey->curve = strdup (field[16]);

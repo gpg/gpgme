@@ -277,7 +277,9 @@ typedef enum
     GPGME_PK_ELG   = 20,
     GPGME_PK_ECDSA = 301,
     GPGME_PK_ECDH  = 302,
-    GPGME_PK_EDDSA = 303
+    GPGME_PK_EDDSA = 303,
+    GPGME_PK_MLKEM = 331,    /* Kyber (ML-KEM).      */
+    GPGME_PK_MLDSA = 332     /* Dilithium (ML-DSA).  */
   }
 gpgme_pubkey_algo_t;
 

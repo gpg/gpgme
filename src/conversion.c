@@ -693,6 +693,24 @@ _gpgme_map_pk_algo (int algo, gpgme_protocol_t protocol)
         case 19: algo = GPGME_PK_ECDSA; break;
         case 20: break;
         case 22: algo = GPGME_PK_EDDSA; break;
+
+        case 25: algo = GPGME_PK_ECDH;  break;  /* X25519 (RFC9580).  */
+        case 27: algo = GPGME_PK_EDDSA; break;  /* Ed25519 (RFC9580). */
+
+        case 30: /* ML-DSA-65+Ed25519 (RFC9980)      */
+        case 31: /* ML-DSA-87+Ed448 (RFC9980)        */
+          algo = GPGME_PK_MLDSA;
+          break;
+
+        case 35: /* ML-KEM-768+X25519 (RFC9980)      */
+        case 36: /* ML-KEM-1024+X448 (RFC9980)       */
+        case 37: /* ML-KEM-768+ECDH-NIST-P-384       */
+        case 38: /* ML-KEM-1024+ECDH-NIST-P-521      */
+        case 39: /* ML-KEM-768+ECDH-brainpoolP384r1  */
+        case 40: /* ML-KEM-1024+ECDH-brainpoolP512r1 */
+          algo = GPGME_PK_MLKEM;
+          break;
+
         default: algo = 0; break; /* Unknown.  */
         }
     }

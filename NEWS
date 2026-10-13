@@ -1,6 +1,10 @@
-Noteworthy changes in version 2.2.1 (unreleased)   [C__/A_/R0]
+Noteworthy changes in version 2.3.0 (unreleased)   [C__/A_/R0]
 ------------------------------------------------
 
+ * Interface changes relative to the 2.2.0 release:
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_PK_MLKEM                NEW.
+ GPGME_PK_MLDSA                NEW.
 
  Release-info: https://dev.gnupg.org/T8427
 

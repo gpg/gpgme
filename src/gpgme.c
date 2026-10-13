@@ -1328,6 +1328,8 @@ gpgme_pubkey_algo_string (gpgme_subkey_t subkey)
     case GPGME_PK_ECDH:
     case GPGME_PK_ECDSA:
     case GPGME_PK_EDDSA: prefix = "";    break;
+    case GPGME_PK_MLDSA: composite = 1; break;
+    case GPGME_PK_MLKEM: composite = 1; break;
     }
 
   if (composite && subkey->curve)
@@ -1366,6 +1368,8 @@ gpgme_pubkey_algo_name (gpgme_pubkey_algo_t algo)
     case GPGME_PK_ECDSA: return "ECDSA";
     case GPGME_PK_ECDH:  return "ECDH";
     case GPGME_PK_EDDSA: return "EdDSA";
+    case GPGME_PK_MLDSA: return "MLDSA";
+    case GPGME_PK_MLKEM: return "MLKEM";
     default:             return NULL;
     }
 }
