@@ -1494,7 +1494,9 @@ read_status (engine_gpg_t gpg)
       buffer = realloc (buffer, bufsize);
       if (!buffer)
 	return gpg_error_from_syserror ();
-    }
+      gpg->status.bufsize = bufsize;
+      gpg->status.buffer = buffer;
+   }
 
   nread = _gpgme_io_read (gpg->status.fd[0],
 			  buffer + readpos, bufsize-readpos);
@@ -1606,8 +1608,6 @@ read_status (engine_gpg_t gpg)
     }
 
   /* Update the gpg object.  */
-  gpg->status.bufsize = bufsize;
-  gpg->status.buffer = buffer;
   gpg->status.readpos = readpos;
   return 0;
 }
@@ -1647,6 +1647,8 @@ read_colon_line (engine_gpg_t gpg)
       buffer = realloc (buffer, bufsize);
       if (!buffer)
 	return gpg_error_from_syserror ();
+      gpg->colon.bufsize = bufsize;
+      gpg->colon.buffer  = buffer;
     }
 
   nread = _gpgme_io_read (gpg->colon.fd[0], buffer+readpos, bufsize-readpos);
@@ -1726,8 +1728,6 @@ read_colon_line (engine_gpg_t gpg)
     }
 
   /* Update the gpg object.  */
-  gpg->colon.bufsize = bufsize;
-  gpg->colon.buffer  = buffer;
   gpg->colon.readpos = readpos;
   return 0;
 }
