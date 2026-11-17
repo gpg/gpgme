@@ -1,8 +1,14 @@
 Noteworthy changes in version 2.3.0 (unreleased)   [C__/A_/R0]
 ------------------------------------------------
 
+ * New constants GPGME_PK_MLKEM, GPGME_PK_MLDSA, and GPGME_PK_DLTHM.
+   Add mappings for algos used bei backends.   [rMa85fa49236]
+
+ * Fix a double free in the status line read code.  [T8557]
+
  * Interface changes relative to the 2.2.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ GPGME_PK_DLTHM                NEW.
  GPGME_PK_MLKEM                NEW.
  GPGME_PK_MLDSA                NEW.
 

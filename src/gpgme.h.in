@@ -271,6 +271,7 @@ typedef enum
     GPGME_PK_RSA_E = 2,
     GPGME_PK_RSA_S = 3,
     GPGME_PK_KYBER = 8,
+    GPGME_PK_DLTHM = 9,
     GPGME_PK_ELG_E = 16,
     GPGME_PK_DSA   = 17,
     GPGME_PK_ECC   = 18,
