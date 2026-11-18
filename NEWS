@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.3.0 (unreleased)   [C__/A_/R0]
+Noteworthy changes in version 2.3.0 (2026-11-18)   [C48/A3/R0]
 ------------------------------------------------
 
  * New constants GPGME_PK_MLKEM, GPGME_PK_MLDSA, and GPGME_PK_DLTHM.
