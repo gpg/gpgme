@@ -1,10 +1,19 @@
+Noteworthy changes in version 2.3.1 (2026-11-19)   [C48/A3/R1]
+------------------------------------------------
+
+ * Fix a regression in 2.3.0
+
+ Release-info: https://dev.gnupg.org/T8427
+
+
 Noteworthy changes in version 2.3.0 (2026-11-18)   [C48/A3/R0]
 ------------------------------------------------
 
  * New constants GPGME_PK_MLKEM, GPGME_PK_MLDSA, and GPGME_PK_DLTHM.
    Add mappings for algos used bei backends.   [rMa85fa49236]
 
- * Fix a double free in the status line read code.  [T8557]
+ * Fix a double free in the status line read code.
+   [T8557,CVE-2026-129975]
 
  * Interface changes relative to the 2.2.0 release:
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
