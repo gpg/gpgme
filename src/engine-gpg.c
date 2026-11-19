@@ -1479,7 +1479,7 @@ add_io_cb (engine_gpg_t gpg, int fd, int dir, gpgme_io_cb_t handler, void *data,
 static gpgme_error_t
 read_status (engine_gpg_t gpg)
 {
-  gpgme_error_t err;
+  gpgme_error_t err = 0;
   char *p;
   int nread;
   size_t bufsize = gpg->status.bufsize;
@@ -1511,7 +1511,6 @@ read_status (engine_gpg_t gpg)
 
   if (!nread)
     {
-      err = 0;
       gpg->status.eof = 1;
       if (gpg->status.mon_cb)
         err = gpg->status.mon_cb (gpg->status.mon_cb_value, "", "");
@@ -1642,7 +1641,7 @@ status_handler (void *opaque, int fd)
 static gpgme_error_t
 read_colon_line (engine_gpg_t gpg)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   char *p;
   int nread;
   size_t bufsize = gpg->colon.bufsize;
