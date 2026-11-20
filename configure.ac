@@ -57,7 +57,7 @@ AC_INIT([mym4_package],[mym4_version],[https://bugs.gnupg.org])
 #
 LIBGPGME_LT_CURRENT=44
 LIBGPGME_LT_AGE=33
-LIBGPGME_LT_REVISION=2
+LIBGPGME_LT_REVISION=3
 
 # If there is an ABI break in gpgmepp or qgpgme also bump the
 # version in IMPORTED_LOCATION in the GpgmeppConfig-w32.cmake.in.in

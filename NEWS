@@ -1,5 +1,17 @@
-Noteworthy changes in version 1.24.4 (unreleased)
+Noteworthy changes in version 1.24.4 (2026-11-20)
 -------------------------------------------------
+
+  Take care: This version is from a legacy branch of gpgme created
+  just before we split out the C++, Qt, and Python bindings to
+  separate repositories and bumped the version number up to 2.0.  We
+  can't guarantee that it will see all security patches.
+
+ * Fix a double free in the status line read code.
+   [T8557,CVE-2026-129975]
+
+ [c=C44/A33/R3 cpp=C27/A21/R3 qt=C21/A6/R2]
+
+ Release-info: https://dev.gnupg.org/T7659
 
 
 Noteworthy changes in version 1.24.3 (2025-05-19)

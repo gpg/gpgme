@@ -17,6 +17,10 @@ PURPOSE.
   just before we split out the C++, Qt, and Python bindings to
   separate repositories and bumped the version number up to 2.0.
 
+  We can't guarantee that it will see security patches.  Consider this
+  branch to be end-of-life and swicth to gpgme 2.x which has no ABI or
+  API break.
+
 
 
 Introduction
